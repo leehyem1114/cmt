@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,6 +110,10 @@ public class SalaryController {
 	    // 급여 지급일 공통 코드에서 가져오기
 	    List<CommonCodeDetailDTO> payDay = commonService.getCommonCodeDetails("PAYDAY", null);
 	    model.addAttribute("payDay", payDay);
+	    
+	    // 현재 월 (yyyy-MM) 형식으로 설정
+	    String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+	    model.addAttribute("currentMonth", currentMonth);
 
 	    return "erp/salaries/payList";
 	}
@@ -116,7 +121,7 @@ public class SalaryController {
 	// 급여 이체
 	@PostMapping("/payTransfer")
 	@ResponseBody
-	public String payTransfer(@RequestParam("position") String position, @RequestParam("empIdList") List<String> empIdList, Model model) {	
+	public String payTransfer(@RequestParam("position") String position, @RequestParam("empIdList") List<String> empIdList, @RequestParam("payMonth") String payMonth, Model model) {	
 
 		String paydayStr = salaryService.getPayDay(); // 예: "8"
 		int payday = Integer.parseInt(paydayStr);     // 문자열 -> 숫자 변환
@@ -139,6 +144,7 @@ public class SalaryController {
 			List<Map<String, Object>> evaluatedResult = new ArrayList<>();
 			
 			//사원 정보
+			
 			List<PayEmpListDTO> payEmpList = salaryService.getEmpInfo(empIdList);
 			for(PayEmpListDTO p : payEmpList) {
 				
@@ -257,6 +263,14 @@ public class SalaryController {
 	    DayOfWeek day = date.getDayOfWeek();
 	    System.out.println("isHoliday day:" + day);
 	    return day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY;
+	}
+	
+	// 미지급자 조회
+	@GetMapping("/unpaidEmpList")
+	@ResponseBody
+	public List<PayEmpListDTO> getUnpaidEmployees(@RequestParam("payMonth") String payMonth) {
+		System.out.println("==============" + salaryService.findUnpaidEmployees(payMonth));
+		return salaryService.findUnpaidEmployees(payMonth);
 	}
 
 	// 월별 급여 대장 조회

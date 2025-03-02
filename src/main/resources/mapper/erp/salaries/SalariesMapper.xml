@@ -151,6 +151,25 @@
         	</if>        	              
     	</where>	 -->
     </select>
+    
+    <!-- 미지급자 조회 -->
+    <select id="findUnpaidEmployees" resultType="com.example.cmtProject.dto.erp.salaries.PayEmpListDTO">
+	    SELECT E.EMP_ID,
+	           E.EMP_NAME,
+	           E.DEPT_NO,
+	           D.CMN_DETAIL_NAME AS DEPT_NAME,
+	           E.POSITION_NO,
+	           P.CMN_DETAIL_NAME AS POSITION
+	    FROM EMPLOYEES E
+	    LEFT JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
+	    LEFT JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
+	    WHERE E.EMP_ID NOT IN (
+	        SELECT EMP_ID
+	        FROM PAYMENTS
+	        WHERE PAY_DATE BETWEEN TO_DATE(#{payMonth} || '-01', 'YYYY-MM-DD')
+                         AND LAST_DAY(TO_DATE(#{payMonth} || '-01', 'YYYY-MM-DD'))
+	    )    	
+    </select>
 	
 	<!-- 개인 지급내역 -->
 	<select id="selectEmpPayment" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
@@ -224,8 +243,8 @@
 	<!-- 사원 목록 -->
 	<select id="getEmpList" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
 		SELECT 
-		    E.EMP_ID AS empId,
-		    E.EMP_NAME AS empName,
+		    E.EMP_ID,
+		    E.EMP_NAME,
 		    C.CMN_DETAIL_NAME AS deptName,
 		    C2.CMN_DETAIL_NAME AS deptPosition
 		FROM EMPLOYEES E
