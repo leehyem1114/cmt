@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>home page</h1>
+	
+	<div>
+		<!-- 로그인 상태일 경우 -->
+	    <div th:if="${#authorization.expression('isAuthenticated()')}">
+	        <span th:text="${#authentication.name}"></span>님, 환영합니다!
+			<br>
+	        <a th:href="@{/logout}">로그아웃</a>
+	    </div>
+
+	    <!-- 로그아웃 상태일 경우 -->
+	    <div th:unless="${#authorization.expression('isAuthenticated()')}">
+	        <a th:href="@{/loginForm}">로그인</a>
+	    </div>
+	</div>
+	<br>
+	<a href="joinForm">회원가입</a>
+	<br>
+	<br>
+	<br>
+	<a href="pdt">완제품 페이지</a>
+</body>
+</html>
