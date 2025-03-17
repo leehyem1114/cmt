@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 가입</title>
+</head>
+<body>
+<h1>JOIN PAGE</h1>
+<hr/>
+<form action="join" method="post" onsubmit="return validityCheck()">
+    <input type="text" name="empName" id="username" placeholder="Username" /><br/>
+    <input type="password" name="empPassword" id="pwd" placeholder="Password" /><br/>
+	<select name="empLevel">
+		<option value="USER">user</option>
+		<option value="MANAGER">manager</option>
+		<option value="ADMIN">admin</option>
+	</select>
+	<br>
+	<br>
+    <input type="submit" value="확인	">
+</form>
+
+	<script>
+		function validityCheck(){
+			
+			let username = document.getElementById("username").value;
+			let pwd = document.getElementById("pwd").value;
+			
+			if(username.trim() === "" || pwd.trim() === "")
+			{
+				alert("입력");
+				return false;
+			}
+		}	
+	</script>
+</body>
+</html>
