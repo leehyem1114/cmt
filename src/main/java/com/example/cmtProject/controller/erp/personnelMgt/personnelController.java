@@ -10,11 +10,16 @@ public class personnelController {
 
 	@GetMapping("/")
 	public String main() {
-		return "erp/personnelMgt/emp/emp";
+		return "erp/personnelMgt/emp/emp/home";
 	}
 	
 	@GetMapping("/list")
 	public String list() {
 		return "erp/personnelMgt/emp/list";
+	}
+	
+	@GetMapping("/emplist")
+	public String empList() {
+		return "erp/personnelMgt/emp/emplist";
 	}
 }
