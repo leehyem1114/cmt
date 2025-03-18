@@ -1,6 +1,8 @@
 package com.example.cmtProject.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -84,5 +86,35 @@ public class MainController {
 	public String admin() {
 		
 		return "admin";
+	}
+	
+	@Secured("ROLE_ADMIN")
+	@GetMapping("/onlyadmin")
+	public @ResponseBody String onlyAdmin() {
+		
+		return "onlyAdmin";
+	}
+	
+	@Secured("ROLE_MANAGER")
+	@GetMapping("/onlymanager")
+	public @ResponseBody String onlyManager() {
+		
+		return "onlyManager";
+	}
+	
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	@GetMapping("/useradmin")
+	@ResponseBody
+	public String useradmin() {
+		
+		return "user or admin";
+	}
+	
+	@PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+	@GetMapping("/manageradmin")
+	@ResponseBody
+	public String manageradmin() {
+		
+		return "manager or admin";
 	}
 }
