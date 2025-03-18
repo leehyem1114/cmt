@@ -10,7 +10,7 @@
 	<!-- 전체 조회 -->
     <select id="list" resultType="Product">
         SELECT *
-        FROM PRODUCT
+        FROM PRODUCTS
     </select>
 	
 	<!-- 선택 조회 -->
