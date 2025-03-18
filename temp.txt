@@ -28,5 +28,5 @@
                 </td>
                 <td align="center" th:text="${board.views}"></td>
             </tr>
-        </th:block>fggdgtdgdgd
+        </th:block>
     </table>
