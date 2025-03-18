@@ -1,32 +1,3 @@
-<table border="1">
-        <tr>
-            <th width="50">PDT_CODE</th>
-            <th width="300">PDT_NAME</th>
-            <th width="100">PDT_SPECIFICATION</th>
-            <th width="200">PDT_SHIPPING_PRICE</th>
-            <th width="200">PDT_COMMENTS</th>
-        </tr>
-        <th:block th:each="productList : ${productList}">
-            <tr>
-                <td align="center" th:text="${	.no}"></td>
-                <td>
-                    <!-- th:???="|문자열+${표현식}|" -->
-                    <a th:href="|/board/read?no=${board.no}|" 
-                    th:text="${board.title}"></a>
-                </td>
-                <td align="center" th:text="${board.writer}"></td>
-                <!-- 
-                    유틸리티객체.메소드()
-                    #dates.format( 날짜객체명, '날짜포맷' ) 
-                    - #dates.format( board.regDate, 'yyyy-MM-dd HH:mm:ss' )
-                -->
-                <td align="center">
-                    <span th:text="${ #dates.format( board.createdAt, 'yyyy-MM-dd HH:mm:ss' ) }"></span>
-                </td>
-                <td align="center">
-                    <span th:text="${ #dates.format( board.updatedAt, 'yyyy-MM-dd HH:mm:ss' ) }"></span>
-                </td>
-                <td align="center" th:text="${board.views}"></td>
-            </tr>
-        </th:block>
-    </table>
+
+
+file.txt
