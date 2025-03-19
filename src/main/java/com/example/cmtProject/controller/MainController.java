@@ -117,4 +117,23 @@ public class MainController {
 		
 		return "manager or admin";
 	}
+	
+	
+	// -------------------------------------------------------
+	
+	@GetMapping("/emp")
+	public String emp() {
+		return "erp/personnelMgt/emp/emp";
+	}
+	
+	@GetMapping("/list")
+	public String list() {
+		return "erp/personnelMgt/emp/list";
+	}
+	
+	@GetMapping("/emp-emplist")
+	public String empList() {
+		return "erp/personnelMgt/emp/emplist";
+	}
+	
 }
