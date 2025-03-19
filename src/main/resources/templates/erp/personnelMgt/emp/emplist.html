@@ -41,27 +41,26 @@
 			
 			<!-- 여기에 HTML 뷰페이지 코드 작성하세요!!!!!!!!!!!!!!!!!!! -->
 			
-			인사카드 입니당
-			^^
-	<div>
-		<!-- 로그인 상태일 경우 -->
-	    <div th:if="${#authorization.expression('isAuthenticated()')}">
-	        <span th:text="${#authentication.name}"></span>님, 환영합니다!
-			<br>
-	        <a th:href="@{/logout}">로그아웃</a>
-	    </div>
+			직원들 인사카드 뿌리기
+<!-- 	<div> -->
+<!-- 		<!-- 로그인 상태일 경우 -->
+<!-- 	    <div th:if="${#authorization.expression('isAuthenticated()')}"> -->
+<!-- 	        <span th:text="${#authentication.name}"></span>님, 환영합니다! -->
+<!-- 			<br> -->
+<!-- 	        <a th:href="@{/logout}">로그아웃</a> -->
+<!-- 	    </div> -->
 
-	    <!-- 로그아웃 상태일 경우 -->
-	    <div th:unless="${#authorization.expression('isAuthenticated()')}">
-	        <a th:href="@{/loginForm}">로그인</a>
-	    </div>
-	</div>
-	<br>
-	<a href="joinForm">회원가입</a>
-	<br>
-	<br>
-	<br>
-	<a href="pdt">완제품 페이지</a>			
+<!-- 	    로그아웃 상태일 경우 -->
+<!-- 	    <div th:unless="${#authorization.expression('isAuthenticated()')}"> -->
+<!-- 	        <a th:href="@{/loginForm}">로그인</a> -->
+<!-- 	    </div> -->
+<!-- 	</div> -->
+<!-- 	<br> -->
+<!-- 	<a href="joinForm">회원가입</a> -->
+<!-- 	<br> -->
+<!-- 	<br> -->
+<!-- 	<br> -->
+<!-- 	<a href="pdt">완제품 페이지</a>			 -->
 			
 			
 			
