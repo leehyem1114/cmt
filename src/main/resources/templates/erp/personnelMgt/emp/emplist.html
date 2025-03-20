@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout}"> 
+<head>
+    <!-- 기본 메타 정보 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <title>페이지 제목 입력</title>
+<style type="text/css">
+	.clickable-row:hover{background-color:#e9ecef;}
+	
+	#searchForm form {display: flex;align-items: center; /* 수직 정렬 */gap: 10px; /* 요소 간 간격 */flex-wrap: wrap; /* 화면이 좁아질 경우 줄바꿈 */ margin-bottom: 20px;}
+	
+	.date-range {display: flex;align-items: center;gap: 5px; /* 날짜 입력 필드 간격 조정 */}
+	
+	.date-range input {width: 150px; /* 입력 필드 크기 조정 */}
+	
+	.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
+</style>
+</head>
+<body>
+    <!-- 
+        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
+        이 부분 안에 페이지별 HTML 내용을 작성하세요.
+    -->
+    <div layout:fragment="content">
+        <!-- 페이지 내용 작성 영역 시작 -->
+        
+        <h3>인사카드 조회</h3>
+        
+        <!-- 
+            여기에 페이지별 HTML 코드를 작성하세요.
+            사이드바와 메뉴는 레이아웃에서 자동으로 포함됩니다.
+        -->
+        
+        <div class="card">
+            <div class="card-header">
+                 <!-- 사원 등록 버튼 (클릭하면 모달 띄움) -->
+				<div class="mt-4">
+				    <button type="button" class="btn btn-primary btnRegiEmp" data-bs-toggle="modal" data-bs-target="#empModal">
+				        사원 등록
+				    </button>
+				</div>
+            </div>
+            <div class="card-body">
+<!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
+                <div id="searchForm">
+	                <form action="">
+		                사번/이름 
+		                <input type="text" id="itemNm" maxlength="9">
+		                <div class="date-range">
+							입사일 
+							<div class="date-range">
+							    <input type="text" id="startDate1" class="form-control datepicker" placeholder="시작 날짜">~
+							    <input type="text" id="startDate2" class="form-control datepicker" placeholder="종료 날짜">
+							</div>
+						</div>
+						<button type="submit" class="btn btn-primary btnRegiEmp">검색</button>      
+	                </form>
+                </div>
+                <!-- 표 예시 -->
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+<!--                                 <th>항목 1</th> -->
+<!--                                 <th>항목 2</th> -->
+<!--                                 <th>항목 3</th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>NO</th>
+                                <th>사원번호</th>
+                                <th>이름</th>
+                                <th>부서명</th>
+                                <th>직급</th>
+                                <th>입사일</th>
+                            </tr>
+                            <tr class="clickable-row">
+                                <td>1</td>
+                                <td>1004</td>
+                                <td>푸바오</td>
+                                <td>개발</td>
+                                <td>과장</td>
+                                <td>2025-11-14</td>
+                            </tr>
+                            <tr class="clickable-row">
+                                <td>2</td>
+                                <td>내용 4</td>
+                                <td>내용 5</td>
+                                <td>내용 6</td>
+                                <td>내용 6</td>
+                                <td>내용 6</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                
+            </div>
+        </div>
+       
+	
+	<!--  모달 창 (Bootstrap 사용) -->
+	<div class="modal fade" id="empModal" tabindex="-1" aria-labelledby="empModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="empModalLabel">사원 등록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <form>
+	                <div class="modal-body">
+	                	<label for="">사원권한</label>
+	                    <div class="form-group" >
+	                       <select id="" class="form-select">
+		                       	<option value="">하</option>
+		                       	<option value="">중</option>
+		                       	<option value="">상</option>
+	                       </select>
+	                    </div>
+	                    <label for="empName">이름</label>
+	                    <div class="form-group">
+	                        <input type="text" id="empName" class="form-control" placeholder="이름 입력" required>
+	                    </div>
+	                    <label for="empID">사원 번호</label>
+	                    <div class="form-group">
+	                        <input type="text" id="empID" class="form-control" placeholder="사원 번호 입력" required>
+	                    </div>
+	                    <label for="empDept">부서</label>
+	                    <div class="form-group" required>
+	                       <select id="empDept" class="form-select">
+		                       	<option value="">인사</option>
+		                       	<option value="">개발</option>
+		                       	<option value="">마케팅</option>
+		                       	<option value="">영업</option>
+	                       </select>
+	                    </div>
+	                    <label for="">직급</label>
+	                    <div class="form-group" >
+	                       <select id="" class="form-select" required>
+		                       	<option value="">사원</option>
+		                       	<option value="">주임</option>
+		                       	<option value="">대리</option>
+		                       	<option value="">팀장</option>
+		                       	<option value="">부장</option>
+		                       	<option value="" >차장</option>
+		                       	<option value="" >이사</option>
+		                       	<option value="ceo" disabled>대표이사</option>
+	                       </select>
+	                    </div>
+	                    <label for="empNumber">전화번호</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="전화번호 입력">
+	                    </div>
+	                    <label for="empGender">성별</label>
+	                    <div class="form-group" >
+	                       <select id="gender" class="form-select">
+		                       	<option value="M">남자</option>
+		                       	<option value="F">여자</option>
+	                       </select>
+	                    </div>
+	                    <label for="">이메일</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="이메일 입력">
+	                    </div>
+	                    
+	                    <hr>
+	                    
+	                    <label for="">결혼여부</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    <label for="">학력</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    <label for="">재직상태</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    <label for="">고용유형</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    <label for="">재직상태</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    
+	                    <hr>
+	                    <label for="">기본급(월급)</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    <label for="">은행</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    <label for="">계좌번호</label>
+	                    <div class="form-group">
+	                        <input type="text" id="" class="form-control" placeholder="">
+	                    </div>
+	                    
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                    <button type="submit" class="btn btn-primary">등록</button>
+	                </div>
+	            </form>
+	        </div>
+	    </div>
+	</div>
+        <!-- 페이지 내용 작성 영역 끝 -->
+    </div>
+    
+    <!-- 
+        페이지별 JavaScript 추가 영역.
+        여기에 페이지에서 사용할 스크립트를 작성하세요.
+        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
+    -->
+    <th:block layout:fragment="script">
+        <script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+            
+            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('페이지가 로드되었습니다.');
+                
+                // 여기에 초기화 코드 작성
+            });
+            
+            // 함수 예시
+            function exampleFunction() {
+                alert('버튼이 클릭되었습니다!');
+            }
+        </script>
+        <!-- 캘린더 -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+		<script>
+		    document.addEventListener("DOMContentLoaded", function() {
+		        flatpickr(".datepicker", {
+// 		            enableTime: true,  // 시간 선택 가능
+		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
+// 		            time_24hr: true,  // 24시간 형식
+// 		            minDate: "today", // 오늘 이후 선택 가능
+		            locale: "ko" // 한국어 설정 (선택 사항)
+		        });
+		    });
+		</script>
+    </th:block>
+</body>
+
+</html>
