@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMT</title>
+    
+    <!-- TOAST UI CDN -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    
+    <!-- 추가 CSS가 필요하면 여기에 -->
+    <th:block layout:fragment="css">
+        <!-- 페이지별 CSS -->
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div id="app">
+            <!-- 사이드 메뉴바-->
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+            
+            <!-- 메인 content -->
+            <div id="main">
+                <!-- 반응형 사이드 메뉴 버튼-->
+                <header class="mb-3">
+                    <a href="#" class="burger-btn d-block d-xl-none">
+                        <i class="bi bi-justify fs-3"></i>
+                    </a>
+                </header>
+                
+                <h3>인사카드</h3>
+                
+                <!-- 여기에 HTML 뷰페이지 코드 작성하세요!!!!!!!!!!!!!!!!!!! -->
+                인사카드 입니당
+                ^^
+                <div>
+                    <!-- 로그인 상태일 경우 -->
+                    <div th:if="${#authorization.expression('isAuthenticated()')}">
+                        <span th:text="${#authentication.name}"></span>님, 환영합니다!
+                        <br>
+                        <a th:href="@{/logout}">로그아웃</a>
+                    </div>
+                    <!-- 로그아웃 상태일 경우 -->
+                    <div th:unless="${#authorization.expression('isAuthenticated()')}">
+                        <a th:href="@{/loginForm}">로그인</a>
+                    </div>
+                </div>
+                <br>
+                <a href="joinForm">회원가입</a>
+                <br>
+                <br>
+                <br>
+                <a href="pdt">완제품 페이지</a>
+            </div><!--main--> 
+        </div><!-- app -->
+    </div>
+    
+    <!-- 추가 스크립트가 필요하면 여기에 -->
+    <th:block layout:fragment="script">
+        <script type="text/javascript">
+            /* TOAST UI, JS, 기타 스트립트 코드 작성하세요 !!!!!!!!!!!!!!! */
+        </script>
+    </th:block>
+</body>
+</html>
