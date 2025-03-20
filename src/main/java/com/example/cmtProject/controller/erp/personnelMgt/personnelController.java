@@ -26,7 +26,7 @@ public class personnelController {
 //		return "erp/personnelMgt/emp/myEmpList";
 //	}
 	
-	/****전체 사원 조회****/
+	/****전체 사원 조회***ㄴ*/
 	@GetMapping("/empList")
 	public String empList() {
 		
