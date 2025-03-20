@@ -8,18 +8,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/attendance")
-public class AttendanceMgtController {
+public class AttendanceController {
 
-	private static final Logger logger = LoggerFactory.getLogger(AttendanceMgtController.class);
+	private static final Logger logger = LoggerFactory.getLogger(AttendanceController.class);
 
-	@GetMapping("/regist")
-	public String main() {
-		return "erp/attendanceMgt/workTime/regist";
-	}
-	
 	@GetMapping("/list")
-	public String list() {
-		return "erp/attendanceMgt/workTime/list";
+	public String main() {
+		return "erp/attendanceMgt/attendanceList";
 	}
 
 	
