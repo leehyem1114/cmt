@@ -10,7 +10,7 @@ public class personnelController {
 
 	@GetMapping("/")
 	public String main() {
-		return "erp/personnelMgt/emp/emp/home";
+		return "erp/personnelMgt/emp/home";
 	}
 	
 	@GetMapping("/list")
