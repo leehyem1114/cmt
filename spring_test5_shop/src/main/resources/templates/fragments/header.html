@@ -1,0 +1,28 @@
+<header th:fragment="header">
+    <div class="logo">
+        <h1><a th:href="@{/}">SHOP</a></h1>
+    </div>
+    <nav>
+        <ul>
+        	<!-- 권한에 따른 메뉴 출력 여부 결정(layout.html 파일에 타임리프 스프링 시큐리티 sec 네임스페이스 추가!) -->
+            <li class="nav-item">
+            	<a href="/items/new">상품등록</a>
+            </li>
+            <li class="nav-item">
+            	<a href="/items">상품관리</a>
+            </li>
+            <li class="nav-item">
+            	<a href="/items/cart">장바구니</a>
+            </li>
+            <li class="nav-item">
+            	<a href="/login">로그인</a>
+            </li>
+            <li class="nav-item">
+            	<a class="nav-link" href="/logout">로그아웃</a>
+            </li>
+            <li class="nav-item">
+            	<a href="/members/register">회원가입</a>
+            </li>
+        </ul>
+    </nav>
+</header>

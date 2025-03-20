@@ -13,13 +13,26 @@ public class personnelController {
 		return "erp/personnelMgt/emp/emp/home";
 	}
 	
-	@GetMapping("/list")
-	public String list() {
-		return "erp/personnelMgt/emp/list";
+	
+	/****나의 정보 조회****/
+	@GetMapping("/myEmpList")
+	public String myEmpList() {
+		
+		return "erp/personnelMgt/emp/myEmpList";
+	}
+//	@GetMapping("/myEmpList/{empId}")
+//	public String myEmpListId() {
+//		
+//		return "erp/personnelMgt/emp/myEmpList";
+//	}
+	
+	/****전체 사원 조회****/
+	@GetMapping("/empList")
+	public String empList() {
+		
+		
+		return "erp/personnelMgt/emp/empList";
 	}
 	
-	@GetMapping("/emplist")
-	public String empList() {
-		return "erp/personnelMgt/emp/emplist";
-	}
+	
 }

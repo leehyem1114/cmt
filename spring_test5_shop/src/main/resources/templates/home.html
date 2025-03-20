@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		layout:decorate="~{layouts/layout}">
+<head>
+    <title>테스트 레이아웃</title>
+    <th:block layout:fragment="css">
+	<link rel="stylesheet" href="/css/member_register.css"> <!-- 스타일시트 링크 -->
+    <style>
+        #mainDiv {
+        	width: 50%;
+        	margin: auto;
+			text-align: center;
+        }
+    </style>
+</th:block>
+</head>
+<body>
+    <div id="mainDiv" layout:fragment="content">
+        <h1>메인 페이지</h1>
+    </div>
+</body>
+</html>

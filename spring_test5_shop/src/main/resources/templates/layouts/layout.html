@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<!-- 페이지들의 공통 구조를 나타내는 layout.html 파일 -->
+<head>
+	<meta charset="UTF-8">
+    
+    <title>쇼핑몰</title>
+    <link rel="stylesheet" href="/css/main.css"> <!-- 스타일시트 링크 -->
+    <script src="/js/jquery-3.7.1.js"></script>
+</head>
+<body>
+    <!-- 헤더를 포함 -->
+    <div th:replace="~{fragments/header::header}"></div>
+
+    <!-- 페이지마다 변경될 콘텐츠 영역 -->
+    <main>
+        <div layout:fragment="content">
+            <!-- 페이지별 콘텐츠가 여기에 들어감 -->
+        </div>
+    </main>
+
+    <!-- 푸터를 포함 -->
+    <div th:replace="~{fragments/footer::footer}"></div>
+</body>
+</html>
