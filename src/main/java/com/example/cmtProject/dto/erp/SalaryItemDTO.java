@@ -37,18 +37,18 @@ public class SalaryItemDTO {
 		this.salItemUpdate = salItemUpdate;
 	}
 	
-	// SalaryItemDTO -> SalaryItem(엔티티) 로 변환하는 toEntity() 메서드 정의
-//	public SalaryItem toEntity() {
-//	    return SalaryItem.builder()
-//				.salItemNo(this.salItemNo)
-//	            .salItemType(this.salItemType)
-//	            .salItemName(this.salItemName)
-//	            .salItemDesc(this.salItemDesc)
-//	            .salItemCalc(this.salItemCalc)
-//	            .salItemImportance(this.salItemImportance)
-//	            .salItemApplyYear(this.salItemApplyYear)
-//	            .salItemUpdate(this.salItemUpdate)
-//	            .build();
-//	}
+	 // SalaryItemDTO -> SalaryItem(엔티티) 로 변환하는 toEntity() 메서드 정의
+	public SalaryItem toEntity() {
+	    return SalaryItem.builder()
+				.salItemNo(this.salItemNo)
+	            .salItemType(this.salItemType)
+	            .salItemName(this.salItemName)
+	            .salItemDesc(this.salItemDesc)
+	            .salItemCalc(this.salItemCalc)
+	            .salItemImportance(this.salItemImportance)
+	            .salItemApplyYear(this.salItemApplyYear)
+	            .salItemUpdate(this.salItemUpdate)
+	            .build();
+	}
 	
 }
