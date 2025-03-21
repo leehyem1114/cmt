@@ -63,7 +63,7 @@
 							</select>
 						</div>
 		                사번/이름 
-		                <input type="text" id="empName" maxlength="9">
+		                <input type="text" id="empName" class="" maxlength="9">
 		                <div class="date-range">
 							입사일 
 							<div class="date-range">
@@ -126,7 +126,7 @@
 	                <h5 class="modal-title" id="empModalLabel">사원 등록</h5>
 	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	            </div>
-	            <form action="empRegi" method="post" enctype="multipart/form-data">
+	            <form action="empRegi" name="empRegi" method="post" enctype="multipart/form-data">
 	                <div class="modal-body">
 	                	<label for="empProfile">프로필사진</label>
 	                    <div class="form-group" >
@@ -182,6 +182,16 @@
 	                    <div class="form-group">
 	                        <input type="text" id="empPhone" name="" class="form-control" placeholder="전화번호 입력">
 	                    </div>
+	                    <label for="empEmail">이메일</label>
+	                    <div class="form-group">
+	                        <input type="text" id="empEmail" name="" class="form-control" placeholder="이메일 입력">
+	                    </div>
+	                    <label for="empStartDate">입사일</label>
+	                    <div class="date-range">
+							<div class="date-range">
+							    <input type="text" id="empStartDate" class="form-control datepicker" >
+							</div>
+						</div>
 	                    <label for="empGender">성별</label>
 	                    <div class="form-group" >
 	                       <select id="empGender" name="" class="form-select">
@@ -189,13 +199,15 @@
 		                       	<option value="F">여자</option>
 	                       </select>
 	                    </div>
-	                    <label for="empEmail">이메일</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empEmail" name="" class="form-control" placeholder="이메일 입력">
-	                    </div>
-	                    
-	                    <hr>
-	                    
+	                    <label for="">주소</label>
+						<div>
+							<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25">
+							<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
+						</div>
+						<div>
+							<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" placeholder="상세주소" >
+							<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" readonly><br>
+						</div>
 	                    <label for="empMaritalStatus">결혼여부</label>
 	                   <div class="form-group" >
 	                       <select id="empMaritalStatus" name="" class="form-select">
@@ -203,6 +215,9 @@
 		                       	<option value="married">기혼</option>
 	                       </select>
 	                    </div>
+	                    
+	                    <hr>
+	                    
 	                    <label for="empStatus">재직상태</label>
 	                    <div class="form-group" >
 	                       <select id="empStatus" name="" class="form-select">
@@ -211,21 +226,32 @@
 		                       	<option value="">휴직</option>
 	                       </select>
 	                    </div>
-	                    <label for="">고용유형</label>
+	                    <label for="empType">고용유형</label>
 	                   <div class="form-group" >
-	                       <select id="" name="" class="form-select">
+	                       <select id="" name="empType" class="form-select">
 		                       	<option value="">정규직</option>
 		                       	<option value="">기술직</option>
 		                       	<option value="">계약직</option>
 	                       </select>
 	                    </div>
-	                    <label for="">학력</label>
+	                    <label for="empEducationLevel">학력</label>
 	                   <div class="form-group" >
-	                       <select id="" name="" class="form-select">
+	                       <select id="empEducationLevel" name="" class="form-select">
 		                       	<option value="">고졸</option>
 		                       	<option value="">학사</option>
 		                       	<option value="">석·박사</option>
 	                       </select>
+	                    </div>
+	                    <label for="empParkingStatus">주차등록</label>
+	                    <div class="form-group" >
+	                       <select id="empParkingStatus" name="" class="form-select">
+		                       	<option value="Y">등록</option>
+		                       	<option value="N">미등록</option>
+	                       </select>
+	                    </div>
+	                    <label for="empCarNumber">차량번호</label>
+	                    <div class="form-group">
+	                        <input type="text" id="empCarNumber" name="" class="form-control" placeholder="차량번호 입력">
 	                    </div>
 	                    
 	                    <hr>
@@ -294,6 +320,43 @@
 		        });
 		    });
 		</script>
+		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script type="text/javascript">
+			function search_address() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						console.log(data);
+						document.empRegi.empPostCode.value = data.zonecode;
+	
+						let address = data.address;
+						if (data.buildingName != "") {
+							address += " (" + data.buildingName + ")";
+						}
+	
+						document.empRegi.empAddress1.value = address;
+						document.empRegi.empAddress2.focus();
+					}
+				}).open();
+			}
+		</script>
+	
+	<script type="text/javascript">
+	    $("#empPofile").change(function (event) {
+	        let file = event.target.files[0]; // 사용자가 업로드한 파일 가져오기
+	        let reader = new FileReader();
+	
+	        reader.onload = function (event2) {
+	            console.log("파일 : " + event2.target.result); // 파일 내용 확인용 로그
+	            $("#preview_profile").attr("src", event2.target.result); // 미리보기 이미지 변경
+	        };
+	
+	        // 파일을 URL로 읽어오기
+	        if (file) {
+	            reader.readAsDataURL(file);
+	        }
+	    });
+	</script>
+		
     </th:block>
 </body>
 
