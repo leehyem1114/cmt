@@ -54,6 +54,9 @@ public class Employees {
     @Column(name = "EMP_GENDER")
     private String empGender; // 성별
 
+    @Column(name = "DEPT_NO")
+    private String deptNo; // 부서번호 (FK)
+
     @Column(name = "EMP_PHONE")
     private String empPhone; // 휴대폰 번호
 
