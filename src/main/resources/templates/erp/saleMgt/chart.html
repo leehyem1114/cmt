@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout}"> 
+<head>
+    <!-- 기본 메타 정보 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   
+   <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+   <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+   
+    <!-- Toast UI Chart 스타일 -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css">
+    
+    <!-- 부트스트랩 추가 (필요 시 사용) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <!-- toast 차트 -->
+	<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
+	
+	<!-- 부트스트랩 차트 -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+
+	<link href="https://cdn.jsdelivr.net/npm/mazer@latest/dist/css/mazer.min.css" rel="stylesheet">
+    <!-- Chart.js 라이브러리 -->
+  	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Mazer Chart.js 차트 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/@mazer/chart.js"></script>
+    
+    
+    <title>Cmt</title>
+	<style type="text/css">
+		.clickable-row:hover{background-color:#e9ecef;}
+		
+		#searchForm form {display: flex;align-items: center; /* 수직 정렬 */gap: 10px; /* 요소 간 간격 */flex-wrap: wrap; /* 화면이 좁아질 경우 줄바꿈 */ margin-bottom: 20px;}
+		
+		.date-range {display: flex;align-items: center;gap: 5px; /* 날짜 입력 필드 간격 조정 */}
+		
+		.date-range input {width: 150px; /* 입력 필드 크기 조정 */}
+		
+		.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
+		
+		#chart {
+            max-width: 800px; /* 차트 크기 조절 */
+            margin: 20px auto;
+        }
+	</style>
+</head>
+<body>
+    <!-- 
+        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
+        이 부분 안에 페이지별 HTML 내용을 작성하세요.
+    -->
+   	<!-- 페이지 내용 작성 영역 시작 -->
+    <div layout:fragment="content">
+        
+        <h3>그래프</h3>
+        
+        <!-- toast 차트 -->
+        <div class="col-md-2">
+	       <canvas id="myChart1" width="10px" height="10px" class="text-center"></canvas>
+	       <canvas id="myChart2" width="30%" height="20px"></canvas>
+	       <canvas id="myChart3" width="100px" height="20px"></canvas>
+        </div>
+       
+       
+		<div class="container mt-5">
+			<h2 class="text-center">그래프</h2>
+		    <div id="chart1"></div>
+		    
+		    <h2 class="text-center">그래프2</h2>
+		    <div id="chart2"></div>
+		    
+		    <div id="chart3" style="width: 100%; height: 400px;"></div>
+		</div>
+       
+    </div>
+    
+    
+   	<!-- 페이지 내용 작성 영역 끝 -->
+    
+    <!-- 
+        페이지별 JavaScript 추가 영역.
+        여기에 페이지에서 사용할 스크립트를 작성하세요.
+        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
+    -->
+    <th:block layout:fragment="script">
+        <script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+            
+            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('페이지가 로드되었습니다.');
+                
+                // 여기에 초기화 코드 작성
+            });
+            
+            // 함수 예시
+            function exampleFunction() {
+                alert('버튼이 클릭되었습니다!');
+            }
+        </script>
+        
+        <!-- chart 시작 -->
+
+		<!-- toast 차트 -->
+        <script>
+		 // 차트를 그릴 캔버스 요소 선택
+		    var ctx1 = document.getElementById('myChart1').getContext('2d');
+
+		    // 차트 생성
+		    var myChart = new Chart(ctx1, {
+		        type: 'bar', // 차트 유형 ('bar', 'line', 'pie', 'doughnut', 'radar' 등)
+		        data: {
+		            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+		            datasets: [{
+		                label: '색상별 값',
+		                data: [12, 19, 3, 5, 2, 3], // 데이터 값
+		                backgroundColor: [
+		                    'rgba(255, 99, 132, 0.2)',
+		                    'rgba(54, 162, 235, 0.2)',
+		                    'rgba(255, 206, 86, 0.2)',
+		                    'rgba(75, 192, 192, 0.2)',
+		                    'rgba(153, 102, 255, 0.2)',
+		                    'rgba(255, 159, 64, 0.2)'
+		                ],
+		                borderColor: [
+		                    'rgba(255, 99, 132, 1)',
+		                    'rgba(54, 162, 235, 1)',
+		                    'rgba(255, 206, 86, 1)',
+		                    'rgba(75, 192, 192, 1)',
+		                    'rgba(153, 102, 255, 1)',
+		                    'rgba(255, 159, 64, 1)'
+		                ],
+		                borderWidth: 1
+		            }]
+		        }
+		    }); 
+		    
+		    var ctx2 = document.getElementById('myChart2').getContext('2d');
+
+		    var lineChart = new Chart(ctx2, {
+		        type: 'line',
+		        data: {
+		            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+		            datasets: [{
+		                label: '매출',
+		                data: [10, 20, 15, 30, 25],
+		                borderColor: 'rgba(75, 192, 192, 1)',
+		                borderWidth: 1,
+		                fill: false
+		            }]
+		        }
+		    });
+		    
+		    var ctx3 = document.getElementById('myChart3').getContext('2d');
+
+		    var pieChart = new Chart(ctx3, {
+		        type: 'pie',
+		        data: {
+		            labels: ['A', 'B', 'C'],
+		            datasets: [{
+		                data: [30, 50, 20],
+		                backgroundColor: ['red', 'blue', 'green']
+		            }]
+		        }
+		    });
+    	</script>
+    	
+		<!-- 부트스트랩 차트 -->
+	    <script>
+	 		// barchar1 ----------------------------------------------------- 
+	        const data = {
+	            categories: [
+	                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+	            ],
+	            series: [
+	                {
+	                    name: 'Seoul',
+	                    data: [20, 40, 25, 50, 15, 45, 33, 34, 20, 30, 22, 13],
+	                },
+	                {
+	                    name: 'Sydney',
+	                    data: [5, 30, 21, 18, 59, 50, 28, 33, 7, 20, 10, 30],
+	                },
+	                {
+	                    name: 'Moskva',
+	                    data: [30, 5, 18, 21, 33, 41, 29, 15, 30, 10, 33, 5],
+	                },
+	            ],
+	        };
+	
+	        const options = {
+	            chart: { width: 800, height: 400 },
+	            series: { stack: false }, // false: 개별 출력, true: 스택형(누적) 출력
+	            legend: { align: 'bottom' },
+	        };
+	
+	        toastui.Chart.barChart({ el: document.getElementById('chart1'), data, options });
+	        
+	        // barchar2 ----------------------------------------------------- 
+	        const data2 = {
+			  categories: [
+			    'Jan',
+			    'Feb',
+			    'Mar',
+			    'Apr',
+			    'May',
+			    'June',
+			    'July',
+			    'Aug',
+			    'Sep',
+			    'Oct',
+			    'Nov',
+			    'Dec',
+			  ],
+			  series: [
+			    {
+			      name: 'Seoul',
+			      data: [20, 40, 25, 50, 15, 45, 33, 34, 20, 30, 22, 13],
+			    },
+			    {
+			      name: 'Sydney',
+			      data: [5, 30, 21, 18, 59, 50, 28, 33, 7, 20, 10, 30],
+			    },
+			    {
+			      name: 'Moskva',
+			      data: [30, 5, 18, 21, 33, 41, 29, 15, 30, 10, 33, 5],
+			    },
+			  ],
+			}
+	        
+	        const options2 = {
+	        		chart: { width: 800, height: 400 },
+	        		series: {
+	        		    showDot: true,
+	        		    spline: true,
+	        		    zoomable: true,
+	        		    eventDetectType: 'near',//'near' | 'nearest' | 'grouped',
+	        		    shift: true,
+	        		    stack: true | {
+	        		      type: 'normal' | 'percent',
+	        		    },
+	        		  }
+	        		}
+	        
+	        toastui.Chart.barChart({ 
+	        	el: document.getElementById('chart2'), 
+	        	data: data2, 
+	        	options: options2 });
+	        
+	     // Areachar3 -----------------------------------------------------
+	     const data3 = {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            series: [
+                {
+                    name: 'Seoul',
+                    data: [20, 40, 25, 50, 15, 45, 33, 34, 20, 30, 22, 13],
+                },
+                {
+                    name: 'Sydney',
+                    data: [5, 30, 21, 18, 59, 50, 28, 33, 7, 20, 10, 30],
+                },
+                {
+                    name: 'Moskva',
+                    data: [30, 5, 18, 21, 33, 41, 29, 15, 30, 10, 33, 5],
+                },
+            ],
+        };
+
+        const options3 = {
+            series: {
+                stack: {
+                    type: 'percent'
+                }
+            }
+        };
+
+        const container = document.getElementById('chart3');
+        const chart = new Mazer.Chart.AreaChart({
+            el: container,
+            data: data3,  // 'data3'로 수정
+            options: options3  // 'options3'로 수정
+        });
+	    </script>
+        
+    </th:block>
+</body>
+
+</html>
