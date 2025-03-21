@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/overtime")
 public class OvertimeController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(OvertimeController.class);
 
-	private static final Logger logger = LoggerFactory.getLogger(AttendanceController.class);
 
 	@GetMapping("/list")
 	public String main() {

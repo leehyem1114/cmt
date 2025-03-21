@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/leave")
 public class LeaveController {
 
-	
-	private static final Logger logger = LoggerFactory.getLogger(AttendanceController.class);
+	private static final Logger logger = LoggerFactory.getLogger(LeaveController.class);
+
 
 	@GetMapping("/list")
 	public String main() {

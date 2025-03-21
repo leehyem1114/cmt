@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/worktime")
 public class WorkTimeController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(AttendanceController.class);
+	private static final Logger logger = LoggerFactory.getLogger(WorkTimeController.class);
+
 
 	@GetMapping("/list")
 	public String main() {
