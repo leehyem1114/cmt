@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/worktime")
+@RequestMapping("/worktimes")
 public class WorkTimeController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WorkTimeController.class);

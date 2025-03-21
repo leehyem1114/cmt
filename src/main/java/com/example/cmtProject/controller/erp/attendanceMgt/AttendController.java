@@ -17,54 +17,54 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.cmtProject.dto.erp.attendanceMgt.AttendDto;
-import com.example.cmtProject.service.erp.attendanceMgt.AttendService;
+import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
 
 import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/attends")
-@RequiredArgsConstructor
 public class AttendController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(AttendController.class);
 
-    private final AttendService attendService;
+//    private AttendService attendService;
 
     // 출결 정보 목록 페이지 (HTML 렌더링)
     @GetMapping("/list")
     public String showAttendPage(Model model) {
-        List<AttendDto> attendList = attendService.getAllAttends();
-        model.addAttribute("attends", attendList);
+//        List<AttendDTO> attendList = attendService.getAllAttends();
+//        model.addAttribute("attends", attendList);
         return "erp/attendanceMgt/attendList"; // templates/erp/attendanceMgt/attendList.html 렌더링
     }
 
-    // 출결 정보 등록
-    @PostMapping
-    public String createAttend(@ModelAttribute AttendDto dto) {
-        attendService.saveAttend(dto);
-        return "redirect:/attends/view"; // 등록 후 리스트 페이지로 리다이렉트
-    }
-
-    // 특정 사원의 출결 정보 조회 (HTML 렌더링)
-    @GetMapping("/employee/{employeeId}")
-    public String getAttendsByEmployee(@PathVariable Long employeeId, Model model) {
-        List<AttendDto> attends = attendService.getAttendsByEmployeeId(employeeId);
-        model.addAttribute("attends", attends);
-        return "erp/attendanceMgt/attendList"; // 특정 사원의 출결 정보를 렌더링
-    }
-
-    // 출결 정보 수정
-    @PostMapping("/update/{id}")
-    public String updateAttend(@PathVariable Long id, @ModelAttribute AttendDto dto) {
-        attendService.updateAttend(id, dto);
-        return "redirect:/attends/view";
-    }
-
-    // 출결 정보 삭제
-    @GetMapping("/delete/{id}")
-    public String deleteAttend(@PathVariable Long id) {
-        attendService.deleteAttend(id);
-        return "redirect:/attends/view";
-    }
+//    // 출결 정보 등록
+//    @PostMapping
+//    public String createAttend(@ModelAttribute AttendDTO dto) {
+//        attendService.saveAttend(dto);
+//        return "redirect:/attends/view"; // 등록 후 리스트 페이지로 리다이렉트
+//    }
+//
+//    // 특정 사원의 출결 정보 조회 (HTML 렌더링)
+//    @GetMapping("/employee/{employeeId}")
+//    public String getAttendsByEmployee(@PathVariable Long employeeId, Model model) {
+//        List<AttendDTO> attends = attendService.getAttendsByEmployeeId(employeeId);
+//        model.addAttribute("attends", attends);
+//        return "erp/attendanceMgt/attendList"; // 특정 사원의 출결 정보를 렌더링
+//    }
+//
+//    // 출결 정보 수정
+//    @PostMapping("/update/{id}")
+//    public String updateAttend(@PathVariable Long id, @ModelAttribute AttendDTO dto) {
+//        attendService.updateAttend(id, dto);
+//        return "redirect:/attends/view";
+//    }
+//
+//    // 출결 정보 삭제
+//    @GetMapping("/delete/{id}")
+//    public String deleteAttend(@PathVariable Long id) {
+//        attendService.deleteAttend(id);
+//        return "redirect:/attends/view";
+//    }
 
     
     
