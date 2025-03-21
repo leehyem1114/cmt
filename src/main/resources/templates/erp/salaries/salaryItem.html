@@ -9,9 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <title>CMT</title>
-    
-</head>
+    <title>CMT</title></head>
 <body>
     <!-- 
         중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
@@ -64,7 +62,6 @@
                         	<p class="mt-2"></p>
                         </div>
                     </div>
-                    
                     <!-- 급여 유형 리스트 -->
                 	<div class="table-responsive">
                     <table class="table mb-0">
@@ -77,7 +74,7 @@
                                 <th>최종수정일시</th>
                             </tr>
                         </thead>
-                        <tbody>
+<!--                         <tbody>
                             <tr th:each="salaryItem, status : ${salaryItems}" th:data-id="${salaryItem.salItemNo}" class="clickable-row">
                             	<th:block th:object="${salaryItem}">
                                 <td th:text="*{salItemType}"></td>
@@ -87,77 +84,91 @@
                                 <td th:text="*{#temporals.format(salItemUpdate, 'yyyy-MM-dd hh:mm:ss')}"></td>
                                 </th:block>
                             </tr>
-                        </tbody>
+                        </tbody> -->
+                        
+                        <tbody>
+    <tr th:each="item : ${salaryItems}">
+        <td th:text="${item.salItemType}"></td>
+        <td th:text="${item.salItemName}"></td>
+        <td th:text="${item.salItemImportance}"></td>
+        <td th:text="${item.salItemApplyYear} + '년'"></td>
+        <td th:text="${#temporals.format(item.salItemUpdate, 'yyyy-MM-dd')}"></td>
+    </tr>
+</tbody>
+                        
+                        
                     </table>
                 </div>
                     
              </div>
-        </div>
+        </div>    
+     
+<!-- 모달 창 (Bootstrap + Thymeleaf) -->
+<div class="modal fade" id="salItemModal" tabindex="-1" aria-labelledby="salModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+          <!-- DTO 객체에 바인딩 -->
+            <form id="salaryForm" th:action="@{/salary/salaryItems}" method="post" th:object="${salaryItemDTO}">
+                <div class="modal-body">
+                    <label for="salItemType">유형</label>
+                    <div class="form-group mb-2">
+                        <select id="salItemType" class="form-select" th:field="*{salItemType}" required>
+                            <option th:each="type : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
+          th:value="${type}" th:text="${type}">급여유형</option>
+                        </select>
+                    </div>
+                    <label for="salItemName">유형명</label>
+                    <div class="form-group mb-2">
+                        <input type="text" id="salName" class="form-control" th:field="*{salItemName}">
+                    </div>
+                    <label for="salItemCalc">계산식</label>
+                    <div class="form-group mb-2">
+                        <textarea id="salItemCalc" class="form-control" th:field="*{salItemCalc}" rows="2" placeholder="예: BASIC * 0.2"></textarea>
+                    </div>
+                    <label for="salItemDesc">유형 설명</label>
+                    <div class="form-group mb-2">
+                        <textarea id="salItemDesc" class="form-control" th:field="*{salItemDesc}" rows="2" placeholder="간단한 설명 입력"></textarea>
+                    </div>
+                    <label for="salItemImportance">중요도</label>
+                    <div class="form-group mb-2">
+                        <select id="salItemImportance" class="form-select" th:field="*{salItemImportance}" required>
+                            <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
+                        </select>
+                    </div>
+                    <label for="salItemApplyYear">적용년도</label>
+                    <div class="form-group mb-2">
+                        <select id="salItemApplyYear" class="form-select" th:field="*{salItemApplyYear}" required>
+                            <option th:each="year : ${#numbers.sequence(2024, 2030)}"
+                                    th:value="${year}" th:text="${year} + '년'"></option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="submit" class="btn btn-primary">등록</button>
+                </div>
+            </form> 
         
-	<!--  모달 창 (Bootstrap 사용) -->
-	<div class="modal fade" id="salItemModal" tabindex="-1" aria-labelledby="salModalLabel" aria-hidden="true">
-	    <div class="modal-dialog modal-lg">
-	        <div class="modal-content">
-	            <div class="modal-header">
-	                <h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
-	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	            </div>
-	            <form th:action="@{/salaryItems}" method="post" th:object="${salaryItemDTO}">
-	                <div class="modal-body">
-	                	<label for="salItemType">유형</label>
-	                    <div class="form-group" >
-	                       <select id="salType" class="form-select" th:field="*{salItemType}" required>
-		                       	<option th:value="">-------</option>
-		                       	<option th:each="salItemType : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
-										th:value="${salItemType}" th:text="${salItemType}"></option>
-		                       	<option th:each="salItemType : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
-										th:value="${salItemType}" th:text="${salItemType}"></option>
-	                       </select>
-	                    </div>
-	                    <label for="salItemName">유형명</label>
-	                    <div class="form-group">
-	                        <input type="text" id="salName" class="form-control" name="" th:field="*{salItemName}" readonly>
-	                    </div>
-	                    <label for="salCalc">계산식</label>
-	                    <div class="form-group">
-	                        <textarea class="form-select" th:field="*{salItemCalc}" placeholder="계산식을 입력하세요."></textarea>
-	                    </div>
-	                    <label for="salItemDesc">유형 설명</label>
-	                    <div class="form-group">
-	                        <textarea class="form-select" th:field="*{salItemDesc}"></textarea>
-	                    </div>
-	                    <label for="salItemImportance">중요도</label>
-	                    <div class="form-group" >
-	                       <select id="salImportance" name="" class="form-select" th:field="*{salItemImportance}" required>
-		                       	<option th:value="">-------</option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
-	                       </select>
-	                    </div>
-	                    <label for="salItemApplyYear">적용년도</label>
-	                    <div class="form-group" >
-	                       <select id="salApplyYear" name="" class="form-select" th:field="*{salItemApplyYear}" required>
-		                       	<option th:value="">-------</option>
-								<option th:value="${salItemApplyYear}" th:text="${salItemApplyYear}"></option>
-								<option th:value="${salItemApplyYear}" th:text="${salItemApplyYear}"></option>
-	                       </select>
-	                    </div>
-	                    
-	                </div>
-	                <div class="modal-footer">
-	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                    <button type="submit" class="btn btn-primary">등록</button>
-	                </div>
-	            </form>
-	        </div>
-	    </div>
-	</div>
+        
+
+        
+        
+        
+        </div>
+    </div>
+</div>
+
+     
+     
+        
+
         <!-- 페이지 내용 작성 영역 끝 -->
     </div>
 
@@ -168,22 +179,22 @@
     -->
     <th:block layout:fragment="script">
         <script type="text/javascript">
-			$('#salItmType').on('change', function () {
+/* 			$('#salItemType').on('change', function () {
 				const salItemValue = $(this).val();
-				/*
+				
 				const salItemResult = {
 						'수당': '야근수당',
 						'공제': '건강보험'
-				};
-				*/
+				}; */
 				
-				if (!salItemValue) {
+				
+				/* if (!salItemValue) {
 					 $('#salItemName').val(''); // 아무것도 선택 안 했을 때 공백 처리
 					 return;
 				}
 				
 				$.ajax({
-			        url: '/erp/salary/salaryItem',       // 📌 서버에서 데이터 제공하는 주소
+			        url: '/salaryItem',       // 📌 서버에서 데이터 제공하는 주소
 			        type: 'GET',
 			        data: { type: salItemValue },       // 💡 예: ?type=수당
 			        success: function (response) {
@@ -193,11 +204,57 @@
 			            alert('항목 이름을 불러오는 데 실패했습니다.');
 			            $('#salItemName').val('');
 			        }
-			    });
+			    }); */
 				
-				/* $('#salName').val(salItemResult[salItemValue] || ''); */
+/* 				$('#salItemName').val(salItemResult[salItemValue] || '');
+			}); */
+			
+			$('#salItemType').on('change', function () {
+			    const selectedType = $(this).val();  // BONUS or TAX
+
+			    if (!selectedType) {
+			        $('#salName').val('');
+			        return;
+			    }
+
+			    $.ajax({
+			        url: '/salary/getNameByType',   // 백엔드 매핑 주소
+			        type: 'GET',
+			        data: { type: selectedType },
+			        success: function (response) {
+			            $('#salName').val(response.name);  // 서버에서 받아온 이름 표시
+			            console.log(response);
+			        },
+			        error: function () {
+			            alert('유형명을 가져오는 데 실패했습니다.');
+			        }
+			    });
 			});
+			
+			
+/*			
+			$("#salaryForm").on("submit", function (event) {
+			    event.preventDefault(); // 기본 form 제출 방지
+
+			    let formData = $(this).serialize(); // 폼 데이터를 가져옴
+
+			    $.ajax({
+			        url: "/salary/salaryItems", // ✅ 올바른 URL 확인
+			        type: "POST",
+			        data: formData,
+			        success: function (response) {
+			            alert("급여 유형이 성공적으로 저장되었습니다.");
+			            location.reload(); // 페이지 새로고침
+			        },
+			        error: function (xhr, status, error) {
+			            console.error("AJAX 요청 실패:", status, error);
+			            alert("저장에 실패했습니다.");
+			        }
+			    });
+			});
+*/			
+			
         </script>
     </th:block>
 </body>
-</html>
+</html>        

@@ -30,10 +30,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class SalaryItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SAL_ITEM_NO")
     private Long salItemNo; // 급여항목번호
     
@@ -59,8 +59,9 @@ public class SalaryItem {
     @Column(name = "SAL_ITEM_UPDATE_DATE", nullable = false)
     private LocalDate salItemUpdate; // 최종 수정일
     
+  
 
-    @Builder
+  
     public SalaryItemDTO toDto() {
     	return SalaryItemDTO.builder()
 				.salItemType(salItemType)
