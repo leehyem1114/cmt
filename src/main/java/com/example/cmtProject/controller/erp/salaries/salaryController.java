@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/salary")
 public class salaryController {
 	
+	@GetMapping("/salaryItem")
+	public String salaryItemGet() {
+		return "erp/salaries/salaryItem";
+	}
+	
 	@GetMapping("/salaryList")
 	public String salaryListGet() {
 		return "erp/salaries/salaryList";
