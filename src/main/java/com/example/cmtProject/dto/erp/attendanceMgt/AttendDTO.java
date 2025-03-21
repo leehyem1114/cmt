@@ -1,4 +1,4 @@
-package com.example.cmtProject.DTO.erp.attendanceMgt;
+package com.example.cmtProject.dto.erp.attendanceMgt;
 
 import java.time.LocalDate;
 
