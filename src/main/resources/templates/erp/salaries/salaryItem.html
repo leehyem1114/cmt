@@ -26,13 +26,13 @@
             <div class="card-header">
                 <!-- 급여 항목 추가 버튼 -->
 				<div class="mt-4">
-				    <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
+				    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
 				        추가 <i class="fa-solid fa-plus"></i>
 				    </button>
-				    <button type="submit" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
+				    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
 				        수정 <i class="fa-solid fa-minus"></i>
 				    </button>
-				    <button type="submit" class="btn btn-outline-primary">
+				    <button type="button" class="btn btn-outline-primary">
 				        삭제 <i class="fa-solid fa-xmark"></i>
 				    </button>
 				</div>
@@ -72,20 +72,20 @@
                             <tr>
                                 <th>유형</th>
                                 <th>유형명</th>
-                                <th>설명</th>
                                 <th>중요도</th>
                                 <th>적용년도</th>
                                 <th>최종수정일시</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>수당</td>
-                                <td>야근수당</td>
-                                <td>야근했을 때의 수당</td>
-                                <td>1</td>
-                                <td>2025</td>
-                                <td>2025. 3. 21. 오전 10:17:00</td>
+                            <tr th:each="salaryItem, status : ${salaryItems}" th:data-id="${salaryItem.salItemNo}" class="clickable-row">
+                            	<th:block th:object="${salaryItem}">
+                                <td th:text="*{salItemType}"></td>
+                                <td th:text="*{salItemName}"></td>
+                                <td th:text="*{salItemImportance}"></td>
+                                <td th:text="*{salItemApplyYear}"></td>
+                                <td th:text="*{#temporals.format(salItemUpdate, 'yyyy-MM-dd hh:mm:ss')}"></td>
+                                </th:block>
                             </tr>
                         </tbody>
                     </table>
@@ -102,48 +102,50 @@
 	                <h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
 	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	            </div>
-	            <form action="salRegi" method="post">
+	            <form th:action="@{/salaryItems}" method="post" th:object="${salaryItemDTO}">
 	                <div class="modal-body">
 	                	<label for="salItemType">유형</label>
 	                    <div class="form-group" >
-	                       <select id="salType" class="form-select">
-		                       	<option value="">-------</option>
-		                       	<option value="수당">수당</option>
-		                       	<option value="공제">공제</option>
+	                       <select id="salType" class="form-select" th:field="*{salItemType}" required>
+		                       	<option th:value="">-------</option>
+		                       	<option th:each="salItemType : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
+										th:value="${salItemType}" th:text="${salItemType}"></option>
+		                       	<option th:each="salItemType : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
+										th:value="${salItemType}" th:text="${salItemType}"></option>
 	                       </select>
 	                    </div>
 	                    <label for="salItemName">유형명</label>
 	                    <div class="form-group">
-	                        <input type="text" id="salName" class="form-control" name="" placeholder="유형명" readonly>
+	                        <input type="text" id="salName" class="form-control" name="" th:field="*{salItemName}" readonly>
 	                    </div>
 	                    <label for="salCalc">계산식</label>
 	                    <div class="form-group">
-	                        <textarea class="form-select" placeholder="계산식을 입력하세요."></textarea>
+	                        <textarea class="form-select" th:field="*{salItemCalc}" placeholder="계산식을 입력하세요."></textarea>
 	                    </div>
 	                    <label for="salItemDesc">유형 설명</label>
 	                    <div class="form-group">
-	                        <textarea class="form-select"></textarea>
+	                        <textarea class="form-select" th:field="*{salItemDesc}"></textarea>
 	                    </div>
 	                    <label for="salItemImportance">중요도</label>
 	                    <div class="form-group" >
-	                       <select id="salImportance" name="" class="form-select" required>
-		                       	<option value="">-------</option>
-								<option value="">1</option>
-								<option value="">2</option>
-								<option value="">3</option>
-								<option value="">4</option>
-								<option value="">5</option>
-								<option value="">6</option>
-								<option value="">7</option>
-								<option value="">8</option>
+	                       <select id="salImportance" name="" class="form-select" th:field="*{salItemImportance}" required>
+		                       	<option th:value="">-------</option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
+								<option th:value="${salItemImportance}" th:text="${salItemImportance}"></option>
 	                       </select>
 	                    </div>
-	                    <label for="salItemSaveYear">적용년도</label>
+	                    <label for="salItemApplyYear">적용년도</label>
 	                    <div class="form-group" >
-	                       <select id="salApplyYear" name="" class="form-select" required>
-		                       	<option value="">-------</option>
-								<option value="">2025</option>
-								<option value="">2024</option>
+	                       <select id="salApplyYear" name="" class="form-select" th:field="*{salItemApplyYear}" required>
+		                       	<option th:value="">-------</option>
+								<option th:value="${salItemApplyYear}" th:text="${salItemApplyYear}"></option>
+								<option th:value="${salItemApplyYear}" th:text="${salItemApplyYear}"></option>
 	                       </select>
 	                    </div>
 	                    
@@ -166,13 +168,34 @@
     -->
     <th:block layout:fragment="script">
         <script type="text/javascript">
-			$('#salType').on('change', function () {
+			$('#salItmType').on('change', function () {
 				const salItemValue = $(this).val();
+				/*
 				const salItemResult = {
 						'수당': '야근수당',
 						'공제': '건강보험'
 				};
-				$('#salName').val(salItemResult[salItemValue] || '');
+				*/
+				
+				if (!salItemValue) {
+					 $('#salItemName').val(''); // 아무것도 선택 안 했을 때 공백 처리
+					 return;
+				}
+				
+				$.ajax({
+			        url: '/erp/salary/salaryItem',       // 📌 서버에서 데이터 제공하는 주소
+			        type: 'GET',
+			        data: { type: salItemValue },       // 💡 예: ?type=수당
+			        success: function (response) {
+			            $('#salItemName').val(response.name);  // 서버에서 받은 name값 입력
+			        },
+			        error: function () {
+			            alert('항목 이름을 불러오는 데 실패했습니다.');
+			            $('#salItemName').val('');
+			        }
+			    });
+				
+				/* $('#salName').val(salItemResult[salItemValue] || ''); */
 			});
         </script>
     </th:block>
