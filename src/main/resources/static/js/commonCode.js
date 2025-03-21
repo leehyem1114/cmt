@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // commonCodeDeGrid 그리드 생성
+    // commonCodeDeGrid 그리드 생성n
     GridUtil.createGrid({
         id: 'commonCodeDeGrid',
         columns: commonCodeDeColumns, // commonCodeDeGrid에 맞는 컬럼 사용
