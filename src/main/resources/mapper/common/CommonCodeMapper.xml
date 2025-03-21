@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.example.cmtProject.mapper.common.CommonCodeMapper">
+ 
+ 	<select id="commonList" resultType="map" parameterType="map">
+	    SELECT 
+	        CMN_CODE, 
+	        CMN_NAME, 
+	        CMN_CONTENT, 
+	        CMN_CODE_IS_ACTIVE
+	    FROM COMMONCODE 
+ 	</select>
+  
+ 	<select id="commonDetailList" resultType="map" parameterType="map">
+	    SELECT 
+	        CMN_DETAIL_CODE, 
+	        CMN_CODE, 
+	        CMN_DETAIL_NAME, 
+	        CMN_DETAIL_SORT_ORDER,
+	        CMN_DETAIL_CONTENT,
+	        CMN_DETAIL_CODE_IS_ACTIVE
+	    FROM COMMONCODE_DETAIL
+ 	</select>
+  
+</mapper>
