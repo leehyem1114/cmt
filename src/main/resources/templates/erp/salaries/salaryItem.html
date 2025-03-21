@@ -8,7 +8,7 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>CMT</title>
     
 </head>
@@ -26,8 +26,14 @@
             <div class="card-header">
                 <!-- 급여 항목 추가 버튼 -->
 				<div class="mt-4">
-				    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
-				        추가
+				    <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
+				        추가 <i class="fa-solid fa-plus"></i>
+				    </button>
+				    <button type="submit" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
+				        수정 <i class="fa-solid fa-minus"></i>
+				    </button>
+				    <button type="submit" class="btn btn-outline-primary">
+				        삭제 <i class="fa-solid fa-xmark"></i>
 				    </button>
 				</div>
             </div>
@@ -88,54 +94,71 @@
              </div>
         </div>
         
-        <!-- 모달 창 -->
-		<div class="modal fade" id="salItemModal" tabindex="-1" role="dialog"
-	          aria-labelledby="salItemNew" aria-hidden="true">
-	    	<div class="modal-dialog modal-dialog-centered">
-	        	<div class="modal-content">
-	            	<div class="modal-header">
-	                	<h5 class="modal-title" id="salItemNew">급여 항목 추가</h5>
-	                	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	              	</div>
-	              	<form>
-	                	<div class="modal-body">
-	                		<label>유형</label>
-	                			<select>
-	                				<option>-------------------------------</option>
-	                    			<option>수당</option>
-	                    			<option>공제</option>
-	                    		</select>
-	                    	<label>계산식</label>
-	                    	<textarea>계산식 입력</textarea>
-	                    	<label>적용년도</label>
-	                    		<select>
-	                    			<option>-------------------------------</option>
-	                    				<option>2025년</option>
-	                    			</select>
-	                    	<label>중요도</label>		
-	                    		<select>
-	                    			<option>-------------------------------</option>
-	                    		</select>
-	                    </div>		
-	                	<div class="modal-footer">
-	                		<button type="submit" class="btn btn-light-secondary">저장</button>
-	                    	<button type="button" class="btn btn-primary ms-1" data-bs-dismiss="modal">취소
-	                    	</button>
-	               	 	</div>   
-	              	</form>
-	            	</div>
-	          </div>
-	      </div>
-        
-        
-    </div>
-    
-	
-	
-        
+	<!--  모달 창 (Bootstrap 사용) -->
+	<div class="modal fade" id="salItemModal" tabindex="-1" aria-labelledby="salModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <form action="salRegi" method="post">
+	                <div class="modal-body">
+	                	<label for="salItemType">유형</label>
+	                    <div class="form-group" >
+	                       <select id="salType" class="form-select">
+		                       	<option value="">-------</option>
+		                       	<option value="수당">수당</option>
+		                       	<option value="공제">공제</option>
+	                       </select>
+	                    </div>
+	                    <label for="salItemName">유형명</label>
+	                    <div class="form-group">
+	                        <input type="text" id="salName" class="form-control" name="" placeholder="유형명" readonly>
+	                    </div>
+	                    <label for="salCalc">계산식</label>
+	                    <div class="form-group">
+	                        <textarea class="form-select" placeholder="계산식을 입력하세요."></textarea>
+	                    </div>
+	                    <label for="salItemDesc">유형 설명</label>
+	                    <div class="form-group">
+	                        <textarea class="form-select"></textarea>
+	                    </div>
+	                    <label for="salItemImportance">중요도</label>
+	                    <div class="form-group" >
+	                       <select id="salImportance" name="" class="form-select" required>
+		                       	<option value="">-------</option>
+								<option value="">1</option>
+								<option value="">2</option>
+								<option value="">3</option>
+								<option value="">4</option>
+								<option value="">5</option>
+								<option value="">6</option>
+								<option value="">7</option>
+								<option value="">8</option>
+	                       </select>
+	                    </div>
+	                    <label for="salItemSaveYear">적용년도</label>
+	                    <div class="form-group" >
+	                       <select id="salApplyYear" name="" class="form-select" required>
+		                       	<option value="">-------</option>
+								<option value="">2025</option>
+								<option value="">2024</option>
+	                       </select>
+	                    </div>
+	                    
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                    <button type="submit" class="btn btn-primary">등록</button>
+	                </div>
+	            </form>
+	        </div>
+	    </div>
+	</div>
         <!-- 페이지 내용 작성 영역 끝 -->
+    </div>
 
-    
     <!-- 
         페이지별 JavaScript 추가 영역.
         여기에 페이지에서 사용할 스크립트를 작성하세요.
@@ -143,7 +166,14 @@
     -->
     <th:block layout:fragment="script">
         <script type="text/javascript">
-
+			$('#salType').on('change', function () {
+				const salItemValue = $(this).val();
+				const salItemResult = {
+						'수당': '야근수당',
+						'공제': '건강보험'
+				};
+				$('#salName').val(salItemResult[salItemValue] || '');
+			});
         </script>
     </th:block>
 </body>
