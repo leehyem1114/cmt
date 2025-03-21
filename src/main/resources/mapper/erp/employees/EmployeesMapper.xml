@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력@@@@@@@@@@@@ --> 
+<mapper namespace="com.example.cmtProject.mapper.erp.employees.EmployeesMapper">
+
+	<!-- resultType은 application.yml의 type-aliases-package경로의 entity  -->
+<!--     <select id="selectEmplist" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO"> -->
+<!--         SELECT ROWNUM AS rowNum -->
+<!--         		, EMP.EMP_ID -->
+<!--         		, EMP.EMP_NAME -->
+<!--         		, DEPT.DEPT_NAME -->
+<!--         		, POS.DEPT_POSITION -->
+<!--         		, EMP.EMP_START_DATE -->
+<!--         FROM EMPLOYEES EMP JOIN DEPARTMENTS DEPT ON EMP.DEPT_NO = DEPT.DEPT_NO -->
+<!--         					JOIN POSITIONS POS ON EMP.POSITION_NO = POS.POSITION_NO -->
+<!--     </select> -->
+    
+	<!-- 전체 조회 -->
+    <select id="selectEmplist" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
+		SELECT 
+		       EMP.EMP_ID,
+		       EMP.EMP_NAME,
+		       D.DEPT_NAME,
+		       P.DEPT_POSITION,
+		       EMP.EMP_START_DATE
+		FROM EMPLOYEES EMP
+		LEFT JOIN DEPARTMENTS D ON EMP.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITIONS P ON EMP.POSITION_NO = P.POSITION_NO
+    </select>
+	
+</mapper>

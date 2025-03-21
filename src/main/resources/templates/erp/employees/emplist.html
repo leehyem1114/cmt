@@ -93,22 +93,14 @@
                                 <th>직급</th>
                                 <th>입사일</th>
                             </tr>
-                            <tr class="clickable-row">
-                                <td>1</td>
-                                <td>1004</td>
-                                <td>푸바오</td>
-                                <td>개발</td>
-                                <td>과장</td>
-                                <td>2025-11-14</td>
-                            </tr>
-                            <tr class="clickable-row">
-                                <td>2</td>
-                                <td>내용 4</td>
-                                <td>내용 5</td>
-                                <td>내용 6</td>
-                                <td>내용 6</td>
-                                <td>내용 6</td>
-                            </tr>
+                             <tr th:each="emp, stat : ${emplist}" class="clickable-row">
+						        <td th:text="${stat.count}"></td> <!-- 순번 -->
+						        <td th:text="${emp.empId}"></td> <!-- 사번 -->
+						        <td th:text="${emp.empName}"></td> <!-- 이름 -->
+						        <td th:text="${emp.deptName}"></td> <!-- 부서명 -->
+						        <td th:text="${emp.deptPosition}"></td> <!-- 직급 -->
+						        <td th:text="${#temporals.format(emp.empStartDate, 'yyyy-MM-dd')}"></td> <!-- 입사일 -->
+						    </tr>
                         </tbody>
                     </table>
                 </div>
