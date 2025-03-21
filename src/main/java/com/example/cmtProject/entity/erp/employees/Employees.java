@@ -1,4 +1,4 @@
-package com.example.cmtProject.entity;
+package com.example.cmtProject.entity.erp.employees;
 
 import java.time.LocalDate;
 
