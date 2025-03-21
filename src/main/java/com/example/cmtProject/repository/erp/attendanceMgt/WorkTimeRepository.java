@@ -1,13 +1,14 @@
 package com.example.cmtProject.repository.erp.attendanceMgt;
 
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
+import com.example.cmtProject.entity.erp.attendanceMgt.WorkTime;
 
 @Repository
-public interface AttendRepository extends JpaRepository<Attend, Long> {
-    List<Attend> findByEmpNo_EmpNo(Long empNo);
+public interface WorkTimeRepository extends JpaRepository<WorkTime, Long> {
+	List<WorkTime> findByEmpNo_EmpNo(Long empNo);
 }
+
+
