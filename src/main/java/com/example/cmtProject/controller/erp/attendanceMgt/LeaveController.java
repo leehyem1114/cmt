@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/leave")
+@RequestMapping("/leaves")
 public class LeaveController {
 
-	
-	private static final Logger logger = LoggerFactory.getLogger(AttendanceController.class);
+	private static final Logger logger = LoggerFactory.getLogger(LeaveController.class);
+
 
 	@GetMapping("/list")
 	public String main() {

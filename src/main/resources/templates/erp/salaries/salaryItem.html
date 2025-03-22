@@ -1,105 +1,260 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"> 
+<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout}"> 
 <head>
+    <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMT</title>
-    
-    
-    <link rel="shortcut icon" href="../bootstrap/assets/compiled/svg/favicon.svg" type="image/x-icon">
-    <link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAiCAYAAADRcLDBAAAEs2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS41LjAiPgogPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgeG1sbnM6ZXhpZj0iaHR0cDovL25zLmFkb2JlLmNvbS9leGlmLzEuMC8iCiAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIKICAgIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgZXhpZjpQaXhlbFhEaW1lbnNpb249IjMzIgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iMzQiCiAgIGV4aWY6Q29sb3JTcGFjZT0iMSIKICAgdGlmZjpJbWFnZVdpZHRoPSIzMyIKICAgdGlmZjpJbWFnZUxlbmd0aD0iMzQiCiAgIHRpZmY6UmVzb2x1dGlvblVuaXQ9IjIiCiAgIHRpZmY6WFJlc29sdXRpb249Ijk2LjAiCiAgIHRpZmY6WVJlc29sdXRpb249Ijk2LjAiCiAgIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiCiAgIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIKICAgeG1wOk1vZGlmeURhdGU9IjIwMjItMDMtMzFUMTA6NTA6MjMrMDI6MDAiCiAgIHhtcDpNZXRhZGF0YURhdGU9IjIwMjItMDMtMzFUMTA6NTA6MjMrMDI6MDAiPgogICA8eG1wTU06SGlzdG9yeT4KICAgIDxyZGY6U2VxPgogICAgIDxyZGY6bGkKICAgICAgc3RFdnQ6YWN0aW9uPSJwcm9kdWNlZCIKICAgICAgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWZmaW5pdHkgRGVzaWduZXIgMS4xMC4xIgogICAgICBzdEV2dDp3aGVuPSIyMDIyLTAzLTMxVDEwOjUwOjIzKzAyOjAwIi8+CiAgICA8L3JkZjpTZXE+CiAgIDwveG1wTU06SGlzdG9yeT4KICA8L3JkZjpEZXNjcmlwdGlvbj4KIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+Cjw/eHBhY2tldCBlbmQ9InIiPz5V57uAAAABgmlDQ1BzUkdCIElFQzYxOTY2LTIuMQAAKJF1kc8rRFEUxz9maORHo1hYKC9hISNGTWwsRn4VFmOUX5uZZ36oeTOv954kW2WrKLHxa8FfwFZZK0WkZClrYoOe87ypmWTO7dzzud97z+nec8ETzaiaWd4NWtYyIiNhZWZ2TvE946WZSjqoj6mmPjE1HKWkfdxR5sSbgFOr9Ll/rXoxYapQVik8oOqGJTwqPL5i6Q5vCzeo6dii8KlwpyEXFL519LjLLw6nXP5y2IhGBsFTJ6ykijhexGra0ITl5bRqmWU1fx/nJTWJ7PSUxBbxJkwijBBGYYwhBgnRQ7/MIQIE6ZIVJfK7f/MnyUmuKrPOKgZLpEhj0SnqslRPSEyKnpCRYdXp/9++msneoFu9JgwVT7b91ga+LfjetO3PQ9v+PgLvI1xkC/m5A+h7F32zoLXug38dzi4LWnwHzjeg8UGPGbFfySvuSSbh9QRqZ6H+Gqrm3Z7l9zm+h+iafNUV7O5Bu5z3L/wAdthn7QIme0YAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAJTSURBVFiF7Zi9axRBGIefEw2IdxFBRQsLWUTBaywSK4ubdSGVIY1Y6HZql8ZKCGIqwX/AYLmCgVQKfiDn7jZeEQMWfsSAHAiKqPiB5mIgELWYOW5vzc3O7niHhT/YZvY37/swM/vOzJbIqVq9uQ04CYwCI8AhYAlYAB4Dc7HnrOSJWcoJcBS4ARzQ2F4BZ2LPmTeNuykHwEWgkQGAet9QfiMZjUSt3hwD7psGTWgs9pwH1hC1enMYeA7sKwDxBqjGnvNdZzKZjqmCAKh+U1kmEwi3IEBbIsugnY5avTkEtIAtFhBrQCX2nLVehqyRqFoCAAwBh3WGLAhbgCRIYYinwLolwLqKUwwi9pxV4KUlxKKKUwxC6ZElRCPLYAJxGfhSEOCz6m8HEXvOB2CyIMSk6m8HoXQTmMkJcA2YNTHm3congOvATo3tE3A29pxbpnFzQSiQPcB55IFmFNgFfEQeahaAGZMpsIJIAZWAHcDX2HN+2cT6r39GxmvC9aPNwH5gO1BOPFuBVWAZue0vA9+A12EgjPadnhCuH1WAE8ivYAQ4ohKaagV4gvxi5oG7YSA2vApsCOH60WngKrA3R9IsvQUuhIGY00K4flQG7gHH/mLytB4C42EgfrQb0mV7us8AAMeBS8mGNMR4nwHamtBB7B4QRNdaS0M8GxDEog7iyoAguvJ0QYSBuAOcAt71Kfl7wA8DcTvZ2KtOlJEr+ByyQtqqhTyHTIeB+ONeqi3brh+VgIN0fohUgWGggizZFTplu12yW8iy/YLOGWMpDMTPXnl+Az9vj2HERYqPAAAAAElFTkSuQmCC" type="image/png">
-    <link rel="stylesheet" href="../bootstrap/assets/compiled/css/app.css">
-    <link rel="stylesheet" href="../bootstrap/assets/compiled/css/app-dark.css">
-    <link rel="stylesheet" href="../bootstrap/assets/compiled/css/iconly.css">
-    
-    
-    <!-- TOAST UI CDN -->
-	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-</head>
-
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>CMT</title></head>
 <body>
-
-	<div id="app">
-		
-		<!-- 사이드 메뉴바-->
-		<div th:replace="~{fragments/sidebar :: sidebar}"></div>
-		
-		<!-- 메인 content -->
-		<div id="main">
-			
-			<!-- 반응형 사이드 메뉴 버튼-->
-			<header class="mb-3">
-				<a href="#" class="burger-btn d-block d-xl-none">
-					<i class="bi bi-justify fs-3"></i>
-				</a>
-			</header>
-			
-		<h3>급여 유형 관리</h3>
-			
-			
-			
-		<div class="card">
+    <!-- 
+        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
+        이 부분 안에 페이지별 HTML 내용을 작성하세요.
+    -->
+    <div layout:fragment="content">
+        <!-- 페이지 내용 작성 영역 시작 -->
+        
+        <h3>급여 유형 관리</h3>
+        
+        <div class="card">
             <div class="card-header">
-                <h4>카드 제목</h4>
+                <!-- 급여 항목 추가 버튼 -->
+				<div class="mt-4">
+				    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
+				        추가 <i class="fa-solid fa-plus"></i>
+				    </button>
+				    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
+				        수정 <i class="fa-solid fa-minus"></i>
+				    </button>
+				    <button type="button" class="btn btn-outline-primary">
+				        삭제 <i class="fa-solid fa-xmark"></i>
+				    </button>
+				</div>
             </div>
             <div class="card-body">
-                <p>이 영역에 페이지의 주요 내용을 작성하세요.</p>
                 
-                <!-- 표 예시 -->
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                	<li class="nav-item" role="presentation">
+                    	<a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab"
+                           aria-controls="home" aria-selected="true">전체</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab"
+                                    aria-controls="profile" aria-selected="false">수당</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab"
+                                    aria-controls="contact" aria-selected="false">공제</a>
+                    </li>
+                 </ul>
+                 	<div class="tab-content" id="myTabContent">
+                    	<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        	<p class='my-2'></p>
+                        </div>
+                        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                
+                        </div>
+                        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                        	<p class="mt-2"></p>
+                        </div>
+                    </div>
+                    <!-- 급여 유형 리스트 -->
+                	<div class="table-responsive">
+                    <table class="table mb-0">
                         <thead>
                             <tr>
-                                <th>항목 1</th>
-                                <th>항목 2</th>
-                                <th>항목 3</th>
+                                <th>유형</th>
+                                <th>유형명</th>
+                                <th>중요도</th>
+                                <th>적용년도</th>
+                                <th>최종수정일시</th>
                             </tr>
                         </thead>
+<!--                         <tbody>
+                            <tr th:each="salaryItem, status : ${salaryItems}" th:data-id="${salaryItem.salItemNo}" class="clickable-row">
+                            	<th:block th:object="${salaryItem}">
+                                <td th:text="*{salItemType}"></td>
+                                <td th:text="*{salItemName}"></td>
+                                <td th:text="*{salItemImportance}"></td>
+                                <td th:text="*{salItemApplyYear}"></td>
+                                <td th:text="*{#temporals.format(salItemUpdate, 'yyyy-MM-dd hh:mm:ss')}"></td>
+                                </th:block>
+                            </tr>
+                        </tbody> -->
+                        
                         <tbody>
-                            <tr>
-                                <td>내용 1</td>
-                                <td>내용 2</td>
-                                <td>내용 3</td>
-                            </tr>
-                            <tr>
-                                <td>내용 4</td>
-                                <td>내용 5</td>
-                                <td>내용 6</td>
-                            </tr>
-                        </tbody>
+    <tr th:each="item : ${salaryItems}">
+        <td th:text="${item.salItemType}"></td>
+        <td th:text="${item.salItemName}"></td>
+        <td th:text="${item.salItemImportance}"></td>
+        <td th:text="${item.salItemApplyYear} + '년'"></td>
+        <td th:text="${#temporals.format(item.salItemUpdate, 'yyyy-MM-dd')}"></td>
+    </tr>
+</tbody>
+                        
+                        
                     </table>
                 </div>
-                
-                <!-- 버튼 예시 -->
-                <div class="mt-4">
-                    <button class="btn btn-primary">기본 버튼</button>
-                    <button class="btn btn-secondary">보조 버튼</button>
-                </div>
+                    
+             </div>
+        </div>    
+     
+<!-- 모달 창 (Bootstrap + Thymeleaf) -->
+<div class="modal fade" id="salItemModal" tabindex="-1" aria-labelledby="salModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </div>		
-			
-			
-			
-			
-		</div><!--main--> 
 
-	</div><!-- app -->
-	
-	<script src="bootstrap/assets/static/js/components/dark.js"></script>
-    <script src="bootstrap/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="bootstrap/assets/compiled/js/app.js"></script>
-	<!-- Need: Apexcharts -->
-	<script src="bootstrap/assets/extensions/apexcharts/apexcharts.min.js"></script>
-	<script src="bootstrap/assets/static/js/pages/dashboard.js"></script>
-	
-	<script type="text/javascript">
-	
-		/* TOAST UI, JS, 기타 스트립트 코드 작성하세요 !!!!!!!!!!!!!!! */
-	
-	</script>
-	
-	
+          <!-- DTO 객체에 바인딩 -->
+            <form id="salaryForm" th:action="@{/salary/salaryItems}" method="post" th:object="${salaryItemDTO}">
+                <div class="modal-body">
+                    <label for="salItemType">유형</label>
+                    <div class="form-group mb-2">
+                        <select id="salItemType" class="form-select" th:field="*{salItemType}" required>
+                            <option th:each="type : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
+          th:value="${type}" th:text="${type}">급여유형</option>
+                        </select>
+                    </div>
+                    <label for="salItemName">유형명</label>
+                    <div class="form-group mb-2">
+                        <input type="text" id="salName" class="form-control" th:field="*{salItemName}">
+                    </div>
+                    <label for="salItemCalc">계산식</label>
+                    <div class="form-group mb-2">
+                        <textarea id="salItemCalc" class="form-control" th:field="*{salItemCalc}" rows="2" placeholder="예: BASIC * 0.2"></textarea>
+                    </div>
+                    <label for="salItemDesc">유형 설명</label>
+                    <div class="form-group mb-2">
+                        <textarea id="salItemDesc" class="form-control" th:field="*{salItemDesc}" rows="2" placeholder="간단한 설명 입력"></textarea>
+                    </div>
+                    <label for="salItemImportance">중요도</label>
+                    <div class="form-group mb-2">
+                        <select id="salItemImportance" class="form-select" th:field="*{salItemImportance}" required>
+                            <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
+                        </select>
+                    </div>
+                    <label for="salItemApplyYear">적용년도</label>
+                    <div class="form-group mb-2">
+                        <select id="salItemApplyYear" class="form-select" th:field="*{salItemApplyYear}" required>
+                            <option th:each="year : ${#numbers.sequence(2024, 2030)}"
+                                    th:value="${year}" th:text="${year} + '년'"></option>
+                        </select>
+                    </div>
 
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="submit" class="btn btn-primary">등록</button>
+                </div>
+            </form> 
+        
+        
+
+        
+        
+        
+        </div>
+    </div>
+</div>
+
+     
+     
+        
+
+        <!-- 페이지 내용 작성 영역 끝 -->
+    </div>
+
+    <!-- 
+        페이지별 JavaScript 추가 영역.
+        여기에 페이지에서 사용할 스크립트를 작성하세요.
+        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
+    -->
+    <th:block layout:fragment="script">
+        <script type="text/javascript">
+/* 			$('#salItemType').on('change', function () {
+				const salItemValue = $(this).val();
+				
+				const salItemResult = {
+						'수당': '야근수당',
+						'공제': '건강보험'
+				}; */
+				
+				
+				/* if (!salItemValue) {
+					 $('#salItemName').val(''); // 아무것도 선택 안 했을 때 공백 처리
+					 return;
+				}
+				
+				$.ajax({
+			        url: '/salaryItem',       // 📌 서버에서 데이터 제공하는 주소
+			        type: 'GET',
+			        data: { type: salItemValue },       // 💡 예: ?type=수당
+			        success: function (response) {
+			            $('#salItemName').val(response.name);  // 서버에서 받은 name값 입력
+			        },
+			        error: function () {
+			            alert('항목 이름을 불러오는 데 실패했습니다.');
+			            $('#salItemName').val('');
+			        }
+			    }); */
+				
+/* 				$('#salItemName').val(salItemResult[salItemValue] || '');
+			}); */
+			
+			$('#salItemType').on('change', function () {
+			    const selectedType = $(this).val();  // BONUS or TAX
+
+			    if (!selectedType) {
+			        $('#salName').val('');
+			        return;
+			    }
+
+			    $.ajax({
+			        url: '/salary/getNameByType',   // 백엔드 매핑 주소
+			        type: 'GET',
+			        data: { type: selectedType },
+			        success: function (response) {
+			            $('#salName').val(response.name);  // 서버에서 받아온 이름 표시
+			            console.log(response);
+			        },
+			        error: function () {
+			            alert('유형명을 가져오는 데 실패했습니다.');
+			        }
+			    });
+			});
+			
+			
+/*			
+			$("#salaryForm").on("submit", function (event) {
+			    event.preventDefault(); // 기본 form 제출 방지
+
+			    let formData = $(this).serialize(); // 폼 데이터를 가져옴
+
+			    $.ajax({
+			        url: "/salary/salaryItems", // ✅ 올바른 URL 확인
+			        type: "POST",
+			        data: formData,
+			        success: function (response) {
+			            alert("급여 유형이 성공적으로 저장되었습니다.");
+			            location.reload(); // 페이지 새로고침
+			        },
+			        error: function (xhr, status, error) {
+			            console.error("AJAX 요청 실패:", status, error);
+			            alert("저장에 실패했습니다.");
+			        }
+			    });
+			});
+*/			
+			
+        </script>
+    </th:block>
 </body>
-</html>
+</html>        

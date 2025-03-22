@@ -125,16 +125,16 @@
 		                    </a>
 		                    <ul class="submenu ">
 		                        <li class="submenu-item ">
-		                            <a href="/attendance/list">출퇴근 관리</a>
+		                            <a href="/attends/list">출퇴근 관리</a>
 		                        </li>
 		                        <li class="submenu-item ">
-		                            <a href="/worktime/list">근무 시간</a>
+		                            <a href="/worktimes/list">근무 시간</a>
 		                        </li>
 		                        <li class="submenu-item ">
-		                            <a href="/overtime/list">초과 근무</a>
+		                            <a href="/overtimes/list">초과 근무</a>
 		                        </li>
 		                        <li class="submenu-item ">
-		                            <a href="/leave/list">휴가 관리</a>
+		                            <a href="/leaves/list">휴가 관리</a>
 		                        </li>
 		                    </ul>
 		                </li>
@@ -146,18 +146,37 @@
 		                    </a>
 		                    <ul class="submenu ">
 		                        <li class="submenu-item ">
-		                            <a href="/salaryItem">급여 종류 관리</a>
+		                            <a href="/salary/salaryItem">급여 유형 관리</a>
 		                        </li>
 		                        <li class="submenu-item ">
-		                            <a href="/salaryList">급여 지급 내역</a>
+		                            <a href="/salary/salaryList">급여 지급 내역</a>
 		                        </li>
 		                        <li class="submenu-item" sec:authorize="hasRole('ROLE_ATHR001')">
-		                            <a href="/payroll">급여 대장</a>
+		                            <a href="/salary/payroll">급여 대장</a>
 		                        </li>
 		                    </ul>
 		                </li>
 						
-						
+						<li class="sidebar-item  has-sub">
+		                    <a href="#" class='sidebar-link'>
+		                        <i class="bi bi-newspaper"></i>
+		                        <span>영업</span>
+		                    </a>
+		                    <ul class="submenu ">
+		                        <li class="submenu-item ">
+		                            <a href="/sale/order">발주</a>
+		                        </li>
+		                        <li class="submenu-item ">
+		                           <a href="/sale/receive">수주</a>
+		                        </li>
+		                        <li class="submenu-item">
+		                            <a href="/sale/shipment">출하</a>
+		                        </li>
+		                        <li class="submenu-item">
+		                            <a href="/sale/chart">차트</a>
+		                        </li>
+		                    </ul>
+		                </li>
 						
 						<li class="sidebar-title">MES</li>
 						
@@ -273,7 +292,28 @@
 		                    </a>
 		                </li>
 						
+
+						<li class="sidebar-title">관리자</li>
+						<li class="sidebar-item  has-sub">
+						    <a href="#" class='sidebar-link'>
+						        <i class="bi bi-gear"></i>
+						        <span>공통 관리</span>
+						    </a>
+						    <ul class="submenu ">
+						        <li class="submenu-item ">
+						            <a href="/comm/common">공통코드관리</a>
+						        </li>
+						    </ul>
+						</li>
 		            </ul>
+		            
+		            
+		            
+		            
+		            
+		            
+		            
+						
 		        </div>
 		        <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
 		    </div>
