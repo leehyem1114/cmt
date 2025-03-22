@@ -32,4 +32,16 @@ public class saleController {
 		
 		return "erp/saleMgt/chart";
 	}
+	
+	@GetMapping("/modal")
+	public String modal() {
+		
+		return "erp/saleMgt/modal";
+	}
+	
+	@GetMapping("/grid")
+	public String grid() {
+		
+		return "erp/saleMgt/grid";
+	}
 }
