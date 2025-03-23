@@ -1,284 +1,168 @@
 <!DOCTYPE html>
-<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
-<head>
-    <!-- 기본 메타 정보 -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-   <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}"> 
+	<head>
+		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	    
+	    <!-- 기본 메타 정보 -->
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>수주 등록</title>
     
     <title>Cmt</title>
-	<style type="text/css">
-		.clickable-row:hover{background-color:#e9ecef;}
+	<style>
 		
-		#searchForm form {display: flex;align-items: center; /* 수직 정렬 */gap: 10px; /* 요소 간 간격 */flex-wrap: wrap; /* 화면이 좁아질 경우 줄바꿈 */ margin-bottom: 20px;}
+	    .container1 {
+	        display: grid;
+			grid-template-columns: 100px 150px 120px 180px 50px 180px 130px 150px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
 		
-		.date-range {display: flex;align-items: center;gap: 5px; /* 날짜 입력 필드 간격 조정 */}
+		.container2 {
+	        display: grid;
+			grid-template-columns: 100px 150px 150px 80px 80px 160px 160px 80px 80px 100px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
+			
 		
-		.date-range input {width: 150px; /* 입력 필드 크기 조정 */}
+	    .container input, .container select {
+	        padding: 5px;
+	        border: 1px solid #ccc;
+	        border-radius: 3px;
+	    }
 		
-		.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+		
+	    button {
+	        padding: 5px 10px;
+	        border: none;
+	        cursor: pointer;
+	        border-radius: 3px;
+	    }
+		
+	    .search { background:dodgerblue; color: white; }
+	    .request { background: purple; color: white; }
+	    .complete { background: green; color: white; }
+	    .cancel { background: red; color: white; }
+	    .excel { background: darkblue; color: white; }
+	    .help { background: orange; color: white; }
+		
 	</style>
 </head>
 <body>
-    <!-- 
-        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
-        이 부분 안에 페이지별 HTML 내용을 작성하세요.
-    -->
+
     <div layout:fragment="content">
-        <!-- 페이지 내용 작성 영역 시작 -->
         
-        <h3>발주</h3>
-        
-        <!-- 
-            여기에 페이지별 HTML 코드를 작성하세요.
-            사이드바와 메뉴는 레이아웃에서 자동으로 포함됩니다.
-        -->
-       
-	    <!-- 그리드 top 시작 -->
+		<div class="button-container">
+			<div><h2>발주등록</h2></div>
+			<div>
+	        <button class="request">📃 신규</button>
+	        <button class="cancel">✏️ 수정</button>
+	        <button class="help">❓ HELP</button>
+			</div>
+	    </div>
+		
+		<form action="/sales/so" method="get" th:object="${SalesOrder}">	    
+		    <div class="container1">
+		        <label class="sell_company_label">거래처 코드</label>
+		        <select class="sell_select">
+		            <option th:each="code : ${soModel}"
+						th:value="${code.cltCode}"
+						th:text="${code.cltCode}"
+						selected="${SalesOrder.cltCode == code}"
+					></option>
+		        </select>
+		        <label class="sell_so_date_label">발주일</label>
+		        <input type="date" class="sell_date1">
+		        <span class="sell_tilt">~</span>
+		        <input type="date" class="sell_date2">
+		        <label class="sell_sonum_label">발주번호</label>
+		        <input type="text" class="sell_sonum_text">
+				<span></span>
+		    </div>
+	
+		    <div class="container2">
+		        <label>원자재 품목</label>
+		        <input type="text" placeholder="CODE">
+		        <input type="text" placeholder="NAME">
+		        <button class="search">🔍 검색</button>
+		        <label>거래처</label>
+		        <input type="text" placeholder="CODE">
+		        <input type="text" placeholder="NAME">
+		        <button class="search">🔍 검색</button>
+		    </div>
+	
+		</form>
+		
+		<br>
+<!--		<th:block th:each="soModel : ${soModel}">-->
+<!--			<div th:text="${soModel}"></div>-->
+<!--		</th:block>-->
+
+<!-- 그리드 top 시작 -->
 	   	<div id="gridTop"></div>
 	
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-	    <script>
+	    <script th:inline="javascript">
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), // 그리드를 표시할 DOM 엘리먼트
-	        data: [
-	            { name: '홍길동', age: 30, address: '서울' },
-	            { name: '김철수', age: 25, address: '부산' },
-	            { name: '이영희', age: 28, address: '대구' },
-	        ], // 초기 데이터
+			data : /*[[${soModel}]]*/ [],
 	        rowHeaders: ['checkbox'], // 행의 첫 번째 열에 체크박스 추가
 	        columns: [
 	            {
-	                header: '이름',
-	                name: 'name'
+	                header: '발주코드',
+	                name: 'soCode'
 	            },
 	            {
-	                header: '나이',
-	                name: 'age'
+	                header: '발주일자',
+	                name: 'soDate'
 	            },
 	            {
-	                header: '주소',
-	                name: 'address'
+	                header: '사원코드',
+	                name: 'empId'
 	            }
 	        ] // 열 설정
 	    });
 	    
-	 // 체크박스 클릭 시 이벤트 추가
-	    grid.on('check', (ev) => {
-	    	
-	        const rowData = grid.getRow(ev.rowKey); // 선택한 행의 데이터 가져오기
-	        alert(`선택한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+	 	// 체크박스 클릭 시 이벤트 추가
+	    grid.on('check', (checkItem) => {
+	        const rowData = grid.getRow(checkItem.rowKey); // 선택한 행의 데이터 가져오기
+	        alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
 	    });
 
-	    // 체크 해제 시 이벤트 추가 (원하는 경우)
-	    grid.on('uncheck', (ev) => {
-	        const rowData = grid.getRow(ev.rowKey);
+	    // 체크 해제 시 이벤트 추가
+	    grid.on('uncheck', (checkItem) => {
+	        const rowData = grid.getRow(checkItem.rowKey);
 	        alert(`해제한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
 	    });
 	    
 	    grid.on('click', (ev) => {
-	    	alert("df")
 	    });
 	    </script>
 	    <!-- 그리드 끝 --> 
-    
-    <br>
-    
-    	<!-- 그리드 Bottom 시작 -->
-    	<div id="gridBottom"></div>
-    	
-    	<!-- 그리드 Bottom 끝 -->
-    
-    <br>
-	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#empModal">
-	    lunch modal
-	</button>
-	
-	<!--  모달 창 (Bootstrap 사용) -->
-	<div class="modal fade" id="empModal" tabindex="-1" aria-labelledby="empModalLabel" aria-hidden="true">
-	    <div class="modal-dialog modal-lg">
-	        <div class="modal-content">
-	            <div class="modal-header">
-	                <h5 class="modal-title" id="empModalLabel">사원 등록</h5>
-	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	            </div>
-	            <form action="empRegi" method="post" enctype="multipart/form-data">
-	                <div class="modal-body">
-	                	<label for="empProfile">프로필사진</label>
-	                    <div class="form-group" >
-<!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
-<!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
-<!-- 						</div> -->
-<!-- 						<div th:unless="${member.memProfile}"> -->
-<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
-						    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
-<!-- 						</div> -->
-							<input type="file" name="empProfile">
-	                    </div>
-	                	<label for="empLevel">사원권한</label>
-	                    <div class="form-group" >
-	                       <select id="empLevel" class="form-select">
-		                       	<option value="">하</option>
-		                       	<option value="">중</option>
-		                       	<option value="">상</option>
-	                       </select>
-	                    </div>
-	                    <label for="empName">이름</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empName" class="form-control" name="" placeholder="이름 입력" required>
-	                    </div>
-	                    <label for="empId">사원 번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empId" class="form-control" name="" placeholder="사원 번호 입력" required>
-	                    </div>
-	                    <label for="deptName">부서</label>
-	                    <div class="form-group" required>
-	                       <select id="deptName" name="" class="form-select">
-		                       	<option value="hr">인사</option>
-								<option value="dev">개발</option>
-								<option value="martketing">마케팅</option>
-								<option value="sales">영업</option>
-								<option value="production">생산</option>
-	                       </select>
-	                    </div>
-	                    <label for="deptPosition">직급</label>
-	                    <div class="form-group" >
-	                       <select id="deptPosition" name="" class="form-select" required>
-		                       	<option value="employee">사원</option>
-								<option value="assistant">주임</option>
-								<option value="associate">대리</option>
-								<option value="leader">팀장</option>
-								<option value="manager">부장</option>
-								<option value="deputy">차장</option>
-								<option value="director" disabled>이사</option>
-								<option value="ceo" disabled>대표이사</option>
-	                       </select>
-	                    </div>
-	                    <label for="empPhone">전화번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empPhone" name="" class="form-control" placeholder="전화번호 입력">
-	                    </div>
-	                    <label for="empGender">성별</label>
-	                    <div class="form-group" >
-	                       <select id="empGender" name="" class="form-select">
-		                       	<option value="M">남자</option>
-		                       	<option value="F">여자</option>
-	                       </select>
-	                    </div>
-	                    <label for="empEmail">이메일</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empEmail" name="" class="form-control" placeholder="이메일 입력">
-	                    </div>
-	                    
-	                    <hr>
-	                    
-	                    <label for="empMaritalStatus">결혼여부</label>
-	                   <div class="form-group" >
-	                       <select id="empMaritalStatus" name="" class="form-select">
-		                       	<option value="single">미혼</option>
-		                       	<option value="married">기혼</option>
-	                       </select>
-	                    </div>
-	                    <label for="empStatus">재직상태</label>
-	                    <div class="form-group" >
-	                       <select id="empStatus" name="" class="form-select">
-		                       	<option value="">재직</option>
-		                       	<option value="">퇴사</option>
-		                       	<option value="">휴직</option>
-	                       </select>
-	                    </div>
-	                    <label for="">고용유형</label>
-	                   <div class="form-group" >
-	                       <select id="" name="" class="form-select">
-		                       	<option value="">정규직</option>
-		                       	<option value="">기술직</option>
-		                       	<option value="">계약직</option>
-	                       </select>
-	                    </div>
-	                    <label for="">학력</label>
-	                   <div class="form-group" >
-	                       <select id="" name="" class="form-select">
-		                       	<option value="">고졸</option>
-		                       	<option value="">학사</option>
-		                       	<option value="">석·박사</option>
-	                       </select>
-	                    </div>
-	                    
-	                    <hr>
-	                    <label for="">기본급(월급)</label>
-	                    <div class="form-group">
-	                        <input type="text" id="" name="" class="form-control" placeholder="">
-	                    </div>
-	                    <label for="">은행</label>
-	                    <div class="form-group">
-	                        <input type="text" id="" name="" class="form-control" placeholder="">
-	                    </div>
-	                    <label for="">계좌번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="" name="" class="form-control" placeholder="">
-	                    </div>
-	                    
-	                </div>
-	                <div class="modal-footer">
-	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                    <button type="submit" class="btn btn-primary">등록</button>
-	                </div>
-	            </form>
-	        </div> <!-- modal-content -->
-	    </div><!-- modal-dialog modal-lg -->
-	</div><!-- modal -->
-        
-	<!-- 페이지 내용 작성 영역 끝 -->
+		
     </div>
-    
-    <!-- 
-        페이지별 JavaScript 추가 영역.
-        여기에 페이지에서 사용할 스크립트를 작성하세요.
-        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
-    -->
-    <th:block layout:fragment="script">
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
-        </script>
-        <!-- 캘린더 -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script>
-		    document.addEventListener("DOMContentLoaded", function() {
-		        flatpickr(".datepicker", {
-// 		            enableTime: true,  // 시간 선택 가능
-		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
-// 		            time_24hr: true,  // 24시간 형식
-// 		            minDate: "today", // 오늘 이후 선택 가능
-		            locale: "ko" // 한국어 설정 (선택 사항)
-		        });
-		    });
-		</script>
-    </th:block>
+   	
+	<th:block layout:fragment="script">
+	    
+	</th:block>
 </body>
 
 </html>
