@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.erp.employees.EmployeesMapper;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
@@ -16,5 +17,9 @@ public class EmployeesService {
 
 	public List<EmpListPreviewDTO> getEmplist() {
 		return empMapper.selectEmplist();
+	}
+
+	public List<searchEmpDTO> getSearchDept(searchEmpDTO searchEmpDTO) {
+		return empMapper.selectDept(searchEmpDTO);
 	}
 }

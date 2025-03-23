@@ -51,24 +51,25 @@
             <div class="card-body">
 <!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
                 <div id="searchForm"> <!-- 사원검색박스 -->
-	                <form action="" method="get" >
+	                <form th:action="@{/emp/emplist/searchEmp}" method="post" th:object="${searchEmpDTO}" >
 	                	부서
 						<div class="form-group">
-							<select class="form-select" id="dept">
-								<option value="hr">인사</option>
-								<option value="dev">개발 🤷‍♀️</option>
-								<option value="martketing">마케팅</option>
-								<option value="sales">영업</option>
-								<option value="production">생산</option>
+							<select id="searchType" name="dept" th:field="*{dept}"class="form-select" >
+								<option value="">전체</option>
+								<option value="1">인사</option>
+								<option value="2">개발 🤷‍♀️</option>
+								<option value="3">마케팅</option>
+								<option value="4">영업</option>
+								<option value="5">생산</option>
 							</select>
 						</div>
 		                사번/이름 
-		                <input type="text" id="empName" class="" maxlength="9">
+						<input type="text" id="empName" th:field="*{empName}"class="" maxlength="9">
 		                <div class="date-range">
 							입사일 
 							<div class="date-range">
-							    <input type="text" id="startDate" class="form-control datepicker" placeholder="시작 날짜">~
-							    <input type="text" id="endDate" class="form-control datepicker" placeholder="종료 날짜">
+							    <input type="text" id="startDate" th:field="*{startDate}" class="form-control datepicker" placeholder="시작 날짜">~
+							    <input type="text" id="endDate"  th:field="*{endDate}" class="form-control datepicker" placeholder="종료 날짜">
 							</div>
 						</div>
 						<button type="submit" class="btn btn-primary btnSearchEmp">검색</button>      
@@ -134,9 +135,9 @@
 	                	<label for="empLevel">사원권한</label>
 	                    <div class="form-group" >
 	                       <select id="empLevel" class="form-select">
-		                       	<option value="">하</option>
-		                       	<option value="">중</option>
-		                       	<option value="">상</option>
+								<option value="">user</option>
+		                       	<option value="">manager</option>
+		                       	<option value="">admin</option>
 	                       </select>
 	                    </div>
 	                    <label for="empName">이름</label>
