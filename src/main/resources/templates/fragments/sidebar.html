@@ -38,6 +38,10 @@
 <!-- 				<a href="#" class="d-flex align-items-center"> -->
 <!-- 		        	<i class=" fs-3 bi bi-person-circle mx-3 d-flex align-items-center"></i> -->
 <!-- 		        </a> -->
+				<!--사원이름 출력-->
+				<div th:if="${#authorization.expression('isAuthenticated()')}">
+			        <span th:text="${#authentication.name}"></span>님,반갑읍니다 ^^...
+			    </div>
 		        <!-- 로그아웃 버튼 -->
 				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='logout'">
 					로그아웃 &nbsp; <i class="bi bi-box-arrow-right "></i>

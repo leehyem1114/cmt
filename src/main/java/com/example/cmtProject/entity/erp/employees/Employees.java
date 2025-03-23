@@ -1,9 +1,15 @@
 package com.example.cmtProject.entity.erp.employees;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +30,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class Employees {
+public class Employees{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "EMP_NO")  // 사원번호 (PK)
@@ -111,4 +117,7 @@ public class Employees {
 
     @Column(name = "EMP_CAR_NUMBER")
     private String empCarNumber; // 차량번호
+
+    
 }
+
