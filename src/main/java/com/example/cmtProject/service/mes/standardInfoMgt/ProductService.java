@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.cmtProject.entity.Product;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.mapper.mes.standardInfoMgt.ProductMapper;
 
 @Service
@@ -15,28 +15,28 @@ public class ProductService {
 	private ProductMapper productMapper;
 	
 	// 전체 조회
-	public List<Product> list() throws Exception{
+	public List<Products> list() throws Exception{
 		
-		List<Product> productList = productMapper.list();
+		List<Products> productList = productMapper.list();
 		return productList;
 	}
 	
     // 선택 조회
-	public Product select(String pdtCode) throws Exception{
+	public Products select(String pdtCode) throws Exception{
 		
-		Product product = productMapper.select(pdtCode);
+		Products product = productMapper.select(pdtCode);
 		return product;
 	}
 	
     // 등록
-	public int insert(Product product) throws Exception{
+	public int insert(Products product) throws Exception{
 		
 		int result = productMapper.insert(product);
 		return result;
 	}
 	
     // 수정
-    public int update(Product product) throws Exception{
+    public int update(Products product) throws Exception{
     	
     	int result = productMapper.update(product);
 		return result;

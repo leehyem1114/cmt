@@ -4,22 +4,22 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.example.cmtProject.entity.Product;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 
 @Mapper
 public interface ProductMapper {
 	
 	// 전체 조회
-    public List<Product> list() throws Exception;
+    public List<Products> list() throws Exception;
     
     // 선택 조회
-    public Product select(String pdtCode) throws Exception;
+    public Products select(String pdtCode) throws Exception;
     
     // 등록
-    public int insert(Product product) throws Exception;
+    public int insert(Products product) throws Exception;
     
     // 수정
-    public int update(Product product) throws Exception;
+    public int update(Products product) throws Exception;
     
     // 삭제
     public int delete(int pdtCode) throws Exception;
