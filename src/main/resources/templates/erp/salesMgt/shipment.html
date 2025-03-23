@@ -9,7 +9,7 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <title>수주 등록</title>
+	    <title>출하요청</title>
     
     <title>Cmt</title>
 	<style>
@@ -71,7 +71,7 @@
     <div layout:fragment="content">
         
 		<div class="button-container">
-			<div><h2>수주등록</h2></div>
+			<div><h2>출하요청</h2></div>
 			<div>
 	        <button class="search">조회</button>
 	        <button class="request">출하요청 (A1)</button>
@@ -92,11 +92,11 @@
 						selected="${SalesOrder.cltCode == code}"
 					></option>
 		        </select>
-		        <label class="sell_so_date_label">수주일</label>
+		        <label class="sell_so_date_label">요청일</label>
 		        <input type="date" class="sell_date1">
 		        <span class="sell_tilt">~</span>
 		        <input type="date" class="sell_date2">
-		        <label class="sell_sonum_label">수주번호</label>
+		        <label class="sell_sonum_label">요청번호</label>
 		        <input type="text" class="sell_sonum_text">
 				<span></span>
 		    </div>
@@ -110,10 +110,8 @@
 		        <input type="text" placeholder="CODE">
 		        <input type="text" placeholder="NAME">
 		        <button class="search">🔍 검색</button>
-				<label>진행상태</label>
-		        <select>
-		            <option>전체</option>
-		        </select>
+				<label>비고</label>
+		        <input type="text" placeholder="비고">
 		    </div>
 	
 		</form>
@@ -128,20 +126,17 @@
 	
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
-		var dataArray = [[${soModel}]];
-		console.log(dataArray);
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), // 그리드를 표시할 DOM 엘리먼트
-			data : [[${soModel}]],
-	        
+			data : /*[[${soModel}]]*/ [],
 	        rowHeaders: ['checkbox'], // 행의 첫 번째 열에 체크박스 추가
 	        columns: [
 	            {
-	                header: '수주코드',
+	                header: '출하코드',
 	                name: 'soCode'
 	            },
 	            {
-	                header: '수주일자',
+	                header: '출하일자',
 	                name: 'soDate'
 	            },
 	            {
@@ -153,9 +148,8 @@
 	    
 	 	// 체크박스 클릭 시 이벤트 추가
 	    grid.on('check', (checkItem) => {
-	    	
 	        const rowData = grid.getRow(checkItem.rowKey); // 선택한 행의 데이터 가져오기
-	        alert(`선택한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+	        alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
 	    });
 
 	    // 체크 해제 시 이벤트 추가

@@ -3,18 +3,18 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력@@@@@@@@@@@@ --> 
+<!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력 --> 
 <mapper namespace="com.example.cmtProject.mapper.mes.standardInfoMgt.ProductMapper">
 	
 	<!-- resultType은 application.yml의 type-aliases-package경로의 entity  -->
 	<!-- 전체 조회 -->
-    <select id="list" resultType="Product">
+    <select id="list" resultType="com.example.cmtProject.entity.mes.standardInfoMgt.Products">
         SELECT *
         FROM PRODUCTS
     </select>
 	
 	<!-- 선택 조회 -->
-    <select id="select" resultType="Product">
+    <select id="select" resultType="com.example.cmtProject.entity.mes.standardInfoMgt.Products">
         SELECT *
         FROM PRODUCTS
         WHERE PDT_CODE = #{pdtCode}
