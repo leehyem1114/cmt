@@ -20,71 +20,71 @@ public interface CommonCodeMapper {
     /**
      * 공통코드 목록 조회 (Map 반환)
      */
-    List<Map<String, Object>> commonList(Map<String, Object> map);
+	public List<Map<String, Object>> commonList(Map<String, Object> map);
     
     /**
      * 공통코드 상세 목록 조회 (Map 반환)
      */
-    List<Map<String, Object>> commonDetailList(Map<String, Object> map);
+	public List<Map<String, Object>> commonDetailList(Map<String, Object> map);
     
     /**
      * 공통코드 목록 조회 (DTO 반환)
      */
-    List<CommonCodeDTO> selectCommonCodes(@Param("keyword") String keyword);
+	public List<CommonCodeDTO> selectCommonCodes(@Param("keyword") String keyword);
     
     /**
      * 공통코드 단건 조회
      */
-    CommonCodeDTO selectCommonCode(@Param("code") String code);
+	public CommonCodeDTO selectCommonCode(@Param("code") String code);
     
     /**
      * 공통코드 등록
      */
-    int insertCommonCode(CommonCodeDTO dto);
+	public int insertCommonCode(CommonCodeDTO dto);
     
     /**
      * 공통코드 수정
      */
-    int updateCommonCode(CommonCodeDTO dto);
+	public int updateCommonCode(CommonCodeDTO dto);
     
     /**
      * 공통코드 삭제
      */
-    int deleteCommonCode(@Param("code") String code);
+	public int deleteCommonCode(@Param("code") String code);
     
     /**
      * 상세코드 목록 조회
      */
-    List<CommonCodeDetailDTO> selectCommonCodeDetails(
-            @Param("commonCode") String commonCode,
-            @Param("keyword") String keyword);
+	public List<CommonCodeDetailDTO> selectCommonCodeDetails(
+	            @Param("commonCode") String commonCode,
+	            @Param("keyword") String keyword);
     
     /**
      * 상세코드 단건 조회
      */
-    CommonCodeDetailDTO selectCommonCodeDetail(
-            @Param("commonCode") String commonCode,
-            @Param("detailCode") String detailCode);
+	public CommonCodeDetailDTO selectCommonCodeDetail(
+	            @Param("commonCode") String commonCode,
+	            @Param("detailCode") String detailCode);
     
     /**
      * 상세코드 등록
      */
-    int insertCommonCodeDetail(CommonCodeDetailDTO dto);
+	public int insertCommonCodeDetail(CommonCodeDetailDTO dto);
     
     /**
      * 상세코드 수정
      */
-    int updateCommonCodeDetail(CommonCodeDetailDTO dto);
+	public int updateCommonCodeDetail(CommonCodeDetailDTO dto);
     
     /**
      * 상세코드 삭제
      */
-    int deleteCommonCodeDetail(
-            @Param("commonCode") String commonCode,
-            @Param("detailCode") String detailCode);
+	public int deleteCommonCodeDetail(
+	            @Param("commonCode") String commonCode,
+	            @Param("detailCode") String detailCode);
     
     /**
      * 공통코드에 속한 모든 상세코드 삭제
      */
-    int deleteCommonCodeDetailsByCommonCode(@Param("commonCode") String commonCode);
+	public int deleteCommonCodeDetailsByCommonCode(@Param("commonCode") String commonCode);
 }//CommonCodeMapper
