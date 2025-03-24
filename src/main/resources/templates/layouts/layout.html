@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--layout.html-->
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
@@ -96,21 +97,20 @@
     <script src="/assets/js/main.js"></script>
     
     <!-- TOAST UI 라이브러리 스크립트 -->
-    <script src="https://uicdn.toast.com/tui-code-snippet/latest/tui-code-snippet.js"></script>
     <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.js"></script>
     <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script><!-- 한글 번역 파일 -->
     
     <!-- SweetAlert2 라이브러리 (알림창) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-<!--     Axios 라이브러리 (HTTP 요청) -->
-<!--     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
-
     <!-- ======= 공통 JavaScript 코드 ======= -->
-	<!-- <script src="/js/common.js"></script> -->
-	<script src="/js/commonGrid.js"></script>
+	<script src="/js/commonJs/commonAlert.js"></script>
+	<script src="/js/commonJs/commonApi.js"></script>
+	<script src="/js/commonJs/commonUI.js"></script>
+	<script src="/js/commonJs/commonValidation.js"></script>
+	<script src="/js/commonJs/commonGrid.js"></script>
+	<script src="/js/commonJs/commonSearch.js"></script>
 
     <!-- ======= 개별 페이지 JavaScript ======= -->
     <!-- 각 페이지에서 필요한 특정 스크립트를 이 블록에 추가할 수 있음 -->
