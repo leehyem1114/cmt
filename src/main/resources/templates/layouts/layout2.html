@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!--layout.html-->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <!-- 기본 메타 정보 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 타이틀 패턴: 각 페이지의 타이틀 + 접미사 -->
+    <title layout:title-pattern="$CONTENT_TITLE - COMPUT.">COMPUT.</title>
+    
+    <!-- ======= 공통 CSS 파일 (모든 페이지에서 사용) ======= -->
+    <!-- 파비콘 및 아이콘 -->
+    <link rel="icon" href="/images/favicon.png" type="images/png">
+    <link rel="stylesheet" href="/assets/vendors/bootstrap-icons/bootstrap-icons.css">
+    
+    <!-- 부트스트랩 및 기본 스타일 -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+    <link rel="stylesheet" href="/assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+    
+    <!-- TOAST UI 라이브러리 스타일 -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+    
+    <!-- ======= 개별 페이지 CSS ======= -->
+    <th:block layout:fragment="css"></th:block>
+    
+    <!-- ======= 공통 스타일 ======= -->
+    <style>
+        /* TOAST UI Grid 셀 배경색 */
+        .tui-grid-cell-disabled {
+            background-color: #fff !important;
+            color: #212529 !important;
+        }
+        
+        /* 필수 입력 항목 표시 (빨간색 별표) */
+        .required {
+            color: #DF0101;
+        }
+        
+        /* 레이블 스타일 */
+        label {
+            color: #676293;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- ======= 사이드바 영역 ======= -->
+        <div th:replace="~{fragments/sidebar::sidebar}"></div>
+
+        <!-- ======= 메인 콘텐츠 영역 ======= -->
+        <div id="main">
+            <!-- 상단 헤더 (모바일용 사이드바 토글 버튼 포함) -->
+            <header class="mb-3">
+                <a href="#" class="burger-btn d-block d-xl-none">
+                    <i class="bi bi-justify fs-3"></i>
+                </a>
+            </header>
+
+            <!-- ======= 페이지별 콘텐츠 영역 ======= -->
+            <div layout:fragment="content"></div>
+
+            <!-- ======= 푸터 영역 ======= -->
+            <footer>
+                <div th:replace="~{fragments/footer::footer}"></div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ======= 공통 JavaScript 파일 (모든 페이지에서 사용) ======= -->
+    <!-- jQuery 라이브러리 -->
+    <script src="/js/jquery-3.7.1.js"></script>
+    
+    <!-- 부트스트랩 및 UI 관련 스크립트 -->
+    <script src="/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/main.js"></script>
+    
+    <!-- TOAST UI 라이브러리 스크립트 -->
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script><!-- 한글 번역 파일 -->
+    
+    <!-- SweetAlert2 라이브러리 (알림창) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- ======= 공통 JavaScript 코드 ======= -->
+	<script src="/js/commonGrid.js"></script>
+
+    <!-- ======= 개별 페이지 JavaScript ======= -->
+	<th:block layout:fragment="script"></th:block>
+</body>
+</html>
