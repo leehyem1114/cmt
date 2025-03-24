@@ -67,7 +67,8 @@
                 </div>
             </div>
         </div>
-        
+        <!--그리드 추가 ID에 그리드 아이디 입력하세요-->
+		<div id=""></div>
         <!-- 페이지 내용 작성 영역 끝 -->
     </div>
     
@@ -85,19 +86,16 @@
              * - Ajax 요청
              * - 기타 페이지별 로직
              */
-            
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
         </script>
+		<!-- 그리드 템플릿 사용 시 아래내용으로 사용하세요 -->
+		<script th:inline="javascript">
+			// Thymeleaf 데이터를 전역 변수로 설정
+			
+			//EX)window.컨트롤러로 넘겨받은 모델명 = /*[[${모델명}]]*/[];
+			//EX)window.commonList = /*[[${commonList}]]*/[];
+		</script>
+		<!--그리드 템플릿 위치 작성-->
+<!--	EX	<script src="/js/commonCode/commonCodeManager.js"></script>-->
     </th:block>
 </body>
 </html>
