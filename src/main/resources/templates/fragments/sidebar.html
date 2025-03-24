@@ -40,7 +40,7 @@
 <!-- 		        </a> -->
 				<!--사원이름 출력-->
 				<div th:if="${#authorization.expression('isAuthenticated()')}">
-			        <span th:text="${#authentication.name}"></span>님,반갑읍니다 ^^...
+			        <span th:text="${#authentication.principal.user.empName}"></span>님,반갑읍니다 ^^...
 			    </div>
 		        <!-- 로그아웃 버튼 -->
 				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='logout'">

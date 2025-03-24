@@ -59,6 +59,70 @@
 	    </where>
 	</select>
 
-
+	<insert id="insertEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
+	
+	    INSERT INTO EMPLOYEES (
+	        EMP_ID,
+	        EMP_LEVEL,
+	        EMP_PASSWORD,
+	        EMP_NAME,
+	        EMP_PROFILE,
+	        EMP_BIRTHDAY,
+	        EMP_EMAIL,
+	        EMP_GENDER,
+	        DEPT_NO,
+	        POSITION_NO,
+	        EMP_PHONE,
+	        EMP_POST_CODE,
+	        EMP_ADDRESS1,
+	        EMP_ADDRESS2,
+	        EMP_START_DATE,
+	        EMP_MARITAL_STATUS,
+	        EMP_STATUS,
+	        EMP_TYPE,
+	        EMP_EDUCATION_LEVEL,
+	        EMP_PARKING_STATUS,
+	        EMP_CAR_NUMBER,
+	        SAL_NO
+	    ) VALUES (
+	        #{empId},
+	        #{empLevel},
+	        #{empPassword},
+	        #{empName},
+	<!--         #{empProfile}, -->
+	        NULL,
+	        <choose>
+	            <when test="empStartDate != null">
+	                #{empBirthday}
+	            </when>
+	            <otherwise>
+	                SYSDATE
+	            </otherwise>
+	        </choose>,
+	        #{empEmail},
+	        #{empGender},
+	        #{deptNo},
+	        #{positionNo},
+	        #{empPhone},
+	        #{empPostCode},
+	        #{empAddress1},
+	        #{empAddress2},
+	       <choose>
+	            <when test="empStartDate != null">
+	                #{empStartDate}
+	            </when>
+	            <otherwise>
+	                SYSDATE
+	            </otherwise>
+	        </choose>,
+	        #{empMaritalStatus},
+	        #{empStatus},
+	        #{empType},
+	        #{empEducationLevel},
+	        #{empParkingStatus},
+	        #{empCarNumber},
+	        #{salNo}
+	    )
+	</insert>
 	
 </mapper>

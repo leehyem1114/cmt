@@ -50,7 +50,7 @@
 						                    </div>
 						                	<label for="empLevel">사원권한</label>
 						                    <div class="form-group" >
-						                       <select id="empLevel" class="form-select">
+						                       <select id="empLevel" class="form-select" name="empLevel">
 							                       	<option value="">user</option>
 							                       	<option value="">manager</option>
 							                       	<option value="">admin</option>
@@ -58,25 +58,24 @@
 						                    </div>
 						                    <label for="empName">이름</label>
 						                    <div class="form-group">
-												<input type="text" id="empId" class="form-control" name="" th:placeholder="${loginUser.empName}" readonly>
+												<input type="text" id="empName" class="form-control" name="empName" th:placeholder="${loginUser.empName}" readonly>
 						                    </div>
 						                    <label for="empId">사원 번호</label>
 						                    <div class="form-group">
-						                        <input type="text" id="empId" class="form-control" name="" th:placeholder="${loginUser.empId}" readonly55>
+						                        <input type="text" id="empId" class="form-control" name="empId" th:placeholder="${loginUser.empId}" readonly>
 						                    </div>
-						                    <label for="deptName">부서</label>
-						                    <div class="form-group" required>
-						                       <select id="deptName" name="" class="form-select">
-							                       	<option value="hr">인사</option>
-													<option value="dev">개발</option>
-													<option value="martketing">마케팅</option>
-													<option value="sales">영업</option>
-													<option value="production">생산</option>
-						                       </select>
-						                    </div>
-						                    <label for="deptPosition">직급</label>
+						                    <label for="deptNo">사원 번호</label>
+												<select id="deptNo" name="deptNo" class="form-select">
+													<option selected disabled>[[${loginUser.deptNo}]]</option>
+													<option value="1">인사</option>
+													<option value="2">개발</option>
+													<option value="3">마케팅</option>
+													<option value="4">영업</option>
+													<option value="5">생산</option>
+												</select>
+						                    <label for="positionNo">직급</label>
 						                    <div class="form-group" >
-						                       <select id="deptPosition" name="" class="form-select" required>
+						                       <select id="deptPosition" name="positionNo" class="form-select" required>
 							                       	<option value="employee">사원</option>
 													<option value="assistant">주임</option>
 													<option value="associate">대리</option>
@@ -89,37 +88,37 @@
 						                    </div>
 						                    <label for="empPhone">전화번호</label>
 						                    <div class="form-group">
-						                        <input type="text" id="empPhone" name="" class="form-control" placeholder="전화번호 입력">
+						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:placeholder="${loginUser.empPhone}">
 						                    </div>
 						                    <label for="empEmail">이메일</label>
 						                    <div class="form-group">
-						                        <input type="text" id="empEmail" name="" class="form-control" placeholder="이메일 입력">
+						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:placeholder="${loginUser.empEmail}">
 						                    </div>
 						                    <label for="empStartDate">입사일</label>
 						                    <div class="date-range">
 												<div class="date-range">
-												    <input type="text" id="empStartDate" class="form-control datepicker" >
+												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:placeholder="${loginUser.empStartDate}">
 												</div>
 											</div>
 						                    <label for="empGender">성별</label>
 						                    <div class="form-group" >
-						                       <select id="empGender" name="" class="form-select">
+						                       <select id="empGender" name="empGender" class="form-select">
 							                       	<option value="M">남자</option>
 							                       	<option value="F">여자</option>
 						                       </select>
 						                    </div>
 						                    <label for="">주소</label>
 											<div>
-												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25">
+												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:placeholder="${loginUser.empAddress1}">
 												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
 											</div>
 											<div>
-												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" placeholder="상세주소" >
-												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" readonly><br>
+												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:placeholder="${loginUser.empAddress2}">
+												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:placeholder="${loginUser.empPostCode}" readonly><br>
 											</div>
 						                    <label for="empMaritalStatus">결혼여부</label>
 						                   <div class="form-group" >
-						                       <select id="empMaritalStatus" name="" class="form-select">
+						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select">
 							                       	<option value="single">미혼</option>
 							                       	<option value="married">기혼</option>
 						                       </select>
@@ -129,7 +128,7 @@
 						                    
 						                    <label for="empStatus">재직상태</label>
 						                    <div class="form-group" >
-						                       <select id="empStatus" name="" class="form-select">
+						                       <select id="empStatus" name="empStatus" class="form-select">
 							                       	<option value="">재직</option>
 							                       	<option value="">퇴사</option>
 							                       	<option value="">휴직</option>
@@ -137,7 +136,7 @@
 						                    </div>
 						                    <label for="empType">고용유형</label>
 						                   <div class="form-group" >
-						                       <select id="" name="empType" class="form-select">
+						                       <select id="empType" name="empType" class="form-select">
 							                       	<option value="">정규직</option>
 							                       	<option value="">기술직</option>
 							                       	<option value="">계약직</option>
@@ -145,7 +144,7 @@
 						                    </div>
 						                    <label for="empEducationLevel">학력</label>
 						                   <div class="form-group" >
-						                       <select id="empEducationLevel" name="" class="form-select">
+						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select">
 							                       	<option value="">고졸</option>
 							                       	<option value="">학사</option>
 							                       	<option value="">석·박사</option>
@@ -160,7 +159,7 @@
 						                    </div>
 						                    <label for="empCarNumber">차량번호</label>
 						                    <div class="form-group">
-						                        <input type="text" id="empCarNumber" name="" class="form-control" placeholder="차량번호 입력">
+						                        <input type="text" id="empCarNumber" name="empParkingStatus" class="form-control" th:placeholder="${loginUser.empCarNumber}">
 						                    </div>
 						                    
 						                    <hr>
@@ -219,6 +218,25 @@
                 alert('버튼이 클릭되었습니다!');
             }
         </script>
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script type="text/javascript">
+			function search_address() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						console.log(data);
+						document.empUpdate.empPostCode.value = data.zonecode;
+	
+						let address = data.address;
+						if (data.buildingName != "") {
+							address += " (" + data.buildingName + ")";
+						}
+	
+						document.empUpdate.empAddress1.value = address;
+						document.empUpdate.empAddress2.focus();
+					}
+				}).open();
+			}
+		</script>
     </th:block>
 </body>
 </html>
