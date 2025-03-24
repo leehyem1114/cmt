@@ -8,8 +8,9 @@
 <h1>JOIN PAGE</h1>
 <hr/>
 <form action="join" method="post" onsubmit="return validityCheck()">
-    <input type="text" name="empName" id="username" placeholder="Username" /><br/>
-    <input type="password" name="empPassword" id="pwd" placeholder="Password" /><br/>
+	<input type="text" name="empName" placeholder="이름을 입력하세요" required><br>
+	<input type="text" name="empId" id="empId" placeholder="empId" /><br/>
+    <input type="password" name="empPassword" id="empPassword" placeholder="Password" /><br/>
 	<select name="empLevel">
 		<option value="USER">user</option>
 		<option value="MANAGER">manager</option>
@@ -23,10 +24,10 @@
 	<script>
 		function validityCheck(){
 			
-			let username = document.getElementById("username").value;
-			let pwd = document.getElementById("pwd").value;
+			let empId = document.getElementById("empId").value;
+			let pwd = document.getElementById("empPassword").value;
 			
-			if(username.trim() === "" || pwd.trim() === "")
+			if(empId.trim() === "" || pwd.trim() === "")
 			{
 				alert("입력");
 				return false;

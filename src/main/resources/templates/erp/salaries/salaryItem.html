@@ -1,80 +1,87 @@
 <!DOCTYPE html>
 <!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layouts/layout}">
 <head>
-    <!-- 기본 메타 정보 -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <title>CMT</title></head>
+<!-- 기본 메타 정보 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+	integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+	crossorigin="anonymous" referrerpolicy="no-referrer" />
+<title>CMT</title>
+</head>
 <body>
-    <!-- 
+	<!-- 
         중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
-    <div layout:fragment="content">
-        <!-- 페이지 내용 작성 영역 시작 -->
-        
-        <h3>급여 유형 관리</h3>
-        
-        <div class="card">
-            <div class="card-header">
-                <!-- 급여 항목 추가 버튼 -->
+	<div layout:fragment="content">
+		<!-- 페이지 내용 작성 영역 시작 -->
+
+		<h3>급여 유형 관리</h3>
+
+		<div class="card">
+			<div class="card-header">
+				<!-- 급여 항목 추가 버튼 -->
 				<div class="mt-4">
-				    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
-				        추가 <i class="fa-solid fa-plus"></i>
-				    </button>
-				    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#salItemModal">
-				        수정 <i class="fa-solid fa-minus"></i>
-				    </button>
-				    <button type="button" class="btn btn-outline-primary">
-				        삭제 <i class="fa-solid fa-xmark"></i>
-				    </button>
+					<button type="button" class="btn btn-primary"
+						data-bs-toggle="modal" data-bs-target="#salItemModal">
+						추가 <i class="fa-solid fa-plus"></i>
+					</button>
+					<button type="button" class="btn btn-outline-primary"
+						data-bs-toggle="modal" data-bs-target="#salItemModal">
+						수정 <i class="fa-solid fa-minus"></i>
+					</button>
+					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
+						삭제 <i class="fa-solid fa-xmark"></i>
+					</button>
 				</div>
-            </div>
-            <div class="card-body">
-                
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                	<li class="nav-item" role="presentation">
-                    	<a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab"
-                           aria-controls="home" aria-selected="true">전체</a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab"
-                                    aria-controls="profile" aria-selected="false">수당</a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab"
-                                    aria-controls="contact" aria-selected="false">공제</a>
-                    </li>
-                 </ul>
-                 	<div class="tab-content" id="myTabContent">
-                    	<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                        	<p class='my-2'></p>
-                        </div>
-                        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                
-                        </div>
-                        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-                        	<p class="mt-2"></p>
-                        </div>
-                    </div>
-                    <!-- 급여 유형 리스트 -->
-                	<div class="table-responsive">
-                    <table class="table mb-0">
-                        <thead>
-                            <tr>
-                                <th>유형</th>
-                                <th>유형명</th>
-                                <th>중요도</th>
-                                <th>적용년도</th>
-                                <th>최종수정일시</th>
-                            </tr>
-                        </thead>
-<!--                         <tbody>
+			</div>
+			<div class="card-body">
+
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item" role="presentation"><a
+						class="nav-link active" id="home-tab" data-bs-toggle="tab"
+						href="#home" role="tab" aria-controls="home" aria-selected="true">전체</a>
+					</li>
+					<li class="nav-item" role="presentation"><a class="nav-link"
+						id="bonus" data-bs-toggle="tab" href="#profile" role="tab"
+						aria-controls="profile" aria-selected="false">수당</a></li>
+					<li class="nav-item" role="presentation"><a class="nav-link"
+						id="tax" data-bs-toggle="tab" href="#contact" role="tab"
+						aria-controls="contact" aria-selected="false">공제</a></li>
+				</ul>
+				<div class="tab-content" id="myTabContent">
+					<div class="tab-pane fade show active" id="home" role="tabpanel"
+						aria-labelledby="home-tab">
+						<p class='my-2'></p>
+					</div>
+					<div class="tab-pane fade" id="profile" role="tabpanel"
+						aria-labelledby="profile-tab"></div>
+					<div class="tab-pane fade" id="contact" role="tabpanel"
+						aria-labelledby="contact-tab">
+						<p class="mt-2"></p>
+					</div>
+				</div>
+				<!-- 급여 유형 리스트 -->
+				<div class="table-responsive">
+					<div id="salaryItemGrid"></div>
+					
+					<!--<table class="table mb-0">
+						<thead>
+							<tr>
+								<th>구분</th>
+								<th>유형명</th>
+								<th>중요도</th>
+								<th>적용년도</th>
+								<th>최종수정일시</th>
+							</tr>
+						</thead>
+						<!-- <tbody>
                             <tr th:each="salaryItem, status : ${salaryItems}" th:data-id="${salaryItem.salItemNo}" class="clickable-row">
                             	<th:block th:object="${salaryItem}">
                                 <td th:text="*{salItemType}"></td>
@@ -85,176 +92,182 @@
                                 </th:block>
                             </tr>
                         </tbody> -->
-                        
-                        <tbody>
-    <tr th:each="item : ${salaryItems}">
-        <td th:text="${item.salItemType}"></td>
-        <td th:text="${item.salItemName}"></td>
-        <td th:text="${item.salItemImportance}"></td>
-        <td th:text="${item.salItemApplyYear} + '년'"></td>
-        <td th:text="${#temporals.format(item.salItemUpdate, 'yyyy-MM-dd')}"></td>
-    </tr>
-</tbody>
-                        
-                        
-                    </table>
-                </div>
-                    
-             </div>
-        </div>    
-     
-<!-- 모달 창 (Bootstrap + Thymeleaf) -->
-<div class="modal fade" id="salItemModal" tabindex="-1" aria-labelledby="salModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
 
-          <!-- DTO 객체에 바인딩 -->
-            <form id="salaryForm" th:action="@{/salary/salaryItems}" method="post" th:object="${salaryItemDTO}">
-                <div class="modal-body">
-                    <label for="salItemType">유형</label>
-                    <div class="form-group mb-2">
-                        <select id="salItemType" class="form-select" th:field="*{salItemType}" required>
-                            <option th:each="type : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
-          th:value="${type}" th:text="${type}">급여유형</option>
-                        </select>
-                    </div>
-                    <label for="salItemName">유형명</label>
-                    <div class="form-group mb-2">
-                        <input type="text" id="salName" class="form-control" th:field="*{salItemName}">
-                    </div>
-                    <label for="salItemCalc">계산식</label>
-                    <div class="form-group mb-2">
-                        <textarea id="salItemCalc" class="form-control" th:field="*{salItemCalc}" rows="2" placeholder="예: BASIC * 0.2"></textarea>
-                    </div>
-                    <label for="salItemDesc">유형 설명</label>
-                    <div class="form-group mb-2">
-                        <textarea id="salItemDesc" class="form-control" th:field="*{salItemDesc}" rows="2" placeholder="간단한 설명 입력"></textarea>
-                    </div>
-                    <label for="salItemImportance">중요도</label>
-                    <div class="form-group mb-2">
-                        <select id="salItemImportance" class="form-select" th:field="*{salItemImportance}" required>
-                            <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
-                        </select>
-                    </div>
-                    <label for="salItemApplyYear">적용년도</label>
-                    <div class="form-group mb-2">
-                        <select id="salItemApplyYear" class="form-select" th:field="*{salItemApplyYear}" required>
-                            <option th:each="year : ${#numbers.sequence(2024, 2030)}"
-                                    th:value="${year}" th:text="${year} + '년'"></option>
-                        </select>
-                    </div>
+						<!-- 
+						<tbody>
+							<tr th:each="item : ${salaryItems}" class="clickable-row">
+								<td th:text="${item.salItemType}"></td>
+								<td th:text="${item.salItemName}"></td>
+								<td th:text="${item.salItemImportance}"></td>
+								<td th:text="${item.salItemApplyYear} + '년'"></td>
+								<td th:text="${#temporals.format(item.salItemUpdate, 'yyyy-MM-dd')}"></td>
+							</tr>
+						</tbody>
+						
+					</table>
+					-->
+				</div>
+			</div>
+		</div>
 
-                </div>
+		<!-- 모달 창 (Bootstrap + Thymeleaf) -->
+		<div class="modal fade" id="salItemModal" tabindex="-1"
+			aria-labelledby="salModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="salModalLabel">급여 유형 등록</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="submit" class="btn btn-primary">등록</button>
-                </div>
-            </form> 
-        
-        
+					<!-- DTO 객체에 바인딩 -->
+					<form id="salaryForm" th:action="@{/salary/salaryItems}"
+						method="post" th:object="${salaryItemDTO}">
+						<div class="modal-body">
+							<label for="salItemType">유형</label>
+							<div class="form-group mb-2">
+								<select id="salItemType" class="form-select"
+									th:field="*{salItemType}" required>
+									<option
+										th:each="type : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
+										th:value="${type}" th:text="${type}">급여유형</option>
+								</select>
+							</div>
+							<label for="salItemName">유형명</label>
+							<div class="form-group mb-2">
+								<input type="text" id="salName" class="form-control"
+									th:field="*{salItemName}">
+							</div>
+							<label for="salItemCalc">계산식</label>
+							<div class="form-group mb-2">
+								<textarea id="salItemCalc" class="form-control"
+									th:field="*{salItemCalc}" rows="2" placeholder="예: BASIC * 0.2"></textarea>
+							</div>
+							<label for="salItemDesc">유형 설명</label>
+							<div class="form-group mb-2">
+								<textarea id="salItemDesc" class="form-control"
+									th:field="*{salItemDesc}" rows="2" placeholder="간단한 설명 입력"></textarea>
+							</div>
+							<label for="salItemImportance">중요도</label>
+							<div class="form-group mb-2">
+								<select id="salItemImportance" class="form-select"
+									th:field="*{salItemImportance}" required>
+									<option th:each="i : ${#numbers.sequence(1, 5)}"
+										th:value="${i}" th:text="${i}"></option>
+								</select>
+							</div>
+							<label for="salItemApplyYear">적용년도</label>
+							<div class="form-group mb-2">
+								<select id="salItemApplyYear" class="form-select"
+									th:field="*{salItemApplyYear}" required>
+									<option th:each="year : ${#numbers.sequence(2024, 2030)}"
+										th:value="${year}" th:text="${year} + '년'"></option>
+								</select>
+							</div>
 
-        
-        
-        
-        </div>
-    </div>
-</div>
+						</div>
 
-     
-     
-        
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary"
+								data-bs-dismiss="modal">닫기</button>
+							<button type="submit" class="btn btn-primary">등록</button>
+						</div>
+					</form>
 
-        <!-- 페이지 내용 작성 영역 끝 -->
-    </div>
+				</div>
+			</div>
+		</div>
 
-    <!-- 
+		<!-- 페이지 내용 작성 영역 끝 -->
+	</div>
+
+	<!-- 
         페이지별 JavaScript 추가 영역.
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-    <th:block layout:fragment="script">
-        <script type="text/javascript">
-/* 			$('#salItemType').on('change', function () {
-				const salItemValue = $(this).val();
-				
-				const salItemResult = {
-						'수당': '야근수당',
-						'공제': '건강보험'
-				}; */
-				
-				
-				/* if (!salItemValue) {
-					 $('#salItemName').val(''); // 아무것도 선택 안 했을 때 공백 처리
-					 return;
-				}
-				
-				$.ajax({
-			        url: '/salaryItem',       // 📌 서버에서 데이터 제공하는 주소
-			        type: 'GET',
-			        data: { type: salItemValue },       // 💡 예: ?type=수당
-			        success: function (response) {
-			            $('#salItemName').val(response.name);  // 서버에서 받은 name값 입력
-			        },
-			        error: function () {
-			            alert('항목 이름을 불러오는 데 실패했습니다.');
-			            $('#salItemName').val('');
-			        }
-			    }); */
-				
-/* 				$('#salItemName').val(salItemResult[salItemValue] || '');
-			}); */
+	<th:block layout:fragment="script">
+		<script type="text/javascript">
+			/* 			$('#salItemType').on('change', function () {
+			 const salItemValue = $(this).val();
 			
-			$('#salItemType').on('change', function () {
-			    const selectedType = $(this).val();  // BONUS or TAX
+			 const salItemResult = {
+			 '수당': '야근수당',
+			 '공제': '건강보험'
+			 }; */
 
-			    if (!selectedType) {
-			        $('#salName').val('');
-			        return;
+			/* if (!salItemValue) {
+				 $('#salItemName').val(''); // 아무것도 선택 안 했을 때 공백 처리
+				 return;
+			}
+			
+			$.ajax({
+			    url: '/salaryItem',       // 📌 서버에서 데이터 제공하는 주소
+			    type: 'GET',
+			    data: { type: salItemValue },       // 💡 예: ?type=수당
+			    success: function (response) {
+			        $('#salItemName').val(response.name);  // 서버에서 받은 name값 입력
+			    },
+			    error: function () {
+			        alert('항목 이름을 불러오는 데 실패했습니다.');
+			        $('#salItemName').val('');
 			    }
+			}); */
 
-			    $.ajax({
-			        url: '/salary/getNameByType',   // 백엔드 매핑 주소
-			        type: 'GET',
-			        data: { type: selectedType },
-			        success: function (response) {
-			            $('#salName').val(response.name);  // 서버에서 받아온 이름 표시
-			            console.log(response);
-			        },
-			        error: function () {
-			            alert('유형명을 가져오는 데 실패했습니다.');
-			        }
-			    });
+			/* 				$('#salItemName').val(salItemResult[salItemValue] || '');
+			 }); */
+
+			/* 
+			$('#salItemType').on('change', function() {
+				const selectedType = $(this).val(); // BONUS or TAX
+
+				if (!selectedType) {
+					$('#salName').val('');
+					return;
+				}
+
+				$.ajax({
+					url : '/salary/getNameByType', // 백엔드 매핑 주소
+					type : 'GET',
+					data : {
+						type : selectedType
+					},
+					success : function(response) {
+						$('#salName').val(response.name); // 서버에서 받아온 이름 표시
+						console.log(response);
+					},
+					error : function() {
+						alert('유형명을 가져오는 데 실패했습니다.');
+					}
+				});
 			});
-			
-			
-/*			
-			$("#salaryForm").on("submit", function (event) {
-			    event.preventDefault(); // 기본 form 제출 방지
+			*/
+			 
+			/*			
+			 $("#salaryForm").on("submit", function (event) {
+			 event.preventDefault(); // 기본 form 제출 방지
 
-			    let formData = $(this).serialize(); // 폼 데이터를 가져옴
+			 let formData = $(this).serialize(); // 폼 데이터를 가져옴
 
-			    $.ajax({
-			        url: "/salary/salaryItems", // ✅ 올바른 URL 확인
-			        type: "POST",
-			        data: formData,
-			        success: function (response) {
-			            alert("급여 유형이 성공적으로 저장되었습니다.");
-			            location.reload(); // 페이지 새로고침
-			        },
-			        error: function (xhr, status, error) {
-			            console.error("AJAX 요청 실패:", status, error);
-			            alert("저장에 실패했습니다.");
-			        }
-			    });
-			});
-*/			
-			
-        </script>
-    </th:block>
+			 $.ajax({
+			 url: "/salary/salaryItems", // ✅ 올바른 URL 확인
+			 type: "POST",
+			 data: formData,
+			 success: function (response) {
+			 alert("급여 유형이 성공적으로 저장되었습니다.");
+			 location.reload(); // 페이지 새로고침
+			 },
+			 error: function (xhr, status, error) {
+			 console.error("AJAX 요청 실패:", status, error);
+			 alert("저장에 실패했습니다.");
+			 }
+			 });
+			 });
+			 */
+		</script>
+		
+		<script src="/js/salary/salaryManager.js"></script>
+	</th:block>
 </body>
-</html>        
+</html>

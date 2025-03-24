@@ -6,19 +6,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.entity.Member;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.repository.MainRepository;
+import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
 @Controller
 @RequestMapping("/")
 public class MainController {
 	
 	@Autowired
-	private MainRepository mainRepository;
+	private EmployeesRepository empRepository;
 	
 	@Autowired
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
@@ -55,14 +58,14 @@ public class MainController {
 	}
 	
 	@PostMapping("/join")
-	public String join(Member member) {
+	public String join(@ModelAttribute Employees emp) {
 		
-		member.setEmpLevel("ROLE_"+member.getEmpLevel()); //db에 입력데이터에 ROLE_ 이 붙는다
-		System.out.println(member);
+		emp.setEmpLevel("ROLE_"+emp.getEmpLevel()); //db에 입력데이터에 ROLE_ 이 붙는다
+		System.out.println(emp);
 		
 		//암호화를 하지 않으면 security로 로그인 할 수 없음
-		member.setEmpPassword(bCrypPasswordEncoder.encode(member.getEmpPassword()));
-		mainRepository.save(member);
+		emp.setEmpPassword(bCrypPasswordEncoder.encode(emp.getEmpPassword()));
+		empRepository.save(emp);
         
 		return "join";
 	}

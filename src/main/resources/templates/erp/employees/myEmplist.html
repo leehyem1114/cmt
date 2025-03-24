@@ -34,33 +34,156 @@
                 
                 <!-- 표 예시 -->
                 <div class="table-responsive">
-                    <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>항목 1</th>
-                                <th>항목 2</th>
-                                <th>항목 3</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>내용 1</td>
-                                <td>내용 2</td>
-                                <td>내용 3</td>
-                            </tr>
-                            <tr>
-                                <td>내용 4</td>
-                                <td>내용 5</td>
-                                <td>내용 6</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- 버튼 예시 -->
-                <div class="mt-4">
-                    <button class="btn btn-primary">기본 버튼</button>
-                    <button class="btn btn-secondary">보조 버튼</button>
+                <div>
+					<form action="myEmplist/empUpdate" name="empUpdate" method="post" enctype="multipart/form-data">
+						                <div class="modal-body">
+						                	<label for="empProfile">프로필사진</label>
+						                    <div class="form-group" >
+					<!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
+					<!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
+					<!-- 						</div> -->
+					<!-- 						<div th:unless="${member.memProfile}"> -->
+					<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
+											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
+					<!-- 						</div> -->
+												<input type="file" name="empProfileFile">
+						                    </div>
+						                	<label for="empLevel">사원권한</label>
+						                    <div class="form-group" >
+						                       <select id="empLevel" class="form-select" name="empLevel">
+							                       	<option value="">user</option>
+							                       	<option value="">manager</option>
+							                       	<option value="">admin</option>
+						                       </select>
+						                    </div>
+						                    <label for="empName">이름</label>
+						                    <div class="form-group">
+												<input type="text" id="empName" class="form-control" name="empName" th:value="${loginUser.empName}" readonly>
+						                    </div>
+						                    <label for="empId">사원 번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empId" name="empId" class="form-control" th:value="${loginUser.empId}" readonly>
+						                    </div>
+						                    <label for="deptNo">사원 번호</label>
+												<select id="deptNo" name="deptNo" class="form-select">
+													<option selected disabled>[[${loginUser.deptNo}]]</option>
+													<option value="1">인사</option>
+													<option value="2">개발</option>
+													<option value="3">마케팅</option>
+													<option value="4">영업</option>
+													<option value="5">생산</option>
+												</select>
+						                    <label for="positionNo">직급</label>
+						                    <div class="form-group" >
+						                       <select id="deptPosition" name="positionNo" class="form-select" required>
+							                       	<option value="1">사원</option>
+													<option value="2">주임</option>
+													<option value="3">대리</option>
+													<option value="4">팀장</option>
+													<option value="5">부장</option>
+													<option value="6">차장</option>
+													<option value="7" disabled>이사</option>
+													<option value="8" disabled>대표이사</option>
+						                       </select>
+						                    </div>
+						                    <label for="empPhone">전화번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="${loginUser.empPhone}">
+						                    </div>
+						                    <label for="empEmail">이메일</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="${loginUser.empEmail}">
+						                    </div>
+						                    <label for="empStartDate">입사일</label>
+						                    <div class="date-range">
+												<div class="date-range">
+												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:value="${loginUser.empStartDate}">
+												</div>
+											</div>
+						                    <label for="empGender">성별</label>
+						                    <div class="form-group" >
+						                       <select id="empGender" name="empGender" class="form-select">
+							                       	<option value="M">남자</option>
+							                       	<option value="F">여자</option>
+						                       </select>
+						                    </div>
+						                    <label for="">주소</label>
+											<div>
+												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${loginUser.empAddress1}">
+												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
+											</div>
+											<div>
+												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="${loginUser.empAddress2}">
+												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="${loginUser.empPostCode}" readonly><br>
+											</div>
+						                    <label for="empMaritalStatus">결혼여부</label>
+						                   <div class="form-group" >
+						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select">
+							                       	<option value="single">미혼</option>
+							                       	<option value="married">기혼</option>
+						                       </select>
+						                    </div>
+						                    
+						                    <hr>
+						                    
+						                    <label for="empStatus">재직상태</label>
+						                    <div class="form-group" >
+						                       <select id="empStatus" name="empStatus" class="form-select">
+							                       	<option value="1">재직</option>
+							                       	<option value="2">퇴사</option>
+							                       	<option value="3">휴직</option>
+						                       </select>
+						                    </div>
+						                    <label for="empType">고용유형</label>
+						                   <div class="form-group" >
+						                       <select id="empType" name="empType" class="form-select">
+							                       	<option value="1">정규직</option>
+							                       	<option value="2">기술직</option>
+							                       	<option value="3">계약직</option>
+						                       </select>
+						                    </div>
+						                    <label for="empEducationLevel">학력</label>
+						                   <div class="form-group" >
+						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select">
+							                       	<option value="1">고졸</option>
+							                       	<option value="2">학사</option>
+							                       	<option value="3">석·박사</option>
+						                       </select>
+						                    </div>
+						                    <label for="empParkingStatus">주차등록</label>
+						                    <div class="form-group" >
+						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select">
+							                       	<option value="Y">등록</option>
+							                       	<option value="N">미등록</option>
+						                       </select>
+						                    </div>
+						                    <label for="empCarNumber">차량번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" th:value="${loginUser.empCarNumber}">
+						                    </div>
+						                    
+						                    <hr>
+<!-- 						                    <label for="">기본급(월급)</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="">은행</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="">계좌번호</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                    </div> -->
+						                    
+						                </div>
+						                <div class="modal-footer">
+						                    <button type="submit" name ="updateBtn" class="btn btn-primary">수정</button>
+						                </div>
+						            </form>	
+					
+					
+				</div>
                 </div>
             </div>
         </div>
@@ -82,19 +205,64 @@
              * - Ajax 요청
              * - 기타 페이지별 로직
              */
+
+          // 1. 파일 추가
+          formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+
+          // 2. JSON 데이터를 문자열로 바꿔서 추가
+		const form = document.getElementById("empUpdate");
+		const formData = new FormData(form);
+
+          // JSON.stringify로 묶어서 하나의 텍스트로 전달
+          formData.append("dto", new Blob([JSON.stringify(data)], { type: "application/json" }));
+
+          // AJAX 전송
+          $.ajax({
+              url: "/myEmplist/empUpdate",
+              method: "POST",
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function(response) {
+            	  if(response ==response){
+                  console.log("성공!", response);
+                  alert("정보 수정 성공!");
+            		  
+            	  }
+              },
+              error: function(error) {
+                  console.error("실패ㅠㅠ", error);
+                  console.log("에러 상세 >>", error);
+                  alert("정보 수정 실패ㅠㅠ");
+              }
+          });
+
+ 			
+ 				
+ 		           
+           
             
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
         </script>
+        <!-- 카카오주소 api -->
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script type="text/javascript">
+			function search_address() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						console.log(data);
+						document.empUpdate.empPostCode.value = data.zonecode;
+	
+						let address = data.address;
+						if (data.buildingName != "") {
+							address += " (" + data.buildingName + ")";
+						}
+	
+						document.empUpdate.empAddress1.value = address;
+						document.empUpdate.empAddress2.focus();
+					}
+				}).open();
+			}
+		</script>
     </th:block>
 </body>
 </html>

@@ -30,5 +30,122 @@
 		LEFT JOIN DEPARTMENTS D ON EMP.DEPT_NO = D.DEPT_NO
 		LEFT JOIN POSITIONS P ON EMP.POSITION_NO = P.POSITION_NO
     </select>
+    
+<!--    필터링 -->
+   <select id="selectDept" resultType="com.example.cmtProject.dto.erp.employees.searchEmpDTO">
+	    SELECT 
+	        e.emp_no AS empNo,
+	       	e.emp_id AS empId,
+	        e.emp_name AS empName, 
+	        d.dept_name AS deptName,
+	        p.dept_position AS deptPosition,
+	        e.emp_start_date AS empStartDate 
+	    FROM employees e
+	    JOIN departments d ON e.dept_no = d.dept_no
+	    JOIN positions p ON e.position_no = p.position_no
+	    <where>
+	        <if test="dept != null and dept != ''">
+	            AND d.dept_no = #{dept}
+	        </if>
+	         <if test="empId != null and empId != ''">
+	            AND e.emp_id LIKE '%' || #{empId} || '%'
+	        </if>
+	        <if test="empName != null and empName != ''">
+	            AND e.emp_name LIKE '%' || #{empName} || '%'
+	        </if>
+	        <if test="startDate != null and endDate != null">
+	            AND e.emp_start_date BETWEEN #{startDate} AND #{endDate}
+	        </if>
+	    </where>
+	</select>
+
+	<insert id="insertEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
+	
+	    INSERT INTO EMPLOYEES (
+	        EMP_ID,
+	        EMP_LEVEL,
+	        EMP_PASSWORD,
+	        EMP_NAME,
+	        EMP_PROFILE,
+	        EMP_BIRTHDAY,
+	        EMP_EMAIL,
+	        EMP_GENDER,
+	        DEPT_NO,
+	        POSITION_NO,
+	        EMP_PHONE,
+	        EMP_POST_CODE,
+	        EMP_ADDRESS1,
+	        EMP_ADDRESS2,
+	        EMP_START_DATE,
+	        EMP_MARITAL_STATUS,
+	        EMP_STATUS,
+	        EMP_TYPE,
+	        EMP_EDUCATION_LEVEL,
+	        EMP_PARKING_STATUS,
+	        EMP_CAR_NUMBER,
+	        SAL_NO
+	    ) VALUES (
+	        #{empId},
+	        #{empLevel},
+	        #{empPassword},
+	        #{empName},
+	<!--         #{empProfile}, -->
+	        NULL,
+	        <choose>
+	            <when test="empStartDate != null">
+	                #{empBirthday}
+	            </when>
+	            <otherwise>
+	                SYSDATE
+	            </otherwise>
+	        </choose>,
+	        #{empEmail},
+	        #{empGender},
+	        #{deptNo},
+	        #{positionNo},
+	        #{empPhone},
+	        #{empPostCode},
+	        #{empAddress1},
+	        #{empAddress2},
+	       <choose>
+	            <when test="empStartDate != null">
+	                #{empStartDate}
+	            </when>
+	            <otherwise>
+	                SYSDATE
+	            </otherwise>
+	        </choose>,
+	        #{empMaritalStatus},
+	        #{empStatus},
+	        #{empType},
+	        #{empEducationLevel},
+	        #{empParkingStatus},
+	        #{empCarNumber},
+	        #{salNo}
+	    )
+	</insert>
+	
+	<update id="updateEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
+	    UPDATE EMPLOYEES
+	    SET 
+	        EMP_LEVEL = #{empLevel},
+	        EMP_PHONE = #{empPhone},
+	        EMP_EMAIL = #{empEmail},
+	        EMP_GENDER = #{empGender},
+	        DEPT_NO = #{deptNo, jdbcType=NUMERIC},
+	        POSITION_NO = #{positionNo, jdbcType=NUMERIC},
+	        EMP_POST_CODE = #{empPostCode},
+	        EMP_ADDRESS1 = #{empAddress1},
+	        EMP_ADDRESS2 = #{empAddress2},
+	        EMP_START_DATE = #{empStartDate, jdbcType=DATE},
+	        EMP_MARITAL_STATUS = #{empMaritalStatus},
+	        EMP_STATUS = #{empStatus},
+	        EMP_TYPE = #{empType},
+	        EMP_EDUCATION_LEVEL = #{empEducationLevel},
+	        EMP_PARKING_STATUS = #{empParkingStatus},
+	        EMP_CAR_NUMBER = #{empCarNumber},
+	        EMP_PROFILE = #{empProfile, jdbcType=VARCHAR}
+	    WHERE EMP_ID = #{empId}
+	</update>
 	
 </mapper>

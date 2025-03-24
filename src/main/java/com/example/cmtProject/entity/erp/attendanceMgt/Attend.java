@@ -2,11 +2,14 @@ package com.example.cmtProject.entity.erp.attendanceMgt;
 
 import java.time.LocalDate;
 
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -26,6 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "ATTENDS")
 public class Attend {
 
@@ -52,14 +56,29 @@ public class Attend {
     @Column(name = "ATD_REMARKS", length = 200)
     private String remarks; // 비고 (ATD_REMARKS)
     
-    public static Attend toEntity(AttendDTO dto, Employees employee) {
-        return Attend.builder()
-            .empNo(employee)
-            .attendDate(dto.getAttendDate())
-            .attendType(dto.getAttendType())
-            .attendStatus(dto.getAttendStatus())
-            .remarks(dto.getRemarks())
+    @Builder
+    public Attend(Employees empNo, LocalDate attendDate, AttendType attendType, AttendStatus attendStatus,
+			String remarks) {
+		this.empNo = empNo;
+		this.attendDate = attendDate;
+		this.attendType = attendType;
+		this.attendStatus = attendStatus;
+		this.remarks = remarks;
+	}
+    
+    public AttendDTO toDto() {
+        return AttendDTO.builder()
+            .id(atdNo)
+            .empNo(empNo)
+            .attendDate(attendDate)
+            .attendType(attendType)
+            .attendStatus(attendStatus)
+            .remarks(remarks)
             .build();
     }
+
+
+
+	
     
 }

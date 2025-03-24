@@ -1,437 +1,179 @@
 <!DOCTYPE html>
-
-<head>
-	<!-- 부트스트랩 : 모달 사용 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-	<!-- 부트스트랩 모달 js -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-	
-	<!--mazer 차트 -->
-	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}"> 
+	<head>
+		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	    
+	    <!-- 기본 메타 정보 -->
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>수주 등록</title>
     
-    <!-- toast 차트 -->
-	<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
-
-	<!-- apex 차트 : 4,5,6,7,8,9,10-->	
-	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-	
-	
-	
-    <title>차트</title>
-	
+    <title>Cmt</title>
 	<style>
-		table {
-			border : 1px solid black;
-			width: 900px;
-		}
 		
-		tr, td {
+	    .container1 {
+	        display: grid;
+			grid-template-columns: 100px 150px 120px 180px 50px 180px 130px 150px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
 			border : 1px solid black;
-		}
-		
-		tr {
 			text-align: center;
-		}
+	    }
 		
-		canvas {
-			max-width: 100%; /* 셀 크기에 맞게 조정 */
-			height: auto;
-		}
+		.container2 {
+	        display: grid;
+			grid-template-columns: 100px 150px 150px 80px 80px 160px 160px 80px 80px 100px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
+			
+		
+	    .container input, .container select {
+	        padding: 5px;
+	        border: 1px solid #ccc;
+	        border-radius: 3px;
+	    }
+		
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+		
+	    button {
+	        padding: 5px 10px;
+	        border: none;
+	        cursor: pointer;
+	        border-radius: 3px;
+	    }
+		
+	    .search { background:dodgerblue; color: white; }
+	    .request { background: purple; color: white; }
+	    .complete { background: green; color: white; }
+	    .cancel { background: red; color: white; }
+	    .excel { background: darkblue; color: white; }
+	    .help { background: orange; color: white; }
+		
 	</style>
-	
 </head>
 <body>
-	
-	
-	<!-- 부트 스트랩 시작-->
-	
-	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#empModal">
-		    lunch modal
-		</button>
-		
-		<!--  모달 창 (Bootstrap 사용) -->
-		<div class="modal fade" id="empModal" tabindex="-1" aria-labelledby="empModalLabel" aria-hidden="true">
-		    <div class="modal-dialog modal-lg">
-		        <div class="modal-content">
-		            <div class="modal-header">
-		                <h5 class="modal-title" id="empModalLabel">사원 등록</h5>
-		                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-		            </div>
-		            <form action="empRegi" method="post" enctype="multipart/form-data">
-		               
-		            </form>
-		        </div> <!-- modal-content -->
-		    </div><!-- modal-dialog modal-lg -->
-		</div><!-- modal -->
-	
-	
-	
-	<!-- 부트 스트랩 끝 -->
-   
-        <h3>그래프</h3>
+
+    <div layout:fragment="content">
         
-		<table>
-			<tbody>
-				<tr>
-					<td>
-						myChart1<br>
-						<canvas id="myChart1"></canvas> 
-						<br>
-						<a href="">[소스보기]</a>
-					</td>
-					<td>
-						<br>myChart2<br>
-						<canvas id="myChart2"></canvas>
-						<br>
-						[소스보기]
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<br>myChart3<br>
-						<canvas id="myChart3"></canvas>
-						<br>
-						[소스보기]			
-					</td>
-					<td>
-						<br>myChart4<br>
-						<div id="myChart4"></div>
-						<br>
-						[소스보기]		
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<br>myChart5<br>
-						<div id="myChart5"></div>
-						<br>
-						[소스보기]			
-					</td>
-					<td>
-						<br>myChart6<br>
-						<div id="myChart6"></div>
-						<br>
-						[소스보기]		
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<br>myChart7<br>
-						<div id="myChart7"></div>
-						<br>
-						[소스보기]			
-					</td>
-					<td>
-						<br>myChart8<br>
-						<div id="myChart8"></div>
-						<br>
-						[소스보기]		
-					</td>
-				</tr>
-				
-				<tr>
-					<td>
-						<br>myChart9<br>
-						<div id="myChart9"></div>
-						<br>
-						[소스보기]			
-					</td>
-					<td>
-						<br>myChart10<br>
-						<div id="myChart10"></div>
-						<br>
-						[소스보기]		
-					</td>
-				</tr>
-			</tbody>
-		</table>
-    </div>
-    
-	<div id="chart5"></div>
-	<div id="line-area-chart"></div>
-   	<!-- 페이지 내용 작성 영역 끝 -->
-    
-    <!-- 
-        페이지별 JavaScript 추가 영역.
-        여기에 페이지에서 사용할 스크립트를 작성하세요.
-        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
-    -->
-   
-	<script>
-		// =============================================================================== myChart1 ===============================================================================
+		<div class="button-container">
+			<div><h2>수주등록</h2></div>
+			<div>
+	        <button class="search">조회</button>
+	        <button class="request">출하요청 (A1)</button>
+	        <button class="complete">일괄마감 (A2)</button>
+	        <button class="cancel">마감취소 (A3)</button>
+	        <button class="excel">📊 엑셀</button>
+	        <button class="help">❓ HELP</button>
+			</div>
+	    </div>
 		
-		var ctx1 = document.getElementById('myChart1').getContext('2d');
+		<form action="/sales/so" method="get" th:object="${SalesOrder}">	    
+		    <div class="container1">
+		        <label class="sell_company_label">회사</label>
+		        <select class="sell_select">
+		            <option th:each="code : ${soModel}"
+						th:value="${code.cltCode}"
+						th:text="${code.cltCode}"
+						selected="${SalesOrder.cltCode == code}"
+					></option>
+		        </select>
+		        <label class="sell_so_date_label">수주일</label>
+		        <input type="date" class="sell_date1">
+		        <span class="sell_tilt">~</span>
+		        <input type="date" class="sell_date2">
+		        <label class="sell_sonum_label">수주번호</label>
+		        <input type="text" class="sell_sonum_text">
+				<span></span>
+		    </div>
+	
+		    <div class="container2">
+		        <label>품목</label>
+		        <input type="text" placeholder="CODE">
+		        <input type="text" placeholder="NAME">
+		        <button class="search">🔍 검색</button>
+		        <label>거래처</label>
+		        <input type="text" placeholder="CODE">
+		        <input type="text" placeholder="NAME">
+		        <button class="search">🔍 검색</button>
+				<label>진행상태</label>
+		        <select>
+		            <option>전체</option>
+		        </select>
+		    </div>
+	
+		</form>
 		
-		var myChart = new Chart(ctx1, {
-		    type: 'radar', // 차트 유형 ('bar', 'line', 'pie', 'doughnut', 'radar' 등)
-		    data: {
-		        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-		        datasets: [{
-		            label: '색상별 값',
-		            data: [12, 19, 3, 5, 2, 3], // 데이터 값
-		            backgroundColor: [
-		                'rgba(255, 99, 132, 0.2)',
-		                'rgba(54, 162, 235, 0.2)',
-		                'rgba(255, 206, 86, 0.2)',
-		                'rgba(75, 192, 192, 0.2)',
-		                'rgba(153, 102, 255, 0.2)',
-		                'rgba(255, 159, 64, 0.2)'
-		            ],
-		            borderColor: [
-		                'rgba(255, 99, 132, 1)',
-		                'rgba(54, 162, 235, 1)',
-		                'rgba(255, 206, 86, 1)',
-		                'rgba(75, 192, 192, 1)',
-		                'rgba(153, 102, 255, 1)',
-		                'rgba(255, 159, 64, 1)'
-		            ],
-		            borderWidth: 0.5
-		        }]
-		    }
-		}); 
-		
-		// =============================================================================== myChart2 ===============================================================================
-		
-		var ctx2 = document.getElementById('myChart2').getContext('2d');
-		
-		var lineChart = new Chart(ctx2, {
-		    type: 'line',
-		    data: {
-		        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-		        datasets: [{
-		            label: '매출',
-		            data: [10, 20, 15, 30, 25],
-		            borderColor: 'rgba(75, 192, 192, 1)',
-		            borderWidth: 1,
-		            fill: false
-		        }]
-		    }
-		});
-		
-		
-		// =============================================================================== myChart3 ===============================================================================
-		
-		var ctx3 = document.getElementById('myChart3').getContext('2d');
-		
-		var pieChart = new Chart(ctx3, {
-		    type: 'doughnut', // 차트 유형 ('bar', 'line', 'pie', 'doughnut', 'radar' 등)
-		    data: {
-		        labels: ['A', 'B', 'C'],
-		        datasets: [{
-		            data: [30, 50, 20],
-		            backgroundColor: ['red', 'blue', 'green']
-		        }]
-		    }
-		});
-		
-		// =============================================================================== myChart4 ===============================================================================
-		
-		var options4 = {
-		       chart: {
-		           type: 'line', // 차트 타입 (line, bar, pie 등)
-		           height: 350
-		       },
-		       series: [{
-		           name: '매출',
-		           data: [40, 10, 3, 30, 50]
-		       }],
-		       xaxis: {
-		           categories: ['월', '화', '수', '목', '금']
-		       }
-		   };
-		
-		 var chart4 = new ApexCharts(document.querySelector("#myChart4"), options4);
-		 chart4.render();
-		
-		// =============================================================================== myChart5 =============================================================================== 
-		const data5 = {
-		    categories: [
-		        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-		    ],
-		    series: [
-		        {
-		            name: 'Seoul',
-		            data: [20, 40, 25, 50, 15, 45, 33, 34, 20, 30, 22, 13],
-		        },
-		        {
-		            name: 'Sydney',
-		            data: [5, 30, 21, 18, 59, 50, 28, 33, 7, 20, 10, 30],
-		        },
-		        {
-		            name: 'Moskva',
-		            data: [30, 5, 18, 21, 33, 41, 29, 15, 30, 10, 33, 5],
-		        },
-		    ],
-		};
-		
-		const options5 = {
-		    chart: { width: 500, height: 400 },
-		    series: { stack: false }, // false: 개별 출력, true: 스택형(누적) 출력
-		    legend: { align: 'bottom' },
-		};
-		
-		toastui.Chart.barChart({ 
-			        	el: document.getElementById('myChart5'), 
-			        	data: data5, 
-			        	options: options5 });
-		
-		// =============================================================================== myChart6 =============================================================================== 
-		const data6 = {
-		  categories: [
-		    'Jan',
-		    'Feb',
-		    'Mar',
-		    'Apr',
-		    'May',
-		    'June',
-		    'July',
-		    'Aug',
-		    'Sep',
-		    'Oct',
-		    'Nov',
-		    'Dec',
-		  ],
-		  series: [
-		    {
-		      name: 'Seoul',
-		      data: [20, 40, 25, 50, 15, 45, 33, 34, 20, 30, 22, 13],
-		    },
-		    {
-		      name: 'Sydney',
-		      data: [5, 30, 21, 18, 59, 50, 28, 33, 7, 20, 10, 30],
-		    },
-		    {
-		      name: 'Moskva',
-		      data: [30, 5, 18, 21, 33, 41, 29, 15, 30, 10, 33, 5],
-		    },
-		  ],
-		}
-		
-		const options6 = {
-				chart: { width: 500, height: 400 },
-				series: {
-				    showDot: true,
-				    spline: true,
-				    zoomable: true,
-				    eventDetectType: 'nearest',//'near' | 'nearest' | 'grouped',
-				    shift: true,
-				    stack: true | {
-				      type: 'percent'//  'percent',
-				    },
-				  }
-				}
-		
-		toastui.Chart.barChart({ 
-			el: document.getElementById('myChart6'), 
-			data: data6, 
-			options: options6 });
+		<br>
+<!--		<th:block th:each="soModel : ${soModel}">-->
+<!--			<div th:text="${soModel}"></div>-->
+<!--		</th:block>-->
 
-		// =============================================================================== myChart7 ===============================================================================
+<!-- 그리드 top 시작 -->
+	   	<div id="gridTop"></div>
+	
+	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	    <script th:inline="javascript">
+		var dataArray = [[${soModel}]];
+		console.log(dataArray);
+	    const grid = new tui.Grid({
+	        el: document.getElementById('gridTop'), // 그리드를 표시할 DOM 엘리먼트
+			data : [[${soModel}]],
+	        
+	        rowHeaders: ['checkbox'], // 행의 첫 번째 열에 체크박스 추가
+	        columns: [
+	            {
+	                header: '수주코드',
+	                name: 'soCode'
+	            },
+	            {
+	                header: '수주일자',
+	                name: 'soDate'
+	            },
+	            {
+	                header: '사원코드',
+	                name: 'empId'
+	            }
+	        ] // 열 설정
+	    });
 	    
-	   	var barOptions = {
-	         chart: { type: 'bar', height: 350 },
-	         series: [{ name: '매출', data: [30, 40, 45, 50, 49, 60, 70] }],
-	         xaxis: { categories: ['월', '화', '수', '목', '금', '토', '일'] }
-	     };
-	
-	     var barChart = new ApexCharts(document.querySelector("#myChart7"), barOptions);
-	     barChart.render();   
+	 	// 체크박스 클릭 시 이벤트 추가
+	    grid.on('check', (checkItem) => {
+	    	
+	        const rowData = grid.getRow(checkItem.rowKey); // 선택한 행의 데이터 가져오기
+	        alert(`선택한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+	    });
+
+	    // 체크 해제 시 이벤트 추가
+	    grid.on('uncheck', (checkItem) => {
+	        const rowData = grid.getRow(checkItem.rowKey);
+	        alert(`해제한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+	    });
+	    
+	    grid.on('click', (ev) => {
+	    });
+	    </script>
+	    <!-- 그리드 끝 --> 
 		
-		 // =============================================================================== myChart8 ===============================================================================
-		 
-		 var pieOptions = {
-		         chart: { type: 'pie', height: 350 },
-		         series: [44, 55, 13,  33],
-		         labels: ['Apple', 'Samsung', 'Xiaomi', 'Oppo']
-		     };
-	
-	     var pieChart = new ApexCharts(document.querySelector("#myChart8"), pieOptions);
-	     pieChart.render();
-		 
-		 // =============================================================================== myChart9 ===============================================================================
-		 var options9 = {
-	             chart: {
-	                 type: 'area', // 라인 영역 차트
-	                 height: 350
-	             },
-	             series: [
-	                 {
-	                     name: "매출",
-	                     data: [20, 40, 35, 50, 49, 60, 70, 91, 125]
-	                 }
-	             ],
-	             xaxis: {
-	                 categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"]
-	             },
-	             colors: ["#008FFB"], // 색상 변경 가능
-	             fill: {
-	                 type: "gradient",
-	                 gradient: {
-	                     shadeIntensity: 1,
-	                     opacityFrom: 0.7,
-	                     opacityTo: 0.3,
-	                     stops: [0, 90, 100]
-	                 }
-	             }
-	         };
-
-		var chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
-	    chart9.render();
-		// =============================================================================== myChart10 ===============================================================================
-	 	var options10 = {
-		     chart: {
-		         type: 'radialBar', // 원형 바 차트
-		         height: 350
-		     },
-		     series: [75], // 퍼센트 값
-		     plotOptions: {
-		         radialBar: {
-		             startAngle: -135,
-		             endAngle: 225,
-		             hollow: {
-		                 size: '70%'
-		             },
-		             track: {
-		                 background: "#f2f2f2"
-		             },
-		             dataLabels: {
-		                 name: {
-		                     offsetY: -10,
-		                     color: "#333",
-		                     fontSize: "16px"
-		                 },
-		                 value: {
-		                     color: "#111",
-		                     fontSize: "20px",
-		                     fontWeight: "bold",
-		                     show: true
-		                 }
-		             }
-		         }
-		     },
-		     fill: {
-		         type: "gradient",
-		         gradient: {
-		             shade: "dark",
-		             type: "horizontal",
-		             shadeIntensity: 0.5,
-		             gradientToColors: ["#00BFFF"], // 끝 색상
-		             inverseColors: true,
-		             opacityFrom: 1,
-		             opacityTo: 0.6,
-		             stops: [0, 100]
-		         }
-		     },
-		     stroke: {
-		         lineCap: "round"
-		     },
-		     labels: ["달성률"] // 중앙 텍스트
-		 };
-
-     	var chart10 = new ApexCharts(document.querySelector("#myChart10"), options10);
-     	chart10.render();
-    </script>
+    </div>
+   	
+	<th:block layout:fragment="script">
+	    
+	</th:block>
 </body>
 
 </html>

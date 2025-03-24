@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,9 +25,10 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class Employees {
+
+public class Employees{
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "EMP_NO")  // 사원번호 (PK)
     private Long empNo;
 
@@ -43,19 +45,19 @@ public class Employees {
     private String empName; // 이름
 
     @Column(name = "EMP_PROFILE")
-    private String empProfile; // 프로필사진 파일경로
+    private String empProfile; // 프로필사진 파일경로(DB저장용)
 
     @Column(name = "EMP_BIRTHDAY")
     private String empBirthday; // 생년월일
 
     @Column(name = "EMP_EMAIL")
     private String empEmail; // 이메일
-
+    
     @Column(name = "EMP_GENDER")
     private String empGender; // 성별
 
     @Column(name = "DEPT_NO")
-    private String deptNo; // 부서번호 (FK)
+    private Long deptNo; // 부서번호 (FK)
     
     @Column(name = "POSITION_NO")
     private Long positionNo; // 직위번호 (FK)
@@ -111,4 +113,7 @@ public class Employees {
 
     @Column(name = "EMP_CAR_NUMBER")
     private String empCarNumber; // 차량번호
+    
+  
 }
+

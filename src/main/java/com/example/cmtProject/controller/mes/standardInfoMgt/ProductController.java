@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.cmtProject.entity.Product;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.service.mes.standardInfoMgt.ProductService;
 
 @Controller
@@ -26,7 +26,7 @@ public class ProductController {
 	@GetMapping("/list")
     public String list(Model model) throws Exception {
 		
-        List<Product> productList = productService.list();
+        List<Products> productList = productService.list();
         System.out.println("productList:" + productList);
         model.addAttribute("productList", productList);
         
