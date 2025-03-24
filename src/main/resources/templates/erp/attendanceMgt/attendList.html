@@ -40,23 +40,26 @@
                     <table class="table table-striped mb-0">
                         <thead>
                             <tr>
-                                <th>항목 1</th>
-                                <th>항목 2</th>
-                                <th>항목 3</th>
+                                <th>출결NO</th>
+                                <th>사원번호</th>
+                                <th>출결일자</th>
+                                <th>출결유형</th>
+                                <th>출결상태</th>
+                                <th>비고</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>내용 1</td>
-                                <td>내용 2</td>
-                                <td>내용 3</td>
-                            </tr>
-                            <tr>
-                                <td>내용 4</td>
-                                <td>내용 5</td>
-                                <td>내용 6</td>
-                            </tr>
-                        </tbody>
+						    <tr th:each="attend, status : ${attendList}" th:data-id="${attend.id}">
+						        <th:block th:object="${attend}">
+						            <td th:text="${status.count}"></td>
+						            <td th:text="${attend.empNo.empNo}"></td>
+						            <td th:text="*{attendDate != null ? #temporals.format(attendDate, 'yyyy-MM-dd HH:mm:ss') : '날짜 없음'}"></td>
+						            <td th:text="*{attendType}"></td>
+						            <td th:text="*{attendStatus}"></td>
+						            <td th:text="*{remarks}"></td>
+						        </th:block>
+						    </tr>
+						</tbody>
                     </table>
                 </div>
                 
