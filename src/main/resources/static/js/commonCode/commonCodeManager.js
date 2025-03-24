@@ -4,8 +4,8 @@
  * 공통코드와 상세코드의 CRUD 기능을 담당하며, 리팩토링된 유틸리티 모듈(GridUtil, ApiUtil 등)을
  * 활용하여 일관된 async/await 패턴으로 구현합니다.
  * 
- * @version 3.1.0
- * @since 2025-03-25
+ * @version 1.0.0
+ * @since 2025-03-24
  */
 const CommonCodeManager = (function() {
     // =============================
