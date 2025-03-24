@@ -115,7 +115,7 @@ const SimpleGridManager = (function() {
 
             // DOM 요소 존재 확인
             // [✓] 수정 방법: HTML의 그리드 요소 ID가 'dataGrid'가 아니라면 여기를 변경하세요.
-            const gridElement = document.getElementById('salaryGrid');
+            const gridElement = document.getElementById('salaryItemGrid');
             if (!gridElement) {
                 throw new Error('dataGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
             }
@@ -124,98 +124,38 @@ const SimpleGridManager = (function() {
             // [✓] 수정 필요: 프로젝트에 필요한 컬럼으로 변경하세요.
 			const gridData = window.commonList || [];
 			salaryItemGrid = GridUtil.registerGrid({
-				id: 'salaryGrid',
+				id: 'salaryItemGrid',
 				columns: [{
 			
-                    header: '지급일',           // 컬럼 헤더 텍스트
-                    name: 'SAL_DATE',            // 데이터 필드명 (대소문자 주의)
+                    header: '구분',           // 컬럼 헤더 텍스트
+                    name: 'SAL_ITEM_TYPE',            // 데이터 필드명 (대소문자 주의)
                     editor: 'text'           // 에디터 타입 ('text', 'checkbox', 'select' 등)
                 },
                 {
-                    header: '사원번호',
-                    name: 'EMP_NO',
+                    header: '유형명',
+                    name: 'SAL_ITEM_NAME',
                     editor: 'text'
                 },
                 {
-                    header: '사원명',
-                    name: 'EMP_NAME',
+                    header: '설명',
+                    name: 'SAL_ITEM_DESC',
                     editor: 'text'
                 },
                 {
-                    header: '부서',
-                    name: 'DEPT_NAME',
+                    header: '우선순위',
+                    name: 'SAL_ITEM_IMPORTANCE',
                     editor: 'text'
                 },
                 {
-                    header: '직급',
-                    name: 'DEPT_POSITION',
+                    header: '적용년도',
+                    name: 'SAL_ITEM_APPLY_YEAR',
                     editor: 'text'
                 },
                 // [✓] 확장 지점: 필요한 컬럼을 추가하세요
 				{
-					header: '기본급',
-					name: 'SALARY'
-				},
-				{
-					header: '야근수당',
-					name: 'PAY_BONUS_OVERTIME'
-				},
-				{
-					header: '기술수당',
-					name: 'PAY_BONUS_TECH'
-				},
-				{
-					header: '근속수당',
-					name: 'PAY_BONUS_LONG'
-				},
-				{
-					header: '명절수당',
-					name: 'PAY_BONUS_HOLIDAY'
-				},
-				{
-					header: '휴가수당',
-					name: 'PAY_BONUS_VACATION'
-				},
-				{
-					header: '성과급',
-					name: 'PAY_BONUS_COMMITION'
-				},
-				{
-					header: '총수당액',
-					name: 'SAL_TOTAL_BONUS'
-				},
-				{
-					header: '국민연금',
-					name: 'PAY_TAX_PENSION'
-				},
-				{
-					header: '장기요양보험',
-					name: 'PAY_TAX_CARE'
-				},
-				{
-					header: '건강보험',
-					name: 'PAY_TAX_HEALTH'
-				},
-				{
-					header: '고용보험',
-					name: 'PAY_TAX_EMPLOYMENT'
-				},
-				{
-					header: '소득세',
-					name: 'PAY_TAX_INCOME'
-				},
-				{
-					header: '주민세',
-					name: 'PAY_TAX_RESIDENCE'
-				},
-				{
-					header: '총공제액',
-					name: 'SAL_TOTAL_TAX'
-				},
-				{
-					header: '실지급액',
-					name: 'SAL_NEY_PAY'
-				},
+					header: '최종수정일시',
+					name: 'SAL_ITEM_UPDATE_DATE'
+				}
 				],
 				    //data: gridData,
 				    draggable: true,
@@ -223,14 +163,14 @@ const SimpleGridManager = (function() {
 				    hiddenColumns: ['ROW_TYPE'],
 				    gridOptions: {
 				    rowHeaders: ['checkbox']
-				}
+				    }
 				});
 
 
 
             // 행 더블클릭 이벤트 처리 - 키 컬럼 제어
             // [✓] 수정 방법: 키 컬럼명이 'CODE'가 아니라면 변경하세요.
-            GridUtil.setupKeyColumnControl('salaryGrid', 'SAL_NO');
+            GridUtil.setupKeyColumnControl('salaryItemGrid', 'SAL_ITEM_NO');
             
             // [✓] 확장 지점: 그리드 이벤트 핸들러 추가
             // 행 클릭 이벤트 등록 예시
@@ -501,7 +441,7 @@ const SimpleGridManager = (function() {
     async function deleteRows() {
         try {
             // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('salaryGrid');
+            const grid = GridUtil.getGrid('salaryItemGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
@@ -513,7 +453,7 @@ const SimpleGridManager = (function() {
             // [✓] 수정 필요: 삭제 시 사용할 키 필드명을 변경하세요. (기본값: 'CODE')
             const selectedCodes = [];
             for (const rowKey of selectedRowKeys) {
-                const code = grid.getValue(rowKey, "SAL_NO");
+                const code = grid.getValue(rowKey, "SAL_ITEM_NO");
                 if (code) selectedCodes.push(code);
             }
             
@@ -523,7 +463,7 @@ const SimpleGridManager = (function() {
             }
             
             // 행 삭제 UI 처리 (두 방식 모두 동일)
-            const result = await GridUtil.deleteSelectedRows('salaryGrid', {
+            const result = await GridUtil.deleteSelectedRows('salaryItemGrid', {
                 confirmTitle: "삭제 확인",
                 confirmMessage: "선택한 항목을 삭제하시겠습니까?",
                 onBeforeDelete: async () => {

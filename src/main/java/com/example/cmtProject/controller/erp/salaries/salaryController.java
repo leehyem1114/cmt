@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.SalaryItemDTO;
+import com.example.cmtProject.entity.Salary;
 import com.example.cmtProject.entity.SalaryItemType;
 import com.example.cmtProject.service.erp.salaries.SalaryItemService;
 
@@ -88,7 +89,9 @@ public class salaryController {
 //	}
 	
 	@GetMapping("/salaryList")
-	public String salaryListGet() {
+	public String salaryListGet(Model model) {
+		List<Salary> salaryList = salaryItemService.getAllSalaries();
+		model.addAttribute("salaries", salaryList);
 		return "erp/salaries/salaryList";
 	}
 	

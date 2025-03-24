@@ -7,18 +7,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.cmtProject.entity.Eapproval;
 
-@Controller
-@RequestMapping("/eapproval")
-public class eapprovalRestController {
+//@Controller
+//@RequestMapping("/eapproval")
+//public class eapprovalRestController {
 	
 	
-	@GetMapping("/approvalList")
-	public String eapprovalListGET(Model model, Eapproval eapVO) {
+//	@GetMapping("/approvalList")
+//	public String eapprovalListGET(Model model, Eapproval eapVO) {
 //		List<eapVO>eapList = 
 		
 		
 		
-		return "erp/eapproval/approvalList";
-	}
+//		return "erp/eapproval/approvalList";
+//	}
 
-}
+//}
