@@ -36,7 +36,7 @@
 						data-bs-toggle="modal" data-bs-target="#salItemModal">
 						수정 <i class="fa-solid fa-minus"></i>
 					</button>
-					<button type="button" class="btn btn-outline-primary">
+					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
 						삭제 <i class="fa-solid fa-xmark"></i>
 					</button>
 				</div>
@@ -69,7 +69,9 @@
 				</div>
 				<!-- 급여 유형 리스트 -->
 				<div class="table-responsive">
-					<table class="table mb-0">
+					<div id="salaryItemGrid"></div>
+					
+					<!--<table class="table mb-0">
 						<thead>
 							<tr>
 								<th>구분</th>
@@ -79,7 +81,7 @@
 								<th>최종수정일시</th>
 							</tr>
 						</thead>
-						<!--                         <tbody>
+						<!-- <tbody>
                             <tr th:each="salaryItem, status : ${salaryItems}" th:data-id="${salaryItem.salItemNo}" class="clickable-row">
                             	<th:block th:object="${salaryItem}">
                                 <td th:text="*{salItemType}"></td>
@@ -91,6 +93,7 @@
                             </tr>
                         </tbody> -->
 
+						<!-- 
 						<tbody>
 							<tr th:each="item : ${salaryItems}" class="clickable-row">
 								<td th:text="${item.salItemType}"></td>
@@ -100,7 +103,9 @@
 								<td th:text="${#temporals.format(item.salItemUpdate, 'yyyy-MM-dd')}"></td>
 							</tr>
 						</tbody>
+						
 					</table>
+					-->
 				</div>
 			</div>
 		</div>
@@ -213,6 +218,7 @@
 			/* 				$('#salItemName').val(salItemResult[salItemValue] || '');
 			 }); */
 
+			/* 
 			$('#salItemType').on('change', function() {
 				const selectedType = $(this).val(); // BONUS or TAX
 
@@ -236,7 +242,8 @@
 					}
 				});
 			});
-
+			*/
+			 
 			/*			
 			 $("#salaryForm").on("submit", function (event) {
 			 event.preventDefault(); // 기본 form 제출 방지
@@ -259,6 +266,8 @@
 			 });
 			 */
 		</script>
+		
+		<script src="/js/salary/salaryManager.js"></script>
 	</th:block>
 </body>
 </html>
