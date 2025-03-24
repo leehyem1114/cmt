@@ -4,7 +4,8 @@
  * 이 템플릿은 CRUD 기능을 가진 단일 그리드 모듈을 쉽게 구현할 수 있는 기본 골격입니다.
  * REST API와 일반 컨트롤러 방식 모두 지원합니다.
  * 
- * @version 1.0.0
+ * @version 1.1.0
+ *  변경 사항 서버에서 데이터 받아오는 부분 누락으로 추가
  */
 const SimpleGridManager = (function() {
     //===========================================================================
@@ -101,99 +102,113 @@ const SimpleGridManager = (function() {
      * 
      * [✓] 수정 필요: 프로젝트에 맞게 그리드 컬럼을 수정하세요.
      */
-    async function initGrid() {
-        try {
-            console.log('그리드 초기화를 시작합니다.');
+	/**
+	 * 그리드 초기화 함수
+	 * 그리드를 생성하고 초기 데이터를 로드합니다.
+	 * 
+	 * [✓] 수정 필요: 프로젝트에 맞게 그리드 컬럼을 수정하세요.
+	 */
+	async function initGrid() {
+	    try {
+	        console.log('그리드 초기화를 시작합니다.');
 
-            // DOM 요소 존재 확인
-            // [✓] 수정 방법: HTML의 그리드 요소 ID가 'dataGrid'가 아니라면 여기를 변경하세요.
-            const gridElement = document.getElementById('dataGrid');
-            if (!gridElement) {
-                throw new Error('dataGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
-            }
+	        // DOM 요소 존재 확인
+	        // [✓] 수정 방법: HTML의 그리드 요소 ID가 'dataGrid'가 아니라면 여기를 변경하세요.
+	        const gridElement = document.getElementById('dataGrid');
+	        if (!gridElement) {
+	            throw new Error('dataGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+	        }
 
-            // 그리드 컬럼 정의
-            // [✓] 수정 필요: 프로젝트에 필요한 컬럼으로 변경하세요.
-            const columns = [
-                {
-                    header: '코드',           // 컬럼 헤더 텍스트
-                    name: 'CODE',            // 데이터 필드명 (대소문자 주의)
-                    editor: 'text'           // 에디터 타입 ('text', 'checkbox', 'select' 등)
-                },
-                {
-                    header: '이름',
-                    name: 'NAME',
-                    editor: 'text'
-                },
-                {
-                    header: '설명',
-                    name: 'DESCRIPTION',
-                    editor: 'text'
-                },
-                {
-                    header: '사용여부',
-                    name: 'IS_ACTIVE',
-                    editor: GridUtil.createYesNoEditor()  // Y/N 선택 에디터
-                },
-                {
-                    header: '정렬',
-                    name: 'SORT_ORDER',
-                    editor: 'text'
-                },
-                // [✓] 확장 지점: 필요한 컬럼을 추가하세요
-                // {
-                //     header: '등록일자',
-                //     name: 'REG_DATE',
-                //     editor: false  // 편집 불가능한 컬럼
-                // },
-                
-                {
-                    header: '타입',
-                    name: 'ROW_TYPE'         // ROW_TYPE은 필수 필드입니다 (insert, update, select 구분)
-                }
-            ];
+	        // [✓] 서버에서 데이터 가져오기
+	        // 서버에서 받은 데이터 활용 (Thymeleaf를 통해 설정된 전역 변수)
+	        // window.dataList 변수는 HTML 페이지의 Thymeleaf 템플릿에서 설정해야 합니다
+	        const gridData = window.dataList || [];
+	        console.log('초기 데이터:', gridData.length, '건');
 
-            // 그리드 생성 - GridUtil 사용
-            // [✓] 수정 방법: 필요에 따라 옵션을 조정하세요.
-            gridInstance = GridUtil.registerGrid({
-                id: 'dataGrid',              // HTML 그리드 요소 ID
-                columns: columns,            // 위에서 정의한 컬럼
-                data: [],                    // 초기 데이터는 빈 배열
-                draggable: true,             // 드래그 가능 여부 (false로 변경 가능)
-                displayColumnName: 'SORT_ORDER', // 드래그 시 자동 정렬에 사용할 컬럼명
-                hiddenColumns: ['ROW_TYPE'], // 숨길 컬럼명 배열
-                gridOptions: {
-                    rowHeaders: ['rowNum', 'checkbox'], // 행 헤더 옵션 
-                    // [✓] 확장 지점: 그리드 옵션을 추가하려면 여기에 작성하세요
-                    // header: {
-                    //     height: 40,        // 헤더 높이
-                    //     complexColumns: [] // 복합 컬럼 정의
-                    // },
-                    // bodyHeight: 400,       // 그리드 본문 높이 (자동 스크롤)
-                    // minBodyHeight: 200     // 최소 본문 높이
-                }
-            });
+	        // 그리드 컬럼 정의
+	        // [✓] 수정 필요: 프로젝트에 필요한 컬럼으로 변경하세요.
+	        const columns = [
+	            {
+	                header: '코드',           // 컬럼 헤더 텍스트
+	                name: 'CODE',            // 데이터 필드명 (대소문자 주의)
+	                editor: 'text'           // 에디터 타입 ('text', 'checkbox', 'select' 등)
+	            },
+	            {
+	                header: '이름',
+	                name: 'NAME',
+	                editor: 'text'
+	            },
+	            {
+	                header: '설명',
+	                name: 'DESCRIPTION',
+	                editor: 'text'
+	            },
+	            {
+	                header: '사용여부',
+	                name: 'IS_ACTIVE',
+	                editor: GridUtil.createYesNoEditor()  // Y/N 선택 에디터
+	            },
+	            {
+	                header: '정렬',
+	                name: 'SORT_ORDER',
+	                editor: 'text'
+	            },
+	            // [✓] 확장 지점: 필요한 컬럼을 추가하세요
+	            // {
+	            //     header: '등록일자',
+	            //     name: 'REG_DATE',
+	            //     editor: false  // 편집 불가능한 컬럼
+	            // },
+	            
+	            {
+	                header: '타입',
+	                name: 'ROW_TYPE'         // ROW_TYPE은 필수 필드입니다 (insert, update, select 구분)
+	            }
+	        ];
 
-            // 행 더블클릭 이벤트 처리 - 키 컬럼 제어
-            // [✓] 수정 방법: 키 컬럼명이 'CODE'가 아니라면 변경하세요.
-            GridUtil.setupKeyColumnControl('dataGrid', 'CODE');
-            
-            // [✓] 확장 지점: 그리드 이벤트 핸들러 추가
-            // 행 클릭 이벤트 등록 예시
-            // GridUtil.onRowClick('dataGrid', function(rowData) {
-            //     console.log('선택된 행:', rowData);
-            //     // 행 선택 시 처리할 로직 작성
-            // });
+	        // 그리드 생성 - GridUtil 사용
+	        // [✓] 수정 방법: 필요에 따라 옵션을 조정하세요.
+	        gridInstance = GridUtil.registerGrid({
+	            id: 'dataGrid',              // HTML 그리드 요소 ID
+	            columns: columns,            // 위에서 정의한 컬럼
+	            data: gridData,              // 서버에서 받은 초기 데이터 사용
+	            draggable: true,             // 드래그 가능 여부 (false로 변경 가능)
+	            displayColumnName: 'SORT_ORDER', // 드래그 시 자동 정렬에 사용할 컬럼명
+	            hiddenColumns: ['ROW_TYPE'], // 숨길 컬럼명 배열
+	            gridOptions: {
+	                rowHeaders: ['rowNum', 'checkbox'], // 행 헤더 옵션 
+	                // [✓] 확장 지점: 그리드 옵션을 추가하려면 여기에 작성하세요
+	                // header: {
+	                //     height: 40,        // 헤더 높이
+	                //     complexColumns: [] // 복합 컬럼 정의
+	                // },
+	                // bodyHeight: 400,       // 그리드 본문 높이 (자동 스크롤)
+	                // minBodyHeight: 200     // 최소 본문 높이
+	            }
+	        });
 
-            // 초기 데이터 로드
-            await searchData();
+	        // 행 더블클릭 이벤트 처리 - 키 컬럼 제어
+	        // [✓] 수정 방법: 키 컬럼명이 'CODE'가 아니라면 변경하세요.
+	        GridUtil.setupKeyColumnControl('dataGrid', 'CODE');
+	        
+	        // [✓] 확장 지점: 그리드 이벤트 핸들러 추가
+	        // 행 클릭 이벤트 등록 예시
+	        // GridUtil.onRowClick('dataGrid', function(rowData) {
+	        //     console.log('선택된 행:', rowData);
+	        //     // 행 선택 시 처리할 로직 작성
+	        // });
 
-            console.log('그리드 초기화가 완료되었습니다.');
-        } catch (error) {
-            console.error('그리드 초기화 오류:', error);
-            throw error;
-        }
-    }
+	        // 초기 데이터가 없는 경우에만 API를 통해 데이터 로드
+	        if (gridData.length === 0) {
+	            await searchData();
+	        }
+
+	        console.log('그리드 초기화가 완료되었습니다.');
+	    } catch (error) {
+	        console.error('그리드 초기화 오류:', error);
+	        throw error;
+	    }
+	}
 
     //===========================================================================
     // 데이터 처리 함수 - 비즈니스 로직에 맞게 수정하세요
