@@ -17,4 +17,7 @@ public interface EmployeesMapper {
 
 	int insertEmp(EmpRegistDTO empRegistDTO);
 
+
+	int updateEmp(EmpRegistDTO dto);
+
 }

@@ -125,4 +125,27 @@
 	    )
 	</insert>
 	
+	<update id="updateEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
+	    UPDATE EMPLOYEES
+	    SET 
+	        EMP_LEVEL = #{empLevel},
+	        EMP_PHONE = #{empPhone},
+	        EMP_EMAIL = #{empEmail},
+	        EMP_GENDER = #{empGender},
+	        DEPT_NO = #{deptNo, jdbcType=NUMERIC},
+	        POSITION_NO = #{positionNo, jdbcType=NUMERIC},
+	        EMP_POST_CODE = #{empPostCode},
+	        EMP_ADDRESS1 = #{empAddress1},
+	        EMP_ADDRESS2 = #{empAddress2},
+	        EMP_START_DATE = #{empStartDate, jdbcType=DATE},
+	        EMP_MARITAL_STATUS = #{empMaritalStatus},
+	        EMP_STATUS = #{empStatus},
+	        EMP_TYPE = #{empType},
+	        EMP_EDUCATION_LEVEL = #{empEducationLevel},
+	        EMP_PARKING_STATUS = #{empParkingStatus},
+	        EMP_CAR_NUMBER = #{empCarNumber},
+	        EMP_PROFILE = #{empProfile, jdbcType=VARCHAR}
+	    WHERE EMP_ID = #{empId}
+	</update>
+	
 </mapper>
