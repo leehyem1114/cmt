@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,32 +28,11 @@ public class AttendController {
 
     // 출결 정보 목록 페이지 (HTML 렌더링)
     @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')")
     public String showAttendPage(Model model) {
         List<AttendDTO> attendList = attendService.getAllAttends();
-        model.addAttribute("attends", attendList);
+        model.addAttribute("attendList", attendList);
         return "erp/attendanceMgt/attendList"; // templates/erp/attendanceMgt/attendList.html 렌더링
-    }
-
-    // 출결 정보 등록
-    @PostMapping
-    public String createAttend(@ModelAttribute AttendDTO dto) {
-        attendService.saveAttend(dto);
-        return "redirect:/attends/view"; // 등록 후 리스트 페이지로 리다이렉트
-    }
-
-    // 특정 사원의 출결 정보 조회 (HTML 렌더링)
-    @GetMapping("/employee/{employeeId}")
-    public String getAttendsByEmployee(@PathVariable Long employeeId, Model model) {
-        List<AttendDTO> attends = attendService.getAttendsByEmployeeId(employeeId);
-        model.addAttribute("attends", attends);
-        return "erp/attendanceMgt/attendList"; // 특정 사원의 출결 정보를 렌더링
-    }
-
-    // 출결 정보 수정
-    @PostMapping("/update/{id}")
-    public String updateAttend(@PathVariable Long id, @ModelAttribute AttendDTO dto) {
-        attendService.updateAttend(id, dto);
-        return "redirect:/attends/view";
     }
 
     // 출결 정보 삭제
@@ -62,7 +42,27 @@ public class AttendController {
         return "redirect:/attends/view";
     }
 
-    
+//    // 출결 정보 등록
+//    @PostMapping
+//    public String createAttend(@ModelAttribute AttendDTO dto) {
+//        attendService.saveAttend(dto);
+//        return "redirect:/attends/view"; // 등록 후 리스트 페이지로 리다이렉트
+//    }
+//
+//    // 특정 사원의 출결 정보 조회 (HTML 렌더링)
+//    @GetMapping("/employee/{employeeId}")
+//    public String getAttendsByEmployee(@PathVariable Long employeeId, Model model) {
+//        List<AttendDTO> attends = attendService.getAttendsByEmployeeId(employeeId);
+//        model.addAttribute("attends", attends);
+//        return "erp/attendanceMgt/attendList"; // 특정 사원의 출결 정보를 렌더링
+//    }
+//
+//    // 출결 정보 수정
+//    @PostMapping("/update/{id}")
+//    public String updateAttend(@PathVariable Long id, @ModelAttribute AttendDTO dto) {
+//        attendService.updateAttend(id, dto);
+//        return "redirect:/attends/view";
+//    }
     
     
     

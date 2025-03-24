@@ -20,46 +20,46 @@ public class AttendService {
     private AttendRepository attendRepository;
     @Autowired
 	private EmployeesRepository employeeRepository;
-
-    // 출결 정보 저장
-    @Transactional
-    public AttendDTO saveAttend(AttendDTO dto) {
-        Employees employee = employeeRepository.findById(dto.getEmpNo())
-                .orElseThrow(() -> new RuntimeException("사원을 찾을 수 없습니다."));
-
-        Attend attend = Attend.toEntity(dto, employee);
-        Attend savedAttend = attendRepository.save(attend);
-        return AttendDTO.fromEntity(savedAttend);
-    }
-
+    
     // 모든 출결 정보 조회
     public List<AttendDTO> getAllAttends() {
         return attendRepository.findAll().stream()
-                .map(AttendDTO::fromEntity)
+                .map(Attend::toDto)
                 .collect(Collectors.toList());
     }
 
-    // 특정 사원의 출결 정보 조회
-    public List<AttendDTO> getAttendsByEmployeeId(Long employeeId) {
-        return attendRepository.findByEmpNo_EmpNo(employeeId).stream()
-                .map(AttendDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
+    // 출결 정보 저장
+//    @Transactional
+//    public AttendDTO saveAttend(AttendDTO dto) {
+//        Employees employee = employeeRepository.findById(dto.getEmpNo())
+//                .orElseThrow(() -> new RuntimeException("사원을 찾을 수 없습니다."));
+//
+//        Attend attend = Attend.toEntity(dto, employee);
+//        Attend savedAttend = attendRepository.save(attend);
+//        return AttendDTO.fromEntity(savedAttend);
+//    }
+
+//    // 특정 사원의 출결 정보 조회
+//    public List<AttendDTO> getAttendsByEmployeeId(Long employeeId) {
+//        return attendRepository.findByEmpNo_EmpNo(employeeId).stream()
+//                .map(AttendDTO::fromEntity)
+//                .collect(Collectors.toList());
+//    }
 
     // 출결 정보 수정
-    @Transactional
-    public AttendDTO updateAttend(Long id, AttendDTO dto) {
-        Attend attend = attendRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("출결 정보를 찾을 수 없습니다."));
-        
-        attend.setAttendDate(dto.getAttendDate());
-        attend.setAttendType(dto.getAttendType());
-        attend.setAttendStatus(dto.getAttendStatus());
-        attend.setRemarks(dto.getRemarks());
-
-        Attend updatedAttend = attendRepository.save(attend);
-        return AttendDTO.fromEntity(updatedAttend);
-    }
+//    @Transactional
+//    public AttendDTO updateAttend(Long id, AttendDTO dto) {
+//        Attend attend = attendRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("출결 정보를 찾을 수 없습니다."));
+//        
+//        attend.setAttendDate(dto.getAttendDate());
+//        attend.setAttendType(dto.getAttendType());
+//        attend.setAttendStatus(dto.getAttendStatus());
+//        attend.setRemarks(dto.getRemarks());
+//
+//        Attend updatedAttend = attendRepository.save(attend);
+//        return AttendDTO.fromEntity(updatedAttend);
+//    }
 
     // 출결 정보 삭제
     @Transactional
