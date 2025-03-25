@@ -1,99 +1,226 @@
 package com.example.cmtProject.comm.response;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpInputMessage;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
-
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
+
+import com.example.cmtProject.config.TransformationConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * URL 패턴 기반 요청 데이터 변환 처리
+ * 대문자+언더스코어 형식을 카멜케이스 형식으로 변환
+ */
 @ControllerAdvice
+@Slf4j
 public class RequestTransformer extends RequestBodyAdviceAdapter {
     
     private final ObjectMapper objectMapper;
+    private final TransformationHelper transformHelper;
+    private final TransformationConfig transformConfig;
     
-    public RequestTransformer(ObjectMapper objectMapper) {
+    public RequestTransformer(ObjectMapper objectMapper, TransformationHelper transformHelper, 
+                             TransformationConfig transformConfig) {
         this.objectMapper = objectMapper;
+        this.transformHelper = transformHelper;
+        this.transformConfig = transformConfig;
+        log.info("RequestTransformer 초기화 완료");
     }
     
     @Override
-    public boolean supports(MethodParameter methodParameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return true;
-    }
-    
-    @Override
-    public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        // Map 타입 변환
-        if (body instanceof Map) {
-            return transformMap((Map<String, Object>) body);
-        } 
-        // List 타입 변환
-        else if (body instanceof List) {
-            List<?> list = (List<?>) body;
-            if (!list.isEmpty() && list.get(0) instanceof Map) {
-                return list.stream()
-                        .map(item -> transformMap((Map<String, Object>) item))
-                        .collect(Collectors.toList());
-            }
+    public boolean supports(MethodParameter methodParameter, Type targetType, 
+                           Class<? extends HttpMessageConverter<?>> converterType) {
+        // URL 정보 추출
+        String requestURI = extractRequestURI(methodParameter);
+        if (requestURI == null) {
+            return false;
         }
-        return body;
+        
+        // 설정에 따라 변환 여부 결정
+        return transformConfig.shouldTransformRequest(requestURI);
     }
     
-    // Map의 키 이름 변환 (대문자+언더스코어 -> 카멜케이스)
-    private Map<String, Object> transformMap(Map<String, Object> map) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String transformedKey = transformKey(entry.getKey());
-            Object value = entry.getValue();
+    /**
+     * 메소드 파라미터에서 요청 URI 추출
+     */
+    private String extractRequestURI(MethodParameter methodParameter) {
+        try {
+            StringBuilder uriBuilder = new StringBuilder();
             
-            // 재귀적으로 중첩된 맵 처리
-            if (value instanceof Map) {
-                value = transformMap((Map<String, Object>) value);
-            } else if (value instanceof List) {
-                List<?> list = (List<?>) value;
-                if (!list.isEmpty() && list.get(0) instanceof Map) {
-                    value = list.stream()
-                            .map(item -> transformMap((Map<String, Object>) item))
-                            .collect(Collectors.toList());
+            // 컨트롤러 클래스의 기본 URL 가져오기
+            if (methodParameter.getContainingClass().isAnnotationPresent(RequestMapping.class)) {
+                String[] classPaths = methodParameter.getContainingClass().getAnnotation(RequestMapping.class).value();
+                if (classPaths.length > 0) {
+                    uriBuilder.append(classPaths[0]);
                 }
             }
             
-            result.put(transformedKey, value);
+            // 메소드에 RequestMapping이 있으면 경로 추가
+            if (methodParameter.hasMethodAnnotation(RequestMapping.class)) {
+                RequestMapping annotation = methodParameter.getMethodAnnotation(RequestMapping.class);
+                String[] methodPaths = annotation.value();
+                if (methodPaths.length > 0) {
+                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !methodPaths[0].startsWith("/")) {
+                        uriBuilder.append("/");
+                    }
+                    uriBuilder.append(methodPaths[0]);
+                }
+            }
+            
+            // GetMapping 처리
+            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.GetMapping.class)) {
+                org.springframework.web.bind.annotation.GetMapping annotation = 
+                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.GetMapping.class);
+                String[] paths = annotation.value();
+                if (paths.length > 0) {
+                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
+                        uriBuilder.append("/");
+                    }
+                    uriBuilder.append(paths[0]);
+                }
+            }
+            
+            // PostMapping 처리
+            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.PostMapping.class)) {
+                org.springframework.web.bind.annotation.PostMapping annotation = 
+                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.PostMapping.class);
+                String[] paths = annotation.value();
+                if (paths.length > 0) {
+                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
+                        uriBuilder.append("/");
+                    }
+                    uriBuilder.append(paths[0]);
+                }
+            }
+            
+            // PutMapping 처리
+            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.PutMapping.class)) {
+                org.springframework.web.bind.annotation.PutMapping annotation = 
+                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.PutMapping.class);
+                String[] paths = annotation.value();
+                if (paths.length > 0) {
+                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
+                        uriBuilder.append("/");
+                    }
+                    uriBuilder.append(paths[0]);
+                }
+            }
+            
+            // DeleteMapping 처리
+            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.DeleteMapping.class)) {
+                org.springframework.web.bind.annotation.DeleteMapping annotation = 
+                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.DeleteMapping.class);
+                String[] paths = annotation.value();
+                if (paths.length > 0) {
+                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
+                        uriBuilder.append("/");
+                    }
+                    uriBuilder.append(paths[0]);
+                }
+            }
+            
+            // PatchMapping 처리
+            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.PatchMapping.class)) {
+                org.springframework.web.bind.annotation.PatchMapping annotation = 
+                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.PatchMapping.class);
+                String[] paths = annotation.value();
+                if (paths.length > 0) {
+                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
+                        uriBuilder.append("/");
+                    }
+                    uriBuilder.append(paths[0]);
+                }
+            }
+            
+            return uriBuilder.toString();
+        } catch (Exception e) {
+            log.warn("RequestURI 추출 실패: {}", e.getMessage());
+            return null;
         }
-        
-        return result;
     }
     
-    // 대문자+언더스코어를 카멜케이스로 변환 (예: CMN_CODE -> cmnCode)
-    private String transformKey(String key) {
-        StringBuilder result = new StringBuilder();
-        boolean nextUpperCase = false;
+    @Override
+    public Object afterBodyRead(Object body, HttpInputMessage inputMessage, 
+                               MethodParameter parameter, Type targetType, 
+                               Class<? extends HttpMessageConverter<?>> converterType) {
+        if (body == null) return null;
         
-        for (int i = 0; i < key.length(); i++) {
-            char c = key.charAt(i);
+        try {
+            Object result;
             
-            if (c == '_') {
-                nextUpperCase = true;
-            } else {
-                if (i == 0) {
-                    result.append(Character.toLowerCase(c));
-                } else if (nextUpperCase) {
-                    result.append(Character.toUpperCase(c));
-                    nextUpperCase = false;
+            // DTO 객체 변환
+            if (!(body instanceof Map) && !(body instanceof List) && 
+                !(body instanceof String) && !(body instanceof Number) && !(body instanceof Boolean)) {
+                result = transformDto(body, parameter);
+            }
+            // Map 타입 변환
+            else if (body instanceof Map) {
+                result = transformHelper.transformMapFromExternalToInternal((Map<String, Object>) body);
+            } 
+            // List 타입 변환
+            else if (body instanceof List) {
+                List<?> list = (List<?>) body;
+                if (!list.isEmpty()) {
+                    if (list.get(0) instanceof Map) {
+                        result = list.stream()
+                                .map(item -> transformHelper.transformMapFromExternalToInternal((Map<String, Object>) item))
+                                .collect(Collectors.toList());
+                    } else if (!(list.get(0) instanceof String) && !(list.get(0) instanceof Number) && !(list.get(0) instanceof Boolean)) {
+                        // DTO 리스트 변환
+                        result = list.stream()
+                                .map(dto -> transformDto(dto, parameter))
+                                .collect(Collectors.toList());
+                    } else {
+                        result = body;
+                    }
                 } else {
-                    result.append(Character.toLowerCase(c));
+                    result = body;
                 }
+            } else {
+                result = body;
             }
+            
+            log.debug("요청 데이터 변환 완료: {}", parameter.getExecutable());
+            return result;
+        } catch (Exception e) {
+            log.error("요청 데이터 변환 실패: {}", e.getMessage(), e);
+            return body;
         }
-        
-        return result.toString();
     }
-} //RequestTransformer
+    
+    // DTO 객체 변환
+    private Object transformDto(Object dto, MethodParameter parameter) {
+        try {
+            // DTO를 Map으로 변환
+            Map<String, Object> dtoMap = objectMapper.convertValue(dto, Map.class);
+            // 키 이름 변환
+            Map<String, Object> transformedMap = transformHelper.transformMapFromExternalToInternal(dtoMap);
+            
+            // 대상 클래스 결정
+            Class<?> targetClass = getTargetDtoClass(parameter, dto.getClass());
+            // 변환된 Map을 다시 DTO로 변환
+            return objectMapper.convertValue(transformedMap, targetClass);
+        } catch (Exception e) {
+            log.error("DTO 변환 실패: {}", e.getMessage(), e);
+            return dto;
+        }
+    }
+    
+    // 대상 DTO 클래스 결정
+    private Class<?> getTargetDtoClass(MethodParameter parameter, Class<?> defaultClass) {
+        if (parameter.getParameterType() != null && !Object.class.equals(parameter.getParameterType())) {
+            return parameter.getParameterType();
+        }
+        return defaultClass;
+    }
+}

@@ -34,69 +34,82 @@ const GridUtil = (function() {
      * 
      * @returns {Object} 생성된 TOAST UI Grid 인스턴스
      */
-    function registerGrid(options) {
-        try {
-            // 필수 옵션 확인
-            if (!options.id || !options.columns) {
-                throw new Error('그리드 ID와 컬럼 정의는 필수입니다.');
-            }
+	function registerGrid(options) {
+	    try {
+	        // 필수 옵션 확인
+	        if (!options.id || !options.columns) {
+	            throw new Error('그리드 ID와 컬럼 정의는 필수입니다.');
+	        }
 
-            // 대상 요소 확인
-            const targetElement = document.getElementById(options.id);
-            if (!targetElement) {
-                throw new Error(`ID가 '${options.id}'인 HTML 요소를 찾을 수 없습니다.`);
-            }
+	        // 대상 요소 확인
+	        const targetElement = document.getElementById(options.id);
+	        if (!targetElement) {
+	            throw new Error(`ID가 '${options.id}'인 HTML 요소를 찾을 수 없습니다.`);
+	        }
 
-            const Grid = tui.Grid;
+	        const Grid = tui.Grid;
 
-            // 기본 그리드 옵션
-            const defaultOptions = {
-                scrollX: true,
-                scrollY: true,
-                rowHeaders: ['rowNum'],
-                ...options.gridOptions
-            };
+	        // 기본 그리드 옵션
+	        const defaultOptions = {
+	            scrollX: true,
+	            scrollY: true,
+	            rowHeaders: ['rowNum']
+	        };
 
-            // 그리드 생성 - TOAST UI Grid의 원본 API 호출
-            const gridInstance = new Grid({
-                el: targetElement,
-                columns: options.columns,
-                data: options.data || [],
-                draggable: options.draggable || false,
-                ...defaultOptions
-            });
+	        // options에서 내부 처리용 속성들을 제외한 모든 속성을 추출
+	        const { 
+	            id, 
+	            hiddenColumns, 
+	            displayColumnName, 
+	            onInitialized, 
+	            gridOptions = {}, 
+	            ...otherOptions 
+	        } = options;
 
-            // 숨김 컬럼 처리
-            if (options.hiddenColumns && options.hiddenColumns.length > 0) {
-                options.hiddenColumns.forEach(column => {
-                    gridInstance.hideColumn(column);
-                });
-            }
+	        // 최종 옵션 구성 (우선순위: 1. gridOptions 2. otherOptions 3. defaultOptions)
+	        const finalOptions = {
+	            ...defaultOptions,
+	            ...otherOptions,
+	            ...gridOptions,
+	            el: targetElement,
+	            columns: options.columns,
+	            data: options.data || []
+	        };
 
-            // 드래그앤드롭 이벤트 (순서 컬럼이 있는 경우) - 프로젝트 특화 기능 수정필요함 반영이 안됨
-            if (options.draggable && options.displayColumnName) {
-                gridInstance.on('drop', () => {
-                    _updateRowOrder(gridInstance, options.displayColumnName);
-                });
-            }
+	        // 그리드 생성 - 모든 옵션을 전달
+	        const gridInstance = new Grid(finalOptions);
 
-            // 인스턴스 저장 - 중앙 관리 목적
-            _gridInstances[options.id] = gridInstance;
+	        // 숨김 컬럼 처리
+	        if (hiddenColumns && hiddenColumns.length > 0) {
+	            hiddenColumns.forEach(column => {
+	                gridInstance.hideColumn(column);
+	            });
+	        }
 
-            // 초기화 완료 콜백 실행
-            if (typeof options.onInitialized === 'function') {
-                options.onInitialized(gridInstance);
-            }
+	        // 드래그앤드롭 이벤트 (순서 컬럼이 있는 경우)
+	        if (options.draggable && displayColumnName) {
+	            gridInstance.on('drop', () => {
+	                _updateRowOrder(gridInstance, displayColumnName);
+	            });
+	        }
 
-            return gridInstance;
-        } catch (error) {
-            console.error('그리드 생성 중 오류 발생:', error);
-            if (window.AlertUtil) {
-                AlertUtil.showError('그리드 초기화 오류', error.message);
-            }
-            return null;
-        }
-    }
+	        // 인스턴스 저장
+	        _gridInstances[id] = gridInstance;
+
+	        // 초기화 완료 콜백 실행
+	        if (typeof onInitialized === 'function') {
+	            onInitialized(gridInstance);
+	        }
+
+	        return gridInstance;
+	    } catch (error) {
+	        console.error('그리드 생성 중 오류 발생:', error);
+	        if (window.AlertUtil) {
+	            AlertUtil.showError('그리드 초기화 오류', error.message);
+	        }
+	        return null;
+	    }
+	}
 
     /**
      * 그리드 인스턴스 가져오기
@@ -468,26 +481,35 @@ const GridUtil = (function() {
      * @param {Function} callback - 행 클릭 시 호출될 콜백 함수
      * @returns {boolean} 이벤트 등록 성공 여부
      */
-    function onRowClick(gridId, callback) {
-        try {
-            const grid = _gridInstances[gridId];
-            if (!grid) {
-                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
-            }
+	function onRowClick(gridId, callback) {
+	    try {
+	        const grid = _gridInstances[gridId];
+	        if (!grid) {
+	            throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+	        }
 
-            grid.on('click', ev => {
-                const rowData = grid.getRow(ev.rowKey);
-                if (typeof callback === 'function') {
-                    callback(rowData, ev.rowKey, ev.columnName);
-                }
-            });
+	        grid.on('click', ev => {
+	            // ev.rowKey가 유효한지 확인
+	            if (ev.rowKey === undefined || ev.rowKey === null) {
+	                console.warn('유효하지 않은 rowKey:', ev.rowKey);
+	                if (typeof callback === 'function') {
+	                    callback(null, ev.rowKey, ev.columnName);
+	                }
+	                return;
+	            }
+	            
+	            const rowData = grid.getRow(ev.rowKey);
+	            if (typeof callback === 'function') {
+	                callback(rowData, ev.rowKey, ev.columnName);
+	            }
+	        });
 
-            return true;
-        } catch (error) {
-            console.error('행 클릭 이벤트 등록 중 오류:', error);
-            return false;
-        }
-    }
+	        return true;
+	    } catch (error) {
+	        console.error('행 클릭 이벤트 등록 중 오류:', error);
+	        return false;
+	    }
+	}
 
     /**
      * 더블 클릭 이벤트 처리 함수 - 편의 기능
