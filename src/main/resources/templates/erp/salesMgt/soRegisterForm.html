@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 	<html xmlns:th="http://www.thymeleaf.org" 
 	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-	      layout:decorate="~{layouts/layout}"> 
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	    
 	<head>
-		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+		<!-- <link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon"> -->
 	    
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
@@ -13,66 +13,121 @@
     
     <title>Cmt</title>
 	<style>
-		
-	    .container1 {
-	        display: grid;
-			grid-template-columns: 100px 150px 120px 180px 50px 180px 130px 150px 1fr; 
-	        gap: 3px;
-	        background: #f5f5f5;
-	        padding: 4px;
-	        border-radius: 5px;
-			border : 1px solid black;
-			text-align: center;
-	    }
-		
-		.container2 {
-	        display: grid;
-			grid-template-columns: 100px 150px 150px 80px 80px 160px 160px 80px 80px 100px 1fr; 
-	        gap: 3px;
-	        background: #f5f5f5;
-	        padding: 4px;
-	        border-radius: 5px;
-			border : 1px solid black;
-			text-align: center;
-	    }
-			
-		
-	    .container input, .container select {
-	        padding: 5px;
-	        border: 1px solid #ccc;
-	        border-radius: 3px;
-	    }
-		
-	    .button-container {
-	        display: flex;
-	        gap: 5px;
-	        margin: 10px;
-			justify-content: space-between;
-	    }
-		
-	    button {
-	        padding: 5px 10px;
-	        border: none;
-	        cursor: pointer;
-	        border-radius: 3px;
-	    }
-		
-	    .search { background:dodgerblue; color: white; }
-	    .request { background: purple; color: white; }
-	    .complete { background: green; color: white; }
-	    .cancel { background: red; color: white; }
-	    .excel { background: darkblue; color: white; }
-	    .help { background: orange; color: white; }
-		
-	</style>
+         body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: auto;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            width: 120px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .search-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            margin-left: 5px;
+            border-radius: 5px;
+        }
+        .search-btn:hover {
+            background-color: #0056b3;
+        }
+        .date-container {
+            display: flex;
+            align-items: center;
+        }
+        .date-container input {
+            flex: 1;
+        }
+        .calendar-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            margin-left: 5px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
 
     <div layout:fragment="content">
         
-		
-		
+		 <div class="container">
+        <h2>수주 정보 입력</h2>
+        <div class="form-group">
+            <label>회사 *</label>
+            <select>
+                <option>필피엠 데모</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>담당자 *</label>
+            <input type="text" value="system" disabled>
+            <input type="text" placeholder="필피엠">
+            <button class="search-btn">🔍</button>
+        </div>
+        <div class="form-group">
+            <label>수주번호 *</label><!-- select로 -->
+            <input type="text" placeholder="2011" readonly>
+            <button class="search-btn">🔍</button>
+        </div>
+        <div class="form-group">
+            <label>수주번호</label><!-- 자동생성 -->
+            <input type="text" value="SO20103120001" disabled>
+        </div>
+        <div class="form-group date-container">
+            <label>수주일 *</label>
+            <input type="date" value="2021-03-12">
+        </div>
+        <div class="form-group">
+            <label>거래처 *</label><!-- select로 -->
+            <input type="text" placeholder="매출처5">
+            <button class="search-btn">🔍</button>
+        </div>
+       
+        <div class="form-group">
+            <label>부가세적용 *</label>
+            <select>
+                <option>적용</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>통화</label>
+            <select>
+                <option>KRW</option>
+            </select>
+            <input type="text" value="1" disabled>
+        </div>
+        <div class="form-group">
+            <label>비고</label>
+            <textarea rows="3"></textarea>
+        </div>
     </div>
+		
+    </div> <!-- layout:fragment="content" -->
    	
 	<th:block layout:fragment="script">
 	    
