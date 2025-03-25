@@ -41,6 +41,10 @@ dependencies {
 	
 	// 타임리프 페이지 레이아웃 의존성 라이브러리 추가
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+	
+	// JSON 파싱용 라이브러리
+	// https://mvnrepository.com/artifact/com.google.code.gson/gson
+	implementation 'com.google.code.gson:gson:2.12.1'
 }
 
 tasks.named('test') {

@@ -113,6 +113,12 @@ public class Employees{
 
     @Column(name = "EMP_CAR_NUMBER")
     private String empCarNumber; // 차량번호
+
+	public Employees(Long empNo) {
+		super();
+		this.empNo = empNo;
+	}
+    
     
   
 }

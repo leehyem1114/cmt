@@ -69,7 +69,7 @@ public class Attend {
     public AttendDTO toDto() {
         return AttendDTO.builder()
             .id(atdNo)
-            .empNo(empNo)
+            .empNo(empNo.getEmpNo())
             .attendDate(attendDate)
             .attendType(attendType)
             .attendStatus(attendStatus)
