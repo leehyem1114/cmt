@@ -3,6 +3,7 @@ package com.example.cmtProject.controller.erp.employees;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -15,11 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
+import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +31,7 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/emp")
 public class EmployeesController {
 	@Autowired private EmployeesService empService;
+	@Autowired private CommonService commonService;
 
 	@GetMapping("/")
 	public String main() {
@@ -45,18 +49,26 @@ public class EmployeesController {
 	}
 	
 	/****나의 정보수정****/
-	@PostMapping("/myEmplist/empUpdate")
+	@PostMapping("/myEmplist")
 	@ResponseBody
 	public String myEmpUpdate(
-								@ModelAttribute EmpRegistDTO dto,
-								@RequestParam("empProfileFile") MultipartFile empProfileFile,
-						        @AuthenticationPrincipal PrincipalDetails principal) {
-
+								@ModelAttribute EmpRegistDTO dto, //JSON 받아옴
+								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
+						        @AuthenticationPrincipal PrincipalDetails principal,
+						        Model model) {
 	    System.out.println("받은 DTO: " + dto);
+	    //성별코드 가져오기
+	    List<CommonCodeDetailDTO> genderLsit = commonService.getCodeListByGroup("GENDER");
+	    model.addAttribute("GENDER",genderLsit);
+	    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>"+genderLsit);
 	    
+	    //즉, Thymeleaf에서 ${code.cmnDetailName} 이라고 했는데, code가 null이라는 뜻
+	    //내일와서 DTO 새로 만들어야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	    int result = empService.updateEmp(dto);
-	    
-	    return "response";
+	    if(result > 0) {
+	    	return "사원 정보수정 완료";
+	    }
+	    return "erp/employees/myEmplist";
 	}
 	
 	
@@ -90,9 +102,9 @@ public class EmployeesController {
 		int empRegi = empService.insertEmp(empRegistDTO);
 		
 		if(empRegi > 0) {
-			System.out.println("직원추가 완료~~~~~~~~~~~~~~~~~~!!");
+			return "erp/employees/emplist";
 		}
-		System.out.println("insert>>"+empRegi);
+		System.out.println("직원추가 완료 : " + empRegistDTO);
 		return "erp/employees/emplist";
 	}
 	

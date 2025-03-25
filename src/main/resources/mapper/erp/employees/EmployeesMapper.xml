@@ -20,7 +20,7 @@
     
 	<!-- 전체 조회 -->
     <select id="selectEmplist" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
-		SELECT 
+		SELECT EMP.EMP_NO,
 		       EMP.EMP_ID,
 		       EMP.EMP_NAME,
 		       D.DEPT_NAME,
@@ -29,6 +29,7 @@
 		FROM EMPLOYEES EMP
 		LEFT JOIN DEPARTMENTS D ON EMP.DEPT_NO = D.DEPT_NO
 		LEFT JOIN POSITIONS P ON EMP.POSITION_NO = P.POSITION_NO
+		ORDER BY EMP_NO ASC
     </select>
     
 <!--    필터링 -->
@@ -57,6 +58,7 @@
 	            AND e.emp_start_date BETWEEN #{startDate} AND #{endDate}
 	        </if>
 	    </where>
+	   
 	</select>
 
 	<insert id="insertEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
@@ -123,6 +125,7 @@
 	        #{empCarNumber},
 	        #{salNo}
 	    )
+	    
 	</insert>
 	
 	<update id="updateEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
@@ -131,7 +134,7 @@
 	        EMP_LEVEL = #{empLevel},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
-	        EMP_GENDER = #{empGender},
+	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
 	        DEPT_NO = #{deptNo, jdbcType=NUMERIC},
 	        POSITION_NO = #{positionNo, jdbcType=NUMERIC},
 	        EMP_POST_CODE = #{empPostCode},

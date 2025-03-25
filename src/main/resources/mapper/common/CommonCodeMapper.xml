@@ -205,5 +205,17 @@
             CMN_CODE = #{commonCode}
             AND CMN_DETAIL_CODE = #{detailCode}
     </delete>
+    
+    <select id="selectDetailCodeList" resultType="com.example.cmtProject.dto.comm.CommonCodeDetailDTO">
+	     SELECT 
+	      CMN_DETAIL_CODE   AS cmnDetailCode,
+	      CMN_DETAIL_NAME   AS cmnDetailName
+	    FROM 
+	      COMMONCODE_DETAIL
+	    WHERE 
+	      CMN_CODE = #{groupCode}
+	      AND CMN_DETAIL_CODE_IS_ACTIVE = 'Y'
+	    ORDER BY CMN_DETAIL_SORT_ORDER ASC
+    </select>
   
 </mapper>
