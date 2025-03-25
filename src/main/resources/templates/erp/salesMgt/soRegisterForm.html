@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}"> 
+	<head>
+		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	    
+	    <!-- 기본 메타 정보 -->
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>수주 등록</title>
+    
+    <title>Cmt</title>
+	<style>
+		
+	    .container1 {
+	        display: grid;
+			grid-template-columns: 100px 150px 120px 180px 50px 180px 130px 150px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
+		
+		.container2 {
+	        display: grid;
+			grid-template-columns: 100px 150px 150px 80px 80px 160px 160px 80px 80px 100px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
+			
+		
+	    .container input, .container select {
+	        padding: 5px;
+	        border: 1px solid #ccc;
+	        border-radius: 3px;
+	    }
+		
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+		
+	    button {
+	        padding: 5px 10px;
+	        border: none;
+	        cursor: pointer;
+	        border-radius: 3px;
+	    }
+		
+	    .search { background:dodgerblue; color: white; }
+	    .request { background: purple; color: white; }
+	    .complete { background: green; color: white; }
+	    .cancel { background: red; color: white; }
+	    .excel { background: darkblue; color: white; }
+	    .help { background: orange; color: white; }
+		
+	</style>
+</head>
+<body>
+
+    <div layout:fragment="content">
+        
+		
+		
+    </div>
+   	
+	<th:block layout:fragment="script">
+	    
+	</th:block>
+</body>
+
+</html>
