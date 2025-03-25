@@ -132,9 +132,9 @@
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    const grid = new tui.Grid({
-	        el: document.getElementById('gridTop'), // 그리드를 표시할 DOM 엘리먼트
+	        el: document.getElementById('gridTop'), 
 			data : /*[[${soModel}]]*/ [],
-	        rowHeaders: ['checkbox'], // 행의 첫 번째 열에 체크박스 추가
+	        rowHeaders: ['checkbox'], 
 	        columns: [
 				{
 	                header: '수주번호',
@@ -181,7 +181,7 @@
 	    
 	 	// 체크박스 클릭 시 이벤트 추가
 	    grid.on('check', (checkItem) => {
-	        const rowData = grid.getRow(checkItem.rowKey); // 선택한 행의 데이터 가져오기
+	        const rowData = grid.getRow(checkItem.rowKey); 
 	        alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
 	    });
 
@@ -228,9 +228,7 @@
 					$.ajax({
 			           url: "/sales/getCltName", 
 			           type: "GET",       
-			           //contentType: "application/json", // GET방식일 때 삭제
-			           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
-					   data: {cltCode: cltValue}, //GET방식 일 때 사용
+					   data: {cltCode: cltValue},
 			           success: function(response) {
 							$("#cltName").val(response);
 			           },
