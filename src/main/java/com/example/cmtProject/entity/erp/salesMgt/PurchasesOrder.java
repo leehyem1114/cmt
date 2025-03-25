@@ -2,16 +2,16 @@ package com.example.cmtProject.entity.erp.salesMgt;
 
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -58,7 +58,8 @@ public class PurchasesOrder {
 	private int poValue;  //공급가액
 	
 	@Column(name = "PO_STATUS")
-	private String poStatus;  //종결여부
+	@Enumerated(EnumType.STRING)
+	private PurchasesOrderStatus poStatus;  //종결여부
 	
 	@Column(name = "PO_COMMENTS")
 	private String poComments;  //비고

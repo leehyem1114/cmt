@@ -1,20 +1,15 @@
 package com.example.cmtProject.entity.erp.salesMgt;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.example.cmtProject.entity.erp.employees.Employees;
-import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
-
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -83,8 +78,8 @@ public class SalesOrder {
 	@Column(name = "SO_VALUE")
 	private int soValue;  //공급가액
 	
-	@Column(name = "SO_STATUS")
-	private String soStatus; //종결여부
+	@Embedded
+	private SalesOrderStatus soStatus; //종결여부
 	
 	@Column(name = "SO_COMMENTS")
 	private String soComments;  //비고

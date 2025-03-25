@@ -9,7 +9,7 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <title>수주 등록</title>
+	    <title>수주 조회</title>
     
     <title>Cmt</title>
 	<style>
@@ -27,7 +27,7 @@
 		
 		.container2 {
 	        display: grid;
-			grid-template-columns: 100px 150px 150px 80px 80px 160px 160px 80px 80px 100px 1fr; 
+			grid-template-columns: 100px 150px 150px 80px 150px 160px 160px 80px 80px 100px 1fr; 
 	        gap: 3px;
 	        background: #f5f5f5;
 	        padding: 4px;
@@ -71,9 +71,9 @@
     <div layout:fragment="content">
         
 		<div class="button-container">
-			<div><h2>수주등록</h2></div>
+			<div><h2>수주조회</h2></div>
 			<div>
-	        <button class="request">📃 신규</button>
+	        <button class="request" onclick="location.href='/sales/soregisterform'"}>📃 신규</button>
 	        <button class="cancel">✏️ 수정</button>
 	        <button class="help">❓ HELP</button>
 			</div>
@@ -81,38 +81,44 @@
 		
 		<form action="/sales/so" method="get" th:object="${SalesOrder}">	    
 		    <div class="container1">
-		        <label class="sell_company_label">거래처 코드</label>
-		        <select class="sell_select">
-		            <option th:each="code : ${soModel}"
-						th:value="${code.cltCode}"
-						th:text="${code.cltCode}"
-						selected="${SalesOrder.cltCode == code}"
-					></option>
-		        </select>
+		        <label class="sell_company_label">수주 코드</label>
+				<input type="text" placeholder="CODE">
 		        <label class="sell_so_date_label">수주일</label>
 		        <input type="date" class="sell_date1">
 		        <span class="sell_tilt">~</span>
 		        <input type="date" class="sell_date2">
 		        <label class="sell_sonum_label">수주번호</label>
 		        <input type="text" class="sell_sonum_text">
+				<button class="search">🔍 검색</button>
 				<span></span>
 		    </div>
 	
 		    <div class="container2">
-		        <label>품목</label>
-		        <input type="text" placeholder="CODE">
-		        <input type="text" placeholder="NAME">
-		        <button class="search">🔍 검색</button>
+		        <label>제품</label>
+				<select class="sell_select" id="pdtCode">
+		            <option th:each="code : ${pdtCode}"
+						th:value="${code}"
+						th:text="${code}"
+						selected="${SalesOrder.pdtCode == code}"
+					></option>
+		        </select>
+		        <input type="text" id="pdtName" placeholder="NAME">
+		      
 		        <label>거래처</label>
-		        <input type="text" placeholder="CODE">
-		        <input type="text" placeholder="NAME">
-		        <button class="search">🔍 검색</button>
+				<select class="sell_select" id="cltCode">
+		            <option th:each="code : ${cltCode}"
+						th:value="${code}"
+						th:text="${code}"
+						selected="${SalesOrder.cltCode == code}"
+					></option>
+		        </select>
+		        <input type="text" id="cltName" placeholder="NAME">
+		        
 				<label>진행상태</label>
 		        <select>
 		            <option>전체</option>
 		        </select>
 		    </div>
-	
 		</form>
 		
 		<br>
@@ -130,6 +136,10 @@
 			data : /*[[${soModel}]]*/ [],
 	        rowHeaders: ['checkbox'], // 행의 첫 번째 열에 체크박스 추가
 	        columns: [
+				{
+	                header: '수주번호',
+	                name: 'soNo'
+	            },
 	            {
 	                header: '수주코드',
 	                name: 'soCode'
@@ -141,7 +151,31 @@
 	            {
 	                header: '사원코드',
 	                name: 'empId'
-	            }
+	            },
+	            {
+	                header: '창고코드',
+	                name: 'whsCode'
+	            },
+	            {
+	                header: '제품코드',
+	                name: 'pdtCode'
+	            },
+				{
+	                header: '거래처코드',
+	                name: 'cltCode'
+	            },
+	            {
+	                header: '수량',
+	                name: 'soQuantity'
+	            },
+	            {
+	                header: '공급가액',
+	                name: 'soValue'
+	            },
+				{
+					header: '현재상태',
+					name: 'soStatus'
+				}
 	        ] // 열 설정
 	    });
 	    
@@ -165,7 +199,49 @@
     </div>
    	
 	<th:block layout:fragment="script">
-	    
+	    <script>
+			$(document).ready(function(){
+				
+				//제품명 가져오기
+				$("#pdtCode").change(function(){
+ 					let pdtValue = $("#pdtCode").val();
+
+					$.ajax({
+			           url: "/sales/getPdtName", 
+			           type: "GET",       
+			           //contentType: "application/json", // GET방식일 때 삭제
+			           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
+					   data: {pdtCode: pdtValue}, //GET방식 일 때 사용
+			           success: function(response) {
+							$("#pdtName").val(response);
+			           },
+			           error: function(error) {
+			               alert(error);
+			           }
+			       });
+				});
+				
+				//거래처명 가져오기
+				$("#cltCode").change(function(){
+ 					let cltValue = $("#cltCode").val();
+					
+					$.ajax({
+			           url: "/sales/getCltName", 
+			           type: "GET",       
+			           //contentType: "application/json", // GET방식일 때 삭제
+			           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
+					   data: {cltCode: cltValue}, //GET방식 일 때 사용
+			           success: function(response) {
+							$("#cltName").val(response);
+			           },
+			           error: function(error) {
+			               alert(error);
+			           }
+			       });
+				});
+			})
+			
+		</script>
 	</th:block>
 </body>
 
