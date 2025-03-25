@@ -7,11 +7,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 데이터 변환을 위한 핵심 유틸리티 클래스
  */
 @Component
+@Slf4j
 public class TransformationHelper {
     
     /**
@@ -123,7 +125,6 @@ public class TransformationHelper {
             }
             result.append(Character.toUpperCase(c));
         }
-        
         return result.toString();
     }
 }
