@@ -118,7 +118,8 @@ const CommonCodeManager = (function() {
             // 공통코드 그리드 생성 - 리팩토링된 GridUtil 사용
             commonCodeGrid = GridUtil.registerGrid({
                 id: 'commonCode',
-                columns: [{
+                columns: [
+					{
                         header: '코드',
                         name: 'CMN_CODE',
                         editor: 'text'
@@ -148,6 +149,13 @@ const CommonCodeManager = (function() {
                         name: 'ROW_TYPE'
                     } // 조회/추가 구분
                 ],
+				columnOptions: {
+				  resizable: true
+				},
+				pageOptions: {
+					useClient: true,
+				    perPage: 5
+				  },
                 data: gridData,
                 draggable: true,
                 displayColumnName: 'CMN_SORT_ORDER',
@@ -158,11 +166,23 @@ const CommonCodeManager = (function() {
             });
 
             // 행 클릭 이벤트 처리 - 리팩토링된 GridUtil 사용
-            GridUtil.onRowClick('commonCode', function(rowData) {
-                console.log('공통코드 행 선택:', rowData.CMN_CODE);
-                selectedCommonCode = rowData.CMN_CODE;
-                loadCommonCodeDetailGrid(selectedCommonCode);
-            });
+			GridUtil.onRowClick('commonCode', function(rowData) {
+			    // null 체크 추가
+			    if (!rowData) {
+			        console.warn('클릭된 행의 데이터가 존재하지 않습니다.');
+			        return;
+			    }
+			    
+			    // CMN_CODE 필드 체크
+			    if (rowData.CMN_CODE === undefined || rowData.CMN_CODE === null) {
+			        console.warn('행 데이터에 CMN_CODE가 정의되지 않았습니다.');
+			        return;
+			    }
+			    
+			    console.log('공통코드 행 선택:', rowData.CMN_CODE);
+			    selectedCommonCode = rowData.CMN_CODE;
+			    loadCommonCodeDetailGrid(selectedCommonCode);
+			});
 
             // 행 더블클릭 이벤트 처리 - 키 컬럼 제어
             GridUtil.setupKeyColumnControl('commonCode', 'CMN_CODE');
