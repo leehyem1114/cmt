@@ -101,9 +101,11 @@
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
 	<th:block layout:fragment="script">
-		<script type="text/javascript">
-
-		</script>
+		<script th:inline="javascript">
+	        // Thymeleaf 데이터를 전역 변수로 설정
+	        window.salaryItems = /*[[${salaryList}]]*/[];
+	        console.log("salaryList 데이터:", window.salaryList);
+	    </script>
 		
 		<script src="/js/salary/salaryManager.js"></script>
 	</th:block>

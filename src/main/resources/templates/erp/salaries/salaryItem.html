@@ -266,6 +266,11 @@
 			 });
 			 */
 		</script>
+		<script th:inline="javascript">
+	        // Thymeleaf 데이터를 전역 변수로 설정
+	        window.salaryItems = /*[[${salaryItems}]]*/[];
+	        console.log("salaryItems 데이터:", window.salaryItems);
+	    </script>
 		
 		<script src="/js/salary/salaryItemManager.js"></script>
 	</th:block>

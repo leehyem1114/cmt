@@ -18,10 +18,10 @@ import lombok.ToString;
 public class SalaryItemDTO {
 	private Long salItemNo; // 급여 유형 번호
 	private SalaryItemType salItemType; // 급여 유형
-	private String salItemName; // 급여 유형명
+	private String salItemName; // 급여 항목명
 	private String salItemDesc; // 급여 유형 설명
 	private String salItemCalc; // 계산식
-	private Long salItemImportance; // 중요도
+	private Long salItemImportance; // 우선순위
 	private Long salItemApplyYear; // 적용년도
 	private LocalDate salItemUpdate; // 최종수정일시
 	

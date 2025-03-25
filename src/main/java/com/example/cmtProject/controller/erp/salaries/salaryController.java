@@ -91,7 +91,9 @@ public class salaryController {
 	@GetMapping("/salaryList")
 	public String salaryListGet(Model model) {
 		List<Salary> salaryList = salaryItemService.getAllSalaries();
-		model.addAttribute("salaries", salaryList);
+		model.addAttribute("salaryList", salaryList);
+	    // 등록 폼을 위한 DTO 객체도 미리 전달
+	    model.addAttribute("salaryItemDTO", new SalaryItemDTO());
 		return "erp/salaries/salaryList";
 	}
 	
