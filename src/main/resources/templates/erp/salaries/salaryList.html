@@ -1,90 +1,113 @@
 <!DOCTYPE html>
 <!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layouts/layout}">
 <head>
-    <!-- 기본 메타 정보 -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMT</title>
-    
+<!-- 기본 메타 정보 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+	integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+	crossorigin="anonymous" referrerpolicy="no-referrer" />
+<title>CMT</title>
+<style type="text/css">
+	.clickable-row:hover{background-color:#e9ecef;}
+	
+	#searchForm form {display: flex;align-items: center; /* 수직 정렬 */gap: 10px; /* 요소 간 간격 */flex-wrap: wrap; /* 화면이 좁아질 경우 줄바꿈 */ margin-bottom: 20px;}
+	
+	.date-range {display: flex;align-items: center;gap: 5px; /* 날짜 입력 필드 간격 조정 */}
+	
+	.date-range input {width: 150px; /* 입력 필드 크기 조정 */}
+	
+	.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
+</style>
 </head>
 <body>
-    <!-- 
+	<!-- 
         중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
-    <div layout:fragment="content">
-        <!-- 페이지 내용 작성 영역 시작 -->
-        
-        <h3>급여 지급 내역</h3>
-        
-        <!-- 
-            여기에 페이지별 HTML 코드를 작성하세요.
-            사이드바와 메뉴는 레이아웃에서 자동으로 포함됩니다.
-        -->
-        
-        <div class="card">
-            <div class="card-header">
-                <h4>카드 제목</h4>
-            </div>
-            <div class="card-body">
-                <p>이 영역에 페이지의 주요 내용을 작성하세요.</p>
-                
-                <!-- 표 예시 -->
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>항목 1</th>
-                                <th>항목 2</th>
-                                <th>항목 3</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>내용 1</td>
-                                <td>내용 2</td>
-                                <td>내용 3</td>
-                            </tr>
-                            <tr>
-                                <td>내용 4</td>
-                                <td>내용 5</td>
-                                <td>내용 6</td>
-                            </tr>
-                        </tbody>
-                    </table>
+	<div layout:fragment="content">
+		<!-- 페이지 내용 작성 영역 시작 -->
+
+		<h3>급여 조회</h3>
+
+		<div class="card">
+			<div class="card-header">
+				<!-- 급여 항목 추가 버튼 -->
+				<div class="mt-4">
+					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
+						급여 계산기 <i class="fa-solid fa-xmark"></i>
+					</button>
+					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
+						명세서 출력 <i class="fa-solid fa-xmark"></i>
+					</button>
+					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
+						급여 이체 <i class="fa-solid fa-xmark"></i>
+					</button>
+					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
+						삭제 <i class="fa-solid fa-xmark"></i>
+					</button>
+				</div>
+			</div>
+			<div class="card-body">
+<!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
+                <div id="searchForm"> <!-- 사원검색박스 -->
+	                <form th:action="@{/sal/salList/searchSal}" method="post" >
+	                	부서
+						<div class="form-group">
+							<select id="searchType" name="dept" class="form-select" >
+								<option value="">전체</option>
+								<option value="1">인사</option>
+								<option value="2">개발 🤷‍♀️</option>
+								<option value="3">마케팅</option>
+								<option value="4">영업</option>
+								<option value="5">생산</option>
+							</select>
+						</div>
+		                사번/이름 
+						<input type="text" id="empName" class="" maxlength="9">
+						<div class="date-range">
+							지급일 
+							<div class="date-range">
+							    <input type="text" id="startDate" class="form-control datepicker" placeholder="시작 날짜">~
+							    <input type="text" id="endDate" class="form-control datepicker" placeholder="종료 날짜">
+							</div>
+						</div>
+						<button type="submit" class="btn btn-primary btnSearchSal">검색</button>      
+	                </form>
                 </div>
                 
-                <!-- 버튼 예시 -->
-                <div class="mt-4">
-                    <button class="btn btn-primary">기본 버튼</button>
-                    <button class="btn btn-secondary">보조 버튼</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 페이지 내용 작성 영역 끝 -->
-    </div>
-    
-    <!-- 
+				<!-- 급여 유형 리스트 -->
+				<div class="table-responsive">
+					<div id="salaryGrid"></div>
+					
+					
+				</div>
+			</div>
+		</div>
+
+
+
+		<!-- 페이지 내용 작성 영역 끝 -->
+	</div>
+
+	<!-- 
         페이지별 JavaScript 추가 영역.
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-    <th:block layout:fragment="script">
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-        </script>
-    </th:block>
+	<th:block layout:fragment="script">
+		<script th:inline="javascript">
+	        // Thymeleaf 데이터를 전역 변수로 설정
+	        window.salaryItems = /*[[${salaryList}]]*/[];
+	        console.log("salaryList 데이터:", window.salaryList);
+	    </script>
+		
+		<script src="/js/salary/salaryManager.js"></script>
+	</th:block>
 </body>
 </html>

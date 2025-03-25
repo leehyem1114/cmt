@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.SalaryItemDTO;
+import com.example.cmtProject.entity.Salary;
 import com.example.cmtProject.entity.SalaryItemType;
 import com.example.cmtProject.service.erp.salaries.SalaryItemService;
 
@@ -88,7 +89,11 @@ public class salaryController {
 //	}
 	
 	@GetMapping("/salaryList")
-	public String salaryListGet() {
+	public String salaryListGet(Model model) {
+		List<Salary> salaryList = salaryItemService.getAllSalaries();
+		model.addAttribute("salaryList", salaryList);
+	    // 등록 폼을 위한 DTO 객체도 미리 전달
+	    model.addAttribute("salaryItemDTO", new SalaryItemDTO());
 		return "erp/salaries/salaryList";
 	}
 	
