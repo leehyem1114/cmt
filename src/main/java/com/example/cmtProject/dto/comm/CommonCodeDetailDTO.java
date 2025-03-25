@@ -3,7 +3,9 @@ package com.example.cmtProject.dto.comm;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 공통코드 상세 DTO

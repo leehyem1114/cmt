@@ -23,6 +23,13 @@ public class CommonService {
     @Autowired
     private CommonCodeMapper commonCodeMapper;
     
+    
+    /*공통코드 디테일값 불러오기*/
+    public List<CommonCodeDetailDTO> getCodeListByGroup(String groupCode) {
+		return commonCodeMapper.selectDetailCodeList(groupCode);
+	}
+    
+    
     /**
      * 공통코드 목록 조회 (Map 반환)
      * 기존 API와의 호환성을 위한 메서드
@@ -334,4 +341,6 @@ public class CommonService {
         }
         return false;
     }
+
+	
 }
