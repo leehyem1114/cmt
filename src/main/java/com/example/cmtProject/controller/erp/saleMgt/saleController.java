@@ -21,7 +21,6 @@ public class saleController {
 	@Autowired
 	private SalesOrderRepository salesOrderRepository;
 	
-	
 	@GetMapping("/soform")
 	public String salesOrderForm(Model model) {
 		
@@ -43,6 +42,7 @@ public class saleController {
  		model.addAttribute("cltCode",cltCode);
  		
 		return "erp/salesMgt/salesOrderForm";
+ 		//return "erp/salesMgt/aaa";
 	}
 	
 	@GetMapping("/getPdtName")
