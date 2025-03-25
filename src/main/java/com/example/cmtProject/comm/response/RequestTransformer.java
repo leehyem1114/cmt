@@ -9,16 +9,14 @@ import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
-import com.example.cmtProject.config.TransformationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * URL 패턴 기반 요청 데이터 변환 처리
+ * 요청 데이터 변환 처리
  * 대문자+언더스코어 형식을 카멜케이스 형식으로 변환
  */
 @ControllerAdvice
@@ -27,126 +25,18 @@ public class RequestTransformer extends RequestBodyAdviceAdapter {
     
     private final ObjectMapper objectMapper;
     private final TransformationHelper transformHelper;
-    private final TransformationConfig transformConfig;
     
-    public RequestTransformer(ObjectMapper objectMapper, TransformationHelper transformHelper, 
-                             TransformationConfig transformConfig) {
+    public RequestTransformer(ObjectMapper objectMapper, TransformationHelper transformHelper) {
         this.objectMapper = objectMapper;
         this.transformHelper = transformHelper;
-        this.transformConfig = transformConfig;
         log.info("RequestTransformer 초기화 완료");
     }
     
     @Override
     public boolean supports(MethodParameter methodParameter, Type targetType, 
                            Class<? extends HttpMessageConverter<?>> converterType) {
-        // URL 정보 추출
-        String requestURI = extractRequestURI(methodParameter);
-        if (requestURI == null) {
-            return false;
-        }
-        
-        // 설정에 따라 변환 여부 결정
-        return transformConfig.shouldTransformRequest(requestURI);
-    }
-    
-    /**
-     * 메소드 파라미터에서 요청 URI 추출
-     */
-    private String extractRequestURI(MethodParameter methodParameter) {
-        try {
-            StringBuilder uriBuilder = new StringBuilder();
-            
-            // 컨트롤러 클래스의 기본 URL 가져오기
-            if (methodParameter.getContainingClass().isAnnotationPresent(RequestMapping.class)) {
-                String[] classPaths = methodParameter.getContainingClass().getAnnotation(RequestMapping.class).value();
-                if (classPaths.length > 0) {
-                    uriBuilder.append(classPaths[0]);
-                }
-            }
-            
-            // 메소드에 RequestMapping이 있으면 경로 추가
-            if (methodParameter.hasMethodAnnotation(RequestMapping.class)) {
-                RequestMapping annotation = methodParameter.getMethodAnnotation(RequestMapping.class);
-                String[] methodPaths = annotation.value();
-                if (methodPaths.length > 0) {
-                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !methodPaths[0].startsWith("/")) {
-                        uriBuilder.append("/");
-                    }
-                    uriBuilder.append(methodPaths[0]);
-                }
-            }
-            
-            // GetMapping 처리
-            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.GetMapping.class)) {
-                org.springframework.web.bind.annotation.GetMapping annotation = 
-                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.GetMapping.class);
-                String[] paths = annotation.value();
-                if (paths.length > 0) {
-                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
-                        uriBuilder.append("/");
-                    }
-                    uriBuilder.append(paths[0]);
-                }
-            }
-            
-            // PostMapping 처리
-            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.PostMapping.class)) {
-                org.springframework.web.bind.annotation.PostMapping annotation = 
-                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.PostMapping.class);
-                String[] paths = annotation.value();
-                if (paths.length > 0) {
-                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
-                        uriBuilder.append("/");
-                    }
-                    uriBuilder.append(paths[0]);
-                }
-            }
-            
-            // PutMapping 처리
-            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.PutMapping.class)) {
-                org.springframework.web.bind.annotation.PutMapping annotation = 
-                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.PutMapping.class);
-                String[] paths = annotation.value();
-                if (paths.length > 0) {
-                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
-                        uriBuilder.append("/");
-                    }
-                    uriBuilder.append(paths[0]);
-                }
-            }
-            
-            // DeleteMapping 처리
-            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.DeleteMapping.class)) {
-                org.springframework.web.bind.annotation.DeleteMapping annotation = 
-                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.DeleteMapping.class);
-                String[] paths = annotation.value();
-                if (paths.length > 0) {
-                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
-                        uriBuilder.append("/");
-                    }
-                    uriBuilder.append(paths[0]);
-                }
-            }
-            
-            // PatchMapping 처리
-            else if (methodParameter.hasMethodAnnotation(org.springframework.web.bind.annotation.PatchMapping.class)) {
-                org.springframework.web.bind.annotation.PatchMapping annotation = 
-                    methodParameter.getMethodAnnotation(org.springframework.web.bind.annotation.PatchMapping.class);
-                String[] paths = annotation.value();
-                if (paths.length > 0) {
-                    if (uriBuilder.length() > 0 && !uriBuilder.toString().endsWith("/") && !paths[0].startsWith("/")) {
-                        uriBuilder.append("/");
-                    }
-                    uriBuilder.append(paths[0]);
-                }
-            }
-            
-            return uriBuilder.toString();
-        } catch (Exception e) {
-            log.warn("RequestURI 추출 실패: {}", e.getMessage());
-            return null;
-        }
+        // 모든 요청에 대해 변환 적용
+        return true;
     }
     
     @Override
@@ -198,7 +88,7 @@ public class RequestTransformer extends RequestBodyAdviceAdapter {
         }
     }
     
-    // DTO 객체 변환
+ // DTO 객체 변환
     private Object transformDto(Object dto, MethodParameter parameter) {
         try {
             // DTO를 Map으로 변환
