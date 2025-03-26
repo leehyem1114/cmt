@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.example.cmtProject.dto.erp.SalaryItemDTO;
+import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -58,10 +58,8 @@ public class SalaryItem {
     
     @Column(name = "SAL_ITEM_UPDATE_DATE", nullable = false)
     private LocalDate salItemUpdate; // 최종 수정일
-    
-  
 
-  
+    
     public SalaryItemDTO toDto() {
     	return SalaryItemDTO.builder()
 				.salItemType(salItemType)

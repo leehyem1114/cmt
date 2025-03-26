@@ -111,6 +111,11 @@ const SimpleGridManager = (function() {
 	                name: '',            // 데이터 필드명 (대소문자 주의)
 	                editor: 'text'           // 에디터 타입 ('text', 'checkbox', 'select' 등)
 	            },
+				{
+					header: '지급상태',           
+					name: '',            
+					editor: 'text'           
+				},
 	            {
 	                header: '사원번호',           
 	                name: '',            
@@ -208,11 +213,6 @@ const SimpleGridManager = (function() {
 				},
 				{
 				    header: '실지급액',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '지급상태',           
 				    name: '',            
 				    editor: 'text'           
 				},

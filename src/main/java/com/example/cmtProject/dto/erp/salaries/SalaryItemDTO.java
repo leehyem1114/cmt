@@ -1,4 +1,4 @@
-package com.example.cmtProject.dto.erp;
+package com.example.cmtProject.dto.erp.salaries;
 
 import java.time.LocalDate;
 
@@ -37,7 +37,7 @@ public class SalaryItemDTO {
 		this.salItemUpdate = salItemUpdate;
 	}
 	
-	 // SalaryItemDTO -> SalaryItem(엔티티) 로 변환하는 toEntity() 메서드 정의
+	// SalaryItemDTO -> SalaryItem(엔티티) 로 변환하는 toEntity() 메서드 정의
 	public SalaryItem toEntity() {
 	    return SalaryItem.builder()
 				.salItemNo(this.salItemNo)
