@@ -30,6 +30,9 @@ public class CommonCodeDetailDTO {
     /** 상세코드 내용 */
     private String cmnDetailContent;
     
+    /** 상세코드 값 */
+    private String cmnDetailValue;
+    
     /** 상세코드 사용 여부 */
     private String cmnDetailCodeIsActive;
     

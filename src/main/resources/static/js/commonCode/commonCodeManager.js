@@ -140,11 +140,6 @@ const CommonCodeManager = (function() {
                         editor: GridUtil.createYesNoEditor()
                     },
                     {
-                        header: '정렬',
-                        name: 'CMN_SORT_ORDER',
-                        editor: 'text'
-                    },
-                    {
                         header: '타입',
                         name: 'ROW_TYPE'
                     } // 조회/추가 구분
@@ -154,7 +149,7 @@ const CommonCodeManager = (function() {
 				},
 				pageOptions: {
 					useClient: true,
-				    perPage: 5
+				    perPage: 10
 				  },
                 data: gridData,
                 draggable: true,
@@ -182,6 +177,17 @@ const CommonCodeManager = (function() {
 			    console.log('공통코드 행 선택:', rowData.CMN_CODE);
 			    selectedCommonCode = rowData.CMN_CODE;
 			    loadCommonCodeDetailGrid(selectedCommonCode);
+			});
+			
+			commonCodeGrid.on('editingFinish', function(ev) {
+			    const rowKey = ev.rowKey;
+			    const row = commonCodeGrid.getRow(rowKey);
+			    
+			    // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
+			    if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
+			        commonCodeGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+			        console.log(`공통코드 행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
+			    }
 			});
 
             // 행 더블클릭 이벤트 처리 - 키 컬럼 제어
@@ -395,18 +401,24 @@ const CommonCodeManager = (function() {
                         header: '상세코드명',
                         name: 'CMN_DETAIL_NAME',
                         editor: 'text',
-                        width: 150
+                        width: 100
+                    },
+                    {
+                        header: '설명',
+                        name: 'CMN_DETAIL_CONTENT',
+                        editor: 'text',
+                        width: 250
+                    },
+                    {
+                        header: '값',
+                        name: 'CMN_DETAIL_VALUE',
+                        editor: 'text',
+                        width: 250
                     },
                     {
                         header: '사용여부',
                         name: 'CMN_DETAIL_CODE_IS_ACTIVE',
                         editor: GridUtil.createYesNoEditor(),
-                        width: 100
-                    },
-                    {
-                        header: '정렬',
-                        name: 'CMN_DETAIL_SORT_ORDER',
-                        editor: 'text',
                         width: 100
                     },
                     {
@@ -425,6 +437,17 @@ const CommonCodeManager = (function() {
 
             // 키 컬럼 제어 설정 - 리팩토링된 GridUtil 사용
             GridUtil.setupKeyColumnControl('commonCodeDetail', 'CMN_DETAIL_CODE');
+			
+			commonCodeDetailGrid.on('editingFinish', function(ev) {
+			    const rowKey = ev.rowKey;
+			    const row = commonCodeDetailGrid.getRow(rowKey);
+			    
+			    if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
+			        commonCodeDetailGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+			        console.log(`상세코드 행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
+			    }
+			});
+			
 
             return commonCodeDetailGrid;
         } catch (error) {
@@ -492,6 +515,8 @@ const CommonCodeManager = (function() {
             const newRowData = {
                 CMN_DETAIL_CODE: '',
                 CMN_DETAIL_NAME: '',
+                CMN_DETAIL_CONTENT: '',
+                CMN_DETAIL_VALUE: '',
                 CMN_DETAIL_CODE_IS_ACTIVE: 'Y',
                 CMN_DETAIL_SORT_ORDER: ''
                 // ROW_TYPE은 리팩토링된 GridUtil.addNewRow()에서 자동으로 추가됨
@@ -544,6 +569,7 @@ const CommonCodeManager = (function() {
 	            cmnCode: row.CMN_CODE,
 	            cmnName: row.CMN_NAME,
 	            cmnContent: row.CMN_CONTENT || '',
+	            cmnContent: row.CMN_VALUE || '',
 	            cmnCodeIsActive: row.CMN_CODE_IS_ACTIVE,
 	            cmnSortOrder: row.CMN_SORT_ORDER,
 	            action: row.ROW_TYPE // insert, update, delete
@@ -686,7 +712,8 @@ const CommonCodeManager = (function() {
 	            cmnCode: selectedCommonCode,
 	            cmnDetailCode: row.CMN_DETAIL_CODE,
 	            cmnDetailName: row.CMN_DETAIL_NAME,
-	            cmnDetailContent: '', // 필요한 경우 여기에 추가
+	            cmnDetailContent: row. CMN_DETAIL_CONTENT || '', // 필요한 경우 여기에 추가
+				cmnDetailValue: row.CMN_DETAIL_VALUE || '',
 	            cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
 	            cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER,
 	            action: row.ROW_TYPE
