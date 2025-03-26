@@ -401,11 +401,17 @@ const CommonCodeManager = (function() {
                         header: '상세코드명',
                         name: 'CMN_DETAIL_NAME',
                         editor: 'text',
-                        width: 150
+                        width: 100
                     },
                     {
                         header: '설명',
                         name: 'CMN_DETAIL_CONTENT',
+                        editor: 'text',
+                        width: 250
+                    },
+                    {
+                        header: '값',
+                        name: 'CMN_DETAIL_VALUE',
                         editor: 'text',
                         width: 250
                     },
@@ -509,6 +515,8 @@ const CommonCodeManager = (function() {
             const newRowData = {
                 CMN_DETAIL_CODE: '',
                 CMN_DETAIL_NAME: '',
+                CMN_DETAIL_CONTENT: '',
+                CMN_DETAIL_VALUE: '',
                 CMN_DETAIL_CODE_IS_ACTIVE: 'Y',
                 CMN_DETAIL_SORT_ORDER: ''
                 // ROW_TYPE은 리팩토링된 GridUtil.addNewRow()에서 자동으로 추가됨
@@ -561,6 +569,7 @@ const CommonCodeManager = (function() {
 	            cmnCode: row.CMN_CODE,
 	            cmnName: row.CMN_NAME,
 	            cmnContent: row.CMN_CONTENT || '',
+	            cmnContent: row.CMN_VALUE || '',
 	            cmnCodeIsActive: row.CMN_CODE_IS_ACTIVE,
 	            cmnSortOrder: row.CMN_SORT_ORDER,
 	            action: row.ROW_TYPE // insert, update, delete
@@ -703,7 +712,8 @@ const CommonCodeManager = (function() {
 	            cmnCode: selectedCommonCode,
 	            cmnDetailCode: row.CMN_DETAIL_CODE,
 	            cmnDetailName: row.CMN_DETAIL_NAME,
-	            cmnDetailContent: '', // 필요한 경우 여기에 추가
+	            cmnDetailContent: row. CMN_DETAIL_CONTENT || '', // 필요한 경우 여기에 추가
+				cmnDetailValue: row.CMN_DETAIL_VALUE || '',
 	            cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
 	            cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER,
 	            action: row.ROW_TYPE
