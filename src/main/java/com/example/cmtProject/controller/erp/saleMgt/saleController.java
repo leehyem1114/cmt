@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
+import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
 
 @Controller
@@ -20,6 +22,9 @@ public class saleController {
 	
 	@Autowired
 	private SalesOrderRepository salesOrderRepository;
+	
+	@Autowired
+	private ClientsRepository clientsRepository;
 	
 	@GetMapping("/soform")
 	public String salesOrderForm(Model model) {
@@ -67,8 +72,14 @@ public class saleController {
 	}
 		
 	@GetMapping("/soregisterform")
-	public String soregisterform() {
+	public String soregisterform(Model model) {
  		
+		List<Clients> list = clientsRepository.findAll();
+		
+	 	System.out.println(list);
+	 	
+	 	model.addAttribute("cltList", list);
+	 	
 		return "erp/salesMgt/soRegisterForm";
 	}
 	
