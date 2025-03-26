@@ -1,5 +1,7 @@
 package com.example.cmtProject.controller.erp.saleMgt;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
+import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
 
@@ -25,6 +29,9 @@ public class saleController {
 	
 	@Autowired
 	private ClientsRepository clientsRepository;
+	
+	@Autowired
+	private EmployeesRepository employeesRepository;
 	
 	@GetMapping("/soform")
 	public String salesOrderForm(Model model) {
@@ -74,11 +81,32 @@ public class saleController {
 	@GetMapping("/soregisterform")
 	public String soregisterform(Model model) {
  		
-		List<Clients> list = clientsRepository.findAll();
+		List<Clients> cltList = clientsRepository.findAll();
+		List<Employees> empList = employeesRepository.findAll();
 		
-	 	System.out.println(list);
-	 	
-	 	model.addAttribute("cltList", list);
+	 	//다음 시쿼스 가져오기
+		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
+		
+		//날짜 형태를 yyyyMMdd 헝태로 변경
+		LocalDate today = LocalDate.now();        
+        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String soToday = today.format(todayFormat);
+		
+        
+        //수주코드 작성
+		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
+		String soCode = "";
+		if(nextSoCodeNumber < 100) {
+			soCode = "SO";
+		}
+			
+		
+        
+        System.out.println(soToday);
+		
+	 	model.addAttribute("cltList", cltList);
+	 	model.addAttribute("empList", empList);
+	 	model.addAttribute("nextSeq", nextSeq);
 	 	
 		return "erp/salesMgt/soRegisterForm";
 	}
