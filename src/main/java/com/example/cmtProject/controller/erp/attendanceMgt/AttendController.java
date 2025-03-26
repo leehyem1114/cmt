@@ -28,7 +28,6 @@ public class AttendController {
 
     // 출결 정보 목록 페이지 (HTML 렌더링)
     @GetMapping("/list")
-    @PreAuthorize("hasRole('ADMIN')")
     public String showAttendPage(Model model) {
         List<AttendDTO> attendList = attendService.getAllAttends();
         model.addAttribute("attendList", attendList);

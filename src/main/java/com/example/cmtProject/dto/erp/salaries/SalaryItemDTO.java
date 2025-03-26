@@ -1,4 +1,4 @@
-package com.example.cmtProject.dto.erp;
+package com.example.cmtProject.dto.erp.salaries;
 
 import java.time.LocalDate;
 
@@ -18,10 +18,10 @@ import lombok.ToString;
 public class SalaryItemDTO {
 	private Long salItemNo; // 급여 유형 번호
 	private SalaryItemType salItemType; // 급여 유형
-	private String salItemName; // 급여 유형명
+	private String salItemName; // 급여 항목명
 	private String salItemDesc; // 급여 유형 설명
 	private String salItemCalc; // 계산식
-	private Long salItemImportance; // 중요도
+	private Long salItemImportance; // 우선순위
 	private Long salItemApplyYear; // 적용년도
 	private LocalDate salItemUpdate; // 최종수정일시
 	
@@ -37,7 +37,7 @@ public class SalaryItemDTO {
 		this.salItemUpdate = salItemUpdate;
 	}
 	
-	 // SalaryItemDTO -> SalaryItem(엔티티) 로 변환하는 toEntity() 메서드 정의
+	// SalaryItemDTO -> SalaryItem(엔티티) 로 변환하는 toEntity() 메서드 정의
 	public SalaryItem toEntity() {
 	    return SalaryItem.builder()
 				.salItemNo(this.salItemNo)

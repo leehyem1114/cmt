@@ -94,6 +94,7 @@
             CMN_DETAIL_NAME as cmnDetailName,
             CMN_DETAIL_SORT_ORDER as cmnDetailSortOrder,
             CMN_DETAIL_CONTENT as cmnDetailContent,
+            CMN_DETAIL_VALUE as cmnDetailValue,
             CMN_DETAIL_CODE_IS_ACTIVE as cmnDetailCodeIsActive,
             'select' as rowType
         FROM 
@@ -119,6 +120,7 @@
             CMN_DETAIL_NAME as cmnDetailName,
             CMN_DETAIL_SORT_ORDER as cmnDetailSortOrder,
             CMN_DETAIL_CONTENT as cmnDetailContent,
+            CMN_DETAIL_VALUE as cmnDetailValue,
             CMN_DETAIL_CODE_IS_ACTIVE as cmnDetailCodeIsActive,
             'select' as rowType
         FROM 
@@ -174,6 +176,7 @@
             CMN_DETAIL_NAME,
             CMN_DETAIL_SORT_ORDER,
             CMN_DETAIL_CONTENT,
+            CMN_DETAIL_VALUE,
             CMN_DETAIL_CODE_IS_ACTIVE
         ) VALUES (
             #{cmnDetailCode},
@@ -181,6 +184,7 @@
             #{cmnDetailName},
             #{cmnDetailSortOrder, jdbcType=INTEGER},
             #{cmnDetailContent, jdbcType=VARCHAR},
+            #{cmnDetailValue, jdbcType=VARCHAR},
             #{cmnDetailCodeIsActive, jdbcType=VARCHAR}
         )
     </insert>
@@ -192,6 +196,7 @@
             CMN_DETAIL_NAME = #{cmnDetailName},
             CMN_DETAIL_SORT_ORDER = #{cmnDetailSortOrder},
             CMN_DETAIL_CONTENT = #{cmnDetailContent},
+            CMN_DETAIL_VALUE = #{cmnDetailValue},
             CMN_DETAIL_CODE_IS_ACTIVE = #{cmnDetailCodeIsActive}
         WHERE 
             CMN_CODE = #{cmnCode}
@@ -205,5 +210,18 @@
             CMN_CODE = #{commonCode}
             AND CMN_DETAIL_CODE = #{detailCode}
     </delete>
+    
+    <select id="selectDetailCodeList" resultType="com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO">
+	     SELECT 
+			CMN_DETAIL_CODE           AS cmnDetailCode,
+			CMN_DETAIL_NAME           AS cmnDetailName
+			
+		FROM 
+			COMMONCODE_DETAIL
+	    WHERE 
+	      CMN_CODE = #{groupCode}
+	      AND CMN_DETAIL_CODE_IS_ACTIVE = 'Y'
+	    ORDER BY CMN_DETAIL_SORT_ORDER ASC
+    </select>
   
 </mapper>

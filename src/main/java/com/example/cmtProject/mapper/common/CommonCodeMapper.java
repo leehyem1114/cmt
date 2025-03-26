@@ -5,10 +5,12 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.stereotype.Repository;
 
 import com.example.cmtProject.dto.comm.CommonCodeDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
+import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 
 /**
  * 공통코드 관리 매퍼 인터페이스
@@ -87,4 +89,7 @@ public interface CommonCodeMapper {
      * 공통코드에 속한 모든 상세코드 삭제
      */
 	public int deleteCommonCodeDetailsByCommonCode(@Param("commonCode") String commonCode);
+	
+	//공통코드 디테일리스트 불러오기 - hymm
+	public List<CommonCodeDetailNameDTO> selectDetailCodeList(String groupCode);
 }//CommonCodeMapper

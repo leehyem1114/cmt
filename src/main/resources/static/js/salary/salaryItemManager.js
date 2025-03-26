@@ -21,7 +21,7 @@ const SimpleGridManager = (function() {
     
     // 방법 2: 일반 컨트롤러 방식 (사용할 경우 주석 해제)
     const API_URLS = {
-        LIST: '/salary/salaryList',       // 목록 조회 컨트롤러 URL
+        LIST: '/salary/salaryItems',       // 목록 조회 컨트롤러 URL
     };
     
 
@@ -91,129 +91,44 @@ const SimpleGridManager = (function() {
 	        console.log('그리드 초기화를 시작합니다.');
 
 	        // DOM 요소 존재 확인
-	        // [✓] 수정 방법: HTML의 그리드 요소 ID가 'salaryGrid'가 아니라면 여기를 변경하세요.
-	        const gridElement = document.getElementById('salaryGrid');
+	        // [✓] 수정 방법: HTML의 그리드 요소 ID가 'salaryItemGrid'가 아니라면 여기를 변경하세요.
+	        const gridElement = document.getElementById('salaryItemGrid');
 	        if (!gridElement) {
-	            throw new Error('salaryGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+	            throw new Error('salaryItemGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
 	        }
 
 	        // [✓] 서버에서 데이터 가져오기
 	        // 서버에서 받은 데이터 활용 (Thymeleaf를 통해 설정된 전역 변수)
 	        // window.dataList 변수는 HTML 페이지의 Thymeleaf 템플릿에서 설정해야 합니다
-	        const gridData = window.salaryList || [];
+	        const gridData = window.salaryItems || [];
 	        console.log('초기 데이터:', gridData.length, '건');
 
 	        // 그리드 컬럼 정의
 	        // [✓] 수정 필요: 프로젝트에 필요한 컬럼으로 변경하세요.
 	        const columns = [
 	            {
-	                header: '지급일',           // 컬럼 헤더 텍스트
-	                name: '',            // 데이터 필드명 (대소문자 주의)
+	                header: '구분',           // 컬럼 헤더 텍스트
+	                name: 'salItemType',            // 데이터 필드명 (대소문자 주의)
 	                editor: 'text'           // 에디터 타입 ('text', 'checkbox', 'select' 등)
 	            },
-				{
-					header: '지급상태',           
-					name: '',            
-					editor: 'text'           
-				},
 	            {
-	                header: '사원번호',           
-	                name: '',            
+	                header: '항목명',           
+	                name: 'salItemName',            
 	                editor: 'text'           
 	            },
 				{
-				    header: '사원명',           
-				    name: '',            
+				    header: '우선순위',           
+				    name: 'salItemImportance',            
 				    editor: 'text'           
 				},
 				{
-				    header: '부서',           
-				    name: '',            
+				    header: '적용년도',           
+				    name: 'salItemApplyYear',            
 				    editor: 'text'           
 				},
 				{
-				    header: '직위',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '기본급',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '야근수당',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '기술수당',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '근속수당',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '명절수당',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '휴가수당',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '성과급',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '총수당액',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '국민연금',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '장기요양보험',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '건강보험',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '고용보험',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '소득세',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '주민세',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '총공제액',           
-				    name: '',            
-				    editor: 'text'           
-				},
-				{
-				    header: '실지급액',           
-				    name: '',            
+				    header: '최종수정일시',           
+				    name: 'salItemUpdate',            
 				    editor: 'text'           
 				},
 	            {
@@ -225,7 +140,7 @@ const SimpleGridManager = (function() {
 	        // 그리드 생성 - GridUtil 사용
 	        // [✓] 수정 방법: 필요에 따라 옵션을 조정하세요.
 	        gridInstance = GridUtil.registerGrid({
-	            id: 'salaryGrid',              // HTML 그리드 요소 ID
+	            id: 'salaryItemGrid',              // HTML 그리드 요소 ID
 	            columns: columns,            // 위에서 정의한 컬럼
 	            data: gridData,              // 서버에서 받은 초기 데이터 사용
 	            //draggable: true,             // 드래그 가능 여부 (false로 변경 가능)
@@ -255,6 +170,41 @@ const SimpleGridManager = (function() {
 	    }
 	}
 
+	// 급여 유형 모달 수정
+	$("#salaryItemUpdateBtn").on("click", function () {
+	    const selectedRows = gridInstance.getCheckedRows();
+
+	    if (selectedRows.length !== 1) {
+	        alert("수정할 항목을 하나만 선택해주세요.");
+	        return;
+	    }
+
+	    const row = selectedRows[0];
+
+	    // 모달 제목 변경
+	    $("#salModalLabel").text("급여 유형 수정");
+
+		// 버튼 텍스트도 수정으로 바꾸기
+		$("#salItemModalSubmitBtn").text("수정");
+		
+	    // 모달 필드에 데이터 채우기
+	    $("#salItemType").val(row.salItemType);
+	    $("#salName").val(row.salItemName);
+	    $("#salItemCalc").val(row.salItemCalc);
+	    $("#salItemDesc").val(row.salItemDesc);
+	    $("#salItemImportance").val(row.salItemImportance);
+	    $("#salItemApplyYear").val(row.salItemApplyYear);
+
+	    // 수정 상태 저장 (jQuery data로 저장)
+	    $("#salaryForm").data("mode", "edit");
+	    $("#salaryForm").data("id", row.salItemNo); // DTO에 따라 key 명 확인
+
+	    // 모달 열기
+	    $("#salItemModal").modal("show");
+	});
+	
+	// 급여 유형 모달 등록 or 수정 
+	
     //===========================================================================
     // 데이터 처리 함수 - 비즈니스 로직에 맞게 수정하세요
     //===========================================================================
@@ -268,7 +218,7 @@ const SimpleGridManager = (function() {
     async function deleteRows() {
         try {
             // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('salaryGrid');
+            const grid = GridUtil.getGrid('salaryItemGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
@@ -290,7 +240,7 @@ const SimpleGridManager = (function() {
             }
             
             // 행 삭제 UI 처리 (두 방식 모두 동일)
-            const result = await GridUtil.deleteSelectedRows('salaryGrid', {
+            const result = await GridUtil.deleteSelectedRows('salaryItemGrid', {
                 confirmTitle: "삭제 확인",
                 confirmMessage: "선택한 항목을 삭제하시겠습니까?",
                 onBeforeDelete: async () => {

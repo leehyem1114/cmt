@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	    
+	<head>
+		<!-- <link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon"> -->
+	    
+	    <!-- 기본 메타 정보 -->
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>수주 등록</title>
+    
+    <title>Cmt</title>
+	<style>
+         body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: auto;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            width: 120px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .search-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            margin-left: 5px;
+            border-radius: 5px;
+        }
+        .search-btn:hover {
+            background-color: #0056b3;
+        }
+        .date-container {
+            display: flex;
+            align-items: center;
+        }
+        .date-container input {
+            flex: 1;
+        }
+        .calendar-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            margin-left: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div layout:fragment="content">
+        
+		 <div class="container">
+        <h2>수주 정보 입력</h2>
+        <div class="form-group">
+            <label>회사 *</label>
+            <select id="cltSelected">
+				<option th:each="clt : ${cltList}"
+				th:value="${clt.cltCode}"
+				th:text="${clt.cltName}">
+				</option>
+			</select>
+        </div>
+        <div class="form-group">
+            <label>담당자 *</label>
+            <select>
+			<option th:each="emp : ${empList}"
+				th:value="${emp.empNo}"
+				th:text="부서명">
+			</option>
+			</select>
+			<select>
+				<option th:each="emp : ${empList}"
+					th:value="${emp.empNo}"
+					th:text="직급">
+				</option>
+			</select>
+			<select>
+				<option th:each="emp : ${empList}"
+					th:value="${emp.empNo}"
+					th:text="이름">
+				</option>
+			</select>
+        </div>
+        <div class="form-group">
+            <label>수주번호 *</label><!-- select로 -->
+            <input type="text" placeholder="${nextSeq}" th:readonly="true">
+        </div>
+        <div class="form-group">
+            <label>수주코드 *</label><!-- 자동생성 -->
+            <input type="text" value="SO20103120001" disabled>
+        </div>
+        <div class="form-group date-container">
+            <label>수주일 *</label>
+            <input type="date" value="2021-03-12">
+        </div>
+        <div class="form-group">
+            <label>거래처 *</label><!-- select로 -->
+            <input type="text" placeholder="매출처5">
+            <button class="search-btn">🔍</button>
+        </div>
+       
+        <div class="form-group">
+            <label>부가세적용 *</label>
+            <select>
+                <option>적용</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>통화</label>
+            <select>
+                <option>KRW</option>
+            </select>
+			<button class="search-btn">🔍</button>
+            <input type="text" value="1" disabled>
+        </div>
+        <div class="form-group">
+            <label>비고</label>
+            <textarea rows="3"></textarea>
+        </div>
+    </div>
+		
+    </div> <!-- layout:fragment="content" -->
+   	
+	<th:block layout:fragment="script">
+	    
+	</th:block>
+</body>
+
+</html>

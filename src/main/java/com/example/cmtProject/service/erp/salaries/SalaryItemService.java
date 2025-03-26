@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.cmtProject.dto.erp.SalaryItemDTO;
+import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
+import com.example.cmtProject.entity.Salary;
 import com.example.cmtProject.entity.SalaryItem;
 import com.example.cmtProject.entity.SalaryItemType;
 import com.example.cmtProject.repository.erp.salaries.SalaryItemRepository;
@@ -51,5 +52,12 @@ public class SalaryItemService {
 
 		repository.save(salaryItem);
 		
+	}
+
+
+
+	public List<Salary> getAllSalaries() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

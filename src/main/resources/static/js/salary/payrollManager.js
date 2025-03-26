@@ -21,7 +21,7 @@ const SimpleGridManager = (function() {
     
     // 방법 2: 일반 컨트롤러 방식 (사용할 경우 주석 해제)
     const API_URLS = {
-        LIST: '/salary/salaryList',       // 목록 조회 컨트롤러 URL
+        LIST: '/salary/payrollList',       // 목록 조회 컨트롤러 URL
     };
     
 

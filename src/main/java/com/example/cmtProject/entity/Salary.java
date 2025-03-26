@@ -2,21 +2,30 @@ package com.example.cmtProject.entity;
 
 import java.time.LocalDate;
 
+import com.example.cmtProject.dto.erp.salaries.SalaryDTO;
+import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "SALARIES")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@Builder
 public class Salary {
 
     @Id
@@ -56,4 +65,23 @@ public class Salary {
 
     @Column(name = "SAL_STATE", nullable = false, length = 50)
     private String salState; // 급여지급상태 (미지급, 지급완료)
+    
+    
+    public SalaryDTO toDto() {
+    	return SalaryDTO.builder()
+    			.salNo(salNo)
+    			.empNo(empNo)
+    			.salSaveYear(salSaveYear)
+    			.salUpdateDate(salUpdateDate)
+    			.salary(salary)
+    			.salTotalBonus(salTotalBonus)
+    			.salTotalTax(salTotalTax)
+    			.salNetPay(salNetPay)
+    			.salBankName(salBankName)
+    			.salBankAccount(salBankAccount)
+    			.salDate(salDate)
+    			.salState(salState)
+				.build();
+    	
+    }
 }
