@@ -5,20 +5,8 @@
 
 <!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력@@@@@@@@@@@@ --> 
 <mapper namespace="com.example.cmtProject.mapper.erp.employees.EmployeesMapper">
-
-	<!-- resultType은 application.yml의 type-aliases-package경로의 entity  -->
-<!--     <select id="selectEmplist" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO"> -->
-<!--         SELECT ROWNUM AS rowNum -->
-<!--         		, EMP.EMP_ID -->
-<!--         		, EMP.EMP_NAME -->
-<!--         		, DEPT.DEPT_NAME -->
-<!--         		, POS.DEPT_POSITION -->
-<!--         		, EMP.EMP_START_DATE -->
-<!--         FROM EMPLOYEES EMP JOIN DEPARTMENTS DEPT ON EMP.DEPT_NO = DEPT.DEPT_NO -->
-<!--         					JOIN POSITIONS POS ON EMP.POSITION_NO = POS.POSITION_NO -->
-<!--     </select> -->
     
-	<!-- 전체 조회 -->
+	<!-- 사원 리스트 전체 조회 -->
     <select id="selectEmplist" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
 		SELECT EMP.EMP_NO,
 		       EMP.EMP_ID,
@@ -32,7 +20,7 @@
 		ORDER BY EMP_NO ASC
     </select>
     
-<!--    필터링 -->
+	<!-- 검색 필터링 -->
    <select id="selectDept" resultType="com.example.cmtProject.dto.erp.employees.searchEmpDTO">
 	    SELECT 
 	        e.emp_no AS empNo,
@@ -60,7 +48,8 @@
 	    </where>
 	   
 	</select>
-
+	
+	<!-- 사원 추가 -->
 	<insert id="insertEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
 	
 	    INSERT INTO EMPLOYEES (
@@ -128,6 +117,7 @@
 	    
 	</insert>
 	
+	<!-- 나의 사원정보 수정 -->
 	<update id="updateEmp" parameterType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
 	    UPDATE EMPLOYEES
 	    SET 
