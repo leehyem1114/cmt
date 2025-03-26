@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.cmtProject.dto.comm.CommonCodeDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
+import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 
 /**
  * 공통코드 관리 매퍼 인터페이스
@@ -90,5 +91,5 @@ public interface CommonCodeMapper {
 	public int deleteCommonCodeDetailsByCommonCode(@Param("commonCode") String commonCode);
 	
 	//공통코드 디테일리스트 불러오기 - hymm
-	public List<CommonCodeDetailDTO> selectDetailCodeList(String groupCode);
+	public List<CommonCodeDetailNameDTO> selectDetailCodeList(String groupCode);
 }//CommonCodeMapper

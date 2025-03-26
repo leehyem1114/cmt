@@ -64,27 +64,19 @@
 						                    <div class="form-group">
 						                        <input type="text" id="empId" name="empId" class="form-control" th:value="${loginUser.empId}" readonly>
 						                    </div>
-						                    <label for="deptNo">사원 번호</label>
+						                    <label for="deptNo">부서</label>
 												<select id="deptNo" name="deptNo" class="form-select">
-													<option selected disabled>[[${loginUser.deptNo}]]</option>
-													<option value="1">인사</option>
-													<option value="2">개발</option>
-													<option value="3">마케팅</option>
-													<option value="4">영업</option>
-													<option value="5">생산</option>
+													<th:block th:each="code : ${commonCodeMap['DEPT']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
 												</select>
 						                    <label for="positionNo">직급</label>
 						                    <div class="form-group" >
 						                       <select id="deptPosition" name="positionNo" class="form-select" required>
-							                       	<option value="1">사원</option>
-													<option value="2">주임</option>
-													<option value="3">대리</option>
-													<option value="4">팀장</option>
-													<option value="5">부장</option>
-													<option value="6">차장</option>
-													<option value="7" disabled>이사</option>
-													<option value="8" disabled>대표이사</option>
-						                       </select>
+							                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    <label for="empPhone">전화번호</label>
 						                    <div class="form-group">
@@ -102,21 +94,13 @@
 											</div>
 						                    <label for="empGender">성별</label>
 						                    <div class="form-group" >
-<!-- 						                      <select id="empGender" name="empGender" class="form-select"> -->
-<!-- 												    <th:block th:each="code : ${GENDER}"> -->
-<!-- <!-- 												    <option th:value="${code.cmnDetailCode}">[[${code.cmnDetailName}]]</option> --> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-													<select id="empGender" name="empGender" class="form-select">
-													    <th:block th:each="code : ${GENDER}">
-														    <option th:if="${code != null}" 
-														            th:value="${code.cmnDetailCode}" 
-														            th:text="${code.cmnDetailName}"></option>
-														</th:block>
-													</select>
+						                      <select id="empGender" name="empGender" class="form-select">
+												    <th:block th:each="code : ${commonCodeMap['GENDER']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
-						                    <label for="">주소</label>
+						                    <label for="empAddress1">주소</label>
 											<div>
 												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${loginUser.empAddress1}">
 												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
@@ -128,9 +112,10 @@
 						                    <label for="empMaritalStatus">결혼여부</label>
 						                   <div class="form-group" >
 						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select">
-							                       	<option value="single">미혼</option>
-							                       	<option value="married">기혼</option>
-						                       </select>
+							                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    
 						                    <hr>
@@ -138,33 +123,34 @@
 						                    <label for="empStatus">재직상태</label>
 						                    <div class="form-group" >
 						                       <select id="empStatus" name="empStatus" class="form-select">
-							                       	<option value="1">재직</option>
-							                       	<option value="2">퇴사</option>
-							                       	<option value="3">휴직</option>
-						                       </select>
+							                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    <label for="empType">고용유형</label>
 						                   <div class="form-group" >
 						                       <select id="empType" name="empType" class="form-select">
-							                       	<option value="1">정규직</option>
-							                       	<option value="2">기술직</option>
-							                       	<option value="3">계약직</option>
-						                       </select>
+							                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    <label for="empEducationLevel">학력</label>
 						                   <div class="form-group" >
 						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select">
-							                       	<option value="1">고졸</option>
-							                       	<option value="2">학사</option>
-							                       	<option value="3">석·박사</option>
-						                       </select>
+							                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    <label for="empParkingStatus">주차등록</label>
 						                    <div class="form-group" >
 						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select">
-							                       	<option value="Y">등록</option>
-							                       	<option value="N">미등록</option>
-						                       </select>
+							                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    <label for="empCarNumber">차량번호</label>
 						                    <div class="form-group">

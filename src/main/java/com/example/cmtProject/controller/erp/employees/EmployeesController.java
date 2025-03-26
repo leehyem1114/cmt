@@ -1,10 +1,10 @@
 package com.example.cmtProject.controller.erp.employees;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
+import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
@@ -33,10 +33,24 @@ public class EmployeesController {
 	@Autowired private EmployeesService empService;
 	@Autowired private CommonService commonService;
 
+	//공통코드 메서드
+	public static void commonCodeName(Model model , CommonService commonService) {
+		String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
+		//공통코드 추가시 "NEW_CODE" 추가
+		Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
+		
+		for(String groupCode : groupCodes) {
+			commonCodeMap.put(groupCode, commonService.getCodeListByGroup(groupCode));
+		}
+		model.addAttribute("commonCodeMap",commonCodeMap);
+	}
+	
+	
 	@GetMapping("/")
 	public String main() {
 		return "erp/employees/emp/home";
 	}
+	
 	/***나의 인사카드***/
 	@GetMapping("/myEmplist")
 	public String myEmplist(@AuthenticationPrincipal PrincipalDetails principalDetails,Model model) {
@@ -44,6 +58,8 @@ public class EmployeesController {
 		Employees loginUser = principalDetails.getUser();
 		model.addAttribute("loginUser",loginUser);
 		
+		 //공통코드 가져오기
+		commonCodeName(model, commonService);
 		
 		return "erp/employees/myEmplist";
 	}
@@ -57,13 +73,6 @@ public class EmployeesController {
 						        @AuthenticationPrincipal PrincipalDetails principal,
 						        Model model) {
 	    System.out.println("받은 DTO: " + dto);
-	    //성별코드 가져오기
-	    List<CommonCodeDetailDTO> genderLsit = commonService.getCodeListByGroup("GENDER");
-	    model.addAttribute("GENDER",genderLsit);
-	    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>"+genderLsit);
-	    
-	    //즉, Thymeleaf에서 ${code.cmnDetailName} 이라고 했는데, code가 null이라는 뜻
-	    //내일와서 DTO 새로 만들어야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	    int result = empService.updateEmp(dto);
 	    if(result > 0) {
 	    	return "사원 정보수정 완료";
@@ -107,6 +116,22 @@ public class EmployeesController {
 		System.out.println("직원추가 완료 : " + empRegistDTO);
 		return "erp/employees/emplist";
 	}
+	
+	// 객체 -> JSON 변환 샘플
+//	@Autowired
+//	private ObjectMapper objectMapper;
+//	
+//	public String toJson() {
+//		EmpListPreviewDTO dto = new EmpListPreviewDTO();
+//		String result;
+//		
+//		try {
+//			result = objectMapper.writeValueAsString(dto);
+//		} catch (JsonProcessingException e) {
+//			e.printStackTrace();
+//		}
+//		return result;
+//	}
 	
 	
 }

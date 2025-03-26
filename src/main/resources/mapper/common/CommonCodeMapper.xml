@@ -206,12 +206,13 @@
             AND CMN_DETAIL_CODE = #{detailCode}
     </delete>
     
-    <select id="selectDetailCodeList" resultType="com.example.cmtProject.dto.comm.CommonCodeDetailDTO">
+    <select id="selectDetailCodeList" resultType="com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO">
 	     SELECT 
-	      CMN_DETAIL_CODE   AS cmnDetailCode,
-	      CMN_DETAIL_NAME   AS cmnDetailName
-	    FROM 
-	      COMMONCODE_DETAIL
+			CMN_DETAIL_CODE           AS cmnDetailCode,
+			CMN_DETAIL_NAME           AS cmnDetailName
+			
+		FROM 
+			COMMONCODE_DETAIL
 	    WHERE 
 	      CMN_CODE = #{groupCode}
 	      AND CMN_DETAIL_CODE_IS_ACTIVE = 'Y'
