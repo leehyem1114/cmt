@@ -28,7 +28,7 @@ import lombok.ToString;
 
 public class Employees{
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "EMP_NO")  // 사원번호 (PK)
     private Long empNo;
 

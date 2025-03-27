@@ -55,16 +55,13 @@
 	                	부서
 						<div class="form-group">
 							<select id="searchType" name="dept" th:field="*{dept}"class="form-select" >
-								<option value="">전체</option>
-								<option value="1">인사</option>
-								<option value="2">개발 🤷‍♀️</option>
-								<option value="3">마케팅</option>
-								<option value="4">영업</option>
-								<option value="5">생산</option>
-							</select>
+								<th:block th:each="code : ${commonCodeMap['DEPT']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
+	                       </select>
 						</div>
 		                사번/이름 
-						<input type="text" id="empName" th:field="*{empName}"class="" maxlength="9">
+						<input type="text" id="empName" th:field="*{empName}" class="" maxlength="9">
 		                <div class="date-range">
 							입사일 
 							<div class="date-range">
@@ -94,7 +91,7 @@
                                 <th>직급</th>
                                 <th>입사일</th>
                             </tr>
-                             <tr th:each="emp, stat : ${emplist}" class="clickable-row">
+                             <tr th:each="emp, stat : ${emplist}" th:data-id="${emp.empId}" class="clickable-row">
 						        <td th:text="${stat.count}"></td> <!-- 순번 -->
 						        <td th:text="${emp.empId}"></td> <!-- 사번 -->
 						        <td th:text="${emp.empName}"></td> <!-- 이름 -->
@@ -119,7 +116,7 @@
 	                <h5 class="modal-title" id="empModalLabel">사원 등록</h5>
 	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	            </div>
-	            <form action="empRegi" name="empRegi" method="post" enctype="multipart/form-data">
+	            <form action="empRegi" id="empRegi" name="empRegi" method="post" enctype="multipart/form-data">
 	                <div class="modal-body">
 	                	<label for="empProfile">프로필사진</label>
 	                    <div class="form-group" >
@@ -135,9 +132,9 @@
 	                	<label for="empLevel">사원권한</label>
 	                    <div class="form-group" >
 	                       <select name ="empLevel" id="empLevel" class="form-select">
-								<option value="">user</option>
-		                       	<option value="">manager</option>
-		                       	<option value="">admin</option>
+								<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="empName">이름</label>
@@ -155,24 +152,17 @@
 	                    <label for="deptNo">부서</label>
 	                    <div class="form-group">
 	                       <select id="deptNo" name="deptNo" class="form-select">
-		                       	<option value="1">인사</option>
-								<option value="2">개발</option>
-								<option value="3">마케팅</option>
-								<option value="4">영업</option>
-								<option value="5">생산</option>
+		                       	<th:block th:each="code : ${commonCodeMap['DEPT']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="positionNo">직급</label>
 	                    <div class="form-group" >
 	                       <select id="positionNo" name="positionNo" class="form-select" required>
-		                       	<option value="1">사원</option>
-								<option value="2">주임</option>
-								<option value="3">대리</option>
-								<option value="4">팀장</option>
-								<option value="5">부장</option>
-								<option value="6">차장</option>
-								<option value="7" disabled>이사</option>
-								<option value="8" disabled>대표이사</option>
+		                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="empPhone">전화번호</label>
@@ -198,8 +188,9 @@
 	                    <label for="empGender">성별</label>
 	                    <div class="form-group" >
 	                       <select id="empGender" name="empGender" class="form-select">
-		                       	<option value="M">남자</option>
-		                       	<option value="F">여자</option>
+		                       	<th:block th:each="code : ${commonCodeMap['GENDER']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="">주소</label>
@@ -214,8 +205,9 @@
 	                    <label for="empMaritalStatus">결혼여부</label>
 	                   <div class="form-group" >
 	                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select">
-		                       	<option value="single">미혼</option>
-		                       	<option value="married">기혼</option>
+		                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    
@@ -224,32 +216,33 @@
 	                    <label for="empStatus">재직상태</label>
 	                    <div class="form-group" >
 	                       <select id="empStatus" name="empStatus" class="form-select">
-		                       	<option value="">재직</option>
-		                       	<option value="">퇴사</option>
-		                       	<option value="">휴직</option>
+		                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="empType">고용유형</label>
 	                   <div class="form-group" >
 	                       <select id="empType" name="empType" class="form-select">
-		                       	<option value="">정규직</option>
-		                       	<option value="">기술직</option>
-		                       	<option value="">계약직</option>
+		                       <th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="empEducationLevel">학력</label>
 	                   <div class="form-group" >
 	                       <select id="empEducationLevel" name="empEducationLevel" class="form-select">
-		                       	<option value="">고졸</option>
-		                       	<option value="">학사</option>
-		                       	<option value="">석·박사</option>
+		                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="empParkingStatus">주차등록</label>
 	                    <div class="form-group" >
 	                       <select id="empParkingStatus" name="empParkingStatus" class="form-select">
-		                       	<option value="Y">등록</option>
-		                       	<option value="N">미등록</option>
+		                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
+							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+							    </th:block>
 	                       </select>
 	                    </div>
 	                    <label for="empCarNumber">차량번호</label>
@@ -274,7 +267,7 @@
 	                </div>
 	                <div class="modal-footer">
 	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                    <button type="submit" class="btn btn-primary">등록</button>
+	                    <button type="button" id="btnEmpRegi" class="btn btn-primary">등록</button>
 	                </div>
 	            </form>
 	        </div>
@@ -298,17 +291,40 @@
              * - 기타 페이지별 로직
              */
             
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
+             $("#btnEmpRegi").on("click", function () {
+
+         	    const form = document.getElementById("empRegi");
+         	    const formData = new FormData(form);
+
+         	    // 파일 추가
+         	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+
+         	    // AJAX 전송
+         	    $.ajax({
+         	        url: "/emp/empRegi",
+         	        method: "POST",
+//          	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
+         	        data: formData,
+         	        processData: false, //FormData 사용시 필수
+         	        contentType: false,//FormData 사용시 필수
+         	        success: function(response) {
+         	            alert(response);
+         	            
+         	        },
+         	        error: function(error) {
+         	            alert("정보 수정 실패ㅠㅠ");
+         	        }
+         	    });
+         	});
+            
+            
+            $(".clickable-row").on("click",function(){
+            	let empId = $(this).data("id");
+            	location.href = `/emp/empList/${empId}`;
+            	console.log(empId);
             });
             
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
+            
         </script>
         <!-- 캘린더 -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
