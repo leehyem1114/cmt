@@ -1,9 +1,11 @@
 package com.example.cmtProject.entity.erp.attendanceMgt;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
@@ -46,21 +48,19 @@ public class Attend {
 
 
     @Column(name = "ATD_DATE", nullable = false)
-    private LocalDate attendDate; // 출결일자 (ATD_DATE)
+    private LocalDateTime attendDate; // 출결일자 (ATD_DATE)
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "ATD_TYPE", nullable = false)
-    private AttendType attendType; // 출결유형 (ATD_TYPE)
+    private String attendType; // 출결유형 (ATD_TYPE)
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "ATD_STATUS", nullable = false)
-    private AttendStatus attendStatus; // 출결상태 (ATD_STATUS)
+    private String attendStatus; // 출결상태 (ATD_STATUS)
 
     @Column(name = "ATD_REMARKS", length = 200)
     private String remarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Long empNo, String empName, LocalDate attendDate, AttendType attendType, AttendStatus attendStatus,
+    public Attend(Long empNo, String empName, LocalDateTime attendDate, String attendType, String attendStatus,
 			String remarks) {
 		this.empNo = empNo;
 		this.empName = empName;
@@ -72,7 +72,7 @@ public class Attend {
     
     public AttendDTO toDto() {
         return AttendDTO.builder()
-            .id(atdNo)
+            .atdNo(atdNo)
             .empNo(empNo)
             .empName(empName)
             .attendDate(attendDate)
