@@ -86,27 +86,17 @@
 				</option>
 			</select>
         </div>
-        <div class="form-group">
-            <label>담당자 *</label>
+         <div class="form-group">
+            <label>제품 *</label>
             <select>
-			<option th:each="emp : ${empList}"
-				th:value="${emp.empNo}"
-				th:text="부서명">
-			</option>
-			</select>
-			<select>
-				<option th:each="emp : ${empList}"
-					th:value="${emp.empNo}"
-					th:text="직급">
-				</option>
-			</select>
-			<select>
-				<option th:each="emp : ${empList}"
-					th:value="${emp.empNo}"
-					th:text="이름">
-				</option>
-			</select>
+                <option>적용</option>
+            </select>
         </div>
+        <div class="form-group">
+           <label>수량 *</label>
+            <input type="text" placeholder="숫자입력">
+        </div>
+        
         <div class="form-group">
             <label>수주번호 *</label><!-- select로 -->
             <input type="text" th:value="${nextSeq}" th:readonly="true">
@@ -127,21 +117,27 @@
             <label>출하일자 *</label>
             <input type="date">
         </div>
-        <div class="form-group">
-            <label>거래처 *</label><!-- select로 -->
-            <input type="text" placeholder="거래처">
-        </div>
-       
-        <div class="form-group">
-            <label>제품 *</label>
-            <select>
-                <option>적용</option>
-            </select>
-        </div>
-        <div class="form-group">
-           <label>수량 *</label>
-            <input type="text" palceholder="숫자입력">
-        </div>
+	      <div class="form-group">
+	           <label>담당자 *</label>
+	           <select>
+			<option th:each="emp : ${empList}"
+				th:value="${emp.empNo}"
+				th:text="부서명">
+			</option>
+			</select>
+			<select>
+				<option th:each="emp : ${empList}"
+					th:value="${emp.empNo}"
+					th:text="직급">
+				</option>
+			</select>
+			<select>
+				<option th:each="emp : ${empList}"
+					th:value="${emp.empNo}"
+					th:text="이름">
+				</option>
+			</select>
+	       </div>
         <div class="form-group">
             <label>비고</label>
             <textarea rows="3"></textarea>
@@ -156,3 +152,5 @@
 </body>
 
 </html>
+
+
