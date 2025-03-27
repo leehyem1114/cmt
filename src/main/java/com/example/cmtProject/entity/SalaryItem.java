@@ -6,6 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
+import com.example.cmtProject.entity.erp.salaries.SalaryItemType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +16,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,8 +42,9 @@ public class SalaryItem { // 급여 유형 관리 엔티티
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sliNo; // 급여 유형 번호
     
-    @Column(name = "SLI_TYPE", nullable = false, length = 50)
-    private String sliType; // 급여 유형
+    @Enumerated(EnumType.STRING)
+    @Column(name = "SLI_TYPE", nullable = false)
+    private SalaryItemType sliType; // 급여 유형
     
     @Column(name = "SLI_NAME", nullable = false, length = 50)
     private String sliName; // 급여 유형명
