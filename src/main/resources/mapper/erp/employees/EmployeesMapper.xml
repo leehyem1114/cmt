@@ -11,39 +11,39 @@
 		SELECT EMP.EMP_NO,
 		       EMP.EMP_ID,
 		       EMP.EMP_NAME,
-		       D.DEPT_NAME,
-		       P.DEPT_POSITION,
+		       D.CMN_DETAIL_NAME AS DEPT_NAME,
+			   P.CMN_DETAIL_NAME  AS DEPT_POSITION,
 		       EMP.EMP_START_DATE
 		FROM EMPLOYEES EMP
-		LEFT JOIN DEPARTMENTS D ON EMP.DEPT_NO = D.DEPT_NO
-		LEFT JOIN POSITIONS P ON EMP.POSITION_NO = P.POSITION_NO
+		LEFT JOIN COMMONCODE_DETAIL D ON TO_CHAR(EMP.DEPT_NO) = D.CMN_DETAIL_CODE
+		LEFT JOIN COMMONCODE_DETAIL P ON TO_CHAR(EMP.POSITION_NO) = P.CMN_DETAIL_CODE
 		ORDER BY EMP_NO ASC
     </select>
     
 	<!-- 검색 필터링 -->
    <select id="selectDept" resultType="com.example.cmtProject.dto.erp.employees.searchEmpDTO">
 	    SELECT 
-	        e.emp_no AS empNo,
-	       	e.emp_id AS empId,
-	        e.emp_name AS empName, 
-	        d.dept_name AS deptName,
-	        p.dept_position AS deptPosition,
-	        e.emp_start_date AS empStartDate 
-	    FROM employees e
-	    JOIN departments d ON e.dept_no = d.dept_no
-	    JOIN positions p ON e.position_no = p.position_no
+	        E.EMP_NO AS empNo,
+	       	E.EMP_ID AS empId,
+	        E.EMP_NAME AS empName, 
+	        D.CMN_DETAIL_NAME AS deptName,
+	        P.CMN_DETAIL_NAME AS deptPosition,
+	        E.EMP_START_DATE AS empStartDate 
+	    FROM EMPLOYEES E
+	    JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
+	    JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
 	    <where>
 	        <if test="dept != null and dept != ''">
-	            AND d.dept_no = #{dept}
+	            AND D.CMN_DETAIL_CODE = #{dept}
 	        </if>
 	         <if test="empId != null and empId != ''">
-	            AND e.emp_id LIKE '%' || #{empId} || '%'
+	            AND E.EMP_ID LIKE '%' || #{empId} || '%'
 	        </if>
 	        <if test="empName != null and empName != ''">
-	            AND e.emp_name LIKE '%' || #{empName} || '%'
+	            AND E.EMP_NAME LIKE '%' || #{empName} || '%'
 	        </if>
 	        <if test="startDate != null and endDate != null">
-	            AND e.emp_start_date BETWEEN #{startDate} AND #{endDate}
+	            AND E.EMP_START_DATE BETWEEN #{startDate} AND #{endDate}
 	        </if>
 	    </where>
 	   
@@ -80,7 +80,7 @@
 	        #{empLevel},
 	        #{empPassword},
 	        #{empName},
-	<!--         #{empProfile}, -->
+<!-- 	        #{empProfile}, -->
 	        NULL,
 	        <choose>
 	            <when test="empStartDate != null">
