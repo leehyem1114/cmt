@@ -9,5 +9,5 @@ import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 
 @Repository
 public interface AttendRepository extends JpaRepository<Attend, Long> {
-    List<Attend> findByEmpNo_EmpNo(Long empNo);
+    List<Attend> findByEmpNo(Long empNo);
 }
