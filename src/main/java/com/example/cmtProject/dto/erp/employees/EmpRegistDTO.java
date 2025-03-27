@@ -47,4 +47,5 @@ public class EmpRegistDTO {
     private String empParkingStatus; // 주차등록 유무
     private String empCarNumber; // 차량번호
 
+ 	
 }

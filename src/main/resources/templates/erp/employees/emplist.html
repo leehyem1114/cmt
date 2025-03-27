@@ -55,6 +55,7 @@
 	                	부서
 						<div class="form-group">
 							<select id="searchType" name="dept" th:field="*{dept}"class="form-select" >
+								<option value="">전체</option>
 								<th:block th:each="code : ${commonCodeMap['DEPT']}">
 							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 							    </th:block>
@@ -123,11 +124,11 @@
 <!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
 <!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
 <!-- 						</div> -->
-<!-- 						<div th:unless="${member.memProfile}"> -->
 <!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
-						    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
-<!-- 						</div> -->
-<!-- 							<input type="file" name="empProfile"> -->
+						<div id="preview_profile">
+						    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="" height="100px">
+						</div>
+							<input type="file" id="empProfile" name="empProfile" accept="image/*" multiple>
 	                    </div>
 	                	<label for="empLevel">사원권한</label>
 	                    <div class="form-group" >
@@ -317,13 +318,42 @@
          	    });
          	});
             
-            
+            //사원정보 새 창 띄우기
             $(".clickable-row").on("click",function(){
             	let empId = $(this).data("id");
-            	location.href = `/emp/empList/${empId}`;
-            	console.log(empId);
+            	let url = `/emp/empList/${empId}`;
+            	let options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
+            	
+            	window.open(url, 'empDetail_' + empId, options);
             });
             
+            //프로필사진 미리보기
+			$(function () {
+			  $("#empProfile").on("change", function (e) {
+			    let files = e.target.files;
+			    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+			
+			    if (imageFiles.length > 1) {
+			      alert("프로필 사진은 1장만 업로드 가능합니다.");
+			      imageFiles = imageFiles.slice(0, 1);
+			    }
+			
+			    $("#preview_profile").html("");
+			
+			    imageFiles.forEach(file => {
+			      let reader = new FileReader();
+			      reader.onload = function (event) {
+			        let img = $("<img>")
+			          .attr("src", event.target.result)
+			          .attr("height", "100px")
+			          .addClass("profile-thumb");
+			
+			        $("#preview_profile").append(img);
+			      };
+			      reader.readAsDataURL(file);
+			    });
+			  });
+			});
             
         </script>
         <!-- 캘린더 -->
@@ -358,25 +388,6 @@
 				}).open();
 			}
 		</script>
-	
-	<script type="text/javascript">
-	    $("#empPofile").change(function (event) {
-	        let file = event.target.files[0]; // 사용자가 업로드한 파일 가져오기
-	        let reader = new FileReader();
-	
-	        reader.onload = function (event2) {
-	            console.log("파일 : " + event2.target.result); // 파일 내용 확인용 로그
-	            $("#preview_profile").attr("src", event2.target.result); // 미리보기 이미지 변경
-	        };
-	
-	        // 파일을 URL로 읽어오기
-	        if (file) {
-	            reader.readAsDataURL(file);
-	        }
-	    });
-	</script>
-		
     </th:block>
 </body>
-
 </html>

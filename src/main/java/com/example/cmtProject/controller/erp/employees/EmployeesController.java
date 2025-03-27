@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -128,7 +129,14 @@ public class EmployeesController {
 	
 	/*사원 리스트 클릭시 사원 상세정보*/
 	@GetMapping("/empList/{id}")
-	public String empListmodify() {
+	public String empListmodify(@PathVariable("id") String id,Model model) {
+		commonCodeName(model, commonService);
+		System.out.println("받은 id????"+id); //981114 받아옴!!!!!!!!!
+		
+//		List<EmpRegistDTO> emplist = empService.getEmpDetail(id);
+		EmpRegistDTO emp = empService.getEmpDetail(id);
+		model.addAttribute("emp",emp);
+		System.out.println("무슨값일까????"+emp);
 		return "erp/employees/emplistDetail";
 	}
 	
