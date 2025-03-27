@@ -2,7 +2,6 @@
 	<html xmlns:th="http://www.thymeleaf.org" 
 	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-	    
 	<head>
 		<!-- <link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon"> -->
 	    
@@ -88,8 +87,10 @@
         </div>
          <div class="form-group">
             <label>제품 *</label>
-            <select>
-                <option>적용</option>
+            <select id="productSelected">
+                <option th:each="product : ${productList}"
+					th:value="${product.pdtCode}"
+					th:text="${product.pdtName}">적용</option>
             </select>
         </div>
         <div class="form-group">
@@ -119,23 +120,20 @@
         </div>
 	      <div class="form-group">
 	           <label>담당자 *</label>
-	           <select>
-			<option th:each="emp : ${empList}"
-				th:value="${emp.empNo}"
-				th:text="부서명">
+	        <select id="deptSelected">
+			<option th:each="dept : ${commListDetp}"
+				th:value="${dept.cmnDetailCode}"
+				th:text="${dept.cmnDetailName}">
 			</option>
 			</select>
-			<select>
-				<option th:each="emp : ${empList}"
-					th:value="${emp.empNo}"
-					th:text="직급">
+			<select id="posSelected">
+				<option th:each="pos : ${commListPosition}"
+					th:value="${pos.cmnDetailCode}"
+					th:text="${pos.cmnDetailName}">
 				</option>
 			</select>
-			<select>
-				<option th:each="emp : ${empList}"
-					th:value="${emp.empNo}"
-					th:text="이름">
-				</option>
+			<select id="empSelected">
+				
 			</select>
 	       </div>
         <div class="form-group">
@@ -147,7 +145,71 @@
     </div> <!-- layout:fragment="content" -->
    	
 	<th:block layout:fragment="script">
-	    
+		<script src="https://code.jquery.com/jquery.min.js"></script>
+	    <script>
+	    	$(document).ready(function(){
+	    		
+	    		let deptCode = $("#deptSelected").val();
+	    		let posCode = $("#posSelected").val();
+				
+				let code = {
+	    			"deptCode" : deptCode,
+	    			"posCode" : posCode
+	    		};
+	    		
+				ajaxExe(code);
+				
+	    		$("#deptSelected").on("change",function(){
+	    			//alert("dept변경");
+	    			deptCode = $("#deptSelected").val();
+					posCode = $("#posSelected").val();
+					
+					code = {
+		    			"deptCode" : deptCode,
+		    			"posCode" : posCode
+		    		};
+					
+					ajaxExe(code);
+	    		})
+	    		
+	    		$("#posSelected").on("change", function(){
+					deptCode = $("#deptSelected").val();
+					posCode = $("#posSelected").val();
+					
+					code = {
+		    			"deptCode" : deptCode,
+		    			"posCode" : posCode
+		    		};
+					
+					ajaxExe(code);
+	    		})
+
+				function ajaxExe(code){
+					if(code){
+						$.ajax({
+			    			url:"/sales/getEmpName",
+			    			type:"GET",
+			    			data: code,
+			    			success: function(data){
+			    				let $select = $("#empSelected");
+								
+								//$select.find("option:not(:first)").remove();
+								$select.find("option").remove();
+								
+								data.forEach(emp => {
+									console.log(emp)
+									let option = `<option value="${emp.EMP_ID}">${emp.EMP_NAME}</option>`;
+									$select.append(option);								
+								});
+			    			},
+			    			error: function(error){
+			    				alert(error);
+			    			}
+			    		}); 
+					}
+				}
+	    	});
+	    </script>
 	</th:block>
 </body>
 
