@@ -11,39 +11,39 @@
 		SELECT EMP.EMP_NO,
 		       EMP.EMP_ID,
 		       EMP.EMP_NAME,
-		       D.DEPT_NAME,
-		       P.DEPT_POSITION,
+		       D.CMN_DETAIL_NAME AS DEPT_NAME,
+			   P.CMN_DETAIL_NAME  AS DEPT_POSITION,
 		       EMP.EMP_START_DATE
 		FROM EMPLOYEES EMP
-		LEFT JOIN DEPARTMENTS D ON EMP.DEPT_NO = D.DEPT_NO
-		LEFT JOIN POSITIONS P ON EMP.POSITION_NO = P.POSITION_NO
+		LEFT JOIN COMMONCODE_DETAIL D ON TO_CHAR(EMP.DEPT_NO) = D.CMN_DETAIL_CODE
+		LEFT JOIN COMMONCODE_DETAIL P ON TO_CHAR(EMP.POSITION_NO) = P.CMN_DETAIL_CODE
 		ORDER BY EMP_NO ASC
     </select>
     
 	<!-- 검색 필터링 -->
    <select id="selectDept" resultType="com.example.cmtProject.dto.erp.employees.searchEmpDTO">
 	    SELECT 
-	        e.emp_no AS empNo,
-	       	e.emp_id AS empId,
-	        e.emp_name AS empName, 
-	        d.dept_name AS deptName,
-	        p.dept_position AS deptPosition,
-	        e.emp_start_date AS empStartDate 
-	    FROM employees e
-	    JOIN departments d ON e.dept_no = d.dept_no
-	    JOIN positions p ON e.position_no = p.position_no
+	        E.EMP_NO AS empNo,
+	       	E.EMP_ID AS empId,
+	        E.EMP_NAME AS empName, 
+	        D.CMN_DETAIL_NAME AS deptName,
+	        P.CMN_DETAIL_NAME AS deptPosition,
+	        E.EMP_START_DATE AS empStartDate 
+	    FROM EMPLOYEES E
+	    JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
+	    JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
 	    <where>
 	        <if test="dept != null and dept != ''">
-	            AND d.dept_no = #{dept}
+	            AND D.CMN_DETAIL_CODE = #{dept}
 	        </if>
 	         <if test="empId != null and empId != ''">
-	            AND e.emp_id LIKE '%' || #{empId} || '%'
+	            AND E.EMP_ID LIKE '%' || #{empId} || '%'
 	        </if>
 	        <if test="empName != null and empName != ''">
-	            AND e.emp_name LIKE '%' || #{empName} || '%'
+	            AND E.EMP_NAME LIKE '%' || #{empName} || '%'
 	        </if>
 	        <if test="startDate != null and endDate != null">
-	            AND e.emp_start_date BETWEEN #{startDate} AND #{endDate}
+	            AND E.EMP_START_DATE BETWEEN #{startDate} AND #{endDate}
 	        </if>
 	    </where>
 	   
@@ -80,7 +80,7 @@
 	        #{empLevel},
 	        #{empPassword},
 	        #{empName},
-	<!--         #{empProfile}, -->
+<!-- 	        #{empProfile}, -->
 	        NULL,
 	        <choose>
 	            <when test="empStartDate != null">
@@ -140,5 +140,44 @@
 	        EMP_PROFILE = #{empProfile, jdbcType=VARCHAR}
 	    WHERE EMP_ID = #{empId}
 	</update>
+	
+	<!-- 리스트에서 사원조회 -->
+	
+	<select id="selectEmpDetail" resultType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
+		 SELECT 
+	        E.EMP_NO              AS empNo,
+	        E.EMP_LEVEL           AS empLevel,
+	        E.EMP_NAME            AS empName,
+	        E.EMP_ID              AS empId,
+	        E.EMP_PASSWORD        AS empPassword,
+<!-- 	        D.CMN_DETAIL_NAME     AS deptName, -->
+	        E.EMP_PROFILE         AS empProfile,
+<!-- 	        TO_CHAR(E.EMP_BIRTHDAY, 'YYYY-MM-DD') AS empBirthday, -->
+	        E.EMP_EMAIL           AS empEmail,
+	        E.EMP_GENDER          AS empGender,
+	        E.DEPT_NO             AS deptNo,
+	        E.POSITION_NO         AS positionNo,
+	        E.EMP_PHONE           AS empPhone,
+	        E.EMP_POST_CODE       AS empPostCode,
+	        E.EMP_ADDRESS1        AS empAddress1,
+	        E.EMP_ADDRESS2        AS empAddress2,
+	        E.EMP_START_DATE      AS empStartDate,
+	        E.EMP_END_DATE        AS empEndDate,
+	        E.EMP_END_REASON      AS empEndReason,
+	        E.EMPLOYMENT_TYPE     AS employmentType,
+	        E.EMP_TYPE            AS empType,
+	        E.EMP_STATUS          AS empStatus,
+	        E.EMP_EDUCATION_LEVEL AS empEducationLevel,
+	        E.EMP_GRADE           AS empGrade,
+	        E.EMP_MARITAL_STATUS  AS empMaritalStatus,
+	        E.SAL_NO              AS salNo,
+	        E.EMP_APPOINTMENT_TYPE AS empAppointmentType,
+	        E.EMP_PARKING_STATUS  AS empParkingStatus,
+	        E.EMP_CAR_NUMBER      AS empCarNumber
+	    FROM EMPLOYEES E
+<!-- 	    LEFT JOIN COMMONCODE_DETAIL D -->
+<!-- 	       ON E.DEPT_NO = TO_NUMBER(D.CMN_DETAIL_CODE) -->
+	    WHERE E.EMP_ID = #{id}
+	</select>
 	
 </mapper>

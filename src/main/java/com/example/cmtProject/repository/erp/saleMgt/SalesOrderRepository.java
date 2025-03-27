@@ -38,11 +38,6 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 			""")
 	String findByGetPdtName(@Param("pdtCode") String pdtCode);
 	
-	/*
-	 * @Query("SELECT SEQ_SALES_ORDER_SO_NO.nextval from dual") Long
-	 * getNextSalesOrderNextSequences();
-	 */
-
 	@Query(value = "SELECT SEQ_SALES_ORDER_SO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
 	Long getNextSalesOrderNextSequences();
 	
@@ -51,8 +46,18 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 }
 
 /*
- * Clients는 엔티티명으로 앞에 대문자
- * c.cltName 객체로 접근해야 하므로 cltName이 아니라 c.cltName
- * = :변수명 -> = 와 : 는 띄운다
- * 
+	 Clients는 엔티티명으로 앞에 대문자
+	 c.cltName 객체로 접근해야 하므로 cltName이 아니라 c.cltName
+	 = :변수명 -> = 와 : 는 띄운다
+	 
+	 
+	 
+	 SELECT e FROM Employees e
+	 		WHERE e.deptNo = :deptCode
+	 		AND e.positionNo = :postCode
+	 		 
+	  Employees : entity의 Employees.java
+	  deptNo : Employees entity의 필드명
+	  positionNo : Employees entity의 필드명
+	  DB의 테이블과 컬럼명이 아님 
  */

@@ -13,6 +13,25 @@
 	integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
 	crossorigin="anonymous" referrerpolicy="no-referrer" />
 <title>CMT</title>
+<style>
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+		
+	    button {
+	        padding: 5px 10px;
+	        border: none;
+	        cursor: pointer;
+	        border-radius: 3px;
+	    }
+		
+	    .insert { background:dodgerblue; color: white; }
+	    .update { background: purple; color: white; }
+	    .delete { background: green; color: white; }
+</style>
 </head>
 <body>
 	<!-- 
@@ -20,27 +39,21 @@
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
 	<div layout:fragment="content">
-		<!-- 페이지 내용 작성 영역 시작 -->
-
-		<h3>급여 유형 관리</h3>
-
+	
 		<div class="card">
 			<div class="card-header">
-				<!-- 급여 항목 추가 버튼 -->
-				<div class="mt-4">
-					<button type="button" id="salaryItemCreateBtn" class="btn btn-primary"
-						data-bs-toggle="modal" data-bs-target="#salItemModal">
-						추가 <i class="fa-solid fa-plus"></i>
-					</button>
-					<button type="button" id="salaryItemUpdateBtn" class="btn btn-outline-primary"
-						data-bs-toggle="modal" data-bs-target="#salItemModal">
-						수정 <i class="fa-solid fa-minus"></i>
-					</button>
-					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
-						삭제 <i class="fa-solid fa-xmark"></i>
-					</button>
-				</div>
+					   
+				<div class="button-container">
+					<div><h2>급여유형관리</h2></div>
+					<div>
+	        			<button class="insert" data-bs-toggle="modal" data-bs-target="#salItemModal">추가 <i class="fa-solid fa-plus"></i></button>
+	        			<button class="update" id="sliUpdateBtn" data-bs-toggle="modal" data-bs-target="#salItemModal">수정 <i class="fa-solid fa-minus"></i></button>
+	        			<button class="delete" id="sliDeleteBtn">삭제 <i class="fa-solid fa-xmark"></i></button>
+					</div>
+	   			</div>
+				<br>
 			</div>
+			
 			<div class="card-body">
 
 				<ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -67,6 +80,7 @@
 						<p class="mt-2"></p>
 					</div>
 				</div>
+				
 				<!-- 급여 유형 리스트 -->
 				<div class="table-responsive">
 					<div id="salaryItemGrid"></div>
@@ -125,10 +139,10 @@
 					<form id="salaryForm" th:action="@{/salary/salaryItems}"
 						method="post" th:object="${salaryItemDTO}">
 						<div class="modal-body">
-							<label for="salItemType">유형</label>
+							<label for="sliType">유형</label>
 							<div class="form-group mb-2">
-								<select id="salItemType" class="form-select"
-									th:field="*{salItemType}" required>
+								<select id="sliType" class="form-select"
+									th:field="*{sliType}" required>
 									<option
 										th:each="type : ${T(com.example.cmtProject.entity.SalaryItemType).values()}"
 										th:value="${type}" th:text="${type}">급여유형</option>
@@ -136,42 +150,42 @@
 							</div>
 							<label for="salItemName">유형명</label>
 							<div class="form-group mb-2">
-								<input type="text" id="salName" class="form-control"
-									th:field="*{salItemName}">
+								<input type="text" id="sliName" class="form-control"
+									th:field="*{sliName}">
 							</div>
 							<label for="salItemCalc">계산식</label>
 							<div class="form-group mb-2">
-								<textarea id="salItemCalc" class="form-control"
-									th:field="*{salItemCalc}" rows="2" placeholder="예: BASIC * 0.2"></textarea>
+								<textarea id="sliFormula" class="form-control"
+									th:field="*{sliFormula}" rows="2" placeholder="예: BASIC * 0.2"></textarea>
 							</div>
 							<label for="salItemDesc">유형 설명</label>
 							<div class="form-group mb-2">
-								<textarea id="salItemDesc" class="form-control"
-									th:field="*{salItemDesc}" rows="2" placeholder="간단한 설명 입력"></textarea>
+								<textarea id="sliDesc" class="form-control"
+									th:field="*{sliDesc}" rows="2" placeholder="간단한 설명 입력"></textarea>
 							</div>
-							<label for="salItemImportance">중요도</label>
+							<label for="salItemImportance">우선순위</label>
 							<div class="form-group mb-2">
-								<select id="salItemImportance" class="form-select"
-									th:field="*{salItemImportance}" required>
+								<select id="sliPriority" class="form-select"
+									th:field="*{sliPriority}" required>
 									<option th:each="i : ${#numbers.sequence(1, 5)}"
 										th:value="${i}" th:text="${i}"></option>
 								</select>
 							</div>
-							<label for="salItemApplyYear">적용년도</label>
+<!-- 							<label for="salItemApplyYear">적용년도</label>
 							<div class="form-group mb-2">
-								<select id="salItemApplyYear" class="form-select"
-									th:field="*{salItemApplyYear}" required>
+								<select id="sliUpdateAt" class="form-select"
+									th:field="*{sliUpdateAt}" required>
 									<option th:each="year : ${#numbers.sequence(2024, 2030)}"
 										th:value="${year}" th:text="${year} + '년'"></option>
-								</select>
-							</div>
+								</select> 
+							</div>-->
 
 						</div>
 
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary"
 								data-bs-dismiss="modal">닫기</button>
-							<button type="submit" id="salItemModalSubmitBtn" class="btn btn-primary">등록</button>
+							<button type="submit" id="sliSubmitBtn" class="btn btn-primary">등록</button>
 						</div>
 					</form>
 
@@ -180,7 +194,7 @@
 		</div>
 
 		<!-- 페이지 내용 작성 영역 끝 -->
-	</div>
+
 
 	<!-- 
         페이지별 JavaScript 추가 영역.

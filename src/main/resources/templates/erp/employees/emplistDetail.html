@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+ 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout}"> 
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+ <div layout:fragment="content">
+        <!-- 페이지 내용 작성 영역 시작 -->
+        
+        <h3>인사카드 조회/
+        나중에 사이드바 없는 레이아웃 하나 만들어서 적용해야댐</h3>
+        
+        <!-- 
+            여기에 페이지별 HTML 코드를 작성하세요.
+            사이드바와 메뉴는 레이아웃에서 자동으로 포함됩니다.
+        -->
+        
+        <div class="card">
+            <div class="card-header">
+            </div>
+            <div class="card-body">
+<!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
+                <!-- 표 예시 -->
+                <div class="table-responsive">
+                <div>
+					<form action="empList/{id}" th:object="${emp}" id="empDetail" name="empDetai" method="post" enctype="multipart/form-data">
+						                <div class="modal-body">
+<!-- 						                	<label for="empProfile">프로필사진</label> -->
+<!-- 						                    <div class="form-group" > -->
+					<!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
+					<!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
+					<!-- 						</div> -->
+					<!-- 						<div th:unless="${member.memProfile}"> -->
+					<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
+<!-- 											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px"> -->
+					<!-- 						</div> -->
+<!-- 												<input type="file" name="empProfileFile"> -->
+<!-- 						                    </div> -->
+<!-- 						                	<label for="empLevel">사원권한</label> -->
+<!-- 						                    <div class="form-group" > -->
+<!-- 						                       <select id="empLevel" class="form-select" name="empLevel"> -->
+<!-- 							                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+						                    <label for="empName">이름</label>
+						                    <div class="form-group">
+												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" readonly>
+						                    </div>
+						                    <label for="empId">사원 번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empId" name="empId" class="form-control" th:value="*{empId}" readonly>
+						                    </div>
+<!-- 						                    <label for="deptNo">부서</label> -->
+<!-- 												<select id="deptNo" name="deptNo" class="form-select"> -->
+<!-- 													<th:block th:each="code : ${commonCodeMap['DEPT']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    <label for="positionNo">직급</label> -->
+<!-- 						                    <div class="form-group" > -->
+<!-- 						                       <select id="deptPosition" name="positionNo" class="form-select" required> -->
+<!-- 							                       	<th:block th:each="code : ${commonCodeMap['POSITION']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empPhone">전화번호</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="${loginUser.empPhone}"> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empEmail">이메일</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="${loginUser.empEmail}"> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empStartDate">입사일</label> -->
+<!-- 						                    <div class="date-range"> -->
+<!-- 												<div class="date-range"> -->
+<!-- 												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:value="${loginUser.empStartDate}"> -->
+<!-- 												</div> -->
+<!-- 											</div> -->
+<!-- 						                    <label for="empGender">성별</label> -->
+<!-- 						                    <div class="form-group" > -->
+<!-- 						                      <select id="empGender" name="empGender" class="form-select"> -->
+<!-- 												    <th:block th:each="code : ${commonCodeMap['GENDER']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empAddress1">주소</label> -->
+<!-- 											<div> -->
+<!-- 												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${loginUser.empAddress1}"> -->
+<!-- 												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br> -->
+<!-- 											</div> -->
+<!-- 											<div> -->
+<!-- 												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="${loginUser.empAddress2}"> -->
+<!-- 												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="${loginUser.empPostCode}" readonly><br> -->
+<!-- 											</div> -->
+<!-- 						                    <label for="empMaritalStatus">결혼여부</label> -->
+<!-- 						                   <div class="form-group" > -->
+<!-- 						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select"> -->
+<!-- 							                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+						                    
+<!-- 						                    <hr> -->
+						                    
+<!-- 						                    <label for="empStatus">재직상태</label> -->
+<!-- 						                    <div class="form-group" > -->
+<!-- 						                       <select id="empStatus" name="empStatus" class="form-select"> -->
+<!-- 							                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empType">고용유형</label> -->
+<!-- 						                   <div class="form-group" > -->
+<!-- 						                       <select id="empType" name="empType" class="form-select"> -->
+<!-- 							                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empEducationLevel">학력</label> -->
+<!-- 						                   <div class="form-group" > -->
+<!-- 						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select"> -->
+<!-- 							                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empParkingStatus">주차등록</label> -->
+<!-- 						                    <div class="form-group" > -->
+<!-- 						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select"> -->
+<!-- 							                       	<th:block th:each="code : ${commonCodeMap['PARKING']}"> -->
+<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
+<!-- 												    </th:block> -->
+<!-- 												</select> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="empCarNumber">차량번호</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" th:value="${loginUser.empCarNumber}"> -->
+<!-- 						                    </div> -->
+						                    
+						                    <hr>
+<!-- 						                    <label for="">기본급(월급)</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="">은행</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                    </div> -->
+<!-- 						                    <label for="">계좌번호</label> -->
+<!-- 						                    <div class="form-group"> -->
+<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                    </div> -->
+						                    
+						                </div>
+						                <div class="modal-footer">
+						                    <button type="button" id="btnUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
+						                </div>
+						            </form>	
+					
+					
+				</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 페이지 내용 작성 영역 끝 -->
+    </div>
+
+<script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+            
+             $("#btnEmpRegi").on("click", function () {
+
+         	    const form = document.getElementById("empRegi");
+         	    const formData = new FormData(form);
+
+         	    // 파일 추가
+         	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+
+         	    // AJAX 전송
+         	    $.ajax({
+         	        url: "/emp/empRegi",
+         	        method: "POST",
+//          	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
+         	        data: formData,
+         	        processData: false, //FormData 사용시 필수
+         	        contentType: false,//FormData 사용시 필수
+         	        success: function(response) {
+         	            alert(response);
+         	            
+         	        },
+         	        error: function(error) {
+         	            alert("정보 수정 실패ㅠㅠ");
+         	        }
+         	    });
+         	});
+            
+            
+            $(".clickable-row").on("click",function(){
+            	let empId = $(this).data("id");
+            	let url = `/emp/empList/${empId}`;
+            	let options = "width=800,height=800,top=100,left=100,scrollbars=yes,resizable=yes";
+
+            	window.open(url, 'empDetail_' + empId, options);
+            	console.log(empId);
+            });
+            
+            
+        </script>
+        <!-- 캘린더 -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+		<script>
+		    document.addEventListener("DOMContentLoaded", function() {
+		        flatpickr(".datepicker", {
+// 		            enableTime: true,  // 시간 선택 가능
+		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
+// 		            time_24hr: true,  // 24시간 형식
+// 		            minDate: "today", // 오늘 이후 선택 가능
+		            locale: "ko" // 한국어 설정 (선택 사항)
+		        });
+		    });
+		</script>
+		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script type="text/javascript">
+			function search_address() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						console.log(data);
+						document.empDetai.empPostCode.value = data.zonecode;
+	
+						let address = data.address;
+						if (data.buildingName != "") {
+							address += " (" + data.buildingName + ")";
+						}
+	
+						document.empDetai.empAddress1.value = address;
+						document.empDetai.empAddress2.focus();
+					}
+				}).open();
+			}
+		</script>
+</body>
+</html>

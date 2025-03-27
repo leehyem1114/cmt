@@ -13,16 +13,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.entity.comm.CommoncodeDetail;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
+import com.example.cmtProject.repository.erp.saleMgt.CommoncodeDetailRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
+import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
 
 @Controller
 @RequestMapping("/sales")
 public class saleController {
+
+	@Autowired
+	private ProductsRepository productsRepository;
 	
 	@Autowired
 	private SalesOrderRepository salesOrderRepository;
@@ -33,6 +40,10 @@ public class saleController {
 	@Autowired
 	private EmployeesRepository employeesRepository;
 	
+	@Autowired
+	private CommoncodeDetailRepository commoncodeDetailRepository;
+	
+	//조회 페이지
 	@GetMapping("/soform")
 	public String salesOrderForm(Model model) {
 		
@@ -57,6 +68,7 @@ public class saleController {
  		//return "erp/salesMgt/aaa";
 	}
 	
+	//상품코드에 해당하는 상품명 가져오기
 	@GetMapping("/getPdtName")
 	@ResponseBody
 	public String getPdtName(@RequestParam("pdtCode") String pdtCode) {
@@ -67,6 +79,7 @@ public class saleController {
 		return pdtName;
 	}
 	
+	//거래처 코드에 해당하는 거래처명 가져오기
 	//@PostMapping("/getCltName") //@RequestBody
 	@GetMapping("/getCltName") //@RequestParam 
 	@ResponseBody
@@ -77,38 +90,61 @@ public class saleController {
 		 
 		 return cltName;
 	}
-		
+	
+	//수주 등록 컨트롤러
 	@GetMapping("/soregisterform")
 	public String soregisterform(Model model) {
  		
 		List<Clients> cltList = clientsRepository.findAll();
 		List<Employees> empList = employeesRepository.findAll();
+		List<Products> productList = productsRepository.findAll();
 		
-	 	//다음 시쿼스 가져오기
+	 	//수주번호 다음 시쿼스 가져오기
 		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
 		
 		//날짜 형태를 yyyyMMdd 헝태로 변경
 		LocalDate today = LocalDate.now();        
         DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
         String soToday = today.format(todayFormat);
-		
         
         //수주코드 작성
 		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
 		String soCode = "";
-		if(nextSoCodeNumber < 100) {
-			soCode = "SO";
+		if(nextSoCodeNumber > 100) {
+			soCode = "SO-" + soToday + "-" + nextSoCodeNumber; 
+		}else if(nextSoCodeNumber > 10) {
+			soCode = "SO-" + soToday + "-" + "0" +nextSoCodeNumber;		
+		}else if(nextSoCodeNumber > 0) {
+			soCode = "SO-" + soToday + "-" + "00" +nextSoCodeNumber;
 		}
-			
 		
-        
-        System.out.println(soToday);
+		//공통코드에서 부서명 가져오기
+		List<CommoncodeDetail> commListDetp = commoncodeDetailRepository.findByCmnCode("DEPT");
 		
-	 	model.addAttribute("cltList", cltList);
-	 	model.addAttribute("empList", empList);
-	 	model.addAttribute("nextSeq", nextSeq);
+		//공통코드에서 직급명 가져오기
+		List<CommoncodeDetail> commListPosition = commoncodeDetailRepository.findByCmnCode("POSITION");
+		
+	 	model.addAttribute("cltList", cltList); //회사 정보
+	 	model.addAttribute("empList", empList); //사원 정보
+	 	model.addAttribute("productList",productList); //제품 정보
+	 	model.addAttribute("nextSeq", nextSeq); //수주 번호
+	 	model.addAttribute("soCode", soCode); //수주 코드
+	 	model.addAttribute("commListDetp",commListDetp); //공통코드에서 부서
+	 	model.addAttribute("commListPosition",commListPosition); //공콩코드에서 직급
+	 	
+	 	System.out.println("productList:"+productList);
 	 	
 		return "erp/salesMgt/soRegisterForm";
+	}
+	
+	@GetMapping("/getEmpName")
+	@ResponseBody
+	public List<Employees> getEmpName(@RequestParam("deptCode") Long deptNo1,
+							@RequestParam("posCode") Long positionNo) {
+		
+		List<Employees> empList = employeesRepository.getEmpName(deptNo1, positionNo);
+		
+		return empList;
 	}
 	
 	@GetMapping("/so")

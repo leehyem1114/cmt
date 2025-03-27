@@ -44,17 +44,19 @@
 					<!-- 						</div> -->
 					<!-- 						<div th:unless="${member.memProfile}"> -->
 					<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
-											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
-					<!-- 						</div> -->
-												<input type="file" name="empProfileFile">
+											<div id="preview_profile">
+											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="" height="100px">
+											</div>
+												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
+<!-- 												<input type="file" name="empProfile" id="empProfile" accept="image/*" multiple> -->
 						                    </div>
 						                	<label for="empLevel">사원권한</label>
 						                    <div class="form-group" >
 						                       <select id="empLevel" class="form-select" name="empLevel">
-							                       	<option value="">user</option>
-							                       	<option value="">manager</option>
-							                       	<option value="">admin</option>
-						                       </select>
+							                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
 						                    </div>
 						                    <label for="empName">이름</label>
 						                    <div class="form-group">
@@ -219,12 +221,42 @@
             	        contentType: false,//FormData 사용시 필수
             	        success: function(response) {
             	            alert(response);
+            	            
             	        },
             	        error: function(error) {
             	            alert("정보 수정 실패ㅠㅠ");
             	        }
             	    });
             	});
+            
+           //프로필사진 미리보기
+ 			$(function () {
+//  			  $("#empProfile").on("change", function (e) {
+ 			  $("#empProfileFile").on("change", function (e) {
+ 			    let files = e.target.files;
+ 			    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+ 			
+ 			    if (imageFiles.length > 1) {
+ 			      alert("프로필 사진은 1장만 업로드 가능합니다.");
+ 			      imageFiles = imageFiles.slice(0, 1);
+ 			    }
+ 			
+ 			    $("#preview_profile").html("");
+ 			
+ 			    imageFiles.forEach(file => {
+ 			      let reader = new FileReader();
+ 			      reader.onload = function (event) {
+ 			        let img = $("<img>")
+ 			          .attr("src", event.target.result)
+ 			          .attr("height", "100px")
+ 			          .addClass("profile-thumb");
+ 			
+ 			        $("#preview_profile").append(img);
+ 			      };
+ 			      reader.readAsDataURL(file);
+ 			    });
+ 			  });
+ 			});
 
         </script>
         <!-- 카카오주소 api -->

@@ -108,28 +108,27 @@ const SimpleGridManager = (function() {
 	        const columns = [
 	            {
 	                header: '구분',           // 컬럼 헤더 텍스트
-	                name: 'salItemType',            // 데이터 필드명 (대소문자 주의)
+	                name: 'sliType',            // 데이터 필드명 (대소문자 주의)
 	                editor: 'text'           // 에디터 타입 ('text', 'checkbox', 'select' 등)
 	            },
 	            {
 	                header: '항목명',           
-	                name: 'salItemName',            
+	                name: 'sliName',            
 	                editor: 'text'           
 	            },
 				{
 				    header: '우선순위',           
-				    name: 'salItemImportance',            
+				    name: 'sliPriority',            
 				    editor: 'text'           
 				},
 				{
-				    header: '적용년도',           
-				    name: 'salItemApplyYear',            
+				    header: '계산식',           
+				    name: 'sliFormula',            
 				    editor: 'text'           
 				},
 				{
 				    header: '최종수정일시',           
-				    name: 'salItemUpdate',            
-				    editor: 'text'           
+				    name: 'sliUpdateAt'
 				},
 	            {
 	                header: '타입',
@@ -170,8 +169,8 @@ const SimpleGridManager = (function() {
 	    }
 	}
 
-	// 급여 유형 모달 수정
-	$("#salaryItemUpdateBtn").on("click", function () {
+	// 급여 유형 수정 모달창
+	$("#sliUpdateBtn").on("click", function () {
 	    const selectedRows = gridInstance.getCheckedRows();
 
 	    if (selectedRows.length !== 1) {
@@ -185,26 +184,74 @@ const SimpleGridManager = (function() {
 	    $("#salModalLabel").text("급여 유형 수정");
 
 		// 버튼 텍스트도 수정으로 바꾸기
-		$("#salItemModalSubmitBtn").text("수정");
+		$("#sliSubmitBtn").text("수정");
 		
 	    // 모달 필드에 데이터 채우기
-	    $("#salItemType").val(row.salItemType);
-	    $("#salName").val(row.salItemName);
-	    $("#salItemCalc").val(row.salItemCalc);
-	    $("#salItemDesc").val(row.salItemDesc);
-	    $("#salItemImportance").val(row.salItemImportance);
-	    $("#salItemApplyYear").val(row.salItemApplyYear);
+	    $("#sliType").val(row.sliType);
+	    $("#sliName").val(row.sliName);
+	    $("#sliFormula").val(row.sliFormula);
+	    $("#sliDesc").val(row.sliDesc);
+	    $("#sliPriority").val(row.sliPriority);
 
 	    // 수정 상태 저장 (jQuery data로 저장)
-	    $("#salaryForm").data("mode", "edit");
-	    $("#salaryForm").data("id", row.salItemNo); // DTO에 따라 key 명 확인
+/*	    $("#salaryForm").data("mode", "update");
+	    $("#salaryForm").data("id", row.salItemNo); // DTO에 따라 key 명 확인*/
 
 	    // 모달 열기
 	    $("#salItemModal").modal("show");
 	});
 	
-	// 급여 유형 모달 등록 or 수정 
+	// 급여 유형 수정
+	$("#salaryForm").on("submit", function (e) {
+	    e.preventDefault();
+
+	    const mode = $(this).data("mode");  // 'update' or undefined
+	    const salItemNo = $(this).data("sliNo");      // edit 모드일 경우만 존재
+
+	    const formData = {
+	        sliType: $("#sliType").val(),
+	        sliName: $("#sliName").val(),
+	        sliFormula: $("#sliFormula").val(),
+	        sliDesc: $("#sliDesc").val(),
+	        sliPriority: $("#sliPriority").val()
+	    };
+
+	    if (mode === "edit") {
+	        // 수정 요청
+	        $.ajax({
+	            url: `/salary/salaryItems/${sliNo}`,  // 수정 URL (Controller에 맞게 확인)
+	            method: "PUT",
+	            contentType: "application/json",
+	            data: JSON.stringify(formData),
+	            success: function () {
+	                alert("수정이 완료되었습니다.");
+	                $("#salItemModal").modal("hide");
+	                location.reload();  // 또는 searchData() 호출
+	            },
+	            error: function () {
+	                alert("수정에 실패했습니다.");
+	            }
+	        });
+	    } else {
+	        // 등록 요청
+	        $.ajax({
+	            url: `/salary/salaryItems`,
+	            method: "POST",
+	            contentType: "application/json",
+	            data: JSON.stringify(formData),
+	            success: function () {
+	                alert("등록이 완료되었습니다.");
+	                $("#salItemModal").modal("hide");
+	                location.reload();
+	            },
+	            error: function () {
+	                alert("등록에 실패했습니다.");
+	            }
+	        });
+	    }
+	});
 	
+
     //===========================================================================
     // 데이터 처리 함수 - 비즈니스 로직에 맞게 수정하세요
     //===========================================================================

@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class EmpListPreviewDTO {
-	private Number empNo; //사원번호(PK)
+	private Long empNo; //사원번호(PK)
 	private String empId;// 사원 ID = 사번
 	private String empName; // 이름
 	private String deptName; //부서명
