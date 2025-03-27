@@ -91,22 +91,23 @@ public class saleController {
 		LocalDate today = LocalDate.now();        
         DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
         String soToday = today.format(todayFormat);
-		
         
         //수주코드 작성
 		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
 		String soCode = "";
-		if(nextSoCodeNumber < 100) {
-			soCode = "SO";
+		if(nextSoCodeNumber > 100) {
+			soCode = "SO-" + soToday + "-" + nextSoCodeNumber; 
+		}else if(nextSoCodeNumber > 10) {
+			soCode = "SO-" + soToday + "-" + "0" +nextSoCodeNumber;		
+		}else if(nextSoCodeNumber > 0) {
+			soCode = "SO-" + soToday + "-" + "00" +nextSoCodeNumber;
 		}
-			
-		
-        
-        System.out.println(soToday);
+		//System.out.println(soCode);
 		
 	 	model.addAttribute("cltList", cltList);
 	 	model.addAttribute("empList", empList);
 	 	model.addAttribute("nextSeq", nextSeq);
+	 	model.addAttribute("soCode", soCode);
 	 	
 		return "erp/salesMgt/soRegisterForm";
 	}

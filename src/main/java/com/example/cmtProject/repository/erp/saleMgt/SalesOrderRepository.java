@@ -38,11 +38,6 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 			""")
 	String findByGetPdtName(@Param("pdtCode") String pdtCode);
 	
-	/*
-	 * @Query("SELECT SEQ_SALES_ORDER_SO_NO.nextval from dual") Long
-	 * getNextSalesOrderNextSequences();
-	 */
-
 	@Query(value = "SELECT SEQ_SALES_ORDER_SO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
 	Long getNextSalesOrderNextSequences();
 	
