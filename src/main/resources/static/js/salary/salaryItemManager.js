@@ -170,7 +170,7 @@ const SimpleGridManager = (function() {
 	    }
 	}
 
-	// 급여 유형 모달 수정
+	// 급여 유형 수정 모달창
 	$("#salaryItemUpdateBtn").on("click", function () {
 	    const selectedRows = gridInstance.getCheckedRows();
 
@@ -196,15 +196,65 @@ const SimpleGridManager = (function() {
 	    $("#salItemApplyYear").val(row.salItemApplyYear);
 
 	    // 수정 상태 저장 (jQuery data로 저장)
-	    $("#salaryForm").data("mode", "edit");
+	    $("#salaryForm").data("mode", "update");
 	    $("#salaryForm").data("id", row.salItemNo); // DTO에 따라 key 명 확인
 
 	    // 모달 열기
 	    $("#salItemModal").modal("show");
 	});
 	
-	// 급여 유형 모달 등록 or 수정 
+	// 급여 유형 수정
+	$("#salaryForm").on("submit", function (e) {
+	    e.preventDefault();
+
+	    const mode = $(this).data("mode");  // 'update' or undefined
+	    const salItemNo = $(this).data("salItemNo");      // edit 모드일 경우만 존재
+
+	    const formData = {
+	        salItemType: $("#salItemType").val(),
+	        salItemName: $("#salName").val(),
+	        salItemCalc: $("#salItemCalc").val(),
+	        salItemDesc: $("#salItemDesc").val(),
+	        salItemImportance: $("#salItemImportance").val(),
+	        salItemApplyYear: $("#salItemApplyYear").val()
+	    };
+
+	    if (mode === "edit") {
+	        // 수정 요청
+	        $.ajax({
+	            url: `/salary/salaryItems/${{salItemNo}}`,  // 수정 URL (Controller에 맞게 확인)
+	            method: "PUT",
+	            contentType: "application/json",
+	            data: JSON.stringify(formData),
+	            success: function () {
+	                alert("수정이 완료되었습니다.");
+	                $("#salItemModal").modal("hide");
+	                location.reload();  // 또는 searchData() 호출
+	            },
+	            error: function () {
+	                alert("수정에 실패했습니다.");
+	            }
+	        });
+	    } else {
+	        // 등록 요청
+	        $.ajax({
+	            url: `/salary/salaryItems`,
+	            method: "POST",
+	            contentType: "application/json",
+	            data: JSON.stringify(formData),
+	            success: function () {
+	                alert("등록이 완료되었습니다.");
+	                $("#salItemModal").modal("hide");
+	                location.reload();
+	            },
+	            error: function () {
+	                alert("등록에 실패했습니다.");
+	            }
+	        });
+	    }
+	});
 	
+
     //===========================================================================
     // 데이터 처리 함수 - 비즈니스 로직에 맞게 수정하세요
     //===========================================================================

@@ -38,8 +38,7 @@ public class Attend {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long atdNo; // 출결NO (ATD_NO)
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EMP_NO", nullable = false)
+    @Column(name = "EMP_NO", nullable = false)
     private Employees empNo; // 사원번호 (EMP_NO)
 
     @Column(name = "ATD_DATE", nullable = false)

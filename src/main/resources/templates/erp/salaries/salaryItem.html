@@ -13,6 +13,25 @@
 	integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
 	crossorigin="anonymous" referrerpolicy="no-referrer" />
 <title>CMT</title>
+<style>
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+		
+	    button {
+	        padding: 5px 10px;
+	        border: none;
+	        cursor: pointer;
+	        border-radius: 3px;
+	    }
+		
+	    .insert { background:dodgerblue; color: white; }
+	    .update { background: purple; color: white; }
+	    .delete { background: green; color: white; }
+</style>
 </head>
 <body>
 	<!-- 
@@ -20,27 +39,21 @@
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
 	<div layout:fragment="content">
-		<!-- 페이지 내용 작성 영역 시작 -->
-
-		<h3>급여 유형 관리</h3>
-
+	
 		<div class="card">
 			<div class="card-header">
-				<!-- 급여 항목 추가 버튼 -->
-				<div class="mt-4">
-					<button type="button" id="salaryItemCreateBtn" class="btn btn-primary"
-						data-bs-toggle="modal" data-bs-target="#salItemModal">
-						추가 <i class="fa-solid fa-plus"></i>
-					</button>
-					<button type="button" id="salaryItemUpdateBtn" class="btn btn-outline-primary"
-						data-bs-toggle="modal" data-bs-target="#salItemModal">
-						수정 <i class="fa-solid fa-minus"></i>
-					</button>
-					<button type="button" id="salaryItemDeleteBtn" class="btn btn-outline-primary">
-						삭제 <i class="fa-solid fa-xmark"></i>
-					</button>
-				</div>
+					   
+				<div class="button-container">
+					<div><h2>급여유형관리</h2></div>
+					<div>
+	        			<button class="insert" data-bs-toggle="modal" data-bs-target="#salItemModal">추가 <i class="fa-solid fa-plus"></i></button>
+	        			<button class="update" data-bs-toggle="modal" data-bs-target="#salItemModal">수정 <i class="fa-solid fa-minus"></i></button>
+	        			<button class="delete">삭제 <i class="fa-solid fa-xmark"></i></button>
+					</div>
+	   			</div>
+				<br>
 			</div>
+			
 			<div class="card-body">
 
 				<ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -67,6 +80,7 @@
 						<p class="mt-2"></p>
 					</div>
 				</div>
+				
 				<!-- 급여 유형 리스트 -->
 				<div class="table-responsive">
 					<div id="salaryItemGrid"></div>
