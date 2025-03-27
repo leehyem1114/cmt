@@ -20,4 +20,6 @@ public interface EmployeesMapper {
 
 	int updateEmp(EmpRegistDTO dto);
 
+	EmpRegistDTO  selectEmpDetail(String id);
+
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.erp.employees.EmployeesMapper;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
@@ -34,8 +35,13 @@ public class EmployeesService {
 		
 		return empMapper.insertEmp(empRegistDTO);
 	}
+	//사원수정
 	public int updateEmp(EmpRegistDTO dto) {
-		// TODO Auto-generated method stub
 		return empMapper.updateEmp(dto);
+	}
+	
+	//멤버 리스트에서 사원조회
+	public EmpRegistDTO getEmpDetail(String id) {
+		return empMapper.selectEmpDetail(id);
 	}
 }
