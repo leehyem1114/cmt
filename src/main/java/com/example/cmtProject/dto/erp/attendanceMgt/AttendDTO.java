@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 public class AttendDTO {
     private Long id; // 출결NO
     private Long empNo; // 사원번호
+    private String empName; // 사원이름
     private LocalDate attendDate; // 출결일자
     private AttendType attendType; // 출결유형
     private AttendStatus attendStatus; // 출결상태
@@ -25,8 +26,8 @@ public class AttendDTO {
     
     public Attend toEntity() {
         return Attend.builder()
-//            .empNo(new Employees(empNo))
-            .empNo(new Employees())
+            .empNo(empNo)
+            .empName(empName)
             .attendDate(attendDate)
             .attendType(attendType)
             .attendStatus(attendStatus)
@@ -35,10 +36,11 @@ public class AttendDTO {
     }
 
     @Builder
-	public AttendDTO(Long id, Long empNo, LocalDate attendDate, AttendType attendType, AttendStatus attendStatus,
+	public AttendDTO(Long id, Long empNo, String empName, LocalDate attendDate, AttendType attendType, AttendStatus attendStatus,
 			String remarks) {
 		this.id = id;
 		this.empNo = empNo;
+		this.empName = empName;
 		this.attendDate = attendDate;
 		this.attendType = attendType;
 		this.attendStatus = attendStatus;

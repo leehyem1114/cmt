@@ -9,9 +9,14 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <title>수주 등록</title>
+	    <title>출퇴근 관리</title>
 
 </head>
+
+<style>
+
+</style>
+
 <body>
 
     <div layout:fragment="content">
@@ -22,26 +27,85 @@
 <!--		</th:block>-->
 <!-- 그리드 top 시작 -->
 
-	   	<div id="gridTop"></div>
-	
+	   	
+		<div id="gridTop"></div>
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
-	    /*<![CDATA[*/
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
             data: /*[[${attendList}]]*/ [],
             rowHeaders: ['checkbox'],
+            scrollX: false,
+            scrollY: false,
+            pageOptions: {
+                perPage: 20
+              },
             columns: [
-            	{ header: '출결NO', name: 'id', width: 80, align: "center" },
-            	{ header: '사원번호', name: 'empNo', width: 100, align: "center" },
-            	{ header: '출결일자', name: 'attendDate', width: 180, align: "center" },
-            	{ header: '출결유형', name: 'attendType', width: 100, align: "center" },
-            	{ header: '출결상태', name: 'attendStatus', width: 100, align: "center" },
-            	{ header: '비고', name: 'remarks', width: 150, align: "center" }
-            ]
-        });
-	    /*]]>*/
-
+            	{ 
+            	  header: '출결NO', 
+            	  name: 'id', 
+            	  sortable: true, 
+            	  filter: 'text',
+            	  width: 100,
+            	  align: "center" 
+            	},
+            	{ 
+                  header: '사원번호', 
+            	  name: 'empNo', 
+            	  sortable: true, 
+            	  filter: 'text', 
+            	  align: "center" 
+            	},
+            	{ 
+                  header: '사원이름', 
+            	  name: 'empName', 
+            	  sortable: true, 
+            	  filter: 'text', 
+            	  align: "center" 
+            	},
+            	{ 
+            	  header: '출결일자', 
+            	  name: 'attendDate', 
+            	  sortable: true, 
+            	  filter: 'text',
+           		  align: "center" 
+           		},
+            	{ 
+           	      header: '출결유형', 
+           		  name: 'attendType', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  align: "center" 
+           		},
+            	{ 
+           	      header: '출결상태', 
+           	      name: 'attendStatus', 
+           	      sortable: true, 
+           	      filter: 'text',
+           	      align: "center",
+	           	   formatter: function({ row }) {
+	                   if (row.attendStatus === 'NORMAL') {
+	                       return '<a class="btn btn-success btn-sm btn-table-action">출근</a>';
+	                   } else if (row.attendStatus === 'LATE') {
+	                       return '<a class="btn btn-warning btn-sm btn-table-action">지각</a>';
+	                   } else if (row.attendStatus === 'ABSENT') {
+	                       return '<a class="btn btn-danger btn-sm btn-table-action">결근</a>';
+	                   } else return ''; // NORMAL이 아닌 경우 버튼 표시 안함
+	                       
+	                   }
+           	   		 
+            	},
+            	{ 
+           	      header: '비고', 
+           	      name: 'remarks', 
+           	      sortable: true, 
+           	      filter: 'text',
+           	      align: "center" 
+           	    }
+            ],
+              
+          });
+	    
         /* 이벤트 리스너 추가 */
         grid.on('check', ev => {
             console.log('체크됨!', ev);

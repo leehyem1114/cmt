@@ -38,9 +38,11 @@ public class Attend {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long atdNo; // 출결NO (ATD_NO)
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EMP_NO", nullable = false)
-    private Employees empNo; // 사원번호 (EMP_NO)
+    @Column(name = "EMP_NO", nullable = false)
+    private Long empNo; // 사원번호 (EMP_NO)
+    
+    @Column(name = "EMP_NAME", nullable = false)
+    private String empName; // 사원이름 (EMP_NAME)
 
     @Column(name = "ATD_DATE", nullable = false)
     private LocalDate attendDate; // 출결일자 (ATD_DATE)
@@ -57,9 +59,10 @@ public class Attend {
     private String remarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Employees empNo, LocalDate attendDate, AttendType attendType, AttendStatus attendStatus,
+    public Attend(Long empNo, String empName, LocalDate attendDate, AttendType attendType, AttendStatus attendStatus,
 			String remarks) {
 		this.empNo = empNo;
+		this.empName = empName;
 		this.attendDate = attendDate;
 		this.attendType = attendType;
 		this.attendStatus = attendStatus;
@@ -69,7 +72,8 @@ public class Attend {
     public AttendDTO toDto() {
         return AttendDTO.builder()
             .id(atdNo)
-            .empNo(empNo.getEmpNo())
+            .empNo(empNo)
+            .empName(empName)
             .attendDate(attendDate)
             .attendType(attendType)
             .attendStatus(attendStatus)
