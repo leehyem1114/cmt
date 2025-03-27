@@ -37,12 +37,13 @@ public class Attend {
     @Column(name = "ATD_NO")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long atdNo; // 출결NO (ATD_NO)
-
+  
     @Column(name = "EMP_NO")
     private Long empNo; // 사원번호 (EMP_NO)
     
     @Column(name = "EMP_NAME", nullable = false)
     private String empName; // 사원이름 (EMP_NAME)
+
 
     @Column(name = "ATD_DATE", nullable = false)
     private LocalDate attendDate; // 출결일자 (ATD_DATE)
