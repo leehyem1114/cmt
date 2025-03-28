@@ -128,7 +128,7 @@
 						<div id="preview_profile">
 						    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="" height="100px">
 						</div>
-							<input type="file" id="empProfile" name="empProfile" accept="image/*" multiple>
+							<input type="file" id="empProfileFile" name="empProfileFile" accept="image/*" multiple> <!-- multipart로 받아야함 -->
 	                    </div>
 	                	<label for="empLevel">사원권한</label>
 	                    <div class="form-group" >
@@ -252,23 +252,21 @@
 	                    </div>
 	                    
 	                    <hr>
-	                    <label for="salNo">기본급(월급)</label>
-	                    <div class="form-group">
-	                        <input type="text" id="salNo" name="salNo" class="form-control" placeholder="">
-	                    </div>
-<!-- 	                    <label for="">은행</label> -->
+<!-- 	                    <label for="salNo">기본급(월급)</label> -->
 <!-- 	                    <div class="form-group"> -->
-<!-- 	                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 	                        <input type="text" id="salNo" name="salNo" class="form-control" placeholder=""> -->
 <!-- 	                    </div> -->
-<!-- 	                    <label for="">계좌번호</label> -->
-<!-- 	                    <div class="form-group"> -->
-<!-- 	                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
-<!-- 	                    </div> -->
-	                    
-	                </div>
+ 						<label for="salBankName">은행</label>
+		                    <div class="form-group">
+		                        <input type="text" id="salBankName" name="salBankName" class="form-control">
+		                    </div>
+		                    <label for="salBankAccount">계좌번호</label>
+		                    <div class="form-group">
+		                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control">
+		                    </div>	                    
 	                <div class="modal-footer">
 	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                    <button type="button" id="btnEmpRegi" class="btn btn-primary">등록</button>
+	                    <button type="submit" id="btnEmpRegi" class="btn btn-primary">등록</button>
 	                </div>
 	            </form>
 	        </div>
@@ -283,6 +281,9 @@
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
     <th:block layout:fragment="script">
+	    <script th:if="${msg != null}">
+		    alert('[[${msg}]]');
+		</script>
         <script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
@@ -292,31 +293,6 @@
              * - 기타 페이지별 로직
              */
             
-             $("#btnEmpRegi").on("click", function () {
-
-         	    const form = document.getElementById("empRegi");
-         	    const formData = new FormData(form);
-
-         	    // 파일 추가
-         	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
-
-         	    // AJAX 전송
-         	    $.ajax({
-         	        url: "/emp/empRegi",
-         	        method: "POST",
-//          	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
-         	        data: formData,
-         	        processData: false, //FormData 사용시 필수
-         	        contentType: false,//FormData 사용시 필수
-         	        success: function(response) {
-         	            alert(response);
-         	            
-         	        },
-         	        error: function(error) {
-         	            alert("정보 수정 실패ㅠㅠ");
-         	        }
-         	    });
-         	});
             
             //사원정보 새 창 띄우기
             $(".clickable-row").on("click",function(){

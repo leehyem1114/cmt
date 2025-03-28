@@ -102,8 +102,6 @@ public class Employees{
     @Column(name = "EMP_MARITAL_STATUS")
     private String empMaritalStatus; // 결혼여부
 
-    @Column(name = "SAL_NO")
-    private String salNo; // 급여번호
 
     @Column(name = "EMP_APPOINTMENT_TYPE")
     private String empAppointmentType; // 발령구분
@@ -113,6 +111,17 @@ public class Employees{
 
     @Column(name = "EMP_CAR_NUMBER")
     private String empCarNumber; // 차량번호
+    //=========================================
+    @Column(name = "PAY_NO")
+    private Long payNo; // 급여번호
+//    @Column(name = "SAL_NO")
+//    private String salNo; // 급여번호
+    
+    @Column(name = "SAL_BANK_NAME")
+    private String salBankName; // 은행명
+    
+    @Column(name = "SAL_BANK_ACCOUNT")
+    private String salBankAccount; // 계좌번호
 
 	public Employees(Long empNo) {
 		super();

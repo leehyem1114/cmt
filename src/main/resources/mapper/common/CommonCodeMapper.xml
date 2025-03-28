@@ -214,8 +214,8 @@
     <select id="selectDetailCodeList" resultType="com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO">
 	     SELECT 
 			CMN_DETAIL_CODE           AS cmnDetailCode,
-			CMN_DETAIL_NAME           AS cmnDetailName
-			
+			CMN_DETAIL_NAME           AS cmnDetailName,
+			CMN_DETAIL_VALUE          AS cmnDetailValue
 		FROM 
 			COMMONCODE_DETAIL
 	    WHERE 
