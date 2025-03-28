@@ -22,4 +22,7 @@ public interface EmployeesMapper {
 
 	EmpRegistDTO  selectEmpDetail(String id);
 
+
+	EmpRegistDTO selectMyEmpList(String empId);
+
 }

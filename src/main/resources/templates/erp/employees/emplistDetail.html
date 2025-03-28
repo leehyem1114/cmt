@@ -50,11 +50,11 @@
 <!-- 						                    </div> -->
 						                    <label for="empName">이름</label>
 						                    <div class="form-group">
-												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" readonly>
+												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}">
 						                    </div>
 						                    <label for="empId">사원 번호</label>
 						                    <div class="form-group">
-						                        <input type="text" id="empId" name="empId" class="form-control" th:value="*{empId}" readonly>
+						                        <input type="text" id="empId" name="empId" class="form-control" th:value="*{empId}">
 						                    </div>
 <!-- 						                    <label for="deptNo">부서</label> -->
 <!-- 												<select id="deptNo" name="deptNo" class="form-select"> -->
@@ -70,84 +70,84 @@
 <!-- 												    </th:block> -->
 <!-- 												</select> -->
 <!-- 						                    </div> -->
-<!-- 						                    <label for="empPhone">전화번호</label> -->
-<!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="${loginUser.empPhone}"> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empEmail">이메일</label> -->
-<!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="${loginUser.empEmail}"> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empStartDate">입사일</label> -->
-<!-- 						                    <div class="date-range"> -->
-<!-- 												<div class="date-range"> -->
-<!-- 												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:value="${loginUser.empStartDate}"> -->
-<!-- 												</div> -->
-<!-- 											</div> -->
-<!-- 						                    <label for="empGender">성별</label> -->
-<!-- 						                    <div class="form-group" > -->
-<!-- 						                      <select id="empGender" name="empGender" class="form-select"> -->
-<!-- 												    <th:block th:each="code : ${commonCodeMap['GENDER']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empAddress1">주소</label> -->
-<!-- 											<div> -->
-<!-- 												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${loginUser.empAddress1}"> -->
-<!-- 												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br> -->
-<!-- 											</div> -->
-<!-- 											<div> -->
-<!-- 												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="${loginUser.empAddress2}"> -->
-<!-- 												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="${loginUser.empPostCode}" readonly><br> -->
-<!-- 											</div> -->
-<!-- 						                    <label for="empMaritalStatus">결혼여부</label> -->
-<!-- 						                   <div class="form-group" > -->
-<!-- 						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select"> -->
-<!-- 							                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
+						                    <label for="empPhone">전화번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="*{empPhone}">
+						                    </div>
+						                    <label for="empEmail">이메일</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="*{empEmail}">
+						                    </div>
+						                    <label for="empStartDate">입사일</label>
+						                    <div class="date-range">
+												<div class="date-range">
+												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:value="*{empStartDate}">
+												</div>
+											</div>
+						                    <label for="empGender">성별</label>
+						                    <div class="form-group" >
+						                      <select id="empGender" name="empGender" class="form-select" th:field="*{empGender}">
+												    <th:block th:each="code : ${commonCodeMap['GENDER']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
+						                    <label for="empAddress1">주소</label>
+											<div>
+												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="*{empAddress1}">
+												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
+											</div>
+											<div>
+												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="*{empAddress2}">
+												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="*{empPostCode}" readonly><br>
+											</div>
+						                    <label for="empMaritalStatus">결혼여부</label>
+						                   <div class="form-group" >
+						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select" th:field="*{empMaritalStatus}">
+							                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
 						                    
-<!-- 						                    <hr> -->
+						                    <hr>
 						                    
-<!-- 						                    <label for="empStatus">재직상태</label> -->
-<!-- 						                    <div class="form-group" > -->
-<!-- 						                       <select id="empStatus" name="empStatus" class="form-select"> -->
-<!-- 							                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empType">고용유형</label> -->
-<!-- 						                   <div class="form-group" > -->
-<!-- 						                       <select id="empType" name="empType" class="form-select"> -->
-<!-- 							                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empEducationLevel">학력</label> -->
-<!-- 						                   <div class="form-group" > -->
-<!-- 						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select"> -->
-<!-- 							                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empParkingStatus">주차등록</label> -->
-<!-- 						                    <div class="form-group" > -->
-<!-- 						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select"> -->
-<!-- 							                       	<th:block th:each="code : ${commonCodeMap['PARKING']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="empCarNumber">차량번호</label> -->
-<!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" th:value="${loginUser.empCarNumber}"> -->
-<!-- 						                    </div> -->
+						                    <label for="empStatus">재직상태</label>
+						                    <div class="form-group" >
+						                       <select id="empStatus" name="empStatus" class="form-select" th:field=*{empStatus}>
+							                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
+						                    <label for="empType">고용유형</label>
+						                   <div class="form-group" >
+						                       <select id="empType" name="empType" class="form-select" th:field=*{empType}>
+							                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
+						                    <label for="empEducationLevel">학력</label>
+						                   <div class="form-group" >
+						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select" th:field=*{empEducationLevel}>
+							                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
+						                    <label for="empParkingStatus">주차등록</label>
+						                    <div class="form-group" >
+						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select"  th:field=*{empParkingStatus}>
+							                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
+						                    <label for="empCarNumber">차량번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" th:value="*{empCarNumber}">
+						                    </div>
 						                    
 						                    <hr>
 <!-- 						                    <label for="">기본급(월급)</label> -->
@@ -187,7 +187,7 @@
              * - 기타 페이지별 로직
              */
             
-             $("#btnEmpRegi").on("click", function () {
+             $("#btnUpdate").on("click", function () {
 
          	    const form = document.getElementById("empRegi");
          	    const formData = new FormData(form);
@@ -197,7 +197,7 @@
 
          	    // AJAX 전송
          	    $.ajax({
-         	        url: "/emp/empRegi",
+         	        url: "/emp/emp",
          	        method: "POST",
 //          	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
          	        data: formData,
@@ -217,7 +217,7 @@
             $(".clickable-row").on("click",function(){
             	let empId = $(this).data("id");
             	let url = `/emp/empList/${empId}`;
-            	let options = "width=800,height=800,top=100,left=100,scrollbars=yes,resizable=yes";
+            	let options = "width=900,height=800,top=100,left=100,scrollbars=yes,resizable=yes";
 
             	window.open(url, 'empDetail_' + empId, options);
             	console.log(empId);
