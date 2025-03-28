@@ -63,6 +63,7 @@ public class SalaryItem { // 급여 유형 관리 엔티티
     
     
     public SalaryItemDTO toDto() {
+    	
     	return SalaryItemDTO.builder()
     			.sliNo(sliNo)
 				.sliType(sliType)

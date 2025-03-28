@@ -5,9 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +25,7 @@ import com.example.cmtProject.service.erp.salaries.SalaryItemService;
 
 @Controller
 @RequestMapping("/salary")
-public class salaryController {
+public class salaryItemController {
 	@Autowired
 	private SalaryItemService salaryItemService;
 	@Autowired
@@ -34,6 +38,8 @@ public class salaryController {
 		// 서비스에서 급여 항목 목록 가져오기
 	    List<SalaryItemDTO> salItemList = salaryItemService.getSalaryItems();
 
+	    System.out.println("테스트" + salItemList.size());
+	    
 	    // 모델에 전달
 	    model.addAttribute("salItemList", salItemList);
 
@@ -96,6 +102,20 @@ public class salaryController {
 ////	    result.put("name", name);
 //	    return "erp/salaries/salaryItem";
 //	}
+	
+	@DeleteMapping("/delete/{sliNo}")
+	@ResponseBody
+	public ResponseEntity<String> deleteSalItem(@PathVariable("sliNo") Long sliNo) {
+		try {
+            salaryItemService.deleteSalItem(sliNo);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+	
 	
 	// 급여 지급 이력
 	@GetMapping("/salaryList")

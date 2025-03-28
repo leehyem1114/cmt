@@ -20,17 +20,7 @@
 	        margin: 10px;
 			justify-content: space-between;
 	    }
-		
-	    button {
-	        padding: 5px 10px;
-	        border: none;
-	        cursor: pointer;
-	        border-radius: 3px;
-	    }
-		
-	    .insert { background:dodgerblue; color: white; }
-	    .update { background: purple; color: white; }
-	    .delete { background: green; color: white; }
+	    
 </style>
 </head>
 <body>
@@ -43,9 +33,9 @@
 		<div class="button-container">
 			<div><h2>급여유형관리</h2></div>
 				<div>
-	        		<button class="insert" id="insert" data-bs-toggle="modal" data-bs-target="#salItemModal">추가 <i class="fa-solid fa-plus"></i></button>
-	        			<button class="update" data-bs-toggle="modal" data-bs-target="#salItemModal">수정 <i class="fa-solid fa-minus"></i></button>
-	        			<button class="delete">삭제 <i class="fa-solid fa-xmark"></i></button>
+	        		<button type="submit" class="btn btn-primary" id="insert" data-bs-toggle="modal" data-bs-target="#salItemModal">추가 <i class="fa-solid fa-plus"></i></button>
+	        			<button type="button" class="btn btn-primary" id="update" data-bs-toggle="modal" data-bs-target="#salItemModal">수정 <i class="fa-solid fa-minus"></i></button>
+	        			<button type="button" class="btn btn-primary" id="delete">삭제 <i class="fa-solid fa-xmark"></i></button>
 					</div>
 	   			</div>
 			
@@ -83,9 +73,12 @@
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    
+	    console.log("테스트", /*[[${salItemList}]]*/ []);
+	    
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
 			data : /*[[${salItemList}]]*/ [],
+			rowKey: 'sliNo',
 	        rowHeaders: ['checkbox'], 
 	        columns: [
 				{
@@ -169,12 +162,6 @@
 									<option></option>
 								</select>
 							</div>
-								<label for="salItemApplyYear">적용년도</label>
-								<div class="form-group mb-2">
-									<select id="sliUpdateAt" class="form-select"required>
-										<option></option>
-									</select> 
-								</div>
 	
 						</div>
 	
@@ -199,7 +186,37 @@
 
 
  	<th:block layout:fragment="script">
+		<script type="text/javascript">
+		$("#delete").on("click", function(){
+			if(!confirm("선택된 항목을 삭제하시겠습니까?")) {
+				return;
+			}
+			
+			// 체크 후 삭제할 rowKey = sliNo 목록
+			const checkedItems = grid.getCheckedRowKeys();// rowKey = sliNo
+			
+		    if (checkedItems.length === 0) {
+		    	alert("삭제할 항목을 선택하세요.");
+		    	return;
+		    }
+			
+			$.ajax({
+				url: "/salary/delete/{sliNo}",
+				type: "DELETE",
+		        contentType: "application/json", // JSON 형식으로 데이터 전송
+		        data: JSON.stringify(checkedItems), // 선택된 sliNo 목록을 JSON 문자열로 변환하여 전송
+				success: function(result) {
+					alert("삭제 완료");
+					location.reload();
+				},
+				error: function(error) {
+					alert("삭제 실패 - " + error);
+				}
+			});
+			
+		});
 
+		</script>
  	</th:block> 
 </body>
 </html>
