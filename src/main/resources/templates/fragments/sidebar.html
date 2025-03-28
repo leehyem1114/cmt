@@ -24,9 +24,149 @@
 					<input type="hidden" id="sttsCd">
 					<input type="hidden" id="empNo">
 					<input type="hidden" id="empId">
-				</div>    -->     	
-	        
+				</div>    -->   
+			<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+			  <!-- 날짜 표시 영역 -->
+			  <div style="margin-right: 20px;">
+	        <div><h2 id="currentDate"></h2></div>
+				 <script>
+				  document.addEventListener("DOMContentLoaded", function () {
+				    const now = new Date();
+				
+				    const year = now.getFullYear();
+				    const month = String(now.getMonth() + 1).padStart(2, '0');
+				    const day = String(now.getDate()).padStart(2, '0');
+				
+				    // 요일을 한글로 변환
+				    const daysKor = ['일', '월', '화', '수', '목', '금', '토'];
+				    const dayOfWeek = daysKor[now.getDay()];
+				
+				    const formatted = `${year}년 ${month}월 ${day}일 (${dayOfWeek})`;
+				
+				    document.getElementById("currentDate").textContent = formatted;
+				  });
+				</script>
 	        </div>
+	        <div>
+		        <th:block th:if="${#authorization.expression('isAuthenticated()')}">
+			        <div class="btn-group-custom" style="text-align: left;">
+				        <th:block th:if="${!hasCheckedIn}">
+						    <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
+						</th:block>
+					    
+				        <th:block th:if="${!hasCheckedOut}">
+				        	<button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
+				        	<button type="button" class="btn btn-lg btn-secondary" onclick="earlyLeave()">조퇴</button>
+						</th:block>
+						<th:block th:if="${hasCheckedOut and hasCheckedIn}">
+						    <button type="button" class="btn btn-lg btn-primary disabled " onclick="checkOut()">퇴근</button>
+						</th:block>
+					</div>
+				</th:block>
+				</div>
+				</div>
+			</div>
+			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		    <script th:inline="javascript">
+		    async function checkIn() {
+		    	  // 사용자에게 출근 확인 알림 표시
+		    	  const result = await Swal.fire({
+		    	    title: "출근 하시겠습니까?",
+		    	    showDenyButton: true,
+		    	    confirmButtonText: "출근",
+		    	    denyButtonText: "아니요"
+		    	  });
+		    	  if (result.isDenied) {
+		    		  Swal.fire({
+		    			  icon: "error",
+			    		  title: "출근 처리에 실패했습니다.",
+			    		});
+		    		  return;
+		    		  }
+		    	  // 출근 API 요청
+		    	  try {
+		    	    const response = await fetch('/attends/check-in', {
+		    	      method: 'POST',
+		    	      headers: {
+		    	        'Content-Type': 'application/json'
+		    	      },
+		    	      body: JSON.stringify({})
+		    	    });
+		    	    if (!response.ok) {
+		    	      await Swal.fire({
+		    	        icon: "error",
+		    	        title: "출근 처리 중 서버 오류가 발생했습니다",
+		    	      });
+		    	      throw new Error("출근 처리 중 서버 오류");
+		    	    }
+		    	    await Swal.fire({
+		    	      title: "출근이 처리되었습니다",
+		    	      icon: "success",
+		    	    });
+	
+		    	    location.reload();
+	
+		    	  } catch (error) {
+		    	    console.error('Error:', error);
+		    	    await Swal.fire({
+		    	        icon: "error",
+		    	        title: "출근 처리 중 서버 오류가 발생했습니다",
+		    	      });
+		    	  }
+		    	}
+		    
+		    	async function checkOut() {
+		    	  // 사용자에게 퇴근 확인 알림 표시
+		    	  const result = await Swal.fire({
+		    	    title: "퇴근 하시겠습니까?",
+		    	    showDenyButton: true,
+		    	    confirmButtonText: "퇴근",
+		    	    denyButtonText: "아니요"
+		    	  });
+	
+		    	  if (result.isDenied) {
+		    	    await Swal.fire({
+		    	      icon: "info",
+		    	      title: "퇴근이 취소되었습니다.",
+		    	    });
+		    	    return;
+		    	  }
+	
+		    	  // 퇴근 API 요청
+		    	  try {
+		    	    const response = await fetch('/attends/check-out', {
+		    	      method: 'POST',
+		    	      headers: {
+		    	        'Content-Type': 'application/json'
+		    	      },
+		    	      body: JSON.stringify({})
+		    	    });
+	
+		    	    if (!response.ok) {
+		    	      await Swal.fire({
+		    	        icon: "error",
+		    	        title: "퇴근 처리 중 서버 오류가 발생했습니다",
+		    	      });
+		    	      throw new Error("퇴근 처리 중 서버 오류");
+		    	    }
+	
+		    	    await Swal.fire({
+		    	      title: "퇴근이 처리되었습니다",
+		    	      icon: "success",
+		    	    });
+	
+		    	    location.reload();
+	
+		    	  } catch (error) {
+		    	    console.error('Error:', error);
+		    	    await Swal.fire({
+		    	      icon: "error",
+		    	      title: "퇴근 처리 중 서버 오류가 발생했습니다",
+		    	    });
+		    	  }
+		    	}
+		    
+			</script> 
 	        
 			<div class="col-md-4 d-flex justify-content-end"> 
 				<!-- 알림 아이콘  -->
@@ -39,13 +179,23 @@
 <!-- 		        	<i class=" fs-3 bi bi-person-circle mx-3 d-flex align-items-center"></i> -->
 <!-- 		        </a> -->
 				<!--사원이름 출력-->
-				<div th:if="${#authorization.expression('isAuthenticated()')}">
+				 
+				<th:block th:if="${#authorization.expression('isAuthenticated()')}">
+					
+				
+				
 			        <span th:text="${#authentication.principal.user.empName}"></span>님,반갑읍니다 ^^...
-			    </div>
+			    
 		        <!-- 로그아웃 버튼 -->
 				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='logout'">
 					로그아웃 &nbsp; <i class="bi bi-box-arrow-right "></i>
 				</button>
+				</th:block>
+				<th:block th:if="${!#authorization.expression('isAuthenticated()')}">
+					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='loginForm'">
+					로그인 &nbsp; <i class="bi bi-box-arrow-right "></i>
+					</button>
+				</th:block>
 	        </div> <!-- right -->
 		</div> <!-- topbar -->
 	

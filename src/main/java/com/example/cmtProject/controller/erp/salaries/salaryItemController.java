@@ -1,39 +1,31 @@
 package com.example.cmtProject.controller.erp.salaries;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.cmtProject.dto.erp.salaries.PayrollDTO;
 import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
-import com.example.cmtProject.entity.Salary;
+import com.example.cmtProject.entity.erp.salaries.PayMent;
 import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.salaries.SalaryItemService;
 
-import jakarta.servlet.http.HttpSession;
-
 @Controller
 @RequestMapping("/salary")
-public class salaryController {
+public class salaryItemController {
 	@Autowired
 	private SalaryItemService salaryItemService;
 	@Autowired
@@ -43,19 +35,21 @@ public class salaryController {
 	@GetMapping("/salaryItem")
 	public String salaryItemGet(Model model) {
 		
-		 // 서비스에서 급여 항목 목록 가져오기
-	    List<SalaryItemDTO> itemList = salaryItemService.getAllSalaryItems();
+		// 서비스에서 급여 항목 목록 가져오기
+	    List<SalaryItemDTO> salItemList = salaryItemService.getSalaryItems();
 
+	    System.out.println("테스트" + salItemList.size());
+	    
 	    // 모델에 전달
-	    model.addAttribute("salaryItems", itemList);
+	    model.addAttribute("salItemList", salItemList);
 
 	    // 등록 폼을 위한 DTO 객체도 미리 전달
-	    model.addAttribute("salaryItemDTO", new SalaryItemDTO());
+	   // model.addAttribute("salaryItemDTO", new SalaryItemDTO());
 	    
-	    System.out.println("아이템 유형 리스트 : " + itemList);
+	    System.out.println("아이템 유형 리스트 : " + salItemList);
 		
 		
-		return "erp/salaries/salaryItem";
+		return "erp/salaries/salaryItemList";
 	}
 	
 	@GetMapping("/getNameByType")
@@ -109,20 +103,37 @@ public class salaryController {
 //	    return "erp/salaries/salaryItem";
 //	}
 	
+	@DeleteMapping("/delete/{sliNo}")
+	@ResponseBody
+	public ResponseEntity<String> deleteSalItem(@PathVariable("sliNo") Long sliNo) {
+		try {
+            salaryItemService.deleteSalItem(sliNo);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+	
+	
 	// 급여 지급 이력
 	@GetMapping("/salaryList")
 	public String salaryListGet(Model model) {
-		List<Salary> salaryList = salaryItemService.getAllSalaries();
+		List<PayMent> salaryList = salaryItemService.getAllSalaries();
 		model.addAttribute("salaryList", salaryList);
 	    // 등록 폼을 위한 DTO 객체도 미리 전달
-	    model.addAttribute("salaryItemDTO", new SalaryItemDTO());
+	   // model.addAttribute("salaryItemDTO", new SalaryItemDTO());
 		return "erp/salaries/salaryList";
 	}
 	
 	// 급여 대장
 	@GetMapping("/payroll")
 	public String payrollGet(Model model) {
+		//model.addAttribute("monthlyPayroll", monthlyPayroll);
+		//model.addAttribute("yearlyPayroll", yearlyPayroll);
 		
 		return "erp/salaries/payroll";
 	}
+
 }

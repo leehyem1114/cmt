@@ -2,11 +2,12 @@ package com.example.cmtProject.dto.erp.salaries;
 
 import java.time.LocalDate;
 
-import com.example.cmtProject.entity.SalaryItem;
+import com.example.cmtProject.entity.erp.salaries.SalaryItem;
 import com.example.cmtProject.entity.erp.salaries.SalaryItemType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

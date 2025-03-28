@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layouts/layout}">
+<head>
+<!-- 기본 메타 정보 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- <link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+	integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+	crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+<title>CMT</title>
+<style>
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+	    
+</style>
+</head>
+<body>
+	<!-- 
+        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
+        이 부분 안에 페이지별 HTML 내용을 작성하세요.
+    -->
+	<div layout:fragment="content">
+					   
+		<div class="button-container">
+			<div><h2>급여유형관리</h2></div>
+				<div>
+	        		<button type="submit" class="btn btn-primary" id="insert" data-bs-toggle="modal" data-bs-target="#salItemModal">추가 <i class="fa-solid fa-plus"></i></button>
+	        			<button type="button" class="btn btn-primary" id="update" data-bs-toggle="modal" data-bs-target="#salItemModal">수정 <i class="fa-solid fa-minus"></i></button>
+	        			<button type="button" class="btn btn-primary" id="delete">삭제 <i class="fa-solid fa-xmark"></i></button>
+					</div>
+	   			</div>
+			
+			<div class="tab">
+
+				<ul class="nav nav-tabs" id="salItemTab" role="tablist">
+					<li class="nav-item" role="presentation"><a
+						class="nav-link active" id="salaryAll-tab" data-bs-toggle="tab"
+						href="#salaryAll" role="tab" aria-controls="salaryAll" aria-selected="true">전체</a>
+					</li>
+					<li class="nav-item" role="presentation"><a class="nav-link"
+						id="bonus-tab" data-bs-toggle="tab" href="#bonus" role="tab"
+						aria-controls="bonus" aria-selected="false">수당</a></li>
+					<li class="nav-item" role="presentation"><a class="nav-link"
+						id="tax-tab" data-bs-toggle="tab" href="#tax" role="tab"
+						aria-controls="tax" aria-selected="false">공제</a></li>
+				</ul>
+				<div class="tab-content" id="salItemTabContent">
+					<div class="tab-pane fade show active" id="salaryAll" role="tabpanel"
+						aria-labelledby="salaryAll-tab">
+					</div>
+					<div class="tab-pane fade" id="bonus" role="tabpanel"
+						aria-labelledby="bonus-tab"></div>
+					<div class="tab-pane fade" id="tax" role="tabpanel"
+						aria-labelledby="tax-tab">
+					</div>
+				</div>
+			</div>
+		
+		<br>
+	
+		<!-- 그리드 top 시작 -->
+	   	<div id="gridTop"></div>
+	
+	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	    <script th:inline="javascript">
+	    
+	    console.log("테스트", /*[[${salItemList}]]*/ []);
+	    
+	    const grid = new tui.Grid({
+	        el: document.getElementById('gridTop'), 
+			data : /*[[${salItemList}]]*/ [],
+			rowKey: 'sliNo',
+	        rowHeaders: ['checkbox'], 
+	        columns: [
+				{
+	                header: '구분',
+	                name: 'sliType', 
+	            	sortable: true
+	            },
+	            {
+	                header: '유형명',
+	                name: 'sliName'
+	            },
+	            {
+	                header: '우선순위',
+	                name: 'sliPriority', 
+		            sortable: true
+	            },
+	            {
+	                header: '설명',
+	                name: 'sliDesc'
+	            },
+	            {
+	                header: '계산식',
+	                name: 'sliFormula'
+	            },
+	            {
+	                header: '최종수정일시',
+	                name: 'sliUpdateAt'
+	            }
+	        ] // 열 설정
+	    });
+	    
+	 	// 체크박스 클릭 시 이벤트 추가
+	    grid.on('check', (checkItem) => {
+	        console.log("체크 확인");
+	    });
+
+	    // 체크 해제 시 이벤트 추가
+	    grid.on('uncheck', (checkItem) => {
+	    	console.log("체크 해제 확인");
+	    });
+
+	    </script>
+	    <!-- 그리드 끝 --> 
+
+
+		<!-- 모달 창 (Bootstrap + Thymeleaf) -->
+		<div class="modal fade" id="salItemModal" tabindex="-1"
+			aria-labelledby="salModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="salModal">급여 유형 등록</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+
+					<form id="salaryForm" th:action="@{/salary/salaryItems}"
+						method="post" th:object="${salaryItemDTO}">
+						<div class="modal-body">
+							<label for="sliType">유형</label>
+							<div class="form-group mb-2">
+								<select id="sliType" class="form-select" required>
+									<option>급여유형</option>
+								</select>
+							</div>
+							<label for="salItemName">유형명</label>
+							<div class="form-group mb-2">
+								<input type="text" id="sliName" class="form-control">
+							</div>
+							<label for="salItemCalc">계산식</label>
+							<div class="form-group mb-2">
+								<textarea id="sliFormula" class="form-control" rows="2" placeholder="예: BASIC * 0.2"></textarea>
+							</div>
+							<label for="salItemDesc">유형 설명</label>
+							<div class="form-group mb-2">
+								<textarea id="sliDesc" class="form-control" rows="2" placeholder="간단한 설명 입력"></textarea>
+							</div>
+							<label for="salItemImportance">우선순위</label>
+							<div class="form-group mb-2">
+								<select id="sliPriority" class="form-select" required>
+									<option></option>
+								</select>
+							</div>
+	
+						</div>
+	
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary"
+								data-bs-dismiss="modal">닫기</button>
+							<button type="submit" id="sliSubmitBtn" class="btn btn-primary">등록</button>
+						</div>
+					</form>
+	
+				</div>
+			</div>
+		</div>
+
+
+
+	</div>	
+		
+			
+
+	
+
+
+ 	<th:block layout:fragment="script">
+		<script type="text/javascript">
+		$("#delete").on("click", function(){
+			if(!confirm("선택된 항목을 삭제하시겠습니까?")) {
+				return;
+			}
+			
+			// 체크 후 삭제할 rowKey = sliNo 목록
+			const checkedItems = grid.getCheckedRowKeys();// rowKey = sliNo
+			
+		    if (checkedItems.length === 0) {
+		    	alert("삭제할 항목을 선택하세요.");
+		    	return;
+		    }
+			
+			$.ajax({
+				url: "/salary/delete/{sliNo}",
+				type: "DELETE",
+		        contentType: "application/json", // JSON 형식으로 데이터 전송
+		        data: JSON.stringify(checkedItems), // 선택된 sliNo 목록을 JSON 문자열로 변환하여 전송
+				success: function(result) {
+					alert("삭제 완료");
+					location.reload();
+				},
+				error: function(error) {
+					alert("삭제 실패 - " + error);
+				}
+			});
+			
+		});
+
+		</script>
+ 	</th:block> 
+</body>
+</html>

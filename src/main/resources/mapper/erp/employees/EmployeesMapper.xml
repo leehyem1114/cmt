@@ -6,7 +6,7 @@
 <!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력@@@@@@@@@@@@ --> 
 <mapper namespace="com.example.cmtProject.mapper.erp.employees.EmployeesMapper">
     
-	<!-- 사원 리스트 전체 조회 -->
+	<!-- 사원 리스트 전체 조회(프리뷰) -->
     <select id="selectEmplist" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
 		SELECT EMP.EMP_NO,
 		       EMP.EMP_ID,
@@ -74,14 +74,15 @@
 	        EMP_EDUCATION_LEVEL,
 	        EMP_PARKING_STATUS,
 	        EMP_CAR_NUMBER,
-	        SAL_NO
+	        SAL_BANK_NAME,
+	        SAL_BANK_ACCOUNT
 	    ) VALUES (
 	        #{empId},
 	        #{empLevel},
 	        #{empPassword},
 	        #{empName},
-<!-- 	        #{empProfile}, -->
-	        NULL,
+	        #{empProfile},
+<!-- 	        NULL, -->
 	        <choose>
 	            <when test="empStartDate != null">
 	                #{empBirthday}
@@ -112,7 +113,8 @@
 	        #{empEducationLevel},
 	        #{empParkingStatus},
 	        #{empCarNumber},
-	        #{salNo}
+	        #{salBankName},
+	        #{salBankAccount}
 	    )
 	    
 	</insert>
@@ -125,8 +127,8 @@
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
 	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
-	        DEPT_NO = #{deptNo, jdbcType=NUMERIC},
-	        POSITION_NO = #{positionNo, jdbcType=NUMERIC},
+	        DEPT_NO = #{deptNo},
+	        POSITION_NO = #{positionNo},
 	        EMP_POST_CODE = #{empPostCode},
 	        EMP_ADDRESS1 = #{empAddress1},
 	        EMP_ADDRESS2 = #{empAddress2},
@@ -137,26 +139,55 @@
 	        EMP_EDUCATION_LEVEL = #{empEducationLevel},
 	        EMP_PARKING_STATUS = #{empParkingStatus},
 	        EMP_CAR_NUMBER = #{empCarNumber},
-	        EMP_PROFILE = #{empProfile, jdbcType=VARCHAR}
+	        EMP_PROFILE = #{empProfile, jdbcType=VARCHAR},
+	        SAL_BANK_NAME = #{salBankName},
+	        SAL_BANK_ACCOUNT = #{salBankAccount}
+	        
 	    WHERE EMP_ID = #{empId}
+	</update>
+	
+	<update id="updateEmpDetail">
+		UPDATE EMPLOYEES
+	    SET 
+	        EMP_LEVEL = #{empLevel},
+	        EMP_PHONE = #{empPhone},
+	        EMP_EMAIL = #{empEmail},
+	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
+	        DEPT_NO = #{deptNo},
+	        POSITION_NO = #{positionNo},
+	        EMP_POST_CODE = #{empPostCode},
+	        EMP_ADDRESS1 = #{empAddress1},
+	        EMP_ADDRESS2 = #{empAddress2},
+	        EMP_START_DATE = #{empStartDate, jdbcType=DATE},
+	        EMP_MARITAL_STATUS = #{empMaritalStatus},
+	        EMP_STATUS = #{empStatus},
+	        EMP_TYPE = #{empType},
+	        EMP_EDUCATION_LEVEL = #{empEducationLevel},
+	        EMP_PARKING_STATUS = #{empParkingStatus},
+	        EMP_CAR_NUMBER = #{empCarNumber},
+	        EMP_PROFILE = #{empProfile, jdbcType=VARCHAR},
+	        SAL_BANK_NAME = #{salBankName},
+	        SAL_BANK_ACCOUNT = #{salBankAccount}
+	    WHERE EMP_ID = #{id}
 	</update>
 	
 	<!-- 리스트에서 사원조회 -->
 	
 	<select id="selectEmpDetail" resultType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
 		 SELECT 
-	        E.EMP_NO              AS empNo,
+	         E.EMP_NO              AS empNo,
 	        E.EMP_LEVEL           AS empLevel,
 	        E.EMP_NAME            AS empName,
 	        E.EMP_ID              AS empId,
 	        E.EMP_PASSWORD        AS empPassword,
-<!-- 	        D.CMN_DETAIL_NAME     AS deptName, -->
+	        E.DEPT_NO             AS deptNo,
+	        D.CMN_DETAIL_NAME     AS deptName,
+	        E.POSITION_NO		  AS positionNo,
+	        P.CMN_DETAIL_NAME     AS deptPosition,
 	        E.EMP_PROFILE         AS empProfile,
 <!-- 	        TO_CHAR(E.EMP_BIRTHDAY, 'YYYY-MM-DD') AS empBirthday, -->
 	        E.EMP_EMAIL           AS empEmail,
 	        E.EMP_GENDER          AS empGender,
-	        E.DEPT_NO             AS deptNo,
-	        E.POSITION_NO         AS positionNo,
 	        E.EMP_PHONE           AS empPhone,
 	        E.EMP_POST_CODE       AS empPostCode,
 	        E.EMP_ADDRESS1        AS empAddress1,
@@ -170,14 +201,57 @@
 	        E.EMP_EDUCATION_LEVEL AS empEducationLevel,
 	        E.EMP_GRADE           AS empGrade,
 	        E.EMP_MARITAL_STATUS  AS empMaritalStatus,
-	        E.SAL_NO              AS salNo,
 	        E.EMP_APPOINTMENT_TYPE AS empAppointmentType,
 	        E.EMP_PARKING_STATUS  AS empParkingStatus,
-	        E.EMP_CAR_NUMBER      AS empCarNumber
+	        E.EMP_CAR_NUMBER      AS empCarNumber,
+	        E.SAL_BANK_NAME		  AS salBankName,
+	        E.SAL_BANK_ACCOUNT	  AS salBankAccount
 	    FROM EMPLOYEES E
-<!-- 	    LEFT JOIN COMMONCODE_DETAIL D -->
-<!-- 	       ON E.DEPT_NO = TO_NUMBER(D.CMN_DETAIL_CODE) -->
+		    JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
+		    JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
 	    WHERE E.EMP_ID = #{id}
 	</select>
+	<!-- 나의 사원리스트 조회 -->
+	<select id="selectMyEmpList" resultType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
+		SELECT 
+	        E.EMP_NO              AS empNo,
+	        E.EMP_LEVEL           AS empLevel,
+	        E.EMP_NAME            AS empName,
+	        E.EMP_ID              AS empId,
+	        E.EMP_PASSWORD        AS empPassword,
+	        E.DEPT_NO             AS deptNo,
+	        D.CMN_DETAIL_NAME     AS deptName,
+	        E.POSITION_NO		  AS positionNo,
+	        P.CMN_DETAIL_NAME     AS deptPosition,
+	        E.EMP_PROFILE         AS empProfile,
+<!-- 	        TO_CHAR(E.EMP_BIRTHDAY, 'YYYY-MM-DD') AS empBirthday, -->
+	        E.EMP_EMAIL           AS empEmail,
+	        E.EMP_GENDER          AS empGender,
+	        E.EMP_PHONE           AS empPhone,
+	        E.EMP_POST_CODE       AS empPostCode,
+	        E.EMP_ADDRESS1        AS empAddress1,
+	        E.EMP_ADDRESS2        AS empAddress2,
+	        E.EMP_START_DATE      AS empStartDate,
+	        E.EMP_END_DATE        AS empEndDate,
+	        E.EMP_END_REASON      AS empEndReason,
+	        E.EMPLOYMENT_TYPE     AS employmentType,
+	        E.EMP_TYPE            AS empType,
+	        E.EMP_STATUS          AS empStatus,
+	        E.EMP_EDUCATION_LEVEL AS empEducationLevel,
+	        E.EMP_GRADE           AS empGrade,
+	        E.EMP_MARITAL_STATUS  AS empMaritalStatus,
+	        E.EMP_APPOINTMENT_TYPE AS empAppointmentType,
+	        E.EMP_PARKING_STATUS  AS empParkingStatus,
+	        E.EMP_CAR_NUMBER      AS empCarNumber,
+	        E.SAL_BANK_NAME		  AS salBankName,
+	        E.SAL_BANK_ACCOUNT	  AS salBankAccount
+	    FROM EMPLOYEES E
+		   LEFT JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
+		   LEFT JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
+	    WHERE E.EMP_ID = #{empId}
+	
+	
+	</select>
+	
 	
 </mapper>

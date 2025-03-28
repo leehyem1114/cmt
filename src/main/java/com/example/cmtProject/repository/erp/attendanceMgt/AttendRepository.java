@@ -1,5 +1,7 @@
 package com.example.cmtProject.repository.erp.attendanceMgt;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -17,8 +19,9 @@ public interface AttendRepository extends JpaRepository<Attend, Long> {
     List<Attend> findByEmpNoOrderByAtdNoDesc(Long empNo);
     
     // 페이징 처리
-    @Query("SELECT a FROM Attend a ORDER BY a.attendDate DESC")
-    Page<Attend> findPagedAttends(Pageable pageable);
+    Page<Attend> findAllByOrderByAttendDateDesc(Pageable pageable);
+    
+    
     
     
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
@@ -55,10 +56,11 @@ public class EmployeesController {
 	/***나의 인사카드***/
 	@GetMapping("/myEmplist")
 	public String myEmplist(@AuthenticationPrincipal PrincipalDetails principalDetails,Model model) {
-		//내정보 확인 및 수정기능 넣어야함~~~~~
-		Employees loginUser = principalDetails.getUser();
-		model.addAttribute("loginUser",loginUser);
-		
+		String empId = principalDetails.getUser().getEmpId();
+		System.out.println(">>>>>>>!!!!!!!!!!!"+empId);;
+		EmpRegistDTO emp = empService.getMyEmpList(empId);
+		model.addAttribute("emp",emp);
+		System.out.println("~~~DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
 		 //공통코드 가져오기
 		commonCodeName(model, commonService);
 		
@@ -73,12 +75,12 @@ public class EmployeesController {
 								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
 						        @AuthenticationPrincipal PrincipalDetails principal,
 						        Model model) {
-	    System.out.println("받은 DTO: " + dto);
 	    int result = empService.updateEmp(dto);
 	    if(result > 0) {
-//	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
+	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
 	    	return "사원 정보수정 완료";
 	    }
+	    System.out.println("받은 DTO: " + result);
 	    return "erp/employees/myEmplist";
 	}
 	
@@ -101,7 +103,7 @@ public class EmployeesController {
 	
 	/****사원 셀랙트박스****/
 	@PostMapping("/emplist/searchEmp")
-	public String searchDept(@ModelAttribute searchEmpDTO searchEmpDTO,Model model) {
+	public String searchDept(@ModelAttribute searchEmpDTO searchEmpDTO,Model model)throws Exception {
 		commonCodeName(model, commonService);
 		
 		System.out.println("~~~"+searchEmpDTO.getDept());
@@ -112,16 +114,19 @@ public class EmployeesController {
 		return "erp/employees/emplist";
 	}
 	
-	/****사원 등록*****/
+	/****사원 등록
+	 * @throws Exception *****/
 	@PostMapping("/empRegi")
-	@ResponseBody
 	public String empRegist(@ModelAttribute("empRegistDTO") EmpRegistDTO empRegistDTO
 							,@RequestParam("empProfileFile") MultipartFile empProfileFile //파일받는용도
-							,Model model) {
-		int empRegi = empService.insertEmp(empRegistDTO);
+							,Model model
+							,RedirectAttributes redirectAttributes) throws Exception {
+		//프로필 업로드
+		int empRegi = empService.insertEmp(empRegistDTO,empProfileFile);
 		
 		if(empRegi > 0) {
-			return "사원등록 완료";
+			redirectAttributes.addFlashAttribute("msg", "사원 등록이 완료되었습니다.");
+			return "redirect:/emp/emplist";
 		}
 		System.out.println("직원추가 완료 : " + empRegistDTO);
 		return "erp/employees/emplist";
@@ -138,6 +143,30 @@ public class EmployeesController {
 		model.addAttribute("emp",emp);
 		System.out.println("무슨값일까????"+emp);
 		return "erp/employees/emplistDetail";
+	}
+	
+	@PostMapping("/empList/{id}")
+//	@ResponseBody
+	public String empModifyDetail(@PathVariable("id") String id,
+								@ModelAttribute EmpRegistDTO dto, //JSON 받아옴
+								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
+						        @AuthenticationPrincipal PrincipalDetails principal,
+						        Model model,
+						        RedirectAttributes redirectAttributes) {
+		
+		dto.setEmpId(id);
+		System.out.println("받은 DROㄱ밧ㄹㅇ"+dto+id);
+		int result = empService.updateEmp(dto);
+	    if(result > 0) {
+	    	//EmpRegistDTO emp = empService.selectEmpById(id);
+	    	//인트값을 넘기는게 아니라 ,,,,,, 그 변경된내용을 넘여대잼.....!!!!!!!!!!!!!!!!!!!!!!!
+	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
+	    	redirectAttributes.addFlashAttribute("msg", "사원 등록이 완료되었습니다.");
+	    	return "erp/employees/emplistDetail";
+	    }
+	    System.out.println("받은 DTO: " + result);
+	    return "erp/employees/emplistDetail";
+		
 	}
 	
 	// 객체 -> JSON 변환 샘플
