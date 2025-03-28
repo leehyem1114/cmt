@@ -1,4 +1,4 @@
-package com.example.cmtProject.entity;
+package com.example.cmtProject.entity.erp.salaries;
 
 import java.time.LocalDate;
 
@@ -6,7 +6,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
-import com.example.cmtProject.entity.erp.salaries.SalaryItemType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -74,16 +73,5 @@ public class SalaryItem { // 급여 유형 관리 엔티티
 				.sliUpdateAt(sliUpdateAt)
 				.build();
     }
-
-    // 급여 유형 수정을 위한 메서드
-//	public void changeSalaryItem(SalaryItemDTO salaryItemDTO) {
-//		this.sliNo = salaryItemDTO.getSliNo();
-//		this.sliType = salaryItemDTO.getSalItemType();
-//		this.sliName = salaryItemDTO.getSalItemName();
-//		this.sliDesc = salaryItemDTO.getSalItemDesc();
-//		this.sliFormula = salaryItemDTO.getSalItemCalc();
-//		this.sliPriority = salaryItemDTO.getSalItemImportance();
-//		
-//	}
 
 }
