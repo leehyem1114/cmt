@@ -1,21 +1,14 @@
 package com.example.cmtProject.service.erp.salaries;
 
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
-import com.example.cmtProject.entity.Salary;
-import com.example.cmtProject.entity.SalaryItem;
+import com.example.cmtProject.entity.erp.salaries.PayMent;
+import com.example.cmtProject.entity.erp.salaries.SalaryItem;
 import com.example.cmtProject.repository.erp.salaries.SalaryItemRepository;
 
 @Service
@@ -24,8 +17,8 @@ public class SalaryItemService {
 	@Autowired
 	private SalaryItemRepository salaryItemRepository;
 
-    // 서비스 메서드: 전체 급여 항목 조회
-    public List<SalaryItemDTO> getAllSalaryItems() {
+    // 급여 유형 목록 조회
+    public List<SalaryItemDTO> getSalaryItems() {
         return salaryItemRepository.findAll().stream()
                          .map(SalaryItem::toDto)
                          .collect(Collectors.toList());
@@ -57,7 +50,7 @@ public class SalaryItemService {
 
 
 
-	public List<Salary> getAllSalaries() {
+	public List<PayMent> getAllSalaries() {
 		// TODO Auto-generated method stub
 		return null;
 	}
