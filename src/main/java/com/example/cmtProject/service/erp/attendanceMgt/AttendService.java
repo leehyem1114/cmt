@@ -1,5 +1,6 @@
 package com.example.cmtProject.service.erp.attendanceMgt;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class AttendService {
     // 페이징 처리
     public List<AttendDTO> getAttendPage(int page, int perPage) {
         Pageable pageable = PageRequest.of(page - 1, perPage, Sort.by("attendDate").descending());
-        Page<Attend> attendPage = attendRepository.findPagedAttends(pageable);
+        Page<Attend> attendPage = attendRepository.findAllByOrderByAttendDateDesc(pageable);
 
         return attendPage.getContent().stream()
                 .map(this::convertToDto)
@@ -64,6 +65,7 @@ public class AttendService {
                 attend.getEmpNo(),
                 attend.getEmpName(),
                 attend.getAttendDate(),
+                attend.getAttendLeave(),
                 attend.getAttendType(),
                 attend.getAttendStatus(),
                 attend.getRemarks()
@@ -75,9 +77,9 @@ public class AttendService {
     // 출결 정보 저장
     @Transactional
     public AttendDTO saveAttend(AttendDTO dto, Employees employee) {
-
+    	
         Attend attend = Attend.builder()
-                .empNo(employee.getEmpNo())
+        		.empNo(employee.getEmpNo())
                 .empName(employee.getEmpName()) // 사원 이름 자동으로 설정
                 .attendDate(LocalDateTime.now()) // 출근 처리 시 현재 날짜 설정
                 .attendType(dto.getAttendType() != null ? dto.getAttendType() : "WORK") // 출근 유형 기본 NORMAL
@@ -87,16 +89,14 @@ public class AttendService {
 
             Attend savedAttend = attendRepository.save(attend);
             
-            return AttendDTO.builder()
-                .atdNo(savedAttend.getAtdNo())
-                .empNo(employee.getEmpNo())
-                .empName(employee.getEmpName())
-                .attendDate(savedAttend.getAttendDate())
-                .attendType(savedAttend.getAttendType())
-                .attendStatus(savedAttend.getAttendStatus())
-                .remarks(savedAttend.getRemarks())
-                .build();
+            return savedAttend.toDto();
         }
+    
+    // 출근하면 퇴근 버튼만 보이게
+    public boolean hasCheckedInToday(String empName) {
+        LocalDateTime today = LocalDateTime.now();
+        return attendRepository.existsByEmpNameAndAttendDate(empName, today);
+    }
 
 //    // 특정 사원의 출결 정보 조회
 //    public List<AttendDTO> getAttendsByEmployeeId(Long employeeId) {
