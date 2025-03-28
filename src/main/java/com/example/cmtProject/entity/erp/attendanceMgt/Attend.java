@@ -29,7 +29,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "ATTENDS")
@@ -62,8 +61,9 @@ public class Attend {
     private String remarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, String attendType, String attendStatus,
+    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, String attendType, String attendStatus,
 			String remarks) {
+    	this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;
 		this.attendDate = attendDate;
