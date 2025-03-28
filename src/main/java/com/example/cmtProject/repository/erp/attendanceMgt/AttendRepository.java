@@ -20,9 +20,6 @@ public interface AttendRepository extends JpaRepository<Attend, Long> {
     
     // 페이징 처리
     Page<Attend> findAllByOrderByAttendDateDesc(Pageable pageable);
-
-    // 출근 조회
-	boolean existsByEmpNameAndAttendDate(String empName, LocalDateTime attendDate);
     
     
     

@@ -26,21 +26,23 @@
 <!--			<div th:text="${soModel}"></div>-->
 <!--		</th:block>-->
 <!-- 그리드 top 시작 -->
-
+	<h3>출퇴근 조회 관리</h3>
 	   	
 		
 		
 		<div class="btn-group-custom" style="text-align: right;">
         <th:block th:if="${!hasCheckedIn}">
-		    <button type="button" class="btn btn-success" onclick="checkIn()">출근</button>
+		    <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
 		</th:block>
-		
-	    <th:block th:if="${hasCheckedIn}">
-	        <button type="button" class="btn btn-warning" onclick="checkOut()">퇴근</button>
-	    </th:block>
-        <button type="button" class="btn btn-warning" onclick="earlyLeave()">조퇴</button>
+	    
+        <th:block th:if="${!hasCheckedOut}">
+        	<button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
+        	<button type="button" class="btn btn-lg btn-secondary" onclick="earlyLeave()">조퇴</button>
+		</th:block>
+	    
+        
             <button type="button" 
-            class="btn btn-danger btn-sm" 
+            class="btn btn-lg btn-outline-danger " 
             onclick="deleteAttend()" 
             sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
 	        삭제
@@ -136,15 +138,15 @@
            		  width: 100,
            		formatter: function({ row }) {
 	                   if (row.attendType === 'WORK') {
-	                       return '<a class="btn btn-success btn-sm btn-table-action">출근</a>';
-	                   } else if (row.attendStatus === 'LEAVE') {
-	                       return '<a class="btn btn-danger btn-sm btn-table-action">휴가</a>';
-	                   }else if (row.attendStatus === 'BUSINESS_TRIP') {
-		                   return '<a class="btn btn-ingo btn-sm btn-table-action">출장</a>';
-	                   } else if (row.attendStatus === 'OUTSIDE_WORK') {
-	                       return '<a class="btn btn-secondary btn-sm btn-table-action">외근</a>';
-	                   } else if (row.attendStatus === 'LEAVE_TIME') {
-	                       return '<a class="btn btn-light btn-sm btn-table-action">퇴근</a>';
+	                       return '<a class="btn btn-primary btn-sm">출근</a>';
+	                   } else if (row.attendType === 'LEAVE') {
+	                       return '<a class="btn btn-danger btn-sm">휴가</a>';
+	                   }else if (row.attendType === 'BUSINESS_TRIP') {
+		                   return '<a class="btn btn-ingo btn-sm">출장</a>';
+	                   } else if (row.attendType === 'OUTSIDE_WORK') {
+	                       return '<a class="btn btn-light btn-sm">외근</a>';
+	                   } else if (row.attendType === 'LEAVE_TIME') {
+	                       return '<a class="btn btn-secondary btn-sm">퇴근</a>';
 	                   } else return ''; // WORK가 아닌 경우 버튼 표시 안함
            			}
            		},
@@ -157,13 +159,13 @@
            	      width: 100,
 	           	   formatter: function({ row }) {
 	                   if (row.attendStatus === 'NORMAL') {
-	                       return '<a class="btn btn-success btn-sm btn-table-action">정상</a>';
+	                       return '<a class="btn btn-primary btn-sm">정상</a>';
 	                   } else if (row.attendStatus === 'LATE') {
-	                       return '<a class="btn btn-warning btn-sm btn-table-action">지각</a>';
+	                       return '<a class="btn btn-warning btn-sm">지각</a>';
 	                   }else if (row.attendStatus === 'EARLY_LEAVE') {
-		                   return '<a class="btn btn-secondary btn-sm btn-table-action">조퇴</a>';
+		                   return '<a class="btn btn-secondary btn-sm">조퇴</a>';
 	                   } else if (row.attendStatus === 'ABSENT') {
-	                       return '<a class="btn btn-danger btn-sm btn-table-action">결근</a>';
+	                       return '<a class="btn btn-danger btn-sm">결근</a>';
 	                   } else return ''; // NORMAL이 아닌 경우 버튼 표시 안함
 	           	   } 
             	},
@@ -244,6 +246,58 @@
 	    	      });
 	    	  }
 	    	}
+	    
+	    	async function checkOut() {
+	    	  // 사용자에게 퇴근 확인 알림 표시
+	    	  const result = await Swal.fire({
+	    	    title: "퇴근 하시겠습니까?",
+	    	    showDenyButton: true,
+	    	    confirmButtonText: "퇴근",
+	    	    denyButtonText: "아니요"
+	    	  });
+
+	    	  if (result.isDenied) {
+	    	    await Swal.fire({
+	    	      icon: "info",
+	    	      title: "퇴근이 취소되었습니다.",
+	    	    });
+	    	    return;
+	    	  }
+
+	    	  // 퇴근 API 요청
+	    	  try {
+	    	    const response = await fetch('/attends/check-out', {
+	    	      method: 'POST',
+	    	      headers: {
+	    	        'Content-Type': 'application/json'
+	    	      },
+	    	      body: JSON.stringify({})
+	    	    });
+
+	    	    if (!response.ok) {
+	    	      await Swal.fire({
+	    	        icon: "error",
+	    	        title: "퇴근 처리 중 서버 오류가 발생했습니다",
+	    	      });
+	    	      throw new Error("퇴근 처리 중 서버 오류");
+	    	    }
+
+	    	    await Swal.fire({
+	    	      title: "퇴근이 처리되었습니다",
+	    	      icon: "success",
+	    	    });
+
+	    	    location.reload();
+
+	    	  } catch (error) {
+	    	    console.error('Error:', error);
+	    	    await Swal.fire({
+	    	      icon: "error",
+	    	      title: "퇴근 처리 중 서버 오류가 발생했습니다",
+	    	    });
+	    	  }
+	    	}
+	    
 		</script> 
 		
     </div>

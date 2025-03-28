@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
 import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.mapper.erp.attendanceMgt.AttendsMapper;
 import com.example.cmtProject.repository.erp.attendanceMgt.AttendRepository;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
@@ -31,6 +32,8 @@ public class AttendService {
     private AttendRepository attendRepository;
     @Autowired
 	private EmployeesRepository employeeRepository;
+    @Autowired
+    private AttendsMapper attendsMapper;
     
     // 모든 출결 정보 조회
     public List<AttendDTO> getAllAttends() {
@@ -42,39 +45,10 @@ public class AttendService {
     // 사원 하나의 정보만 조회
     public List<Attend> getAttendsByEmpNo(Long empNo) {
     	return attendRepository.findByEmpNoOrderByAtdNoDesc(empNo);
-	}
-
-    
-    // 페이징 처리
-    public List<AttendDTO> getAttendPage(int page, int perPage) {
-        Pageable pageable = PageRequest.of(page - 1, perPage, Sort.by("attendDate").descending());
-        Page<Attend> attendPage = attendRepository.findAllByOrderByAttendDateDesc(pageable);
-
-        return attendPage.getContent().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
     }
-
-    public long getTotalCount() {
-        return attendRepository.count();
-    }
-
-    private AttendDTO convertToDto(Attend attend) {
-        return new AttendDTO(
-                attend.getAtdNo(),
-                attend.getEmpNo(),
-                attend.getEmpName(),
-                attend.getAttendDate(),
-                attend.getAttendLeave(),
-                attend.getAttendType(),
-                attend.getAttendStatus(),
-                attend.getRemarks()
-        );
-    }
-    // 페이징 처리
     
 
-    // 출결 정보 저장
+    // 출근 정보 저장
     @Transactional
     public AttendDTO saveAttend(AttendDTO dto, Employees employee) {
     	
@@ -88,15 +62,22 @@ public class AttendService {
                 .build();
 
             Attend savedAttend = attendRepository.save(attend);
-            
+
             return savedAttend.toDto();
         }
     
-    // 출근하면 퇴근 버튼만 보이게
-    public boolean hasCheckedInToday(String empName) {
-        LocalDateTime today = LocalDateTime.now();
-        return attendRepository.existsByEmpNameAndAttendDate(empName, today);
-    }
+    // 퇴근 정보 저장
+    @Transactional
+	public void updateAttendLeave(AttendDTO dto, Long atdNo) {
+    	
+		Attend attend = Attend.builder()
+				.atdNo(atdNo)
+				.attendLeave(LocalDateTime.now()) // 퇴근 처리 시 현재 시간 설정
+				.attendType("LEAVE_TIME")
+				.build();
+		logger.info("@@@@@@@@@@@@@@" + attend.getAtdNo());
+		attendsMapper.updateAttendLeave(attend.getAtdNo(), LocalDateTime.now(), attend.getAttendType());
+	}
 
 //    // 특정 사원의 출결 정보 조회
 //    public List<AttendDTO> getAttendsByEmployeeId(Long employeeId) {
@@ -126,6 +107,33 @@ public class AttendService {
         attendRepository.deleteById(id);
     }
 
-	
+
+//  // 페이징 처리
+//  public List<AttendDTO> getAttendPage(int page, int perPage) {
+//      Pageable pageable = PageRequest.of(page - 1, perPage, Sort.by("attendDate").descending());
+//      Page<Attend> attendPage = attendRepository.findAllByOrderByAttendDateDesc(pageable);
+//
+//      return attendPage.getContent().stream()
+//              .map(this::convertToDto)
+//              .collect(Collectors.toList());
+//  }
+//
+//  public long getTotalCount() {
+//      return attendRepository.count();
+//  }
+//
+//  private AttendDTO convertToDto(Attend attend) {
+//      return new AttendDTO(
+//              attend.getAtdNo(),
+//              attend.getEmpNo(),
+//              attend.getEmpName(),
+//              attend.getAttendDate(),
+//              attend.getAttendLeave(),
+//              attend.getAttendType(),
+//              attend.getAttendStatus(),
+//              attend.getRemarks()
+//      );
+//  }
+//  // 페이징 처리
 }
 
