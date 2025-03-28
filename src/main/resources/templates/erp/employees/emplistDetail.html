@@ -27,49 +27,49 @@
                 <!-- 표 예시 -->
                 <div class="table-responsive">
                 <div>
-					<form action="empList/{id}" th:object="${emp}" id="empDetail" name="empDetai" method="post" enctype="multipart/form-data">
-						                <div class="modal-body">
-<!-- 						                	<label for="empProfile">프로필사진</label> -->
-<!-- 						                    <div class="form-group" > -->
+					<form th:action="@{{id}(id=${emp.empId})}" th:object="${emp}" id="empDetail" name="empDetail" method="post" enctype="multipart/form-data">
+						                <div class="body">
+						                	<label for="empProfile">프로필사진</label>
+						                    <div class="form-group" >
 					<!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
 					<!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
-					<!-- 						</div> -->
-					<!-- 						<div th:unless="${member.memProfile}"> -->
+<!-- 											</div> -->
 					<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
-<!-- 											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px"> -->
-					<!-- 						</div> -->
-<!-- 												<input type="file" name="empProfileFile"> -->
-<!-- 						                    </div> -->
-<!-- 						                	<label for="empLevel">사원권한</label> -->
-<!-- 						                    <div class="form-group" > -->
-<!-- 						                       <select id="empLevel" class="form-select" name="empLevel"> -->
-<!-- 							                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
+											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
+<!-- 											</div> -->
+												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
+						                    </div>
+						                	<label for="empLevel">사원권한</label>
+						                    <div class="form-group" >
+						                       <select id="empLevel" class="form-select" name="empLevel" th:field="*{empLevel}">
+							                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
 						                    <label for="empName">이름</label>
 						                    <div class="form-group">
 												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}">
 						                    </div>
 						                    <label for="empId">사원 번호</label>
 						                    <div class="form-group">
+						                    	<input type="hidden" name="empId" th:value="${emp.empId}">
 						                        <input type="text" id="empId" name="empId" class="form-control" th:value="*{empId}">
 						                    </div>
-<!-- 						                    <label for="deptNo">부서</label> -->
-<!-- 												<select id="deptNo" name="deptNo" class="form-select"> -->
-<!-- 													<th:block th:each="code : ${commonCodeMap['DEPT']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    <label for="positionNo">직급</label> -->
-<!-- 						                    <div class="form-group" > -->
-<!-- 						                       <select id="deptPosition" name="positionNo" class="form-select" required> -->
-<!-- 							                       	<th:block th:each="code : ${commonCodeMap['POSITION']}"> -->
-<!-- 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option> -->
-<!-- 												    </th:block> -->
-<!-- 												</select> -->
-<!-- 						                    </div> -->
+						                    <label for="deptNo">부서</label>
+												<select id="deptNo" name="deptNo" class="form-select" th:field="*{deptNo}">
+													<th:block th:each="code : ${commonCodeMap['DEPT']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    <label for="positionNo">직급</label>
+						                    <div class="form-group" >
+						                       <select id="positionNo" name="positionNo" class="form-select" th:field="*{positionNo}" >
+							                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
+												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+												    </th:block>
+												</select>
+						                    </div>
 						                    <label for="empPhone">전화번호</label>
 						                    <div class="form-group">
 						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="*{empPhone}">
@@ -150,26 +150,23 @@
 						                    </div>
 						                    
 						                    <hr>
-<!-- 						                    <label for="">기본급(월급)</label> -->
+<!-- 						                    <label for="salNo">기본급(월급)</label> -->
 <!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
+<!-- 						                        <input type="text" id="salNo" name="salNo" class="form-control" placeholder=""> -->
 <!-- 						                    </div> -->
-<!-- 						                    <label for="">은행</label> -->
-<!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
-<!-- 						                    </div> -->
-<!-- 						                    <label for="">계좌번호</label> -->
-<!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="" name="" class="form-control" placeholder=""> -->
-<!-- 						                    </div> -->
-						                    
-						                </div>
+											<label for="salBankName">은행</label>
+						                    <div class="form-group">
+						                        <input type="text" id="salBankName" name="salBankName" class="form-control" th:value="${emp.salBankName}">
+						                    </div>
+						                    <label for="salBankAccount">계좌번호</label>
+						                    <div class="form-group">
+						                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control" th:value="${emp.salBankAccount}">
+						                    </div>						                    
+						                </div> <!-- form body -->
 						                <div class="modal-footer">
-						                    <button type="button" id="btnUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
+						                    <button type="submit" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
 						                </div>
 						            </form>	
-					
-					
 				</div>
                 </div>
             </div>
@@ -177,7 +174,10 @@
         
         <!-- 페이지 내용 작성 영역 끝 -->
     </div>
-
+    <script th:if="${msg != null}">
+	    alert('[[${msg}]]');
+	</script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
@@ -186,44 +186,26 @@
              * - Ajax 요청
              * - 기타 페이지별 로직
              */
-            
-             $("#btnUpdate").on("click", function () {
-
-         	    const form = document.getElementById("empRegi");
-         	    const formData = new FormData(form);
-
-         	    // 파일 추가
-         	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
-
-         	    // AJAX 전송
-         	    $.ajax({
-         	        url: "/emp/emp",
-         	        method: "POST",
-//          	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
-         	        data: formData,
-         	        processData: false, //FormData 사용시 필수
-         	        contentType: false,//FormData 사용시 필수
-         	        success: function(response) {
-         	            alert(response);
-         	            
-         	        },
-         	        error: function(error) {
-         	            alert("정보 수정 실패ㅠㅠ");
-         	        }
-         	    });
-         	});
-            
-            
-            $(".clickable-row").on("click",function(){
-            	let empId = $(this).data("id");
-            	let url = `/emp/empList/${empId}`;
-            	let options = "width=900,height=800,top=100,left=100,scrollbars=yes,resizable=yes";
-
-            	window.open(url, 'empDetail_' + empId, options);
-            	console.log(empId);
-            });
-            
-            
+//              	$(document).on("click", "#btnDetailUpdate", function () {
+//             	        console.log("수정버튼 클릭댐");
+//             	        const id = $("input[name='empId']").val();
+//             	        const form = document.getElementById("empDetail");
+//             	        const formData = new FormData(form);
+//             	        formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+//             	        $.ajax({
+//             	            url: `/emp/empList/${id}`,  // 이건 나중에 실제 empId로 교체해야함
+//             	            method: "POST",
+//             	            data: formData,
+//             	            processData: false,
+//             	            contentType: false,
+//             	            success: function(response) {
+//             	                alert(response);
+//             	            },
+//             	            error: function(error) {
+//             	                alert("정보 수정 실패ㅠㅠ");
+//             	            }
+//             	        });
+//             	    });
         </script>
         <!-- 캘린더 -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
