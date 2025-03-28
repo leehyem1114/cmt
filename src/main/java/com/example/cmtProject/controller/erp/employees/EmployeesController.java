@@ -55,10 +55,11 @@ public class EmployeesController {
 	/***나의 인사카드***/
 	@GetMapping("/myEmplist")
 	public String myEmplist(@AuthenticationPrincipal PrincipalDetails principalDetails,Model model) {
-		//내정보 확인 및 수정기능 넣어야함~~~~~
-		Employees loginUser = principalDetails.getUser();
-		model.addAttribute("loginUser",loginUser);
-		
+		String empId = principalDetails.getUser().getEmpId();
+		System.out.println(">>>>>>>!!!!!!!!!!!"+empId);;
+		EmpRegistDTO emp = empService.getMyEmpList(empId);
+		model.addAttribute("emp",emp);
+		System.out.println("~~~DB값 조회"+emp);
 		 //공통코드 가져오기
 		commonCodeName(model, commonService);
 		
@@ -76,7 +77,7 @@ public class EmployeesController {
 	    System.out.println("받은 DTO: " + dto);
 	    int result = empService.updateEmp(dto);
 	    if(result > 0) {
-//	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
+	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
 	    	return "사원 정보수정 완료";
 	    }
 	    return "erp/employees/myEmplist";

@@ -44,4 +44,8 @@ public class EmployeesService {
 	public EmpRegistDTO getEmpDetail(String id) {
 		return empMapper.selectEmpDetail(id);
 	}
+	//나의 리스트에서 사원조회
+	public EmpRegistDTO getMyEmpList(String empId) {
+		return empMapper.selectMyEmpList(empId);
+	}
 }
