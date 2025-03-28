@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
+import com.example.cmtProject.dto.erp.attendanceMgt.AttendPageResponse;
 import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
@@ -49,6 +50,9 @@ public class AttendController {
         
     	Employees loginUser = principalDetails.getUser();
     	
+    	boolean hasCheckedIn = attendService.hasCheckedInToday(loginUser.getEmpName());
+        model.addAttribute("hasCheckedIn", hasCheckedIn);
+    	
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> 
         a.getAuthority().equals("ADMIN") || 
         a.getAuthority().equals("MANAGER"))) {
@@ -63,37 +67,7 @@ public class AttendController {
         return "erp/attendanceMgt/attendList"; // templates/erp/attendanceMgt/attendList.html 렌더링
     }
     
-    
-    
-    // 출결 정보 목록 페이징 처리
-    @GetMapping("/api")
-    public Map<String, Object> getAttendList(
-            @RequestParam("page") int page,
-            @RequestParam("perPage") int perPage) {
 
-        List<AttendDTO> contents = attendService.getAttendPage(page, perPage);
-        long total = attendService.getTotalCount();
-
-        Map<String, Object> pagination = Map.of(
-                "page", page,
-                "totalCount", total
-        );
-
-        Map<String, Object> data = Map.of(
-                "contents", contents,
-                "pagination", pagination
-        );
-
-        return Map.of(
-                "result", true,
-                "data", data
-        );
-    }
-    // 출결 정보 목록 페이징 처리
-    
-    
-    
-    
     // 출결 정보 등록
     @PostMapping("/check-in")
     @ResponseBody

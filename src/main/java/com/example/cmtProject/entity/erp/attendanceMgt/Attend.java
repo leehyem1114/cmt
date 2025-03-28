@@ -46,10 +46,12 @@ public class Attend {
     @Column(name = "EMP_NAME", nullable = false)
     private String empName; // 사원이름 (EMP_NAME)
 
-
     @Column(name = "ATD_DATE", nullable = false)
-    private LocalDateTime attendDate; // 출결일자 (ATD_DATE)
-
+    private LocalDateTime attendDate; // 출근일자 (ATD_DATE)
+    
+    @Column(name = "ATD_LEAVE")
+    private LocalDateTime attendLeave; // 퇴근일자 (ATD_LEAVE)
+    
     @Column(name = "ATD_TYPE", nullable = false)
     private String attendType; // 출결유형 (ATD_TYPE)
 
@@ -60,11 +62,12 @@ public class Attend {
     private String remarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Long empNo, String empName, LocalDateTime attendDate, String attendType, String attendStatus,
+    public Attend(Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, String attendType, String attendStatus,
 			String remarks) {
 		this.empNo = empNo;
 		this.empName = empName;
 		this.attendDate = attendDate;
+		this.attendLeave = attendLeave;
 		this.attendType = attendType;
 		this.attendStatus = attendStatus;
 		this.remarks = remarks;
@@ -76,6 +79,7 @@ public class Attend {
             .empNo(empNo)
             .empName(empName)
             .attendDate(attendDate)
+            .attendLeave(attendLeave)
             .attendType(attendType)
             .attendStatus(attendStatus)
             .remarks(remarks)

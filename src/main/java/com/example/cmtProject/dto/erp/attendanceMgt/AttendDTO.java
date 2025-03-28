@@ -8,6 +8,7 @@ import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.attendanceMgt.AttendStatus;
 import com.example.cmtProject.entity.erp.attendanceMgt.AttendType;
 import com.example.cmtProject.entity.erp.employees.Employees;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -21,16 +22,27 @@ import lombok.NoArgsConstructor;
 public class AttendDTO {
 	@JsonProperty("atdno")
     private Long atdNo; // 출결NO
+	
     @JsonProperty("empno")
     private Long empNo; // 사원번호
+    
     @JsonProperty("empname")
     private String empName; // 사원이름
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("attenddate")
-    private LocalDateTime attendDate; // 출결일자
+    private LocalDateTime attendDate; // 출근일자
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("attendleave")
+    private LocalDateTime attendLeave; // 퇴근일자
+    
     @JsonProperty("attendtype")
     private String attendType; // 출결유형
+    
     @JsonProperty("attendstatus")
     private String attendStatus; // 출결상태
+    
     private String remarks; // 비고
     
     public Attend toEntity() {
@@ -38,6 +50,7 @@ public class AttendDTO {
             .empNo(empNo)
             .empName(empName)
             .attendDate(attendDate)
+            .attendLeave(attendLeave)
             .attendType(attendType)
             .attendStatus(attendStatus)
             .remarks(remarks)
@@ -45,12 +58,13 @@ public class AttendDTO {
     }
 
     @Builder
-	public AttendDTO(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, String attendType, String attendStatus,
+	public AttendDTO(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attandLeave, String attendType, String attendStatus,
 			String remarks) {
 		this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;
 		this.attendDate = attendDate;
+		this.attendLeave = attandLeave;
 		this.attendType = attendType;
 		this.attendStatus = attendStatus;
 		this.remarks = remarks;
@@ -59,5 +73,20 @@ public class AttendDTO {
 
 
     
-    
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
