@@ -58,8 +58,7 @@ public class PurchasesOrder {
 	private int poValue;  //공급가액
 	
 	@Column(name = "PO_STATUS")
-	@Enumerated(EnumType.STRING)
-	private PurchasesOrderStatus poStatus;  //종결여부
+	private String poStatus;  //종결여부
 	
 	@Column(name = "PO_COMMENTS")
 	private String poComments;  //비고

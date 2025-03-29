@@ -5,8 +5,9 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,9 +24,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SalesOrder {
 
+	/*
+	 * @GeneratedValue(strategy = GenerationType.SEQUENCE, generator =
+	 * "SEQ_SALES_ORDER_SO_NO" )
+	 * 
+	 * @SequenceGenerator(name = "SEQ_SALES_ORDER_SO_NO",
+	 * sequenceName="SEQ_SALES_ORDER_SO_NO")
+	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_SALES_ORDER_SO_NO" )
-	@SequenceGenerator(name = "SEQ_SALES_ORDER_SO_NO", sequenceName="SEQ_SALES_ORDER_SO_NO")
+	@SequenceGenerator(name = "SEQ_SALES_ORDER_SO_NO", sequenceName="SEQ_SALES_ORDER_SO_NO", allocationSize = 1)
 	@Column(name = "SO_NO")
 	private Long soNo; //수주주문번호(pk)
 	
@@ -35,6 +43,10 @@ public class SalesOrder {
 	@Column(name = "SO_DATE")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate soDate;  //수주일자
+	
+	@Column(name = "SHIP_DATE")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+	private LocalDate shipDate;  //출하일자
 	
 	/*
 	 * @ManyToOne
@@ -52,8 +64,8 @@ public class SalesOrder {
 	 * empNo를 직접 이용해서 별도의 findByEmpNo() 같은 메서드를 사용할 수 있음
 	 * List<SalesOrder> findByEmpNo(Long empNo);
 	 */
-	@Column(name = "EMP_ID")
-	private String empId; //사원코드
+	@Column(name = "EMP_NO")
+	private Long empNo; //사원코드
 	
 	@Column(name = "WHS_CODE")
 	private String whsCode;  //창고코드
@@ -78,8 +90,8 @@ public class SalesOrder {
 	@Column(name = "SO_VALUE")
 	private int soValue;  //공급가액
 	
-	@Embedded
-	private SalesOrderStatus soStatus; //종결여부
+	@Column(name = "SO_STATUS")
+	private String soStatus; //종결여부
 	
 	@Column(name = "SO_COMMENTS")
 	private String soComments;  //비고

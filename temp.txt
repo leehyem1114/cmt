@@ -1,3 +1,20 @@
 
+tasks.named('test') {
+    useJUnitPlatform()
+}
 
-develop에서 작업
+def querydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main.java.srcDir querydslDir
+}
+
+configurations {
+    querydsl.extendsFrom annotationProcessor
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += '-parameters'
+    options.annotationProcessorPath = configurations.querydsl
+}
+

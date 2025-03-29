@@ -2,6 +2,7 @@ package com.example.cmtProject.controller.erp.saleMgt;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,15 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
 import com.example.cmtProject.entity.comm.CommoncodeDetail;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
+import com.example.cmtProject.entity.erp.salesMgt.SalesOrderStatus;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
@@ -53,6 +57,11 @@ public class saleController {
  		List<SalesOrder> allList = salesOrderRepository.findAll();
  		model.addAttribute("soModel", allList);
  		
+		/*
+		 * List<SalesOrderDTO> allListDto =
+		 * salesOrderRepository.getSalesOrderMainList(); System.out.println(allListDto);
+		 */
+
  		//-수주 목록에 있는 제품-
  		//수주 목록에 있는 제품 코드를 가져와 중복 제거 후 제품에서 제품명 출력
  		//-- 수주테이블에 있는 제품 코드 --
@@ -126,6 +135,12 @@ public class saleController {
 		//공통코드에서 직급명 가져오기
 		List<CommoncodeDetail> commListPosition = commoncodeDetailRepository.findByCmnCode("POSITION");
 		
+		//SalesOrderStatus의 enum값 가져오기
+		/*
+		 * List<SalesOrderStatus> soStatus = Arrays.asList(SalesOrderStatus.values());
+		 * System.out.println("soStatus:"+soStatus);
+		 */
+	 	
 	 	model.addAttribute("cltList", cltList); //회사 정보
 	 	model.addAttribute("empList", empList); //사원 정보
 	 	model.addAttribute("productList",productList); //제품 정보
@@ -134,13 +149,18 @@ public class saleController {
 	 	model.addAttribute("commListDetp",commListDetp); //공통코드에서 부서
 	 	model.addAttribute("commListPosition",commListPosition); //공콩코드에서 직급
 	 	
-	 	System.out.println("productList:"+productList);
+	 	//th:object에서 사용할 객체 생성
+	 	model.addAttribute("salesOrder", new SalesOrder());
+	 	
+	 	
 	 	
 		return "erp/salesMgt/soRegisterForm";
 	}
 	
 	@PostMapping("/soregister")
-	public String soRegister(@RequestBody SalesOrder salesOrder) {
+	public String soRegister(@ModelAttribute SalesOrder salesOrder) {
+		
+		System.out.println("salesOrder:"+ salesOrder);
 		
 		return "";
 	}

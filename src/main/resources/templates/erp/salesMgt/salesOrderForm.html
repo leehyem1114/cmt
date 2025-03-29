@@ -138,47 +138,121 @@
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
 			data : /*[[${soModel}]]*/ [],
-	        rowHeaders: ['checkbox'], 
+	        rowHeaders: ['checkbox'],
+			scrollX: true,
+            scrollY: true,
+            pageOptions: {
+    	        useClient: true,  // 서버 사이드 페이징 활성화
+    	        perPage: 20
+    	    },
 	        columns: [
 				{
-	                header: '수주번호',
-	                name: 'soNo'
+					header: '수주번호',
+					name: 'soNo',
+					sortable: true, 
+					filter: 'text',
+					width: 50,
+					align: "center" 
 	            },
 	            {
 	                header: '수주코드',
-	                name: 'soCode'
+	                name: 'soCode',
+					sortable: true, 
+					filter: 'text',
+					width: 200,
+					align: "center" 
 	            },
 	            {
 	                header: '수주일자',
-	                name: 'soDate'
+	                name: 'soDate',
+					sortable: true, 
+					filter: 'text',
+					width: 200,
+					align: "center" ,
+					formatter: function({ value }) {
+	           		    // 날짜 형식을 'YYYY-MM-DD HH:mm'로 포맷팅
+	           		    const date = new Date(value);
+	           		    const year = date.getFullYear();
+	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
+	           		    const day = String(date.getDate()).padStart(2, '0');
+	           		    const hours = String(date.getHours()).padStart(2, '0');
+	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		 	return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		  }
+	            },
+				{
+	                header: '발주일자',
+	                name: 'shipDate',
+					sortable: true, 
+					filter: 'text',
+					width: 200,
+					align: "center" ,
+					formatter: function({ value }) {
+	           		    // 날짜 형식을 'YYYY-MM-DD HH:mm'로 포맷팅
+	           		    const date = new Date(value);
+	           		    const year = date.getFullYear();
+	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
+	           		    const day = String(date.getDate()).padStart(2, '0');
+	           		    const hours = String(date.getHours()).padStart(2, '0');
+	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		 	return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		  }
 	            },
 	            {
 	                header: '사원코드',
-	                name: 'empId'
+	                name: 'empNo',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 	            },
 	            {
 	                header: '창고코드',
-	                name: 'whsCode'
+	                name: 'whsCode',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 	            },
 	            {
 	                header: '제품코드',
-	                name: 'pdtCode'
+	                name: 'pdtCode',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 	            },
 				{
 	                header: '거래처코드',
-	                name: 'cltCode'
+	                name: 'cltCode',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 	            },
 	            {
 	                header: '수량',
-	                name: 'soQuantity'
+	                name: 'soQuantity',
+					sortable: true, 
+					filter: 'text',
+					width: 60,
+					align: "center" 
 	            },
 	            {
 	                header: '공급가액',
-	                name: 'soValue'
+	                name: 'soValue',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 	            },
 				{
 					header: '현재상태',
-					name: 'soStatus'
+					name: 'soStatus',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 				}
 	        ] // 열 설정
 	    });

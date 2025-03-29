@@ -22,7 +22,7 @@ public class Warehouses {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_WAREHOUSES_WHS_NO")
     @SequenceGenerator(name = "SEQ_WAREHOUSES_WHS_NO", sequenceName = "SEQ_WAREHOUSES_WHS_NO")
     @Column(name = "WHS_NO")
-	private Long whs_no;  //창고no(pk)
+	private Long whsNo;  //창고no(pk)
 	
 	@Column(name = "WHS_CODE")
 	private String whsCode; //창고코드
