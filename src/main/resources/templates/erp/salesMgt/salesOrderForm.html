@@ -16,7 +16,7 @@
 		
 	    .container1 {
 	        display: grid;
-			grid-template-columns: 100px 150px 120px 180px 50px 180px 130px 150px 150px 1fr; 
+			grid-template-columns: 150px 150px 120px 180px 50px 180px 130px 150px 150px 1fr; 
 	        gap: 3px;
 	        background: #f5f5f5;
 	        padding: 4px;
@@ -27,7 +27,7 @@
 		
 		.container2 {
 	        display: grid;
-			grid-template-columns: 100px 150px 150px 80px 150px 160px 160px 80px 80px 100px 1fr; 
+			grid-template-columns: 150px 150px 150px 150px 150px 160px 160px 80px 80px 100px 1fr; 
 	        gap: 3px;
 	        background: #f5f5f5;
 	        padding: 4px;
@@ -95,7 +95,7 @@
 		    </div>
 	
 		    <div class="container2">
-		        <label>제품</label>
+		        <label>제품 코드</label>
 				<select class="sell_select" id="pdtCode">
 		            <option th:each="code : ${pdtCode}"
 						th:value="${code}"
@@ -105,7 +105,7 @@
 		        </select>
 		        <input type="text" id="pdtName" placeholder="NAME">
 		      
-		        <label>거래처</label>
+		        <label>거래처 코드</label>
 				<select class="sell_select" id="cltCode">
 		            <option th:each="code : ${cltCode}"
 						th:value="${code}"
@@ -133,11 +133,11 @@
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    
-	    console.log(/*[[${soModel}]]*/ [])
+	    console.log(/*[[${soMainList}]]*/ [])
 	    
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
-			data : /*[[${soModel}]]*/ [],
+			data : /*[[${soMainList}]]*/ [],
 	        rowHeaders: ['checkbox'],
 			scrollX: true,
             scrollY: true,
@@ -159,7 +159,7 @@
 	                name: 'soCode',
 					sortable: true, 
 					filter: 'text',
-					width: 200,
+					width: 140,
 					align: "center" 
 	            },
 	            {
@@ -199,35 +199,35 @@
 	           		  }
 	            },
 	            {
-	                header: '사원코드',
-	                name: 'empNo',
+	                header: '사원이름',
+	                name: 'empName',
 					sortable: true, 
 					filter: 'text',
-					width: 100,
+					width: 80,
 					align: "center" 
 	            },
 	            {
-	                header: '창고코드',
-	                name: 'whsCode',
+	                header: '창고명',
+	                name: 'whsName',
 					sortable: true, 
 					filter: 'text',
-					width: 100,
+					width: 130,
 					align: "center" 
 	            },
 	            {
-	                header: '제품코드',
-	                name: 'pdtCode',
+	                header: '제품명',
+	                name: 'pdtName',
 					sortable: true, 
 					filter: 'text',
-					width: 100,
+					width: 130,
 					align: "center" 
 	            },
 				{
-	                header: '거래처코드',
-	                name: 'cltCode',
+	                header: '거래처명',
+	                name: 'cltName',
 					sortable: true, 
 					filter: 'text',
-					width: 100,
+					width: 150,
 					align: "center" 
 	            },
 	            {
@@ -235,7 +235,7 @@
 	                name: 'soQuantity',
 					sortable: true, 
 					filter: 'text',
-					width: 60,
+					width: 40,
 					align: "center" 
 	            },
 	            {
@@ -243,12 +243,12 @@
 	                name: 'soValue',
 					sortable: true, 
 					filter: 'text',
-					width: 100,
+					width: 80,
 					align: "center" 
 	            },
 				{
 					header: '현재상태',
-					name: 'soStatus',
+					name: 'statusName',
 					sortable: true, 
 					filter: 'text',
 					width: 100,
