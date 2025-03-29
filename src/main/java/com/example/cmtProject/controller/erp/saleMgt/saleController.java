@@ -28,6 +28,7 @@ import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
 import com.example.cmtProject.repository.erp.saleMgt.CommoncodeDetailRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
+import com.example.cmtProject.repository.erp.saleMgt.SalesOrderStatusRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
 
@@ -53,6 +54,9 @@ public class saleController {
 	@Autowired
 	private SalesOrderService salesOrderService;
 	
+	@Autowired
+	private SalesOrderStatusRepository salesOrderStatusRepository;
+	
 	//조회 페이지
 	@GetMapping("/soform")
 	public String salesOrderForm(Model model) {
@@ -64,7 +68,7 @@ public class saleController {
 		//수주 메인 목록(clients, products, warehouses, employees 조인)
  		List<SalesOrderDTO> soMainList = salesOrderService.soMainSelect();
  		model.addAttribute("soMainList",soMainList);
- 		System.out.println(soMainList);
+ 		//System.out.println(soMainList);
 
  		//-수주 목록에 있는 제품-
  		//수주 목록에 있는 제품 코드를 가져와 중복 제거 후 제품에서 제품명 출력
@@ -106,13 +110,15 @@ public class saleController {
 		 return cltName;
 	}
 	
-	//수주 등록 컨트롤러
+	//수주 등록 창
 	@GetMapping("/soregisterform")
 	public String soregisterform(Model model) {
  		
 		List<Clients> cltList = clientsRepository.findAll();
 		List<Employees> empList = employeesRepository.findAll();
 		List<Products> productList = productsRepository.findAll();
+		List<SalesOrderStatus> soStatusList = salesOrderStatusRepository.findAll();
+		System.out.println("soStatusList:"+soStatusList);
 		
 	 	//수주번호 다음 시쿼스 가져오기
 		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
@@ -148,6 +154,7 @@ public class saleController {
 	 	model.addAttribute("cltList", cltList); //회사 정보
 	 	model.addAttribute("empList", empList); //사원 정보
 	 	model.addAttribute("productList",productList); //제품 정보
+	 	model.addAttribute("soStatusList", soStatusList);
 	 	model.addAttribute("nextSeq", nextSeq); //수주 번호
 	 	model.addAttribute("soCode", soCode); //수주 코드
 	 	model.addAttribute("commListDetp",commListDetp); //공통코드에서 부서
@@ -155,8 +162,6 @@ public class saleController {
 	 	
 	 	//th:object에서 사용할 객체 생성
 	 	model.addAttribute("salesOrder", new SalesOrder());
-	 	
-	 	
 	 	
 		return "erp/salesMgt/soRegisterForm";
 	}
