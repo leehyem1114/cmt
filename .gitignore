@@ -26,3 +26,6 @@ application.yml
 **/.env
 .env
 ./env
+
+### querydsl ###
+**/src/main/generated/querydsl/**

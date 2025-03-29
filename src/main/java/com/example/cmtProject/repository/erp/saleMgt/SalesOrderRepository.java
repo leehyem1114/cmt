@@ -7,10 +7,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
+	
+	
+	//연관관계가 설정되어 있지 않다면 jpql에서 조인을 사용할 수 없다
+	/*
+	@Query("""
+		    SELECT new com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO(
+		    so.soNo, so.soCode, so.soDate, so.shipDate, so.soQuantity
+		    ,so.pdtShippingPrice, so.soValue, so.soStatus, so.soComments
+		    ,c.cltCode, c.cltName
+		    ,p.pdtCode, p.pdtName
+		    ,w.whsCode, w.whsName
+		    ,e.empNo, e.empName )
+		    FROM SalesOrder so
+		    JOIN so.clients c
+		    JOIN so.employees e
+		    JOIN so.products p
+		    JOIN so.warehouses w
+		""")
+	List<SalesOrderDTO> getSalesOrderMainList();
+	*/
 	
 	//- 수주 목록에 있는 거래처코드 -
 	@Query("""
