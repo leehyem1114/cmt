@@ -29,6 +29,7 @@ import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
 import com.example.cmtProject.repository.erp.saleMgt.CommoncodeDetailRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
+import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
 
 @Controller
 @RequestMapping("/sales")
@@ -49,6 +50,9 @@ public class saleController {
 	@Autowired
 	private CommoncodeDetailRepository commoncodeDetailRepository;
 	
+	@Autowired
+	private SalesOrderService salesOrderService;
+	
 	//조회 페이지
 	@GetMapping("/soform")
 	public String salesOrderForm(Model model) {
@@ -57,10 +61,10 @@ public class saleController {
  		List<SalesOrder> allList = salesOrderRepository.findAll();
  		model.addAttribute("soModel", allList);
  		
-		/*
-		 * List<SalesOrderDTO> allListDto =
-		 * salesOrderRepository.getSalesOrderMainList(); System.out.println(allListDto);
-		 */
+		//수주 메인 목록(clients, products, warehouses, employees 조인)
+ 		List<SalesOrderDTO> soMainList = salesOrderService.soMainSelect();
+ 		model.addAttribute("soMainList",soMainList);
+ 		System.out.println(soMainList);
 
  		//-수주 목록에 있는 제품-
  		//수주 목록에 있는 제품 코드를 가져와 중복 제거 후 제품에서 제품명 출력

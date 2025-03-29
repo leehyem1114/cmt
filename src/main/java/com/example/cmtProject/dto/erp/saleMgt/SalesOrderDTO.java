@@ -6,6 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
+import com.example.cmtProject.entity.erp.salesMgt.SalesOrderStatus;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Warehouses;
@@ -53,8 +54,12 @@ public class SalesOrderDTO {
     private String empId;
     private String empName; 
     
+    //Status entity
+    private String statusCode;
+    private String statusName;
+    
     // SalesOrderDTO를 생성
- 	public static SalesOrderDTO fromSalesOrder(SalesOrder salesOrder, Clients clients, Products products, Warehouses warehouses, Employees employees) {
+ 	public static SalesOrderDTO fromSalesOrder(SalesOrder salesOrder, Clients clients, Products products, Warehouses warehouses, Employees employees, SalesOrderStatus soStatus) {
      	return SalesOrderDTO.builder()
  			.soNo(salesOrder.getSoNo())
  			.soCode(salesOrder.getSoCode())
@@ -77,6 +82,8 @@ public class SalesOrderDTO {
  			.empNo(employees.getEmpNo())
  			.empId(employees.getEmpId())
  			.empName(employees.getEmpName())
+ 			.statusCode(soStatus.getStatusCode())
+ 			.statusName(soStatus.getStatusName())
  			.build();
  	}
 }
