@@ -67,15 +67,16 @@ public class EmployeesController {
 		return "erp/employees/myEmplist";
 	}
 	
-	/****나의 정보수정****/
+	/****나의 정보수정
+	 * @throws Exception ****/
 	@PostMapping("/myEmplist")
 	@ResponseBody
 	public String myEmpUpdate(
 								@ModelAttribute EmpRegistDTO dto, //JSON 받아옴
 								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
 						        @AuthenticationPrincipal PrincipalDetails principal,
-						        Model model) {
-	    int result = empService.updateEmp(dto);
+						        Model model) throws Exception {
+	    int result = empService.updateEmp(dto,empProfileFile);
 	    if(result > 0) {
 	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
 	    	return "사원 정보수정 완료";
@@ -133,7 +134,7 @@ public class EmployeesController {
 	}
 	
 	/*사원 리스트 클릭시 사원 상세정보*/
-	@GetMapping("/empList/{id}")
+	@GetMapping("/emplist/{id}")
 	public String empListmodify(@PathVariable("id") String id,Model model) {
 		commonCodeName(model, commonService);
 		System.out.println("받은 id????"+id); //981114 받아옴!!!!!!!!!
@@ -145,27 +146,26 @@ public class EmployeesController {
 		return "erp/employees/emplistDetail";
 	}
 	
-	@PostMapping("/empList/{id}")
-//	@ResponseBody
+	@PostMapping("/empUpdate/{id}")
 	public String empModifyDetail(@PathVariable("id") String id,
 								@ModelAttribute EmpRegistDTO dto, //JSON 받아옴
 								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
 						        @AuthenticationPrincipal PrincipalDetails principal,
 						        Model model,
-						        RedirectAttributes redirectAttributes) {
+						        RedirectAttributes redirectAttributes) throws Exception {
 		
 		dto.setEmpId(id);
 		System.out.println("받은 DROㄱ밧ㄹㅇ"+dto+id);
-		int result = empService.updateEmp(dto);
+		int result = empService.updateEmp(dto,empProfileFile);
 	    if(result > 0) {
 	    	//EmpRegistDTO emp = empService.selectEmpById(id);
-	    	//인트값을 넘기는게 아니라 ,,,,,, 그 변경된내용을 넘여대잼.....!!!!!!!!!!!!!!!!!!!!!!!
+	    	redirectAttributes.addFlashAttribute("msg", "사원 수정이 완료되었습니다.");
 	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
-	    	redirectAttributes.addFlashAttribute("msg", "사원 등록이 완료되었습니다.");
-	    	return "erp/employees/emplistDetail";
+	    	return "redirect:/emp/emplist/{id}";
 	    }
+	    redirectAttributes.addFlashAttribute("msg", "사원 수정에 실패 했습니다.");
 	    System.out.println("받은 DTO: " + result);
-	    return "erp/employees/emplistDetail";
+	    return "";
 		
 	}
 	

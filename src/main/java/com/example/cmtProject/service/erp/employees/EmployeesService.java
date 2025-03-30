@@ -67,8 +67,33 @@ public class EmployeesService {
 		return empMapper.insertEmp(empRegistDTO);
 	}
 	//사원수정
-	public int updateEmp(EmpRegistDTO dto) {
+	public int updateEmp(EmpRegistDTO dto, MultipartFile empProfileFile) throws Exception {
+		if(empProfileFile != null && !empProfileFile.isEmpty()) {
+			
+			// 파일 이름 설정 (uuid + 원본파일명)
+	        String uuid = UUID.randomUUID().toString();
+	        String fileName = uuid + "_" + empProfileFile.getOriginalFilename();
+	        
+			//파일 저장할 경로 생성
+			Path uploadDir = Paths.get(uploadBaseLocation,itemImgLocation);
+			
+			if(!Files.exists(uploadDir)) { //존재하지 않으면
+				Files.createDirectories(uploadDir);
+			}
+			//디렉토리와 파일명을 결합하여 Path 객체 생성
+			//기존경로 문자열로 변환 후 파일명 전달
+			Path uploadPath = Paths.get(uploadDir.toString(),fileName);
+			System.out.println("업로드 할 파일 경로 >>" + uploadPath);
+			
+			//파일을 실제 경로에 업로드
+			empProfileFile.transferTo(new File(uploadPath.toString()));
+			//DTO에 파일명 저장
+			dto.setEmpProfile(fileName);
+		}
+		
 		return empMapper.updateEmp(dto);
+		
+		
 	}
 	
 	//멤버 리스트에서 사원조회

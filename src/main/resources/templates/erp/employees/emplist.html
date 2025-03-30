@@ -10,7 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
+	
+	
     <title>Cmt</title>
 <style type="text/css">
 	.clickable-row:hover{background-color:#e9ecef;}
@@ -25,6 +26,7 @@
 </style>
 </head>
 <body>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- 
         중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
@@ -62,7 +64,7 @@
 	                       </select>
 						</div>
 		                사번/이름 
-						<input type="text" id="empName" th:field="*{empName}" class="" maxlength="9">
+						<input type="text" id="empNameID" th:field="*{empName}" class="" maxlength="9">
 		                <div class="date-range">
 							입사일 
 							<div class="date-range">
@@ -84,22 +86,77 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th>NO</th>
-                                <th>사원번호</th>
-                                <th>이름</th>
-                                <th>부서명</th>
-                                <th>직급</th>
-                                <th>입사일</th>
-                            </tr>
-                             <tr th:each="emp, stat : ${emplist}" th:data-id="${emp.empId}" class="clickable-row">
-						        <td th:text="${stat.count}"></td> <!-- 순번 -->
-						        <td th:text="${emp.empId}"></td> <!-- 사번 -->
-						        <td th:text="${emp.empName}"></td> <!-- 이름 -->
-						        <td th:text="${emp.deptName}"></td> <!-- 부서명 -->
-						        <td th:text="${emp.deptPosition}"></td> <!-- 직급 -->
-						        <td th:text="${#temporals.format(emp.empStartDate, 'yyyy-MM-dd')}"></td> <!-- 입사일 -->
-						    </tr>
+<!--                            <tr>-->
+<!--                                <th>NO</th>-->
+<!--                                <th>사원번호</th>-->
+<!--                                <th>이름</th>-->
+<!--                                <th>부서명</th>-->
+<!--                                <th>직급</th>-->
+<!--                                <th>입사일</th>-->
+<!--                            </tr>-->
+<!--                             <tr th:each="emp, stat : ${emplist}" th:data-id="${emp.empId}" class="clickable-row">-->
+<!--						        <td th:text="${stat.count}"></td>  순번 -->
+<!--						        <td th:text="${emp.empId}"></td>  사번 -->
+<!--						        <td th:text="${emp.empName}"></td>  이름 -->
+<!--						        <td th:text="${emp.deptName}"></td>  부서명 -->
+<!--						        <td th:text="${emp.deptPosition}"></td>  직급 -->
+<!--						        <td th:text="${#temporals.format(emp.empStartDate, 'yyyy-MM-dd')}"></td>  입사일 -->
+<!--						    </tr>-->
+							<!-- 1. grid 들어갈 자리 -->
+							<div id="gridTop" style="margin-top:30px;"></div>
+							
+							<!-- 2. toast grid CDN -->
+							<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css">
+							<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.js"></script>
+							
+							<!-- 3. 데이터 넣고 Grid 띄우기 -->
+							<script th:inline="javascript">
+							    // thymeleaf에서 받아온 데이터
+							    const emplist = /*[[${emplist}]]*/ [];
+							
+							    // row 번호 붙이기 (순번)
+							    emplist.forEach((emp, index) => emp.rowNum = index + 1);
+							
+							    // grid 생성
+							    const grid = new tui.Grid({
+							        el: document.getElementById('gridTop'),   // 여기 없으면 에러남
+							        data: emplist,
+							        scrollX: false,
+							        scrollY: false,
+							        columns: [
+							            { header: 'NO', name: 'rowNum', sortable: true,align: 'center', width: 80 },
+							            { header: '사원번호', name: 'empId',sortable: true, align: 'center', width: 200 },
+							            { header: '이름', name: 'empName',sortable: true, align: 'center', width: 180 },
+							            { header: '부서명', name: 'deptName', align: 'center', width: 180 },
+							            { header: '직급', name: 'deptPosition',sortable: true, align: 'center', width: 180 },
+							            { 
+							                header: '입사일', 
+							                name: 'empStartDate', 
+							                align: 'center', 
+											sortable: true,
+											width: 180,
+							                formatter: function({ value }) {
+							                    if(!value) return '';
+							                    const date = new Date(value);
+							                    return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,0)}-${date.getDate().toString().padStart(2,0)}`;
+							                }
+							            }
+							        ]
+							    });
+								
+								grid.on('click', ev => {
+								    const rowKey = ev.rowKey;
+								    const emp = grid.getRow(rowKey);
+
+								    if(emp){
+								        const id = emp.empId;
+								        const url = `/emp/emplist/${id}`;
+								        const options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
+
+								        window.open(url, 'empDetail_' + id, options);
+								    }
+								});
+							</script>
                         </tbody>
                     </table>
                 </div>
@@ -108,7 +165,9 @@
             </div>
         </div>
        
-	
+	<!--===============================================================================================-->
+	<!--===============================================================================================-->
+	<!--===============================================================================================-->
 	<!--  모달 창 (Bootstrap 사용) -->
 	<div class="modal fade" id="empModal" tabindex="-1" aria-labelledby="empModalLabel" aria-hidden="true">
 	    <div class="modal-dialog modal-lg">
@@ -119,15 +178,13 @@
 	            </div>
 	            <form action="empRegi" id="empRegi" name="empRegi" method="post" enctype="multipart/form-data">
 	                <div class="modal-body">
-	                	<label for="empProfile">프로필사진</label>
+						<label for="empProfile">프로필사진</label>
 	                    <div class="form-group" >
-<!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
-<!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
-<!-- 						</div> -->
-<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
-						<div id="preview_profile">
-						    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="" height="100px">
-						</div>
+							<div>
+							    <div id="preview_profile">
+							        <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+							    </div>
+							</div>
 							<input type="file" id="empProfileFile" name="empProfileFile" accept="image/*" multiple> <!-- multipart로 받아야함 -->
 	                    </div>
 	                	<label for="empLevel">사원권한</label>
@@ -272,7 +329,12 @@
 	        </div>
 	    </div>
 	</div>
-        <!-- 페이지 내용 작성 영역 끝 -->
+	<!--===============================================================================================-->
+	<!--===============================================================================================-->
+	<!--===============================================================================================-->
+		
+		
+    <!-- 페이지 내용 작성 영역 끝 -->
     </div>
     
     <!-- 
@@ -295,13 +357,13 @@
             
             
             //사원정보 새 창 띄우기
-            $(".clickable-row").on("click",function(){
-            	let empId = $(this).data("id");
-            	let url = `/emp/empList/${empId}`;
-            	let options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
-            	
-            	window.open(url, 'empDetail_' + empId, options);
-            });
+ //           $(".clickable-row").on("click",function(){
+ //           	let id = $(this).data("id");
+ //           	let url = `/emp/emplist/${id}`;
+ //           	let options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
+ //           	
+  //          	window.open(url, 'empDetail_' + empId, options);
+  //          });
             
             //프로필사진 미리보기
 			$(function () {
@@ -332,6 +394,7 @@
 			});
             
         </script>
+		
         <!-- 캘린더 -->
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 		<script>
