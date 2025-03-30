@@ -73,8 +73,8 @@
 			<div><h2>수주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button class="requestBtn" onclick="registerOpenWindows()">📃 신규</button>
-	        <button class="cancelBtn">✏️ 수정</button>
+	        <button class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+	        <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button>
 	        <button class="helpBtn">❓ HELP</button>
 			</div>
 	    </div>
@@ -138,10 +138,6 @@
             scrollY: true,
 			width: 1300,  // 전체 너비 지정
 			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
-            pageOptions: {
-    	        useClient: true,  // 서버 사이드 페이징 활성화
-    	        perPage: 20
-    	    },
 	        columns: [
 				{
 					header: '수주번호',
@@ -249,13 +245,18 @@
 	 	// 체크박스 클릭 시 이벤트 추가
 	    grid.on('check', (checkItem) => {
 	        const rowData = grid.getRow(checkItem.rowKey); 
-	        alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
+			gridCheck.push(rowData.soNo);
+			
+			//console.log(gridCheck);
+			
 	    });
 
 	    // 체크 해제 시 이벤트 추가
 	    grid.on('uncheck', (checkItem) => {
 	        const rowData = grid.getRow(checkItem.rowKey);
-	        alert(`해제한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+	        gridCheck = gridCheck.filter(item => item !== rowData.soNo);
+			
+			//console.log(gridCheck);
 	    });
 	    
 	    grid.on('click', (ev) => {
@@ -267,16 +268,33 @@
 	<th:block layout:fragment="script">
 	    <script>
 	    
-		 /*    const parentWidth = window.innerWidth || document.documentElement.clientWidth || screen.width;
-		    const parentHeight = window.innerHeight || document.documentElement.clientHeight || screen.height;
-	
-		    // 부모 창의 중앙 좌표 계산
-		    const left = (parentWidth - width) / 2 + window.screenX;
-		    const top = (parentHeight - height) / 2 + window.screenY; */
-	    
-	    	function registerOpenWindows(){
-		   	 window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+			//그리드에서 선택한 값을 저장할 배열 선언
+			let gridCheck = [];
+			
+			//신규 버튼 클릭시 실행되는 입력 창
+	    	function soRegisterOpenWindows(){
+				window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
 	    	}
+			
+			//수정 버튼 클릭시 실행되는 수정 창
+			function soEditOpenWindows(){
+				
+				if(gridCheck.length <= 0){
+					
+					Swal.fire({
+					  icon: "warning",
+					  title: "선택된 항목이 없습니다.",
+					});
+					
+					return;
+				}
+				
+				let gridCheckString = JSON.stringify(gridCheck);
+				
+				console.log(gridCheckString);
+				
+				window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+			}
 	    	
 			$(document).ready(function(){
 				

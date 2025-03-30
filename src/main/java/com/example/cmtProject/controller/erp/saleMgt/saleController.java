@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.controller.erp.saleMgt.commonModel.SalesOrderModels;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
 import com.example.cmtProject.entity.comm.CommoncodeDetail;
 import com.example.cmtProject.entity.erp.employees.Employees;
@@ -58,6 +60,9 @@ public class saleController {
 	@Autowired
 	private SalesOrderStatusRepository salesOrderStatusRepository;
 	
+	@Autowired
+	private SalesOrderModels salesOrderModels;
+	
 	//조회 페이지
 	@GetMapping("/soform")
 	public String soform(Model model) {
@@ -67,6 +72,7 @@ public class saleController {
  		model.addAttribute("soModel", allList);
  		
 		//수주 메인 목록(clients, products, warehouses, employees 조인)
+ 		//JAP에서 현재 JOIN이 안되기 때문에 mapper사용
  		List<SalesOrderDTO> soMainList = salesOrderService.soMainSelect();
  		model.addAttribute("soMainList",soMainList);
  		//System.out.println(soMainList);
@@ -111,41 +117,35 @@ public class saleController {
 		 return cltName;
 	}
 	
-	//수주 등록 창
+	//수주 등록 창으로 넘길 데이터들
 	@GetMapping("/soregisterform")
 	public String soregisterform(Model model) {
  		
-		List<Clients> cltList = clientsRepository.findAll();
-		List<Employees> empList = employeesRepository.findAll();
-		List<Products> productList = productsRepository.findAll();
-		List<SalesOrderStatus> soStatusList = salesOrderStatusRepository.findAll();
+//		List<Clients> cltList = clientsRepository.findAll();
+//		List<Employees> empList = employeesRepository.findAll();
+//		List<Products> productList = productsRepository.findAll();
+//		List<SalesOrderStatus> soStatusList = salesOrderStatusRepository.findAll();
+//		//공통코드에서 부서명 가져오기
+//		List<CommoncodeDetail> commListDetp = commoncodeDetailRepository.findByCmnCode("DEPT");
+//		//공통코드에서 직급명 가져오기
+//		List<CommoncodeDetail> commListPosition = commoncodeDetailRepository.findByCmnCode("POSITION");
+//		
+//	 	model.addAttribute("cltList", cltList); //회사 정보
+//	 	model.addAttribute("empList", empList); //사원 정보
+//	 	model.addAttribute("productList",productList); //제품 정보
+//	 	model.addAttribute("soStatusList", soStatusList);
+//	 	model.addAttribute("commListDetp",commListDetp); //공통코드에서 부서
+//	 	model.addAttribute("commListPosition",commListPosition); //공콩코드에서 직급
 		
+		salesOrderModels.commonSalesOrderModels(model);
+				
 	 	//수주번호 다음 시쿼스 가져오기
 		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
-		
 		//수주코드 생성
 		String soCode = makeSoCode();
 		
-		//공통코드에서 부서명 가져오기
-		List<CommoncodeDetail> commListDetp = commoncodeDetailRepository.findByCmnCode("DEPT");
-		
-		//공통코드에서 직급명 가져오기
-		List<CommoncodeDetail> commListPosition = commoncodeDetailRepository.findByCmnCode("POSITION");
-		
-		//SalesOrderStatus의 enum값 가져오기
-		/*
-		 * List<SalesOrderStatus> soStatus = Arrays.asList(SalesOrderStatus.values());
-		 * System.out.println("soStatus:"+soStatus);
-		 */
-	 	
-	 	model.addAttribute("cltList", cltList); //회사 정보
-	 	model.addAttribute("empList", empList); //사원 정보
-	 	model.addAttribute("productList",productList); //제품 정보
-	 	model.addAttribute("soStatusList", soStatusList);
 	 	model.addAttribute("nextSeq", nextSeq); //수주 번호
 	 	model.addAttribute("soCode", soCode); //수주 코드
-	 	model.addAttribute("commListDetp",commListDetp); //공통코드에서 부서
-	 	model.addAttribute("commListPosition",commListPosition); //공콩코드에서 직급
 	 	
 	 	//th:object에서 사용할 객체 생성
 	 	model.addAttribute("salesOrder", new SalesOrder());
@@ -153,6 +153,7 @@ public class saleController {
 		return "erp/salesMgt/soRegisterForm";
 	}
 	
+	//수주 등록 실행
 	@Transactional
 	@PostMapping("/soregister")
 	@ResponseBody
@@ -166,13 +167,37 @@ public class saleController {
 		String soCode = makeSoCode();
 		salesOrder.setSoCode(soCode);
 		
-		salesOrder.setSoNo(null); //주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
+		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
+		salesOrder.setSoNo(null); 
 		salesOrderRepository.save(salesOrder);
 		salesOrderRepository.flush();
 		
 		return "success";
 	}
 	
+	//수주 수정 창으로 넘길 데이터들
+	@GetMapping("/soeditform")
+	public String soEditForm(@RequestParam("gridCheck") String gridCheck, Model model) {
+		
+		//선택된 숫자 형태의 문자열을 list로 변환
+		gridCheck = gridCheck.substring(1,gridCheck.length()-1);
+		
+		List<Integer> gridCheckList = Arrays.stream(gridCheck.split(","))
+				.map(Integer::parseInt)
+                .collect(Collectors.toList());
+
+		//main그리드에서 선택된 항목들의 데이터 가져오기
+ 		List<SalesOrder> soEditorSelected = salesOrderRepository.findByEditorSelectedList(gridCheckList);
+ 		
+ 		model.addAttribute("soEditorSelected", soEditorSelected);
+ 		
+ 		//거래처명, 고객명, 사원명, 창고명 등을 가져오기 위해 전달하는 model
+ 		salesOrderModels.commonSalesOrderModels(model);
+ 		
+		return "erp/salesMgt/soEditForm";
+	}
+	
+	//수주 코드 생성하는 메서드
 	public String makeSoCode() {
 		
 		//날짜 형태를 yyyyMMdd 헝태로 변경
@@ -180,7 +205,6 @@ public class saleController {
         DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
         String soToday = today.format(todayFormat);
         
-        //수주코드 작성
 		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
 		System.out.println("nextSoCodeNumber 수주코드:"+nextSoCodeNumber);
 		String soCode = "";

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>tui.Grid - Select Box Example</title>
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+  <style>
+    body {
+      margin: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>셀 클릭 시 셀렉트 박스가 나오는 tui.Grid</h2>
+  <div id="grid"></div>
+
+  <script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
+  <script>
+    // 예시 데이터
+    const data = [
+      { id: 1, name: '홍길동', status: 'active' },
+      { id: 2, name: '김철수', status: 'inactive' }
+    ];
+
+    // 셀렉트 옵션
+    const statusOptions = [
+      { label: '정상', value: 'active' },
+      { label: '비활성', value: 'inactive' },
+      { label: '보류', value: 'pending' }
+    ];
+
+    // 그리드 생성
+    const grid = new tui.Grid({
+      el: document.getElementById('grid'),
+      data: data,
+      scrollX: false,
+      scrollY: false,
+      columns: [
+        {
+          header: 'ID',
+          name: 'id',
+          width: 80,
+          align: 'center'
+        },
+        {
+          header: '이름',
+          name: 'name',
+          width: 150
+        },
+        {
+          header: '상태',
+          name: 'status',
+          width: 150,
+          editor: {
+            type: 'select',
+            options: {
+              listItems: statusOptions
+            }
+          },
+          formatter: ({ value }) => {
+            const match = statusOptions.find(opt => opt.value === value);
+            return match ? match.label : value;
+          }
+        }
+      ],
+      editingEvent: 'click',
+      autoEdit: true
+    });
+  </script>
+
+</body>
+</html>

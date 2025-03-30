@@ -3,14 +3,14 @@
 	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 	<head>
-		<!-- toast 부트스트랩 기본 -->
-		<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
-		<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
-		
 		<!-- date-picker -->
 		<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
 		<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
-
+			
+		<!-- toast 부트스트랩 기본 -->
+		<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+		<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
+	
 	    <title>수주 등록</title>
     
     <title>CMT</title>
@@ -20,7 +20,7 @@
 	
     <div layout:fragment="content">
    		<div id="gridTop"></div>
-    </div> <!-- layout:fragment="content" -->
+    </div>
    	
 	<!-- 그리드 시작-->
     <script th:inline="javascript">
@@ -38,7 +38,7 @@
 		
 		//2개의 컬럼으로 label과 value를 맞춘다
 		let cltListSelected = cltList.map(item => ({lable: item.cltName, value: item.cltCode}));
-		let empListSelected = empList.map(item => ({label: item.empName, value: item.empNo }));
+		let empListSelected = empList.map(item => ({label: item.empNo, value: item.empName}));
 		let productListSelected = productList.map(item => ({label: item.pdtName, value: item.pdtCode}))
 		let soStatusListSelected = soStatusList.map(item => ({label: item.statusName, value: item.statusCode}))
 		
@@ -117,10 +117,7 @@
 								listItems: empListSelected
 							}
 						},
-						formatter: ({ value }) => {
-				            const match = empListSelected.find(opt => opt.value === value);
-				            return match ? match.label : value;
-				         }
+						formatter: ({ row }) => `${row.empName} (${row.empNo})`
 		            },
 		            {
 		                header: '제품명',
