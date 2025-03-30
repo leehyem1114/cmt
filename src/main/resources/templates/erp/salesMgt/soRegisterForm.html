@@ -12,6 +12,9 @@
 		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 		<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 		
+		<!-- SweetAlert2 CDN -->
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -90,57 +93,52 @@
     </style>
 </head>
 <body>
-
+	
     <div layout:fragment="content">
-   	<form th:action="@{/sales/soregister}" method="post" th:object="${salesOrder}">
+   		<form th:action="@{/sales/soregister}" id="soForm" method="post" th:object="${salesOrder}"><!-- onsubmit="return validateForm(event)">-->
 		 <div class="container">
-        	<h2>수주 정보 입력</h2>
+	    	<h2>수주 정보 입력</h2>
 	        <div class="form-group">
 	            <label>거래처명 *</label>
-	            <!--<select id="cltSelected" th:field="*{cltCode}">
-					<option th:each="clt : ${cltList}"
-					th:value="${clt.cltCode}"
-					th:text="${clt.cltName}">
-					</option>
-				</select>-->
 				<input type="text" id="cltNameTxt" readonly="true" style="margin-right: 10px;" placeholder="거래처 검색">
+				<input type="hidden" th:field="*{cltCode}" id="cltNameHidden">
 				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cltModal">검색</button>
 	        </div>
 	         <div class="form-group">
 	            <label>제품 *</label>
-	            <select id="productSelected" th:filed="*{pdtCode}">
+	            <select id="productSelected" th:field="*{pdtCode}">
 	                <option th:each="product : ${productList}"
 						th:value="${product.pdtCode}"
 						th:text="${product.pdtName}">적용</option>
 	            </select>
 	        </div>
 	        <div class="form-group">
-	            <label>수주번호 *</label><!-- select로 -->
-	            <input type="text" th:value="${nextSeq}" th:readonly="true">
+	            <label>수주번호 *</label><!-- 서버에서 바로 처리 -->
+	            <input type="text" th:value="${nextSeq}" readonly="true">
 	        </div>
 	        <div class="form-group">
-	            <label>수주코드 *</label><!-- 자동생성 -->
-	            <input type="text" th:value="${soCode}" th:readonly="true">
+	            <label>수주코드 *</label><!-- 서버에서 바로 처리 -->
+	            <input type="text" th:value="${soCode}" readonly="true">
 	        </div>
 	        <div class="form-group date-container">
 	            <label>수주일자 *</label>
-	            <input type="date">
+	            <input type="date" th:field="*{soDate}">
 	        </div>
 	         <div class="form-group date-container">
 	            <label>예상 출하일자 *</label>
-	            <input type="date">
+	            <input type="date" th:field="*{shipDate}">
 	        </div>
 			<div class="form-group">
 	           <label>수량 *</label>
-	            <input type="text" placeholder="숫자입력" th:filed="*{soQuantity}">
+	            <input type="text" placeholder="숫자입력" th:field="*{soQuantity}">
 	        </div>
 			<div class="form-group">
 				<label>출고단가 *</label>
-				<input type="text" placeholder="숫자입력" th:filed="*{pdtShippingPrice}">
+				<input type="text" placeholder="숫자입력" th:field="*{pdtShippingPrice}">
 	        </div>
 			<div class="form-group">
 				<label>진행 상태 *</label>
-				<select id="productSelected">
+				<select id="productSelected" th:field="*{soStatus}">
 	                <option th:each="soStatus : ${soStatusList}"
 						th:value="${soStatus.statusCode}"
 						th:text="${soStatus.statusName}"></option>
@@ -160,17 +158,15 @@
 					th:text="${pos.cmnDetailName}">
 				</option>
 			</select>
-			<select id="empSelected">
+			<select id="empSelected" th:field="*{empNo}">
 			</select>
 	       </div>
-	        
-    	</div>
-    	
+    	</div><!-- <div class="container"> -->
+			
     	<div style="text-align: center;">
-    		<button type="submit" class="requestBtn">입력</button>
-    		<button type="button" class="excelBtn">취소</button>
+			<button type="button" onclick="validateForm()">입력</button>
+    		<button type="button" onclick="window.close()">취소</button>
     	</div>
-    	
 		</form>	
     </div> <!-- layout:fragment="content" -->
    	
@@ -200,11 +196,11 @@
 	<!-- 그리드 시작-->
     <script th:inline="javascript">
 	
-	let selectedGridValue; //그리드에서 선택한 row값 저장
+	let selectedGridValue; //그리드에서 선택한 row값을 저장할 전역 변수
 		
 	document.addEventListener("DOMContentLoaded", function () {
 		
-	    let grid; // 그리드 객체를 전역 변수로 선언
+	    let grid; // 그리드 객체를 담을 변수
 		
 	    // 모달이 열린 후(`shown.bs.modal`)에 그리드 초기화
 		// 모달 안에 그리드가 있어서 초기화시 DOM에 숨겨진 상태기 때문에 초기화로 다시 그려줌
@@ -262,21 +258,18 @@
 				
 				grid.on('click', (ev) => {
 					const rowData = grid.getRow(ev.rowKey);
-//		            const selectedData = rowData ? rowData : null;
 
 					selectedGridValue = rowData ? rowData : null;
 				});
 	        }//if (!grid) 
 	    });//$('#cltModal').on('shown.bs.modal', function () {
-		
-		
 			
 	    // 모달이 닫힐 때 그리드를 제거하여 다음에 열릴 때 다시 생성
 		//Blocked aria-hidden 에러 방지
 	    $('#cltModal').on('hidden.bs.modal', function () {
 	        if (grid) {
-	            grid.destroy(); // 그리드 제거
-	            grid = null; // 다시 생성할 수 있도록 null로 초기화
+	            grid.destroy(); 
+	            grid = null;
 	        }
 	    });
 	}); //document.addEventListener("DOMContentLoaded", function () {
@@ -288,8 +281,12 @@
 		
  		let cltTxt = document.getElementById("cltNameTxt");
 		if(cltTxt){
-			cltTxt.name = cltcode;
 			cltTxt.value = cltname;
+		}
+		
+		let cltHidden = document.getElementById("cltNameHidden");
+		if(cltHidden){
+			cltHidden.value = cltcode;
 		}
 
 		$('#cltModal').modal('hide');
@@ -303,6 +300,7 @@
 	    <script>
     	$(document).ready(function(){
     		
+			//부서와 직위가 변할 때 마다 다른 직원 목록 가져오기
     		let deptCode = $("#deptSelected").val();
     		let posCode = $("#posSelected").val();
 			
@@ -352,7 +350,7 @@
 							
 							data.forEach(emp => {
 								console.log(emp)
-								let option = `<option value="${emp.EMP_ID}">${emp.EMP_NAME}</option>`;
+								let option = `<option value="${emp.EMP_NO}">${emp.EMP_NAME}</option>`;
 								$select.append(option);								
 							});
 		    			},
@@ -364,8 +362,26 @@
 			}
     	});
 		
-		function receiveDataFromModal(selectedData){
-			console.log(selectedData)
+		//입력 버튼
+		function validateForm(event) {
+			
+			/* 
+			
+			여기 유요성 검사 
+			
+			*/
+			
+			//setTimeout으로 창을 닫는다
+			setTimeout(function(){
+				
+				window.opener.location.reload();
+				
+				window.close();
+				
+			},100);
+			
+			//서브밋 setTimeout 이후 실행
+			document.getElementById("soForm").submit();
 		}
 	    </script>
 	</th:block>

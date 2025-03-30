@@ -69,7 +69,6 @@
 <body>
 
     <div layout:fragment="content">
-        
 		<div class="button-container">
 			<div><h2>수주조회</h2></div>
 			<div>
@@ -121,11 +120,7 @@
 		        </select>
 		    </div>
 		</form>
-		
 		<br>
-<!--		<th:block th:each="soModel : ${soModel}">-->
-<!--			<div th:text="${soModel}"></div>-->
-<!--		</th:block>-->
 
 		<!-- 그리드 top 시작 -->
 	   	<div id="gridTop"></div>
@@ -133,7 +128,7 @@
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    
-	    console.log(/*[[${soMainList}]]*/ [])
+	    //console.log(/*[[${soMainList}]]*/ [])
 	    
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
@@ -141,6 +136,8 @@
 	        rowHeaders: ['checkbox'],
 			scrollX: true,
             scrollY: true,
+			width: 1300,  // 전체 너비 지정
+			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
             pageOptions: {
     	        useClient: true,  // 서버 사이드 페이징 활성화
     	        perPage: 20
@@ -151,7 +148,7 @@
 					name: 'soNo',
 					sortable: true, 
 					filter: 'text',
-					width: 50,
+					width: 100,
 					align: "center" 
 	            },
 	            {
@@ -177,7 +174,7 @@
 	           		    const day = String(date.getDate()).padStart(2, '0');
 	           		    const hours = String(date.getHours()).padStart(2, '0');
 	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
-	           		 	return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		 	return `${year}년 ${month}월 ${day}일`;
 	           		  }
 	            },
 				{
@@ -195,7 +192,7 @@
 	           		    const day = String(date.getDate()).padStart(2, '0');
 	           		    const hours = String(date.getHours()).padStart(2, '0');
 	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
-	           		 	return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		 	return `${year}년 ${month}월 ${day}일`;
 	           		  }
 	            },
 	            {
@@ -207,19 +204,11 @@
 					align: "center" 
 	            },
 	            {
-	                header: '창고명',
-	                name: 'whsName',
-					sortable: true, 
-					filter: 'text',
-					width: 130,
-					align: "center" 
-	            },
-	            {
 	                header: '제품명',
 	                name: 'pdtName',
 					sortable: true, 
 					filter: 'text',
-					width: 130,
+					width: 150,
 					align: "center" 
 	            },
 				{
@@ -239,8 +228,8 @@
 					align: "center" 
 	            },
 	            {
-	                header: '공급가액',
-	                name: 'soValue',
+	                header: '단가',
+	                name: 'pdtShippingPrice',
 					sortable: true, 
 					filter: 'text',
 					width: 80,
@@ -273,7 +262,6 @@
 	    });
 	    </script>
 	    <!-- 그리드 끝 --> 
-		
     </div>
    	
 	<th:block layout:fragment="script">

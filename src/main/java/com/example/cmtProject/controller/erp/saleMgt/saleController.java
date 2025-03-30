@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -59,7 +60,7 @@ public class saleController {
 	
 	//조회 페이지
 	@GetMapping("/soform")
-	public String salesOrderForm(Model model) {
+	public String soform(Model model) {
 		
 		//수주 전체 목록
  		List<SalesOrder> allList = salesOrderRepository.findAll();
@@ -118,26 +119,12 @@ public class saleController {
 		List<Employees> empList = employeesRepository.findAll();
 		List<Products> productList = productsRepository.findAll();
 		List<SalesOrderStatus> soStatusList = salesOrderStatusRepository.findAll();
-		System.out.println("soStatusList:"+soStatusList);
 		
 	 	//수주번호 다음 시쿼스 가져오기
 		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
 		
-		//날짜 형태를 yyyyMMdd 헝태로 변경
-		LocalDate today = LocalDate.now();        
-        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String soToday = today.format(todayFormat);
-        
-        //수주코드 작성
-		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
-		String soCode = "";
-		if(nextSoCodeNumber > 100) {
-			soCode = "SO-" + soToday + "-" + nextSoCodeNumber; 
-		}else if(nextSoCodeNumber > 10) {
-			soCode = "SO-" + soToday + "-" + "0" +nextSoCodeNumber;		
-		}else if(nextSoCodeNumber > 0) {
-			soCode = "SO-" + soToday + "-" + "00" +nextSoCodeNumber;
-		}
+		//수주코드 생성
+		String soCode = makeSoCode();
 		
 		//공통코드에서 부서명 가져오기
 		List<CommoncodeDetail> commListDetp = commoncodeDetailRepository.findByCmnCode("DEPT");
@@ -166,12 +153,46 @@ public class saleController {
 		return "erp/salesMgt/soRegisterForm";
 	}
 	
+	@Transactional
 	@PostMapping("/soregister")
+	@ResponseBody
 	public String soRegister(@ModelAttribute SalesOrder salesOrder) {
 		
-		System.out.println("salesOrder:"+ salesOrder);
+		//수주번호 다음 시쿼스 가져오기
+		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
+		salesOrder.setSoNo(nextSeq);
 		
-		return "";
+		//수주코드 생성
+		String soCode = makeSoCode();
+		salesOrder.setSoCode(soCode);
+		
+		salesOrder.setSoNo(null); //주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
+		salesOrderRepository.save(salesOrder);
+		salesOrderRepository.flush();
+		
+		return "success";
+	}
+	
+	public String makeSoCode() {
+		
+		//날짜 형태를 yyyyMMdd 헝태로 변경
+		LocalDate today = LocalDate.now();        
+        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String soToday = today.format(todayFormat);
+        
+        //수주코드 작성
+		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
+		System.out.println("nextSoCodeNumber 수주코드:"+nextSoCodeNumber);
+		String soCode = "";
+		if(nextSoCodeNumber > 100) {
+			soCode = "SO-" + soToday + "-" + nextSoCodeNumber; 
+		}else if(nextSoCodeNumber > 10) {
+			soCode = "SO-" + soToday + "-" + "0" +nextSoCodeNumber;		
+		}else if(nextSoCodeNumber > 0) {
+			soCode = "SO-" + soToday + "-" + "00" +nextSoCodeNumber;
+		}
+		
+		return soCode;
 	}
 	
 	@GetMapping("/getEmpName")

@@ -82,13 +82,13 @@ public class SalesOrder {
 	private String cltCode;
 	
 	@Column(name = "SO_QUANTITY")
-	private int soQuantity;  //수량
+	private Integer soQuantity;  //수량
 	
 	@Column(name = "PDT_SHIPPING_PRICE")
-	private int pdtShippingPrice; //출고단가
+	private Integer pdtShippingPrice; //출고단가
 	
 	@Column(name = "SO_VALUE")
-	private int soValue;  //공급가액
+	private Integer soValue;  //공급가액
 	
 	@Column(name = "SO_STATUS")
 	private String soStatus; //종결여부
