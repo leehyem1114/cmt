@@ -64,6 +64,9 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 	
 	@Query(value = "SELECT NVL(COUNT(SO_DATE),0)+1 FROM SALES_ORDER WHERE SO_DATE = TRUNC(SYSDATE)", nativeQuery = true)
 	Long getNextSoCode();
+
+	@Query(value = "SELECT * FROM SALES_ORDER WHERE SO_NO IN :gridCheckList", nativeQuery = true)
+	List<SalesOrder> findByEditorSelectedList(@Param("gridCheckList") List<Integer> gridCheckList);
 }
 
 /*
