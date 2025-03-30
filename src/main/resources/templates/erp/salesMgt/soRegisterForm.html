@@ -95,7 +95,7 @@
 <body>
 	
     <div layout:fragment="content">
-   		<form th:action="@{/sales/soregister}" id="soForm" method="post" th:object="${salesOrder}"><!-- onsubmit="return validateForm(event)">-->
+   		<form id="soForm" method="post" th:action="@{/sales/soregister}" th:object="${salesOrder}"><!-- onsubmit="return validateForm(event)">-->
 		 <div class="container">
 	    	<h2>수주 정보 입력</h2>
 	        <div class="form-group">
@@ -141,7 +141,8 @@
 				<select id="productSelected" th:field="*{soStatus}">
 	                <option th:each="soStatus : ${soStatusList}"
 						th:value="${soStatus.statusCode}"
-						th:text="${soStatus.statusName}"></option>
+						th:text="${soStatus.statusName}">
+					</option>
 	            </select>
 	        </div>
 	      <div class="form-group">
@@ -311,6 +312,7 @@
     		
 			ajaxExe(code);
 			
+			//부서 셀이 변경될 때 마다 내용 갱신 후 ajaxExe(서버쪽으로 전송)에 반영
     		$("#deptSelected").on("change",function(){
     			//alert("dept변경");
     			deptCode = $("#deptSelected").val();
@@ -324,6 +326,7 @@
 				ajaxExe(code);
     		})
     		
+			//직급 셀이 변경될 때 마다 내용 갱신 후 ajaxExe(서버쪽으로 전송)에 반영
     		$("#posSelected").on("change", function(){
 				deptCode = $("#deptSelected").val();
 				posCode = $("#posSelected").val();
@@ -335,6 +338,7 @@
 				
 				ajaxExe(code);
     		})
+			
 			
 			function ajaxExe(code){
 				if(code){
@@ -348,6 +352,7 @@
 							//$select.find("option:not(:first)").remove();
 							$select.find("option").remove();
 							
+							//서버로부터 data를 가져와서 셀렉션에 forEach로 추가
 							data.forEach(emp => {
 								console.log(emp)
 								let option = `<option value="${emp.EMP_NO}">${emp.EMP_NAME}</option>`;
