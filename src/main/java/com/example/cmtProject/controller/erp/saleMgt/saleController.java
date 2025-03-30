@@ -34,6 +34,10 @@ import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderStatusRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 @RequestMapping("/sales")
@@ -75,7 +79,6 @@ public class saleController {
  		//JAP에서 현재 JOIN이 안되기 때문에 mapper사용
  		List<SalesOrderDTO> soMainList = salesOrderService.soMainSelect();
  		model.addAttribute("soMainList",soMainList);
- 		//System.out.println(soMainList);
 
  		//-수주 목록에 있는 제품-
  		//수주 목록에 있는 제품 코드를 가져와 중복 제거 후 제품에서 제품명 출력
@@ -188,13 +191,40 @@ public class saleController {
 
 		//main그리드에서 선택된 항목들의 데이터 가져오기
  		List<SalesOrder> soEditorSelected = salesOrderRepository.findByEditorSelectedList(gridCheckList);
- 		
  		model.addAttribute("soEditorSelected", soEditorSelected);
  		
  		//거래처명, 고객명, 사원명, 창고명 등을 가져오기 위해 전달하는 model
  		salesOrderModels.commonSalesOrderModels(model);
  		
+ 		//수정 창에서 사용할 th:object
+ 		model.addAttribute("salesOrder", new SalesOrder());
+ 		
 		return "erp/salesMgt/soEditForm";
+	}
+	
+	//수주 수정 실행
+	@ResponseBody
+	@GetMapping("/soeditexe")
+	public String soEditExe(@RequestParam("gridDataHidden") String json) throws JsonMappingException, JsonProcessingException {
+		 	
+		/* json을 entity로 받는 방식
+		: 하지만 entity로 받는 경우 json값과 필드가 일치해야 하면 ManyToOne처럼 연관관계가 있거나 복잡하면 실패할 가능성이 있음
+		
+		ObjectMapper mapper = new ObjectMapper();
+		List<SalesOrder> orders = mapper.readValue(json, new TypeReference<List<SalesOrder>>() {});
+		
+    	salesOrderRepository.saveAll(orders);
+		*/
+		
+		/* json을 dto로 받기 */
+//		ObjectMapper mapper = new ObjectMapper(); 
+//		List<SalesOrderDTO> editList = mapper.readValue(json, new TypeReference<List<SalesOrderDTO>>() {});
+//		
+//		System.out.println(editList);
+		
+		//TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
+		
+		return "success";
 	}
 	
 	//수주 코드 생성하는 메서드
@@ -206,7 +236,6 @@ public class saleController {
         String soToday = today.format(todayFormat);
         
 		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
-		System.out.println("nextSoCodeNumber 수주코드:"+nextSoCodeNumber);
 		String soCode = "";
 		if(nextSoCodeNumber > 100) {
 			soCode = "SO-" + soToday + "-" + nextSoCodeNumber; 
