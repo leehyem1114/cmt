@@ -24,11 +24,11 @@ public class SalaryItemDTO {
 	private String sliName; // 급여 항목명
 	private String sliDesc; // 급여 유형 설명
 	private String sliFormula; // 계산식
-	private String sliPriority; // 우선순위
+	private Long sliPriority; // 우선순위
 	private LocalDate sliUpdateAt; // 최종수정일시
 
 	@Builder
-	public SalaryItemDTO(Long sliNo, SalaryItemType sliType, String sliName, String sliDesc, String sliFormula, String sliPriority, LocalDate sliUpdateAt) {
+	public SalaryItemDTO(Long sliNo, SalaryItemType sliType, String sliName, String sliDesc, String sliFormula, Long sliPriority, LocalDate sliUpdateAt) {
 		this.sliNo = sliNo;
 		this.sliType = sliType;
 		this.sliName = sliName;

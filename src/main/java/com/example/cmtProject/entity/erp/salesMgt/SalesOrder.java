@@ -25,7 +25,7 @@ public class SalesOrder {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_SALES_ORDER_SO_NO" )
-	@SequenceGenerator(name = "SEQ_SALES_ORDER_SO_NO", sequenceName="SEQ_SALES_ORDER_SO_NO")
+	@SequenceGenerator(name = "SEQ_SALES_ORDER_SO_NO", sequenceName="SEQ_SALES_ORDER_SO_NO", allocationSize = 1)
 	@Column(name = "SO_NO")
 	private Long soNo; //수주주문번호(pk)
 	
