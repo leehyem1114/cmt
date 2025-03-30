@@ -1,0 +1,68 @@
+
+			
+		    // 거래처명 필드 검사
+		    var cltCode = document.getElementById('cltNameHidden').value;
+		    if (cltCode === '') {
+				Swal.fire({
+    			  icon: "error",
+	    		  title: "거래처명을 선택해 주세요.",
+	    		});
+		        event.preventDefault();
+		        return false;
+		    }
+
+		    // 제품 필드 검사
+		    var pdtCode = document.getElementById('productSelected').value;
+		    if (pdtCode === '') {
+		        alert("제품을 선택해 주세요.");
+		        event.preventDefault(); 
+		        return false;
+		    }
+
+		    // 수주일자 필드 검사
+		    var soDate = document.querySelector('[th\\:field="*{soDate}"]').value;
+		    if (soDate === '') {
+		        alert("수주일자를 입력해 주세요.");
+		        event.preventDefault(); 
+		        return false;
+		    }
+
+		    // 출하일자 필드 검사
+		    var shipDate = document.querySelector('[th\\:field="*{shipDate}"]').value;
+		    if (shipDate === '') {
+		        alert("출하일자를 입력해 주세요.");
+		        event.preventDefault(); 
+		        return false;
+		    }
+
+		    // 수량 필드 검사
+		    var soQuantity = document.querySelector('[th\\:field="*{soQuantity}"]').value;
+		    if (soQuantity === '' || isNaN(soQuantity)) {
+		        alert("수량을 숫자로 입력해 주세요.");
+		        event.preventDefault(); 
+		        return false;
+		    }
+
+		    // 출고단가 필드 검사
+		    var pdtShippingPrice = document.querySelector('[th\\:field="*{pdtShippingPrice}"]').value;
+		    if (pdtShippingPrice === '' || isNaN(pdtShippingPrice)) {
+		        alert("출고단가를 숫자로 입력해 주세요.");
+		        event.preventDefault();
+		        return false;
+		    }
+
+		    // 진행 상태 필드 검사
+		    var soStatus = document.getElementById('productSelected').value;
+		    if (soStatus === '') {
+		        alert("진행 상태를 선택해 주세요.");
+		        event.preventDefault(); 
+		        return false;
+		    }
+
+		    // 담당자 필드 검사
+		    var empNo = document.querySelector('[th\\:field="*{empNo}"]').value;
+		    if (empNo === '') {
+		        alert("담당자를 선택해 주세요.");
+		        event.preventDefault(); 
+		        return false;
+		    }

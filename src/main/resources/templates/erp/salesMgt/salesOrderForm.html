@@ -16,7 +16,7 @@
 		
 	    .container1 {
 	        display: grid;
-			grid-template-columns: 100px 150px 120px 180px 50px 180px 130px 150px 150px 1fr; 
+			grid-template-columns: 150px 150px 120px 180px 50px 180px 130px 150px 150px 1fr; 
 	        gap: 3px;
 	        background: #f5f5f5;
 	        padding: 4px;
@@ -27,7 +27,7 @@
 		
 		.container2 {
 	        display: grid;
-			grid-template-columns: 100px 150px 150px 80px 150px 160px 160px 80px 80px 100px 1fr; 
+			grid-template-columns: 150px 150px 150px 150px 150px 160px 160px 80px 80px 100px 1fr; 
 	        gap: 3px;
 	        background: #f5f5f5;
 	        padding: 4px;
@@ -69,13 +69,12 @@
 <body>
 
     <div layout:fragment="content">
-        
 		<div class="button-container">
 			<div><h2>수주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button class="requestBtn" onclick="registerOpenWindows()">📃 신규</button>
-	        <button class="cancelBtn">✏️ 수정</button>
+	        <button class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+	        <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button>
 	        <button class="helpBtn">❓ HELP</button>
 			</div>
 	    </div>
@@ -95,7 +94,7 @@
 		    </div>
 	
 		    <div class="container2">
-		        <label>제품</label>
+		        <label>제품 코드</label>
 				<select class="sell_select" id="pdtCode">
 		            <option th:each="code : ${pdtCode}"
 						th:value="${code}"
@@ -105,7 +104,7 @@
 		        </select>
 		        <input type="text" id="pdtName" placeholder="NAME">
 		      
-		        <label>거래처</label>
+		        <label>거래처 코드</label>
 				<select class="sell_select" id="cltCode">
 		            <option th:each="code : ${cltCode}"
 						th:value="${code}"
@@ -121,64 +120,124 @@
 		        </select>
 		    </div>
 		</form>
-		
 		<br>
-<!--		<th:block th:each="soModel : ${soModel}">-->
-<!--			<div th:text="${soModel}"></div>-->
-<!--		</th:block>-->
 
-<!-- 그리드 top 시작 -->
+		<!-- 그리드 top 시작 -->
 	   	<div id="gridTop"></div>
 	
 	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    
-	    console.log(/*[[${soModel}]]*/ [])
+	    //console.log(/*[[${soMainList}]]*/ [])
 	    
 	    const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
-			data : /*[[${soModel}]]*/ [],
-	        rowHeaders: ['checkbox'], 
+			data : /*[[${soMainList}]]*/ [],
+	        rowHeaders: ['checkbox'],
+			scrollX: true,
+            scrollY: true,
+			width: 1300,  // 전체 너비 지정
+			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
 	        columns: [
 				{
-	                header: '수주번호',
-	                name: 'soNo'
+					header: '수주번호',
+					name: 'soNo',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 	            },
 	            {
 	                header: '수주코드',
-	                name: 'soCode'
+	                name: 'soCode',
+					sortable: true, 
+					filter: 'text',
+					width: 140,
+					align: "center" 
 	            },
 	            {
 	                header: '수주일자',
-	                name: 'soDate'
-	            },
-	            {
-	                header: '사원코드',
-	                name: 'empId'
-	            },
-	            {
-	                header: '창고코드',
-	                name: 'whsCode'
-	            },
-	            {
-	                header: '제품코드',
-	                name: 'pdtCode'
+	                name: 'soDate',
+					sortable: true, 
+					filter: 'text',
+					width: 200,
+					align: "center" ,
+					formatter: function({ value }) {
+	           		    // 날짜 형식을 'YYYY-MM-DD HH:mm'로 포맷팅
+	           		    const date = new Date(value);
+	           		    const year = date.getFullYear();
+	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
+	           		    const day = String(date.getDate()).padStart(2, '0');
+	           		    const hours = String(date.getHours()).padStart(2, '0');
+	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		 	return `${year}년 ${month}월 ${day}일`;
+	           		  }
 	            },
 				{
-	                header: '거래처코드',
-	                name: 'cltCode'
+	                header: '발주일자',
+	                name: 'shipDate',
+					sortable: true, 
+					filter: 'text',
+					width: 200,
+					align: "center" ,
+					formatter: function({ value }) {
+	           		    // 날짜 형식을 'YYYY-MM-DD HH:mm'로 포맷팅
+	           		    const date = new Date(value);
+	           		    const year = date.getFullYear();
+	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
+	           		    const day = String(date.getDate()).padStart(2, '0');
+	           		    const hours = String(date.getHours()).padStart(2, '0');
+	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		 	return `${year}년 ${month}월 ${day}일`;
+	           		  }
+	            },
+	            {
+	                header: '사원이름',
+	                name: 'empName',
+					sortable: true, 
+					filter: 'text',
+					width: 80,
+					align: "center" 
+	            },
+	            {
+	                header: '제품명',
+	                name: 'pdtName',
+					sortable: true, 
+					filter: 'text',
+					width: 150,
+					align: "center" 
+	            },
+				{
+	                header: '거래처명',
+	                name: 'cltName',
+					sortable: true, 
+					filter: 'text',
+					width: 150,
+					align: "center" 
 	            },
 	            {
 	                header: '수량',
-	                name: 'soQuantity'
+	                name: 'soQuantity',
+					sortable: true, 
+					filter: 'text',
+					width: 40,
+					align: "center" 
 	            },
 	            {
-	                header: '공급가액',
-	                name: 'soValue'
+	                header: '단가',
+	                name: 'pdtShippingPrice',
+					sortable: true, 
+					filter: 'text',
+					width: 80,
+					align: "center" 
 	            },
 				{
 					header: '현재상태',
-					name: 'soStatus'
+					name: 'statusName',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
 				}
 	        ] // 열 설정
 	    });
@@ -186,35 +245,56 @@
 	 	// 체크박스 클릭 시 이벤트 추가
 	    grid.on('check', (checkItem) => {
 	        const rowData = grid.getRow(checkItem.rowKey); 
-	        alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
+			gridCheck.push(rowData.soNo);
+			
+			//console.log(gridCheck);
+			
 	    });
 
 	    // 체크 해제 시 이벤트 추가
 	    grid.on('uncheck', (checkItem) => {
 	        const rowData = grid.getRow(checkItem.rowKey);
-	        alert(`해제한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+	        gridCheck = gridCheck.filter(item => item !== rowData.soNo);
+			
+			//console.log(gridCheck);
 	    });
 	    
 	    grid.on('click', (ev) => {
 	    });
 	    </script>
 	    <!-- 그리드 끝 --> 
-		
     </div>
    	
 	<th:block layout:fragment="script">
 	    <script>
 	    
-		 /*    const parentWidth = window.innerWidth || document.documentElement.clientWidth || screen.width;
-		    const parentHeight = window.innerHeight || document.documentElement.clientHeight || screen.height;
-	
-		    // 부모 창의 중앙 좌표 계산
-		    const left = (parentWidth - width) / 2 + window.screenX;
-		    const top = (parentHeight - height) / 2 + window.screenY; */
-	    
-	    	function registerOpenWindows(){
-		   	 window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=800, height=600")	
+			//그리드에서 선택한 값을 저장할 배열 선언
+			let gridCheck = [];
+			
+			//신규 버튼 클릭시 실행되는 입력 창
+	    	function soRegisterOpenWindows(){
+				window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
 	    	}
+			
+			//수정 버튼 클릭시 실행되는 수정 창
+			function soEditOpenWindows(){
+				
+				if(gridCheck.length <= 0){
+					
+					Swal.fire({
+					  icon: "warning",
+					  title: "선택된 항목이 없습니다.",
+					});
+					
+					return;
+				}
+				
+				let gridCheckString = JSON.stringify(gridCheck);
+				
+				console.log(gridCheckString);
+				
+				window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+			}
 	    	
 			$(document).ready(function(){
 				

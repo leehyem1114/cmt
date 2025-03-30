@@ -1,20 +1,16 @@
-package com.example.cmtProject.entity.erp.salesMgt;
+package com.example.cmtProject.dto.erp.saleMgt;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Entity
-@Table(name = "SALES_ORDER_STATUS")
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesOrderStatus {
-	
+public class SalesOrderStatusDTO {
+
 	/*
 	SO_RECEIVED, // 수주 접수 - 고객의 주문을 접수한 상태
 	SO_CONFIRMED, // 수주 확정 - 주문이 검토되어 확정됨
@@ -25,13 +21,7 @@ public class SalesOrderStatus {
 	SO_CANCELED, // 수주 취소 - 주문이 취소됨
 	*/
 	
-	@Id
-	@Column(name = "STATUS_CODE")
 	private String statusCode;
-	
-	@Column(name = "STATUS_NAME")
 	private String statusName;
-	
-	@Column(name = "STATUS_COMMENT")
 	private String statusComment;
 }

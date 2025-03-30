@@ -3,6 +3,7 @@ package com.example.cmtProject.mapper.erp.employees;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;

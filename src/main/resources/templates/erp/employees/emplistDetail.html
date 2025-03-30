@@ -27,14 +27,14 @@
                 <!-- 표 예시 -->
                 <div class="table-responsive">
                 <div>
-					<form th:action="@{{id}(id=${emp.empId})}" th:object="${emp}" id="empDetail" name="empDetail" method="post" enctype="multipart/form-data">
+					<form th:action="@{/emp/empUpdate/{id}(id=${emp.empId})}" th:object="${emp}" id="empDetail" name="empDetail" method="post" enctype="multipart/form-data">
 						                <div class="body">
-						                	<label for="empProfile">프로필사진</label>
-						                    <div class="form-group" >
-					<!-- 	                    <div th:if="${emp.enpProfile != null}"> -->
-					<!-- 						    <img th:src="@{${emp.empProfile}}" id="profile_preview" height="100px"> -->
-<!-- 											</div> -->
-					<!-- 						<div th:unless="${emp.enpProfile ==null}"> -->
+											<label for="empProfile">프로필사진</label>
+							                <div class="form-group" >
+<!--						                    <div th:if="${emp.empProfile != null}" id="preview_profile">-->
+<!--											    <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">-->
+<!--											</div>-->
+<!--					 						<div th:unless="${emp.empProfile ==null}"> -->
 											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
 <!-- 											</div> -->
 												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
@@ -186,12 +186,12 @@
              * - Ajax 요청
              * - 기타 페이지별 로직
              */
-//              	$(document).on("click", "#btnDetailUpdate", function () {
-//             	        console.log("수정버튼 클릭댐");
-//             	        const id = $("input[name='empId']").val();
-//             	        const form = document.getElementById("empDetail");
-//             	        const formData = new FormData(form);
-//             	        formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+  //            	$(document).on("click", "#btnDetailUpdate", function () {
+  //           	        console.log("수정버튼 클릭댐");
+   //          	        const id = $("input[name='empId']").val();
+   //          	        const form = document.getElementById("empDetail");
+   //          	        const formData = new FormData(form);
+   //          	        formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
 //             	        $.ajax({
 //             	            url: `/emp/empList/${id}`,  // 이건 나중에 실제 empId로 교체해야함
 //             	            method: "POST",
@@ -226,15 +226,15 @@
 				new daum.Postcode({
 					oncomplete : function(data) {
 						console.log(data);
-						document.empDetai.empPostCode.value = data.zonecode;
+						document.empDetail.empPostCode.value = data.zonecode;
 	
 						let address = data.address;
 						if (data.buildingName != "") {
 							address += " (" + data.buildingName + ")";
 						}
 	
-						document.empDetai.empAddress1.value = address;
-						document.empDetai.empAddress2.focus();
+						document.empDetail.empAddress1.value = address;
+						document.empDetail.empAddress2.focus();
 					}
 				}).open();
 			}
