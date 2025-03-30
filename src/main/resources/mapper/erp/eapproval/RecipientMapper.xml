@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.cmtProject.mapper.erp.eapproval.RecipientMapper">
+
+    <!-- 수신자 저장 -->
+    <insert id="insertRecipient" parameterType="com.example.cmtProject.dto.erp.eapproval.RecipientDTO">
+        INSERT INTO RECIPIENTS (
+            RECIPIENT_NO,
+            DOC_ID,
+            RECEIVER_NO,
+            READ_STATUS
+        ) VALUES (
+            (SELECT NVL(MAX(RECIPIENT_NO), 0) + 1 FROM RECIPIENTS),
+            #{docId},
+            #{receiverNo},
+            '미열람'
+        )
+    </insert>
+    
+    <!-- 수신자 일괄 저장 -->
+    <insert id="insertRecipients" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=" " open="INSERT ALL" close="SELECT * FROM DUAL">
+            INTO RECIPIENTS (
+                RECIPIENT_NO,
+                DOC_ID,
+                RECEIVER_NO,
+                READ_STATUS
+            ) VALUES (
+                (SELECT NVL(MAX(RECIPIENT_NO), 0) + 1 FROM RECIPIENTS),
+                #{item.docId},
+                #{item.receiverNo},
+                '미열람'
+            )
+        </foreach>
+    </insert>
+    
+    <!-- 수신 상태 업데이트 -->
+    <update id="updateReadStatus">
+        UPDATE RECIPIENTS
+        SET
+            READ_STATUS = #{readStatus},
+            READ_DATE = CASE WHEN #{readStatus} = '열람' THEN SYSDATE ELSE NULL END
+        WHERE RECIPIENT_NO = #{recipientNo}
+    </update>
+    
+    <!-- 문서ID로 수신자 목록 조회 -->
+    <select id="selectRecipientsByDocId" resultMap="recipientResultMap">
+        SELECT
+            r.RECIPIENT_NO,
+            r.DOC_ID,
+            r.RECEIVER_NO,
+            e.EMP_NAME as RECEIVER_NAME,
+            r.READ_STATUS,
+            r.READ_DATE
+        FROM RECIPIENTS r
+        LEFT JOIN EMPLOYEES e ON r.RECEIVER_NO = e.EMP_NO
+        WHERE r.DOC_ID = #{docId}
+    </select>
+    
+    <!-- 수신자별 수신 문서 목록 조회 -->
+    <select id="selectDocumentsByReceiverId" resultMap="recipientResultMap">
+        SELECT
+            r.RECIPIENT_NO,
+            r.DOC_ID,
+            d.TITLE,
+            d.DRAFTER_ID,
+            e.EMP_NAME as DRAFTER_NAME,
+            d.DRAFT_DATE,
+            r.READ_STATUS,
+            r.READ_DATE
+        FROM RECIPIENTS r
+        JOIN DOCUMENTS d ON r.DOC_ID = d.DOC_ID
+        LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_NO
+        WHERE r.RECEIVER_NO = #{receiverId}
+        ORDER BY d.DRAFT_DATE DESC
+    </select>
+    
+    <!-- 문서의 수신자 삭제 -->
+    <delete id="deleteRecipientsByDocId">
+        DELETE FROM RECIPIENTS
+        WHERE DOC_ID = #{docId}
+    </delete>
+    
+    <!-- Result Map -->
+    <resultMap id="recipientResultMap" type="com.example.cmtProject.dto.erp.eapproval.RecipientDTO">
+        <id property="recipientNo" column="RECIPIENT_NO"/>
+        <result property="docId" column="DOC_ID"/>
+        <result property="receiverNo" column="RECEIVER_NO"/>
+        <result property="receiverName" column="RECEIVER_NAME"/>
+        <result property="readStatus" column="READ_STATUS"/>
+        <result property="readDate" column="READ_DATE"/>
+    </resultMap>
+</mapper>
