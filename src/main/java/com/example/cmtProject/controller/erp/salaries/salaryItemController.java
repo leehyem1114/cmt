@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +41,6 @@ public class salaryItemController {
 		// 급여 유형 목록 조회
 	    List<SalaryItemDTO> salItemList = salaryItemService.getSalaryItems();
 	    model.addAttribute("salItemList", salItemList);
-	    
 	    
 	    // 공통코드에서 급여 유형명 가져오기
  		List<CommonCodeDetailNameDTO> sliTypeList = commonService.getCodeListByGroup("SAL_TYPE"); 
@@ -83,11 +83,24 @@ public class salaryItemController {
 	}
 	
 	// 급여 유형 추가
-	@PostMapping("/salItemRegister")
-	public String salItemRegister(SalaryItemDTO salaryItemDTO, Model model) {
-		salaryItemService.registerSalaryItem(salaryItemDTO);
-
-		return "redirect:/salaries/salaryItem";
+	@GetMapping("/salItemRegister")
+	public String salItemRegister(Model model) {
+		model.addAttribute("salaryItemDTO", new SalaryItemDTO());
+		model.addAttribute("sliTypeList", salaryItemService.getSalItemTypes());
+	    
+		// 공통코드에서 급여 유형별 항목 가져오기
+// 		List<CommonCodeDetailNameDTO> sliTypeNameList = commonService.getCodeListByGroup("BONUS"); 
+	    List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", "");
+	    List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", "");
+// 		model.addAttribute("bonusList", bonusList);
+// 		model.addAttribute("taxList", taxList);
+	    
+	    // 급여 유형별 항목 합쳐서 가져오기
+	    List<CommonCodeDetailDTO> allList = new ArrayList<>();
+	    allList.addAll(bonusList);
+	    allList.addAll(taxList);
+	    model.addAttribute("allList", allList);  // Thymeleaf로 넘김
+		return "erp/salaries/salItemRegisterForm"; // 템플릿 경로
 	}
 	
 	// 급여 유형 수정

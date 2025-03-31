@@ -15,8 +15,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,11 +53,11 @@ public class SalaryItem { // 급여 유형 관리 엔티티
     private String sliFormula; // 계산식
     
     @Column(name = "SLI_PRIORITY", nullable = false, length = 50)
-    private String sliPriority; // 우선순위
+    private Long sliPriority; // 우선순위
     
     @LastModifiedDate
     @Column(name = "SLI_UPDATE_AT")
-    private LocalDate sliUpdateAt; // 최종수정일시
+    private LocalDate sliUpdateAt; // 최종수정일
     
     
     public SalaryItemDTO toDto() {
