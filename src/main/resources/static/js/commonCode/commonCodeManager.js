@@ -120,7 +120,7 @@ const CommonCodeManager = (function() {
                 id: 'commonCode',
                 columns: [
 					{
-                        header: '코드',
+                        header: '코드(PK는 변경불가)',
                         name: 'CMN_CODE',
                         editor: 'text'
                     },
@@ -392,7 +392,7 @@ const CommonCodeManager = (function() {
             commonCodeDetailGrid = GridUtil.registerGrid({
                 id: 'commonCodeDetail',
                 columns: [{
-                        header: '상세코드',
+                        header: '상세코드(PK 수정불가)',
                         name: 'CMN_DETAIL_CODE',
                         editor: 'text',
                         width: 100
@@ -426,6 +426,9 @@ const CommonCodeManager = (function() {
                         name: 'ROW_TYPE'
                     } // 조회/추가 구분
                 ],
+				columnOptions: {
+				  resizable: true
+				},
                 data: initialData,
                 draggable: true,
                 displayColumnName: 'CMN_DETAIL_SORT_ORDER',
@@ -714,9 +717,12 @@ const CommonCodeManager = (function() {
 			    cmnDetailContent: row.CMN_DETAIL_CONTENT || '',
 			    cmnDetailValue: row.CMN_DETAIL_VALUE || '',
 			    cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
-			    cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER,
-			    action: row.ROW_TYPE
+			    cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER || 0,
+			    rowType: row.ROW_TYPE  // action을 rowType으로 변경
 			}));
+
+			console.log('상세코드 배치 저장 요청 데이터:', JSON.stringify(batchData));
+
 			
 
 	        // 유효성 검사
