@@ -68,8 +68,8 @@ public class AttendController {
        
         // 어드민은 모든정보 보기, 사원은 자기거만 보기
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> 
-        a.getAuthority().equals("ADMIN") || 
-        a.getAuthority().equals("MANAGER"))) {
+        a.getAuthority().equals("ROLE_ADMIN") || 
+        a.getAuthority().equals("ROLE_MANAGER"))) {
         // ADMIN, MANAGER는 모든 출결정보 조회
         List<AttendDTO> attendList = attendService.getAllAttends();
         model.addAttribute("attendList", attendList);

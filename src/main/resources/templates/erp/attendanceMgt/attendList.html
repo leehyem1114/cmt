@@ -35,49 +35,52 @@
 	   	
 		
 		
-		<div class="btn-group-custom" style="text-align: right;">
-        <th:block th:if="${!hasCheckedIn}">
-		    <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
-		</th:block>
-	    
-        <th:block th:if="${!hasCheckedOut}">
-        	<button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
-        	
-		</th:block>
-        <button type="button" 
-            class="btn btn-lg btn-danger " 
-            onclick="deleteAttend()" 
-            sec:authorize="hasAnyRole('ADMIN')">
-	        삭제
-	    </button>
-    	</div>
-    	<br>
-    	<!-- 검색창 + 날짜 필터 UI -->
-		<div style="display: flex; align-items: center; gap: 10px;">
-		  <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
 		
-		  <!-- 시작일 -->
-		  <label for="startDate">시작일:</label>
-		  <div style="position: relative;">
-		  <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-		    <input type="text" id="startDate" aria-label="Start Date">
-		    <span class="tui-ico-date"></span>
-		  </div> 
-		  <div id="startDateWrapper" style="margin-top: -1px;"></div>
-		  </div>
-
-		  <!-- 종료일 -->
-		  <label for="endDate">종료일:</label>
-		  <div style="position: relative;">
-		  <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-		    <input type="text" id="endDate" aria-label="End Date">
-		    <span class="tui-ico-date"></span>
-		  </div>
-		  <div id="endDateWrapper" style="margin-top: -1px;"></div>
+    	<!-- 전체 한 줄, 버튼 오른쪽 -->
+		<div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+		
+		  <!-- 왼쪽: 검색창 + 날짜 -->
+		  <div style="display: flex; align-items: center; gap: 10px;">
+		    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
+		
+		    <label for="startDate">시작일:</label>
+		    <div style="position: relative;">
+		      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+		        <input type="text" id="startDate" aria-label="Start Date">
+		        <span class="tui-ico-date"></span>
+		      </div> 
+		      <div id="startDateWrapper" style="margin-top: -1px;"></div>
+		    </div>
+		
+		    <label for="endDate">종료일:</label>
+		    <div style="position: relative;">
+		      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+		        <input type="text" id="endDate" aria-label="End Date">
+		        <span class="tui-ico-date"></span>
+		      </div>
+		      <div id="endDateWrapper" style="margin-top: -1px;"></div>
+		    </div>
+		
+		    <button id="dateSearchBtn" class="btn btn-primary">검색</button>
 		  </div>
 		
-		  <!-- 검색 버튼 -->
-		  <button id="dateSearchBtn" class="btn btn-primary">검색</button>
+		  <!-- 오른쪽: 버튼 묶음 (이게 flex item이자 margin-left: auto 적용 대상!) -->
+		  <div class="btn-group-custom" style="margin-left: auto; display: flex; gap: 10px;">
+		    <th:block th:if="${!hasCheckedIn}">
+		      <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
+		    </th:block>
+		    
+		    <th:block th:if="${!hasCheckedOut}">
+		      <button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
+		    </th:block>
+		    
+		    <button type="button" 
+		            class="btn btn-lg btn-danger" 
+		            onclick="deleteAttend()" 
+		            sec:authorize="hasAnyRole('ADMIN')">
+		      삭제
+		    </button>
+		  </div>
 		</div>
 		
 		<!-- TOAST UI DatePicker 스크립트 -->
@@ -131,7 +134,7 @@
             	  name: 'atdNo', 
             	  sortable: true, 
             	  filter: 'text',
-            	  width: 100,
+            	  width: 150,
             	  align: "center" 
             	},
             	{ 
@@ -139,7 +142,7 @@
             	  name: 'empNo', 
             	  sortable: true, 
             	  filter: 'text', 
-            	  width: 100,
+            	  width: 150,
             	  align: "center" 
             	},
             	{ 
@@ -147,7 +150,7 @@
             	  name: 'empName', 
             	  sortable: true, 
             	  filter: 'text', 
-            	  width: 100,
+            	  width: 150,
             	  align: "center" 
             	},
             	{ 
@@ -196,7 +199,7 @@
            		  sortable: true, 
            		  filter: 'text',
            		  align: "center",
-           		  width: 100,
+           		  width: 150,
            		formatter: function({ row }) {
 	                   if (row.attendType === 'ATT001') {
 	                       return '<a class="btn btn-primary btn-sm">출근</a>';
@@ -217,7 +220,7 @@
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center",
-           	      width: 100,
+           	      width: 150,
 	           	   formatter: function({ row }) {
 	                   if (row.attendStatus === 'ATS001') {
 	                       return '<a class="btn btn-primary btn-sm">정상</a>';
