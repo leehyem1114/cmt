@@ -129,7 +129,7 @@
 	            <input type="date" th:field="*{shipDate}">
 	        </div>
 			<div class="form-group">
-	           <label>수량 *</label>
+	            <label>수량 *</label>
 	            <input type="text" placeholder="숫자입력" th:field="*{soQuantity}">
 	        </div>
 			<div class="form-group">
@@ -159,7 +159,7 @@
 					th:text="${pos.cmnDetailName}">
 				</option>
 			</select>
-			<select id="empSelected" th:field="*{empNo}">
+				<select id="empSelected" th:field="*{empNo}">
 			</select>
 	       </div>
     	</div><!-- <div class="container"> -->
@@ -248,13 +248,13 @@
 				// 체크박스 클릭 시 이벤트 추가
 				grid.on('check', (checkItem) => {
 				    const rowData = grid.getRow(checkItem.rowKey); 
-				    alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
+				    //alert(`선택한 행: 이름=${rowData.soCode}, 나이=${rowData.soDate}, 주소=${rowData.empId}`);
 				});
 				
 				// 체크 해제 시 이벤트 추가
 				grid.on('uncheck', (checkItem) => {
 				    const rowData = grid.getRow(checkItem.rowKey);
-				    alert(`해제한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
+				    //alert(`해제한 행: 이름=${rowData.name}, 나이=${rowData.age}, 주소=${rowData.address}`);
 				});
 				
 				grid.on('click', (ev) => {

@@ -1,193 +1,359 @@
 <!DOCTYPE html>
 	<html xmlns:th="http://www.thymeleaf.org" 
 	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}"> 
 	<head>
-		<!-- toast 부트스트랩 기본 -->
-		<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
-		<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
-		
-		<!-- date-picker -->
-		<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
-		<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+			<!-- date-picker -->
+			<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
+			<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+				
+			<!-- toast 부트스트랩 기본 -->
+			<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+			<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
 
-	    <title>수주 등록</title>
-    
-    <title>CMT</title>
-	
+		
+		    <title>수주 등록</title>
+
+		<title>CMT</title>
+	<style>
+		
+	    .container1 {
+	        display: grid;
+			grid-template-columns: 150px 150px 120px 180px 50px 180px 130px 150px 150px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
+		
+		.container2 {
+	        display: grid;
+			grid-template-columns: 150px 150px 150px 150px 150px 160px 160px 80px 80px 100px 1fr; 
+	        gap: 3px;
+	        background: #f5f5f5;
+	        padding: 4px;
+	        border-radius: 5px;
+			border : 1px solid black;
+			text-align: center;
+	    }
+			
+		
+	    .container input, .container select {
+	        padding: 5px;
+	        border: 1px solid #ccc;
+	        border-radius: 3px;
+	    }
+		
+	    .button-container {
+	        display: flex;
+	        gap: 5px;
+	        margin: 10px;
+			justify-content: space-between;
+	    }
+		
+	    button {
+	        padding: 5px 10px;
+	        border: none;
+	        cursor: pointer;
+	        border-radius: 3px;
+	    }
+		
+		.tui-grid-row-hover td {
+		  background-color:rgb(248, 248, 248) !important;
+		}
+		
+	    .searchBtn { background:dodgerblue; color: white; }
+	    .requestBtn { background: purple; color: white; }
+	    .completeBtn { background: green; color: white; }
+	    .cancelBtn { background: red; color: white; }
+	    .excelBtn { background: darkblue; color: white; }
+	    .helpBtn { background: orange; color: white; }
+		
+	</style>
 </head>
 <body>
-	
+
     <div layout:fragment="content">
-   		<div id="gridTop"></div>
-    </div> <!-- layout:fragment="content" -->
-   	
-	<!-- 그리드 시작-->
-    <script th:inline="javascript">
+		<div class="button-container">
+			<div><h2>수주조회</h2></div>
+			<div>
+	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
+	        <button class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
+				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
+	        <button class="helpBtn">❓ HELP</button>
+			</div>
+	    </div>
+		
+		<form action="/sales/so" method="get" th:object="${SalesOrder}">	    
+		    <div class="container1">
+		        <label class="sell_company_label">수주 코드</label>
+				<input type="text" placeholder="CODE">
+		        <label class="sell_so_date_label">수주일</label>
+		        <input type="date" class="sell_date1">
+		        <span class="sell_tilt">~</span>
+		        <input type="date" class="sell_date2">
+		        <label class="sell_sonum_label">수주번호</label>
+		        <input type="text" class="sell_sonum_text">
+				<button class="search">🔍 검색</button>
+				<span></span>
+		    </div>
 	
-	document.addEventListener("DOMContentLoaded", function () {
-		
-		let grid;
-		
+		    <div class="container2">
+		        <label>제품 코드</label>
+				<select class="sell_select" id="pdtCode">
+		            <option th:each="code : ${pdtCode}"
+						th:value="${code}"
+						th:text="${code}"
+						selected="${SalesOrder.pdtCode == code}"
+					></option>
+		        </select>
+		        <input type="text" id="pdtName" placeholder="NAME">
+		      
+		        <label>거래처 코드</label>
+				<select class="sell_select" id="cltCode">
+		            <option th:each="code : ${cltCode}"
+						th:value="${code}"
+						th:text="${code}"
+						selected="${SalesOrder.cltCode == code}"
+					></option>
+		        </select>
+		        <input type="text" id="cltName" placeholder="NAME">
+		        
+				<label>진행상태</label>
+		        <select>
+		            <option>전체</option>
+		        </select>
+		    </div>
+		</form>
+		<br>
+
+		<!-- 그리드 top 시작 -->
+	   	<div id="gridTop" class="tui-grid-row-hover tui-grid-row-selected"></div>
+	
+	    <script th:inline="javascript">
+	    
 		//모든 컬럼 함깨 표시
-		let soEditorSelected = /*[[${soEditorSelected}]]*/ [];
 		let cltList = /*[[${cltList}]]*/ [];
 		let empList = /*[[${empList}]]*/ [];
 		let productList = /*[[${productList}]]*/ [];
 		let soStatusList = /*[[${soStatusList}]]*/ [];
 		
 		//2개의 컬럼으로 label과 value를 맞춘다
-		let cltListSelected = cltList.map(item => ({lable: item.cltName, value: item.cltCode}));
-		let empListSelected = empList.map(item => ({label: item.empName, value: item.empNo }));
-		let productListSelected = productList.map(item => ({label: item.pdtName, value: item.pdtCode}))
-		let soStatusListSelected = soStatusList.map(item => ({label: item.statusName, value: item.statusCode}))
+		let cltListSelected = cltList.map(item => ({label: item.cltCode, value: item.cltName+'('+item.cltCode+')'}));
+		let empListSelected = empList.map(item => ({label: item.empNo, value: item.empName+'('+ item.empNo + ')'}));
+		let productListSelected = productList.map(item => ({label: item.pdtCode, value: item.pdtName+'('+item.pdtCode+')'}))
+		let soStatusListSelected = soStatusList.map(item => ({label: item.statusCode, value: item.statusName+'('+item.statusCode+')'}))
 		
-		/*console.log(cltListSelected)
+		
+		console.log(cltListSelected)
 		console.log(empListSelected);
 		console.log(productListSelected)
-		console.log(soStatusListSelected);*/
+		console.log(soStatusListSelected);
 		
-		/*console.log(soEditorSelected);
-		console.log(cltList);
-		console.log(empList);
-		console.log(productList);
-		console.log(soStatusList);*/
+	    console.log(/*[[${soMainList}]]*/ []);
+	    
+	    const grid = new tui.Grid({
+	        el: document.getElementById('gridTop'), 
+			data : /*[[${soMainList}]]*/ [],
+	        //rowHeaders: ['checkbox'], 수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+            scrollY: true,
+			width: 1300,  // 전체 너비 지정
+			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
+	        columns: [
+				{
+					header: '수주번호',
+					name: 'soNo',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
+	            },
+	            {
+	                header: '수주코드',
+	                name: 'soCode',
+					sortable: true, 
+					filter: 'text',
+					width: 140,
+					align: "center" 
+	            },
+				{
+	                header: '수주일자',
+	                name: 'soDate',
+					fontSize: '40',
+					filter: 'text',
+					width: 140,
+					align: 'center',
+					editor: {
+			           type: 'datePicker',
+			           options: {
+			             format: 'yyyy-MM-dd',  
+			             language: 'ko'
+			           }
+			         }
+	            },
+				{
+	                header: '발주일자',
+	                name: 'shipDate',
+					sortable: true, 
+					filter: 'text',
+					width: 140,
+					align: "center" ,
+					editor: {
+			           type: 'datePicker',
+			           options: {
+			             format: 'yyyy-MM-dd',  
+			             language: 'ko'
+			           }
+			         }
+	            },
+	            {
+					header: '사원번호',
+	                name: 'empNo',
+					width: 130,
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: empListSelected
+						}
+					},
+					formatter: ({ value }) => {
+				    	const emp = empListSelected.find(item => item.value === value);
+				    	return emp ? emp.label : value;
+				    }
+	            },
+	            {
+	                header: '제품명',
+	                name: 'pdtName',
+					sortable: true, 
+					filter: 'text',
+					width: 150,
+					align: "center" 
+	            },
+				{
+	                header: '거래처명',
+	                name: 'cltName',
+					sortable: true, 
+					filter: 'text',
+					width: 150,
+					align: "center" 
+	            },
+	            {
+	                header: '수량',
+	                name: 'soQuantity',
+					sortable: true, 
+					filter: 'text',
+					width: 40,
+					align: "center" 
+	            },
+	            {
+	                header: '단가',
+	                name: 'pdtShippingPrice',
+					sortable: true, 
+					filter: 'text',
+					width: 80,
+					align: "center" 
+	            },
+				{
+					header: '현재상태',
+					name: 'statusName',
+					sortable: true, 
+					filter: 'text',
+					width: 100,
+					align: "center" 
+				}
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+	    
+		grid.on('afterChange', (ev) => {
+			alert('afterChange')
+		});
 		
-        if (!grid) { // 중복 생성 방지
-            grid = new tui.Grid({
-                el: document.getElementById('gridTop'),
-				data : soEditorSelected,
-                scrollX: true,
-                scrollY: true,
-				width: 1300, 
-				bodyHeight: 550, 
-				columns: [
-					{
-						header: '수주번호',
-						name: 'soNo',
-						sortable: true, 
-						filter: 'text',
-						width: 100,
-						align: 'center'
-		            },
-		            {
-		                header: '수주코드',
-		                name: 'soCode',
-						sortable: true, 
-						filter: 'text',
-						width: 140,
-						align: 'center' 
-		            },
-					{
-		                header: '수주일자',
-		                name: 'soDate',
-						filter: 'text',
-						width: 200,
-						align: 'center',
-						editor: {
-				           type: 'datePicker',
-				           options: {
-				             format: 'yyyy-MM-dd',  
-				             language: 'ko'
-				           }
-				         }
-		            },
-					{
-		                header: '발주일자',
-		                name: 'shipDate',
-						filter: 'text',
-						width: 200,
-						align: 'center',
-						editor: {  
-			                type: 'datePicker', 
-			                options: {  
-			                    format: 'yyyy-MM-dd',  
-								language: 'ko'
-			                }  
-			            }
-		            },
-		            {
-		                header: '사원이름',
-		                name: 'empNo',
-						width: 150,
-						align: 'center',
-						editor: {
-							type: 'select',
-							options: {
-								listItems: empListSelected
-							}
-						},
-						formatter: ({ value }) => {
-				            const match = empListSelected.find(opt => opt.value === value);
-				            return match ? match.label : value;
-				         }
-		            },
-		            {
-		                header: '제품명',
-		                name: 'pdtName',
-						sortable: true, 
-						filter: 'text',
-						width: 150,
-						align: 'center',
-						editor: 'text'
-						
-		            },
-					{
-		                header: '거래처명',
-		                name: 'cltName',
-						sortable: true, 
-						filter: 'text',
-						width: 150,
-						align: 'center',
-						editor: 'text' 
-		            },
-		            {
-		                header: '수량',
-		                name: 'soQuantity',
-						sortable: true, 
-						filter: 'text',
-						width: 40,
-						align: 'center',
-						editor: 'text'
-		            },
-		            {
-		                header: '단가',
-		                name: 'pdtShippingPrice',
-						sortable: true, 
-						filter: 'text',
-						width: 80,
-						align: 'center',
-						editor: 'text'
-		            },
-					{
-						header: '현재상태',
-						name: 'statusName',
-						sortable: true, 
-						filter: 'text',
-						width: 100,
-						align: 'center',
-						editor: 'text'
-					}
-                ],
-				autoEdit: true,
-				editingEvent: 'click' 
-            });
-			
-        }//if (!grid) 
-
-	}); //document.addEventListener("DOMContentLoaded", function () {
-	
-    </script>
-	<!-- 그리드 끝-->
-	
+		
+	    </script>
+	    <!-- 그리드 끝 --> 
+    </div>
+   	
 	<th:block layout:fragment="script">
 		<script src="https://code.jquery.com/jquery.min.js"></script>
 	    <script>
-    	
-	    </script>
+			//그리드에서 선택한 값을 저장할 배열 선언
+			let gridCheck = [];
+			
+			//신규 버튼 클릭시 실행되는 입력 창
+	    	function soRegisterOpenWindows(){
+				window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+	    	}
+			
+			//수정 버튼 클릭시 실행되는 수정 창
+			function soEditOpenWindows(){
+				
+				if(gridCheck.length <= 0){
+					
+					Swal.fire({
+					  icon: "warning",
+					  title: "선택된 항목이 없습니다.",
+					});
+					
+					return;
+				}
+				
+				let gridCheckString = JSON.stringify(gridCheck);
+				
+				console.log(gridCheckString);
+				
+				window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+			}
+	    	
+			$(document).ready(function(){
+				
+				//제품명 가져오기
+				$("#pdtCode").change(function(){
+ 					let pdtValue = $("#pdtCode").val();
+
+					$.ajax({
+			           url: "/sales/getPdtName", 
+			           type: "GET",       
+			           //contentType: "application/json", // GET방식일 때 삭제
+			           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
+					   data: {pdtCode: pdtValue}, //GET방식 일 때 사용
+			           success: function(response) {
+							$("#pdtName").val(response);
+			           },
+			           error: function(error) {
+			               alert(error);
+			           }
+			       });
+				});
+				
+				//거래처명 가져오기
+				$("#cltCode").change(function(){
+ 					let cltValue = $("#cltCode").val();
+					
+					$.ajax({
+			           url: "/sales/getCltName", 
+			           type: "GET",       
+					   data: {cltCode: cltValue},
+			           success: function(response) {
+							$("#cltName").val(response);
+			           },
+			           error: function(error) {
+			               alert(error);
+			           }
+			       });
+				});
+			})
+			
+		</script>
 	</th:block>
 </body>
 
 </html>
-
-
