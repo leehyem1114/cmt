@@ -124,17 +124,16 @@
 							        scrollX: false,
 							        scrollY: false,
 							        columns: [
-							            { header: 'NO', name: 'rowNum', sortable: true,align: 'center', width: 80 },
-							            { header: '사원번호', name: 'empId',sortable: true, align: 'center', width: 200 },
-							            { header: '이름', name: 'empName',sortable: true, align: 'center', width: 180 },
-							            { header: '부서명', name: 'deptName', align: 'center', width: 180 },
-							            { header: '직급', name: 'deptPosition',sortable: true, align: 'center', width: 180 },
+							            { header: 'NO', name: 'rowNum', sortable: true,align: 'center'},
+							            { header: '사원번호', name: 'empId',sortable: true, align: 'center'},
+							            { header: '이름', name: 'empName',sortable: true, align: 'center'},
+							            { header: '부서명', name: 'deptName', align: 'center'},
+							            { header: '직급', name: 'deptPosition',sortable: true, align: 'center'},
 							            { 
 							                header: '입사일', 
 							                name: 'empStartDate', 
 							                align: 'center', 
 											sortable: true,
-											width: 180,
 							                formatter: function({ value }) {
 							                    if(!value) return '';
 							                    const date = new Date(value);
@@ -355,43 +354,33 @@
              * - 기타 페이지별 로직
              */
             
-            
-            //사원정보 새 창 띄우기
- //           $(".clickable-row").on("click",function(){
- //           	let id = $(this).data("id");
- //           	let url = `/emp/emplist/${id}`;
- //           	let options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
- //           	
-  //          	window.open(url, 'empDetail_' + empId, options);
-  //          });
-            
-            //프로필사진 미리보기
-			$(function () {
-			  $("#empProfile").on("change", function (e) {
-			    let files = e.target.files;
-			    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
-			
-			    if (imageFiles.length > 1) {
-			      alert("프로필 사진은 1장만 업로드 가능합니다.");
-			      imageFiles = imageFiles.slice(0, 1);
-			    }
-			
-			    $("#preview_profile").html("");
-			
-			    imageFiles.forEach(file => {
-			      let reader = new FileReader();
-			      reader.onload = function (event) {
-			        let img = $("<img>")
-			          .attr("src", event.target.result)
-			          .attr("height", "100px")
-			          .addClass("profile-thumb");
-			
-			        $("#preview_profile").append(img);
-			      };
-			      reader.readAsDataURL(file);
-			    });
-			  });
-			});
+           //프로필사진 미리보기
+		$(function () {
+			$("#empProfileFile").on("change", function (e) {
+		    let files = e.target.files;
+		    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+		
+		    if (imageFiles.length > 1) {
+		    	alert("프로필 사진은 1장만 업로드 가능합니다.");
+		    	imageFiles = imageFiles.slice(0, 1);
+		    }
+		
+		    $("#preview_profile").html("");
+		
+		    imageFiles.forEach(file => {
+		      let reader = new FileReader();
+		      reader.onload = function (event) {
+		      	let img = $("<img>")
+		          .attr("src", event.target.result)
+		          .attr("height", "100px")
+		          .addClass("profile-thumb");
+		
+		        $("#preview_profile").append(img);
+		      };
+		      reader.readAsDataURL(file);
+		    });
+		  });
+		});
             
         </script>
 		
