@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.controller.erp.saleMgt.commonModel.SalesOrderModels;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.entity.comm.CommoncodeDetail;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
@@ -77,7 +78,7 @@ public class saleController {
  		
 		//수주 메인 목록(clients, products, warehouses, employees 조인)
  		//JAP에서 현재 JOIN이 안되기 때문에 mapper사용
- 		List<SalesOrderDTO> soMainList = salesOrderService.soMainSelect();
+ 		List<SalesOrderMainDTO> soMainList = salesOrderService.soMainSelect();
  		model.addAttribute("soMainList",soMainList);
 
  		//-수주 목록에 있는 제품-
@@ -216,11 +217,13 @@ public class saleController {
     	salesOrderRepository.saveAll(orders);
 		*/
 		
+		System.out.println("json:" + json);
+		
 		/* json을 dto로 받기 */
-//		ObjectMapper mapper = new ObjectMapper(); 
-//		List<SalesOrderDTO> editList = mapper.readValue(json, new TypeReference<List<SalesOrderDTO>>() {});
-//		
-//		System.out.println(editList);
+		ObjectMapper mapper = new ObjectMapper(); 
+		List<SalesOrderDTO> editList = mapper.readValue(json, new TypeReference<List<SalesOrderDTO>>() {});
+		
+		System.out.println(editList);
 		
 		//TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
 		

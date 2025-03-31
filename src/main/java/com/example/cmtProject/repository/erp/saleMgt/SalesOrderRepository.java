@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 
 @Repository

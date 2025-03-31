@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 
 @Mapper
 public interface SalesOrderMapper {
 
 	// 수주 메인 SELECT
-	List<SalesOrderDTO> soMainSelect();
+	List<SalesOrderMainDTO> soMainSelect();
 }
