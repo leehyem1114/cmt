@@ -3,7 +3,6 @@ package com.example.cmtProject.controller.erp.attendanceMgt;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,30 +10,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
-import com.example.cmtProject.dto.erp.attendanceMgt.AttendPageResponse;
 import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.mapper.erp.attendanceMgt.AttendsMapper;
 import com.example.cmtProject.repository.erp.attendanceMgt.AttendRepository;
-import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.service.erp.attendanceMgt.AttendService;
-import com.example.cmtProject.service.erp.employees.EmployeesService;
 
 @Controller
 @RequestMapping("/attends")
@@ -83,9 +74,9 @@ public class AttendController {
         List<AttendDTO> attendList = attendService.getAllAttends();
         model.addAttribute("attendList", attendList);
     	} else {
-    	  // USER는 본인의 출결정보만 조회
-    	  List<Attend> attendList = attendService.getAttendsByEmpNo(loginUser.getEmpNo());
-    	  model.addAttribute("attendList", attendList);
+		  // USER는 본인의 출결정보만 조회
+		  List<Attend> attendList = attendService.getAttendsByEmpNo(loginUser.getEmpNo());
+		  model.addAttribute("attendList", attendList);
     	}
         return "erp/attendanceMgt/attendList"; // templates/erp/attendanceMgt/attendList.html 렌더링
     }
@@ -116,11 +107,15 @@ public class AttendController {
     }
 
     // 출결 정보 삭제
-    @DeleteMapping("/delete/{id}")
+    @PostMapping("/delete")
     @ResponseBody
-    public String deleteAttend(@PathVariable Long id) {
-        attendService.deleteAttend(id);
-        return "redirect:/attends/attendList";
+    public ResponseEntity<?> deleteAttends(@RequestBody Map<String, List<Long>> data) {
+        List<Long> ids = data.get("ids");
+
+        // 삭제 로직 실행 (예: attendService.deleteByIds(ids))
+        attendRepository.deleteAllById(ids);
+
+        return ResponseEntity.ok().build();
     }
 
 

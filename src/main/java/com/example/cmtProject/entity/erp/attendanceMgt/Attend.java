@@ -52,17 +52,17 @@ public class Attend {
     private LocalDateTime attendLeave; // 퇴근일자 (ATD_LEAVE)
     
     @Column(name = "ATD_TYPE", nullable = false)
-    private String attendType; // 출결유형 (ATD_TYPE)
+    private CommonCodeDetailDTO attendType; // 출결유형 (ATD_TYPE)
 
     @Column(name = "ATD_STATUS", nullable = false)
-    private String attendStatus; // 출결상태 (ATD_STATUS)
+    private CommonCodeDetailDTO attendStatus; // 출결상태 (ATD_STATUS)
 
     @Column(name = "ATD_REMARKS", length = 200)
     private String remarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, String attendType, String attendStatus,
-			String remarks) {
+    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, 
+    		CommonCodeDetailDTO attendType, CommonCodeDetailDTO attendStatus, String remarks) {
     	this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;
