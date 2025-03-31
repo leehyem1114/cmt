@@ -25,7 +25,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/eapproval")
 @RequiredArgsConstructor
-public class eapprovalController {
+public class EapprovalController {
 
     private final DocumentService documentService;
     private final DocFormService docFormService;
@@ -35,15 +35,15 @@ public class eapprovalController {
      */
     @GetMapping("/approvalList")
     public String approvalList(Model model, Principal principal) {
-        Integer currentUserId = getCurrentUserId(principal);
+//        Integer currentUserId = getCurrentUserId(principal);
         
         // 기안 문서 목록
-        List<DocumentDTO> draftDocuments = documentService.getDrafterDocuments(currentUserId);
+//        List<DocumentDTO> draftDocuments = documentService.getDrafterDocuments(currentUserId);
         // 대기 문서 목록
-        List<DocumentDTO> pendingDocuments = documentService.getPendingDocuments(currentUserId);
-        
-        model.addAttribute("draftDocuments", draftDocuments);
-        model.addAttribute("pendingDocuments", pendingDocuments);
+//        List<DocumentDTO> pendingDocuments = documentService.getPendingDocuments(currentUserId);
+//        
+//        model.addAttribute("draftDocuments", draftDocuments);
+//        model.addAttribute("pendingDocuments", pendingDocuments);
         
         return "erp/eapproval/approvalList";
     }
@@ -59,7 +59,7 @@ public class eapprovalController {
         model.addAttribute("documentDTO", new DocumentDTO());
         model.addAttribute("forms", forms);
         
-        return "erp/eapproval/document-form";
+        return "erp/eapproval/documentForm";
     }
 
     /**
@@ -75,7 +75,7 @@ public class eapprovalController {
         model.addAttribute("documentDTO", document);
         model.addAttribute("forms", forms);
         
-        return "erp/eapproval/document-form";
+        return "erp/eapproval/documentForm";
     }
 
     /**
@@ -87,8 +87,8 @@ public class eapprovalController {
                              Principal principal) {
         
         // 현재 로그인한 사용자 정보 설정
-        Integer currentUserId = getCurrentUserId(principal);
-        documentDTO.setDrafterId(currentUserId);
+//        Integer currentUserId = getCurrentUserId(principal);
+//        documentDTO.setDrafterId(currentUserId);
         
         // 부서 정보 설정 (실제로는 사용자 정보에서 가져와야 함)
         documentDTO.setDraftDept("부서코드");
@@ -108,14 +108,14 @@ public class eapprovalController {
     @GetMapping("/document/view/{docId}")
     public String viewDocument(@PathVariable String docId, Model model, Principal principal) {
         DocumentDTO document = documentService.getDocumentDetail(docId);
-        Integer currentUserId = getCurrentUserId(principal);
+//        Integer currentUserId = getCurrentUserId(principal);
         
         // 현재 사용자가 결재 대기 중인 결재자인지 확인
-        boolean isCurrentApprover = document.getApprovalLines().stream()
-            .anyMatch(line -> line.getApproverNo().equals(currentUserId) && "대기".equals(line.getApprovalStatus()));
-        
+//        boolean isCurrentApprover = document.getApprovalLines().stream()
+//            .anyMatch(line -> line.getApproverNo().equals(currentUserId) && "대기".equals(line.getApprovalStatus()));
+//        
         model.addAttribute("document", document);
-        model.addAttribute("isCurrentApprover", isCurrentApprover);
+//        model.addAttribute("isCurrentApprover", isCurrentApprover);
         
         return "erp/eapproval/document-view";
     }
@@ -129,8 +129,8 @@ public class eapprovalController {
                                 @RequestParam(required = false) String comment,
                                 Principal principal) {
         
-        Integer currentUserId = getCurrentUserId(principal);
-        documentService.processApproval(docId, currentUserId, decision, comment);
+//        Integer currentUserId = getCurrentUserId(principal);
+//        documentService.processApproval(docId, currentUserId, decision, comment);
         
         return "redirect:/eapproval/pending";
     }
@@ -143,10 +143,10 @@ public class eapprovalController {
                          Principal principal,
                          @RequestParam(required = false) String approvalType,
                          @RequestParam(required = false) String keyword) {
-        Integer currentUserId = getCurrentUserId(principal);
-        List<DocumentDTO> documents = documentService.getPendingDocuments(currentUserId);
+//        Integer currentUserId = getCurrentUserId(principal);
+//        List<DocumentDTO> documents = documentService.getPendingDocuments(currentUserId);
         
-        model.addAttribute("documents", documents);
+//        model.addAttribute("documents", documents);
         model.addAttribute("approvalType", approvalType);
         model.addAttribute("keyword", keyword);
         
@@ -179,12 +179,4 @@ public class eapprovalController {
         return "erp/eapproval/rejected-list";
     }
     
-    /**
-     * 현재 사용자 ID 가져오기 (임시 메소드)
-     */
-    private Integer getCurrentUserId(Principal principal) {
-        // 실제 구현에서는 Principal에서 사용자 정보를 가져와 ID를 반환
-        // 임시로 1 반환
-        return 1;
-    }
-}
+} //EapprovalController

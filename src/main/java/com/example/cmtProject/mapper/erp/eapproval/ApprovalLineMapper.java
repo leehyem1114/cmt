@@ -32,4 +32,4 @@ public interface ApprovalLineMapper {
     // 결재선 일괄 저장 (배치)
     void insertApprovalLines(List<ApprovalLineDTO> approvalLines);
     
-}
+} //ApprovalLineMapper

@@ -13,7 +13,7 @@
             APPROVAL_TYPE
         ) VALUES (
             (SELECT NVL(MAX(APPROVAL_NO), 0) + 1 FROM APPROVAL_LINES), 
-            #{docId}, 
+            #{docId, jdbcType=VARCHAR}, 
             #{approverNo}, 
             #{approvalOrder}, 
             #{approvalStatus}, 
@@ -33,7 +33,7 @@
                 APPROVAL_TYPE
             ) VALUES (
                 (SELECT NVL(MAX(APPROVAL_NO), 0) + 1 FROM APPROVAL_LINES), 
-                #{item.docId}, 
+                #{item.docId, jdbcType=VARCHAR}, 
                 #{item.approverNo}, 
                 #{item.approvalOrder}, 
                 #{item.approvalStatus}, 
@@ -68,7 +68,7 @@
         FROM APPROVAL_LINES al 
         LEFT JOIN EMPLOYEES e ON al.APPROVER_NO = e.EMP_NO 
         LEFT JOIN POSITIONS p ON e.POSITION_NO = p.POSITION_NO 
-        WHERE al.DOC_ID = #{docId} 
+        WHERE al.DOC_ID = #{docId, jdbcType=VARCHAR} 
         ORDER BY al.APPROVAL_ORDER
     </select>
     
@@ -84,7 +84,7 @@
             APPROVAL_COMMENT, 
             APPROVAL_TYPE 
         FROM APPROVAL_LINES 
-        WHERE DOC_ID = #{docId} AND APPROVER_NO = #{approverNo}
+        WHERE DOC_ID = #{docId, jdbcType=VARCHAR} AND APPROVER_NO = #{approverNo}
     </select>
     
     <!-- 문서의 다음 결재자 조회 -->
@@ -99,16 +99,15 @@
             APPROVAL_COMMENT, 
             APPROVAL_TYPE 
         FROM APPROVAL_LINES 
-        WHERE DOC_ID = #{docId} AND APPROVAL_STATUS = '대기' 
+        WHERE DOC_ID = #{docId, jdbcType=VARCHAR} AND APPROVAL_STATUS = '대기' 
         ORDER BY APPROVAL_ORDER
     </select>
     
     <!-- 문서의 결재선 삭제 -->
     <delete id="deleteApprovalLinesByDocId">
         DELETE FROM APPROVAL_LINES
-        WHERE DOC_ID = #{docId}
+        WHERE DOC_ID = #{docId, jdbcType=VARCHAR}
     </delete>
-    
     
     <!-- Result Map -->
     <resultMap id="approvalLineResultMap" type="com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO">
@@ -123,4 +122,5 @@
         <result property="approvalComment" column="APPROVAL_COMMENT"/>
         <result property="approvalType" column="APPROVAL_TYPE"/>
     </resultMap>
+
 </mapper>

@@ -63,4 +63,4 @@ public class DocumentDTO {
     /** 행 타입 (조회:select, 등록:insert, 수정:update, 삭제:delete) */
     private String rowType;
 
-}
+} //DocumentDTO

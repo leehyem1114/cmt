@@ -4,8 +4,6 @@ import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
-import com.example.cmtProject.mapper.erp.eapproval.AttachmentMapper;
-import com.example.cmtProject.mapper.erp.eapproval.RecipientMapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,8 +21,6 @@ public class DocumentService {
 
     private final DocumentMapper documentMapper;
     private final ApprovalLineMapper approvalLineMapper;
-    private final AttachmentMapper attachmentMapper;
-    private final RecipientMapper recipientMapper;
 
     /**
      * 문서 저장 (임시저장 또는 결재요청)
@@ -165,12 +161,10 @@ public class DocumentService {
         
         // 관련 데이터 삭제
         approvalLineMapper.deleteApprovalLinesByDocId(docId);
-        recipientMapper.deleteRecipientsByDocId(docId);
-        attachmentMapper.deleteAttachmentsByDocId(docId);
         
         // 문서 삭제
         int result = documentMapper.deleteDocument(docId);
         return result > 0;
     }
     
-}
+} //DocumentService

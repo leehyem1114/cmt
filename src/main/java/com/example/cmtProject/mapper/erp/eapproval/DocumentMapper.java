@@ -48,4 +48,4 @@ public interface DocumentMapper {
     // 문서 삭제 (임시저장 문서만)
     int deleteDocument(String docId);
     
-}
+} //DocumentMapper
