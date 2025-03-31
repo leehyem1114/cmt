@@ -36,8 +36,20 @@
                 <div class="table-responsive">
                 <div>
 					<form action="myEmplist" id="empUpdate" name="empUpdate" method="post" enctype="multipart/form-data" th:object="${emp}">
-			
+										
 						                <div class="modal-body">
+						                <div class="card-body py-4 px-4"><!-- 카드 -->
+								           <div class="d-flex align-items-center">
+								               <div class="avatar avatar-xl">
+								                   <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">
+								               </div>
+								               <div class="ms-3 name">
+								                   <h5 class="font-bold"><span th:text="*{empName}"></span></h5>
+								                   <h6 class="text-muted mb-0">@johnducky</h6>
+								               </div>
+								           </div>
+								       </div> <!-- 카드 -->
+								       <hr>
 						                	<label for="empProfile">프로필사진</label>
 						                    <div class="form-group" >
 						                    <div th:if="${emp.empProfile != null}" id="preview_profile">

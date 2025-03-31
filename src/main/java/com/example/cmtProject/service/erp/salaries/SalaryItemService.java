@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.salaries.SalaryItemDTO;
 import com.example.cmtProject.entity.erp.salaries.PayMent;
 import com.example.cmtProject.entity.erp.salaries.SalaryItem;
+import com.example.cmtProject.mapper.erp.salaries.SalariesMapper;
 import com.example.cmtProject.repository.erp.salaries.SalaryItemRepository;
 
 @Service
@@ -18,6 +20,8 @@ public class SalaryItemService {
 
 	@Autowired
 	private SalaryItemRepository salaryItemRepository;
+	@Autowired
+	private SalariesMapper salariesMapper ;
 
     // 급여 유형 목록 조회
     public List<SalaryItemDTO> getSalaryItems() {
@@ -27,7 +31,10 @@ public class SalaryItemService {
                          .collect(Collectors.toList());
     }
 
-    
+	// 급여 유형 불러오기
+	public List<SalaryItemDTO> getSalItemTypes() {
+		return salariesMapper.salItemTypes();
+	}
 
 //	public String getFirstItemNameByType(SalaryItemType enumType) {
 //	    return salaryItemRepository.findFirstBySalItemType(enumType)

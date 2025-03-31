@@ -53,6 +53,11 @@ public class EmployeesController {
 		return "erp/employees/emp/home";
 	}
 	
+	@GetMapping("/login")
+	public String login() {
+		return "erp/employees/emp/login";
+	}
+	
 	/***나의 인사카드***/
 	@GetMapping("/myEmplist")
 	public String myEmplist(@AuthenticationPrincipal PrincipalDetails principalDetails,Model model) {
@@ -78,8 +83,8 @@ public class EmployeesController {
 						        Model model) throws Exception {
 	    int result = empService.updateEmp(dto,empProfileFile);
 	    if(result > 0) {
-	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
-	    	return "사원 정보수정 완료";
+	    	model.addAttribute("emp", result);
+	    	return "사원정보 수정 완료";
 	    }
 	    System.out.println("받은 DTO: " + result);
 	    return "erp/employees/myEmplist";
@@ -147,25 +152,22 @@ public class EmployeesController {
 	}
 	
 	@PostMapping("/empUpdate/{id}")
+	@ResponseBody
 	public String empModifyDetail(@PathVariable("id") String id,
 								@ModelAttribute EmpRegistDTO dto, //JSON 받아옴
 								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
 						        @AuthenticationPrincipal PrincipalDetails principal,
-						        Model model,
-						        RedirectAttributes redirectAttributes) throws Exception {
+						        Model model) throws Exception {
 		
 		dto.setEmpId(id);
-		System.out.println("받은 DROㄱ밧ㄹㅇ"+dto+id);
+		System.out.println("받은 DTO와 id"+dto+id);
 		int result = empService.updateEmp(dto,empProfileFile);
 	    if(result > 0) {
-	    	//EmpRegistDTO emp = empService.selectEmpById(id);
-	    	redirectAttributes.addFlashAttribute("msg", "사원 수정이 완료되었습니다.");
-	    	model.addAttribute("emp", result); //업데이트 내용 담은 후 select 해야힘 .. . . . .
-	    	return "redirect:/emp/emplist/{id}";
+	    	model.addAttribute("emp", result);
+	    	return "사원수정완료!";
 	    }
-	    redirectAttributes.addFlashAttribute("msg", "사원 수정에 실패 했습니다.");
 	    System.out.println("받은 DTO: " + result);
-	    return "";
+	    return "사원수정 실패";
 		
 	}
 	

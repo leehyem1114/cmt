@@ -2,17 +2,24 @@
 <html xmlns:th="http://www.thymeleaf.org"
  	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
+    > 
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
+		<!-- 부트스트랩 모달 css -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+		<!-- 부트스트랩 모달 js -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+		
+		<!-- 그리드 -->
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+		
 </head>
 <body>
  <div layout:fragment="content">
         <!-- 페이지 내용 작성 영역 시작 -->
         
-        <h3>인사카드 조회/
-        나중에 사이드바 없는 레이아웃 하나 만들어서 적용해야댐</h3>
         
         <!-- 
             여기에 페이지별 HTML 코드를 작성하세요.
@@ -20,6 +27,7 @@
         -->
         
         <div class="card">
+        <h3>인사카드 조회</h3>
             <div class="card-header">
             </div>
             <div class="card-body">
@@ -29,14 +37,14 @@
                 <div>
 					<form th:action="@{/emp/empUpdate/{id}(id=${emp.empId})}" th:object="${emp}" id="empDetail" name="empDetail" method="post" enctype="multipart/form-data">
 						                <div class="body">
-											<label for="empProfile">프로필사진</label>
-							                <div class="form-group" >
-<!--						                    <div th:if="${emp.empProfile != null}" id="preview_profile">-->
-<!--											    <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">-->
-<!--											</div>-->
-<!--					 						<div th:unless="${emp.empProfile ==null}"> -->
-											    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" id="preview_profile" height="100px">
-<!-- 											</div> -->
+											<label for="empProfileFile">프로필사진</label>
+											<div class="form-group">
+											
+											    <div id="preview_profile">
+											        <img th:if="${emp.empProfile != null}" th:src="@{'/images/' + ${emp.empProfile}}" class="profile-thumb" alt="profile" height="100px">
+											        <img th:if="${emp.empProfile == null}" th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+											    </div>
+											</div>
 												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
 						                    </div>
 						                	<label for="empLevel">사원권한</label>
@@ -164,7 +172,8 @@
 						                    </div>						                    
 						                </div> <!-- form body -->
 						                <div class="modal-footer">
-						                    <button type="submit" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
+<!-- 						                    <button type="submit" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary">수정</button> -->
+						                    <button type="button" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary" onclick="empDetail_view()">수정</button>
 						                </div>
 						            </form>	
 				</div>
@@ -174,11 +183,8 @@
         
         <!-- 페이지 내용 작성 영역 끝 -->
     </div>
-    <script th:if="${msg != null}">
-	    alert('[[${msg}]]');
-	</script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script type="text/javascript">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
              * - TOAST UI 초기화
@@ -186,40 +192,59 @@
              * - Ajax 요청
              * - 기타 페이지별 로직
              */
-  //            	$(document).on("click", "#btnDetailUpdate", function () {
-  //           	        console.log("수정버튼 클릭댐");
-   //          	        const id = $("input[name='empId']").val();
-   //          	        const form = document.getElementById("empDetail");
-   //          	        const formData = new FormData(form);
-   //          	        formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
-//             	        $.ajax({
-//             	            url: `/emp/empList/${id}`,  // 이건 나중에 실제 empId로 교체해야함
-//             	            method: "POST",
-//             	            data: formData,
-//             	            processData: false,
-//             	            contentType: false,
-//             	            success: function(response) {
-//             	                alert(response);
-//             	            },
-//             	            error: function(error) {
-//             	                alert("정보 수정 실패ㅠㅠ");
-//             	            }
-//             	        });
-//             	    });
+             	function empDetail_view(){
+            	        console.log("수정버튼 클릭댐");
+            	        
+            	        const id = $("input[name='empId']").val();
+            	        const form = document.getElementById("empDetail");
+            	        const formData = new FormData(form);
+            	        formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+            	        $.ajax({
+            	            url: `/emp/empUpdate/${id}`,
+            	            method: "POST",
+            	            data: formData,
+            	            processData: false,
+            	            contentType: false,
+            	            success: function(response) {
+            	                alert(response);
+            	                location.reload();
+            	            },
+            	            error: function(error) {
+            	                alert("정보 수정 실패ㅠㅠ");
+            	            }
+            	        });
+            }
+            
+             	//프로필사진 미리보기
+     			$(function () {
+//      			  $("#empProfile").on("change", function (e) {
+     			  $("#empProfileFile").on("change", function (e) {
+     			    let files = e.target.files;
+     			    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+     			
+     			    if (imageFiles.length > 1) {
+     			      alert("프로필 사진은 1장만 업로드 가능합니다.");
+     			      imageFiles = imageFiles.slice(0, 1);
+     			    }
+     			
+     			    $("#preview_profile").html("");
+     			
+     			    imageFiles.forEach(file => {
+     			      let reader = new FileReader();
+     			      reader.onload = function (event) {
+     			        let img = $("<img>")
+     			          .attr("src", event.target.result)
+     			          .attr("height", "100px")
+     			          .addClass("profile-thumb");
+     			
+     			        $("#preview_profile").append(img);
+     			      };
+     			      reader.readAsDataURL(file);
+     			    });
+     			  });
+     			});
+
         </script>
-        <!-- 캘린더 -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script>
-		    document.addEventListener("DOMContentLoaded", function() {
-		        flatpickr(".datepicker", {
-// 		            enableTime: true,  // 시간 선택 가능
-		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
-// 		            time_24hr: true,  // 24시간 형식
-// 		            minDate: "today", // 오늘 이후 선택 가능
-		            locale: "ko" // 한국어 설정 (선택 사항)
-		        });
-		    });
-		</script>
 		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 		<script type="text/javascript">
 			function search_address() {

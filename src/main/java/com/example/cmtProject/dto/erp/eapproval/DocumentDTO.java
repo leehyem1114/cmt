@@ -31,7 +31,7 @@ public class DocumentDTO {
     private String content;
     
     /** 기안자 ID */
-    private Integer drafterId;
+    private String drafterId;
     
     /** 기안자 이름 (조회용) */
     private String drafterName;
@@ -63,4 +63,4 @@ public class DocumentDTO {
     /** 행 타입 (조회:select, 등록:insert, 수정:update, 삭제:delete) */
     private String rowType;
 
-}
+} //DocumentDTO

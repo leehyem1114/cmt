@@ -33,8 +33,8 @@
 		<div class="button-container">
 			<div><h2>급여유형관리</h2></div>
 				<div>
-	        		<button type="submit" class="btn btn-primary" id="insert" data-bs-toggle="modal" data-bs-target="#salItemModal">추가 <i class="fa-solid fa-plus"></i></button>
-	        			<button type="button" class="btn btn-primary" id="update" data-bs-toggle="modal" data-bs-target="#salItemModal">수정 <i class="fa-solid fa-minus"></i></button>
+	        		<button type="submit" class="btn btn-primary" id="insert" onclick="sliRegister()">추가 <i class="fa-solid fa-plus"></i></button>
+	        			<button type="button" class="btn btn-primary" id="update" onclick="salItemUpdate()">수정 <i class="fa-solid fa-minus"></i></button>
 	        			<button type="button" class="btn btn-primary" id="delete">삭제 <i class="fa-solid fa-xmark"></i></button>
 					</div>
 	   			</div>
@@ -104,7 +104,7 @@
 	                name: 'sliFormula'
 	            },
 	            {
-	                header: '최종수정일시',
+	                header: '최종수정일',
 	                name: 'sliUpdateAt'
 	            }
 	        ] // 열 설정
@@ -122,101 +122,7 @@
 
 	    </script>
 	    <!-- 그리드 끝 --> 
-
-
-		<!-- 모달 창 (Bootstrap + Thymeleaf) -->
-		<div class="modal fade" id="salItemModal" tabindex="-1"
-			aria-labelledby="salModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="salModal">급여 유형 등록</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal"
-							aria-label="Close"></button>
-					</div>
-
-					<form id="salaryForm" th:action="@{/salary/salaryItems}"
-						method="post" th:object="${salaryItemDTO}">
-						<div class="modal-body">
-							<label for="sliType">유형</label>
-							<div class="form-group mb-2">
-								<select id="sliType" class="form-select" required>
-									<option>급여유형</option>
-								</select>
-							</div>
-							<label for="salItemName">유형명</label>
-							<div class="form-group mb-2">
-								<input type="text" id="sliName" class="form-control">
-							</div>
-							<label for="salItemCalc">계산식</label>
-							<div class="form-group mb-2">
-								<textarea id="sliFormula" class="form-control" rows="2" placeholder="예: BASIC * 0.2"></textarea>
-							</div>
-							<label for="salItemDesc">유형 설명</label>
-							<div class="form-group mb-2">
-								<textarea id="sliDesc" class="form-control" rows="2" placeholder="간단한 설명 입력"></textarea>
-							</div>
-							<label for="salItemImportance">우선순위</label>
-							<div class="form-group mb-2">
-								<select id="sliPriority" class="form-select" required>
-									<option></option>
-								</select>
-							</div>
-	
-						</div>
-	
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary"
-								data-bs-dismiss="modal">닫기</button>
-							<button type="submit" id="sliSubmitBtn" class="btn btn-primary">등록</button>
-						</div>
-					</form>
-	
-				</div>
-			</div>
-		</div>
-
-
-
-	</div>	
-		
-			
-
-	
-
-
- 	<th:block layout:fragment="script">
-		<script type="text/javascript">
-		$("#delete").on("click", function(){
-			if(!confirm("선택된 항목을 삭제하시겠습니까?")) {
-				return;
-			}
-			
-			// 체크 후 삭제할 rowKey = sliNo 목록
-			const checkedItems = grid.getCheckedRowKeys();// rowKey = sliNo
-			
-		    if (checkedItems.length === 0) {
-		    	alert("삭제할 항목을 선택하세요.");
-		    	return;
-		    }
-			
-			$.ajax({
-				url: "/salary/delete/{sliNo}",
-				type: "DELETE",
-		        contentType: "application/json", // JSON 형식으로 데이터 전송
-		        data: JSON.stringify(checkedItems), // 선택된 sliNo 목록을 JSON 문자열로 변환하여 전송
-				success: function(result) {
-					alert("삭제 완료");
-					location.reload();
-				},
-				error: function(error) {
-					alert("삭제 실패 - " + error);
-				}
-			});
-			
-		});
-
-		</script>
+</div>
  	</th:block> 
 </body>
 </html>

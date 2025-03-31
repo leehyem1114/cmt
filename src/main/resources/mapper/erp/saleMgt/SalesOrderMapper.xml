@@ -7,7 +7,7 @@
 <mapper namespace="com.example.cmtProject.mapper.erp.saleMgt.SalesOrderMapper">
     
      <!-- 수주 메인 SELECT 쿼리 -->
-    <resultMap id="SalesOrderResultMap" type="com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO">
+    <resultMap id="SalesOrderResultMap" type="com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO">
         <!-- SalesOrder -->
         <result property="soNo" column="SO_NO"/>
         <result property="soCode" column="SO_CODE"/>

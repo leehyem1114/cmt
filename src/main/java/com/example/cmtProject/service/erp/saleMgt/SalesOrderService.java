@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.mapper.erp.saleMgt.SalesOrderMapper;
 
 @Service
@@ -15,9 +15,9 @@ public class SalesOrderService {
   	private SalesOrderMapper salesOrderMapper;
 	
 	// 수주 메인 SELECT
-	public List<SalesOrderDTO> soMainSelect(){
+	public List<SalesOrderMainDTO> soMainSelect(){
 		
-		List<SalesOrderDTO> soMainList = salesOrderMapper.soMainSelect();
+		List<SalesOrderMainDTO> soMainList = salesOrderMapper.soMainSelect();
 		
 		return soMainList;
 	}
