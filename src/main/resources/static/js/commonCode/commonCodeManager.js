@@ -569,7 +569,6 @@ const CommonCodeManager = (function() {
 	            cmnCode: row.CMN_CODE,
 	            cmnName: row.CMN_NAME,
 	            cmnContent: row.CMN_CONTENT || '',
-	            cmnContent: row.CMN_VALUE || '',
 	            cmnCodeIsActive: row.CMN_CODE_IS_ACTIVE,
 	            cmnSortOrder: row.CMN_SORT_ORDER,
 	            action: row.ROW_TYPE // insert, update, delete
@@ -708,16 +707,17 @@ const CommonCodeManager = (function() {
 	        }
 
 	        // 저장할 데이터 준비
-	        const batchData = modifiedData.map(row => ({
-	            cmnCode: selectedCommonCode,
-	            cmnDetailCode: row.CMN_DETAIL_CODE,
-	            cmnDetailName: row.CMN_DETAIL_NAME,
-	            cmnDetailContent: row. CMN_DETAIL_CONTENT || '', // 필요한 경우 여기에 추가
-				cmnDetailValue: row.CMN_DETAIL_VALUE || '',
-	            cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
-	            cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER,
-	            action: row.ROW_TYPE
-	        }));
+			const batchData = modifiedData.map(row => ({
+			    cmnCode: selectedCommonCode,
+			    cmnDetailCode: row.CMN_DETAIL_CODE,
+			    cmnDetailName: row.CMN_DETAIL_NAME,
+			    cmnDetailContent: row.CMN_DETAIL_CONTENT || '',
+			    cmnDetailValue: row.CMN_DETAIL_VALUE || '',
+			    cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
+			    cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER,
+			    action: row.ROW_TYPE
+			}));
+			
 
 	        // 유효성 검사
 	        for (const item of batchData) {
