@@ -1,0 +1,102 @@
+📌 1. 행(Row) 관련 메서드
+메서드	설명
+appendRow(row, options)	마지막에 행 추가
+prependRow(row, options)	처음에 행 추가
+insertRow(index, row, options)	특정 위치에 행 추가
+removeRow(rowKey)	특정 행 삭제
+clear()	모든 데이터 삭제
+resetData(data)	그리드 전체 데이터를 새로 설정
+getRow(rowKey)	특정 행의 모든 데이터 가져오기
+getRowAt(index)	인덱스로 행 데이터 가져오기
+getData()	현재 모든 행의 데이터 가져오기
+getRowCount()	행의 개수 반환
+
+📌 2. 셀(Cell) 관련 메서드
+메서드	설명
+getValue(rowKey, columnName)	셀의 값 가져오기
+setValue(rowKey, columnName, value)	셀의 값 설정
+disableCell(rowKey, columnName)	셀 비활성화
+enableCell(rowKey, columnName)	셀 활성화
+focus(rowKey, columnName)	특정 셀에 포커스 이동
+
+📌 3. 행(Row) 상태/선택 관련
+메서드	설명
+check(rowKey)	해당 행 체크박스 체크
+uncheck(rowKey)	체크 해제
+checkAll()	모든 행 체크
+uncheckAll()	모든 행 체크 해제
+getCheckedRowKeys()	체크된 행의 rowKey 목록 가져오기
+getCheckedRows()	체크된 행 데이터 전체 가져오기
+
+📌 4. 컬럼(Column) 관련
+메서드	설명
+hideColumn(columnName)	컬럼 숨기기
+showColumn(columnName)	컬럼 보이기
+setColumns(columns)	전체 컬럼 재설정
+getColumns()	현재 컬럼 정보 가져오기
+
+📌 5. 정렬/필터링
+메서드	설명
+sort(columnName, ascending)	컬럼 정렬
+unsort(columnName)	정렬 해제
+filter(columnName, filterOptions)	필터 적용
+unfilter(columnName)	필터 해제
+
+📌 6. 기타 메서드
+메서드	설명
+on(eventName, callback)	이벤트 리스너 등록 (ex: afterChange)
+destroy()	그리드 제거
+refreshLayout()	레이아웃 리프레시
+validate()	유효성 검사 실행
+startEditing(rowKey, columnName)	편집 모드 시작
+finishEditing(rowKey, columnName)	편집 종료
+
+주요 이벤트 종류 (카테고리별 정리)
+📌 1. 데이터 변경 관련
+이벤트명	설명
+afterChange	셀 값 변경 후 발생 (DB 저장 등에 사용)
+beforeChange	셀 값 변경 직전 발생 (검사/취소 가능)
+onGridUpdated	전체 데이터 갱신 후 발생 (resetData() 등 호출 시)
+
+📌 2. 편집(Edit) 관련
+이벤트명	설명
+editingStart	셀 편집 시작 시
+editingFinish	셀 편집 종료 시
+beforeEditStart	편집 시작 전 (편집 방지 등 가능)
+beforeEditFinish	편집 끝나기 직전 (값 유효성 검사 등 가능)
+
+📌 3. 행(Row) 관련
+이벤트명	설명
+click	셀 클릭 시
+dblclick	셀 더블클릭 시
+mouseover	셀 위에 마우스 올라갈 때
+mousedown	셀 클릭 시(더 낮은 레벨)
+rowAdded	행 추가 시 (appendRow, insertRow 등)
+rowRemoved	행 삭제 시
+focusChange	포커스 셀이 바뀔 때
+selection	셀 선택 시 (드래그 포함)
+
+📌 4. 체크박스(Selection) 관련
+이벤트명	설명
+check	행 체크 시
+uncheck	행 체크 해제 시
+checkAll	전체 체크 시
+uncheckAll	전체 체크 해제 시
+
+📌 5. 정렬/필터 관련
+이벤트명	설명
+sort	정렬 실행 시
+unsort	정렬 해제 시
+filter	필터링 실행 시
+unfilter	필터 해제 시
+
+📌 6. 스크롤, 렌더링 등 기타
+이벤트명	설명
+scrollEnd	스크롤이 끝에 도달했을 때
+dragStart / dragEnd	드래그 시작/끝
+drop	드롭 발생 시
+response	서버사이드 연동 시 응답 처리 등
+
+
+
+
