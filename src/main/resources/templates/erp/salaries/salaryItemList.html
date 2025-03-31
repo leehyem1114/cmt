@@ -104,7 +104,7 @@
 	                name: 'sliFormula'
 	            },
 	            {
-	                header: '최종수정일시',
+	                header: '최종수정일',
 	                name: 'sliUpdateAt'
 	            }
 	        ] // 열 설정
@@ -135,32 +135,43 @@
 							aria-label="Close"></button>
 					</div>
 
-					<form id="salaryForm" th:action="@{/salary/salaryItems}"
+					<form id="salaryForm" th:action="@{/salaries/salItemRegister}"
 						method="post" th:object="${salaryItemDTO}">
 						<div class="modal-body">
 							<label for="sliType">유형</label>
 							<div class="form-group mb-2">
-								<select id="sliType" class="form-select" required>
-									<option>급여유형</option>
-								</select>
+								<!--<select id="sliType" class="form-select" th:field="*{sliType}">-->
+									<select id="sliType" class="form-select">
+										<option th:each="sliType : ${sliTypeList}"
+												th:value="${sliType.cmnDetailCode}"
+												th:text="${sliType.cmnDetailName}"></option>
+									</select>
 							</div>
-							<label for="salItemName">유형명</label>
+							<label for="sliTypeName">유형명</label>
+							<select id="sliTypeName" class="form-select">
+								<option value="">-- 선택 --</option>
+								<option	th:each="item : ${allList}"
+										th:value="${item.cmnDetailCode}"
+										th:text="${item.cmnDetailName}"
+										th:attr="data-type=${item.cmnCode}, data-desc=${item.cmnDetailContent}, data-sort=${item.cmnDetailSortOrder}"></option>
+							</select>
+
+							<!--<label for="salItemName">유형명</label>
 							<div class="form-group mb-2">
-								<input type="text" id="sliName" class="form-control">
-							</div>
-							<label for="salItemCalc">계산식</label>
+								<input type="text" id="sliName" class="form-control" th:value="${sliName}">
+							</div>-->
+							
+							<label for="salItemFormula">계산식</label>
 							<div class="form-group mb-2">
-								<textarea id="sliFormula" class="form-control" rows="2" placeholder="예: BASIC * 0.2"></textarea>
+								<textarea id="sliFormula" class="form-control" rows="2" th:value="${sliFormula}"></textarea>
 							</div>
 							<label for="salItemDesc">유형 설명</label>
 							<div class="form-group mb-2">
-								<textarea id="sliDesc" class="form-control" rows="2" placeholder="간단한 설명 입력"></textarea>
+								<textarea id="sliDesc" class="form-control" rows="2" th:value="${sliDesc}"></textarea>
 							</div>
 							<label for="salItemImportance">우선순위</label>
 							<div class="form-group mb-2">
-								<select id="sliPriority" class="form-select" required>
-									<option></option>
-								</select>
+								<input type="number" id="sliPriority" class="form-control" th:value="${sliPriority}">
 							</div>
 	
 						</div>
@@ -187,34 +198,173 @@
 
  	<th:block layout:fragment="script">
 		<script type="text/javascript">
-		$("#delete").on("click", function(){
-			if(!confirm("선택된 항목을 삭제하시겠습니까?")) {
-				return;
-			}
+			// 급여 유형 선택 시 선택된 유형의 유형명 목록 출력
 			
-			// 체크 후 삭제할 rowKey = sliNo 목록
-			const checkedItems = grid.getCheckedRowKeys();// rowKey = sliNo
-			
-		    if (checkedItems.length === 0) {
-		    	alert("삭제할 항목을 선택하세요.");
-		    	return;
-		    }
-			
-			$.ajax({
-				url: "/salary/delete/{sliNo}",
-				type: "DELETE",
-		        contentType: "application/json", // JSON 형식으로 데이터 전송
-		        data: JSON.stringify(checkedItems), // 선택된 sliNo 목록을 JSON 문자열로 변환하여 전송
-				success: function(result) {
-					alert("삭제 완료");
-					location.reload();
-				},
-				error: function(error) {
-					alert("삭제 실패 - " + error);
-				}
+			document.addEventListener("DOMContentLoaded", function () {
+			    const typeSelect = document.getElementById("sliType");
+			    const nameSelect = document.getElementById("sliTypeName");
+
+			    // 모든 옵션 미리 저장
+			    const optionsAll = Array.from(nameSelect.options).slice(1); // 첫번째 '-- 선택 --' 제외한 나머지 옵션만 배열로 저장
+
+			    typeSelect.addEventListener("change", function () {
+			        const selectedType = this.value;
+
+			        // 기존 옵션 모두 제거 후 기본 옵션만 남김
+			        nameSelect.options.length = 1;
+
+			        // 선택된 유형에 맞는 항목만 추가
+			        optionsAll.forEach(option => {
+			            if (option.dataset.type === selectedType) {
+			                nameSelect.appendChild(option);
+			            }
+			        });
+			    });
 			});
 			
-		});
+			// 급여 유형 선택 시 선택된 유형의 설명 출력
+			document.addEventListener("DOMContentLoaded", function () {
+			    const nameSelect = document.getElementById("sliTypeName");
+			    const descSelect = document.getElementById("sliDesc");
+
+			    if (nameSelect && descSelect) {
+			        nameSelect.addEventListener("change", function () {
+			            const selected = this.options[this.selectedIndex];
+			            const desc = selected.getAttribute("data-desc");
+
+			            console.log("선택된 설명:", desc); // 확인용
+			            descSelect.value = desc || ""; // 비어있으면 공백 문자열로라도 세팅
+			        });
+			    } else {
+			        console.warn("요소가 존재하지 않음");
+			    }
+			});
+			
+			
+			// 급여 유형 선택 시 선택된 유형의 우선순위 출력
+			document.addEventListener("DOMContentLoaded", function () {
+			    const typeSelect = document.getElementById("sliType");
+			    const nameSelect = document.getElementById("sliTypeName");
+			    const descSelect = document.getElementById("sliDesc");
+			    const prioritySelect = document.getElementById("sliPriority");
+
+			    const optionsAll = Array.from(nameSelect.options).slice(1); // '-- 선택 --' 제외
+
+			    // 유형 변경 시 - 옵션 필터링
+			    typeSelect.addEventListener("change", function () {
+			        const selectedType = this.value;
+			        nameSelect.options.length = 1;
+
+			        optionsAll.forEach(option => {
+			            if (option.dataset.type === selectedType) {
+			                nameSelect.appendChild(option);
+			            }
+			        });
+
+			        // 초기화
+			        descSelect.value = "";
+			        prioritySelect.value = "";
+			    });
+
+			    // 항목 선택 시 - 설명과 우선순위 자동입력
+			    nameSelect.addEventListener("change", function () {
+			        const selected = this.options[this.selectedIndex];
+			        const desc = selected.dataset.desc || "";
+			        const sort = selected.dataset.sort || "";
+
+			        descSelect.value = desc;
+			        prioritySelect.value = sort;
+			    });
+			});
+			
+			
+//			document.addEventListener("DOMContentLoaded", function () {
+//			    const typeSelect = document.getElementById("sliType");
+//		    const nameSelect = document.getElementById("sliTypeName");
+//			    const descField = document.getElementById("sliDesc");
+//			    const priorityField = document.getElementById("sliPriority");
+//
+//			    if (!typeSelect || !nameSelect || !descField || !priorityField) {
+//			        console.warn("필수 요소가 하나 이상 존재하지 않음");
+//			        return;
+//			    }
+
+			    // 1. 모든 옵션 미리 저장 (첫 번째 기본 옵션 제외)
+//			    const allOptions = Array.from(nameSelect.options).slice(1);
+
+			    // 2. sliType 변경 시 => 유형명 필터링
+//			    typeSelect.addEventListener("change", function () {
+//			        const selectedType = this.value;
+
+			        // 기존 옵션 초기화 (기본값만 남김)
+//			        nameSelect.options.length = 1;
+
+			        // 선택된 유형에 맞는 항목만 추가
+//			        allOptions.forEach(option => {
+//			            if (option.dataset.type === selectedType) {
+//			                nameSelect.appendChild(option);
+//			            }
+//			        });
+
+			        // 설명, 우선순위 초기화
+//			        descField.value = "";
+//			        priorityField.value = "";
+//			    });
+
+			    // 3. sliTypeName 변경 시 => 설명 + 우선순위 채우기
+//			    nameSelect.addEventListener("change", function () {
+//			        const selected = this.options[this.selectedIndex];
+//			        const desc = selected.dataset.desc || "";
+//			        const sort = selected.dataset.sort || "";
+
+//			        descField.value = desc;
+//			        priorityField.value = sort;
+//			    });
+//			});
+			
+	
+			$("#delete").on("click", function(){
+						if(!confirm("선택된 항목을 삭제하시겠습니까?")) {
+							return;
+						}
+					
+						// 체크 후 삭제할 rowKey = sliNo 목록
+						const checkedItems = grid.getCheckedRowKeys();// rowKey = sliNo
+						console.log(checkedItems);
+					    if (checkedItems.length === 0) {
+					    	alert("삭제할 항목을 선택하세요.");
+					    	return;
+					    }
+						});
+	
+//		$("#delete").on("click", function(){
+//			if(!confirm("선택된 항목을 삭제하시겠습니까?")) {
+//				return;
+//			}
+			
+			// 체크 후 삭제할 rowKey = sliNo 목록
+//			const checkedItems = grid.getCheckedRowKeys();// rowKey = sliNo
+			
+//		    if (checkedItems.length === 0) {
+//		    	alert("삭제할 항목을 선택하세요.");
+//		    	return;
+//		    }
+			
+//			$.ajax({
+//			url: "/salary/delete/{sliNo}",
+//				type: "DELETE",
+//		        contentType: "application/json", // JSON 형식으로 데이터 전송
+//		        data: JSON.stringify(checkedItems), // 선택된 sliNo 목록을 JSON 문자열로 변환하여 전송
+//				success: function(result) {
+//					alert("삭제 완료");
+//					location.reload();
+//				},
+//				error: function(error) {
+//					alert("삭제 실패 - " + error);
+//				}
+//			});
+			
+//		});
 
 		</script>
  	</th:block> 
