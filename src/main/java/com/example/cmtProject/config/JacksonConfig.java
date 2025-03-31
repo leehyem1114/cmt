@@ -31,7 +31,7 @@ public class JacksonConfig {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);  이부분은 문제없으나 혹시 문제 생기는 분들은 참조 바랍니다.
+//        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);  //이부분은 문제없으나 혹시 문제 생기는 분들은 참조 바랍니다.
         return mapper;
     }
 }
