@@ -31,7 +31,7 @@ public class DocumentDTO {
     private String content;
     
     /** 기안자 ID */
-    private Integer drafterId;
+    private String drafterId;
     
     /** 기안자 이름 (조회용) */
     private String drafterName;

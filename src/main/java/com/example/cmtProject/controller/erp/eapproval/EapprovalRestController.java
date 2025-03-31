@@ -5,15 +5,19 @@ import com.example.cmtProject.comm.response.ApiResponse;
 import com.example.cmtProject.comm.response.ResponseCode;
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.dto.erp.eapproval.DocFormDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.service.erp.eapproval.DocumentService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
+import com.example.cmtProject.util.SecurityUtil;
 import com.example.cmtProject.service.erp.eapproval.DocFormService;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
@@ -42,6 +46,8 @@ public class EapprovalRestController {
     private final DocFormService docFormService;
     private final ObjectMapper objectMapper;
     private final EmployeesService empService;
+    
+    
 
     /**
      * 문서 양식 조회 API
@@ -99,7 +105,7 @@ public class EapprovalRestController {
         log.debug("문서 저장 요청: 임시저장={}, 제목={}", isTempSave, title);
         try {
             // 현재 로그인 사용자 정보 가져오기
-//            Integer currentUserId = getCurrentUserId();
+        	String currentUserId = SecurityUtil.getUserId();
             
             // 문서 DTO 생성
             DocumentDTO documentDTO = new DocumentDTO();
@@ -114,7 +120,7 @@ public class EapprovalRestController {
             documentDTO.setFormId(formId);
             documentDTO.setTitle(title);
             documentDTO.setContent(content);
-//            documentDTO.setDrafterId(currentUserId);
+            documentDTO.setDrafterId(currentUserId);
             
             // 부서 정보는 사용자 서비스에서 조회 (임시로 하드코딩)
             documentDTO.setDraftDept("부서코드");
