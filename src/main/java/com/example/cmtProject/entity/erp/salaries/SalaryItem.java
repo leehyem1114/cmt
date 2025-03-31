@@ -55,7 +55,7 @@ public class SalaryItem { // 급여 유형 관리 엔티티
     private String sliFormula; // 계산식
     
     @Column(name = "SLI_PRIORITY", nullable = false, length = 50)
-    private Long sliPriority; // 우선순위
+    private String sliPriority; // 우선순위
     
     @LastModifiedDate
     @Column(name = "SLI_UPDATE_AT")
