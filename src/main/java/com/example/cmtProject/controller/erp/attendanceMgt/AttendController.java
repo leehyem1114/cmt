@@ -85,12 +85,13 @@ public class AttendController {
     // 출결 정보 등록
     @PostMapping("/check-in")
     @ResponseBody
-    public ResponseEntity<AttendDTO> createAttend(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+    public ResponseEntity<String> createAttend(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
     	// 로그인한 사용자의 아이디 가져오기
     	Employees loginUser = principalDetails.getUser();
-    	AttendDTO DTO = attendService.saveAttend(dto, loginUser);
+    	
+    	attendService.saveAttend(dto, loginUser);
 
-        return ResponseEntity.ok(DTO);
+        return ResponseEntity.ok("success");
     }
     
     // 퇴근 정보 등록
@@ -103,7 +104,7 @@ public class AttendController {
         Long findLatestCheckInAtdNo = attendsMapper.findLatestCheckInAtdNo(loginUser.getEmpNo());
         attendService.updateAttendLeave(dto, findLatestCheckInAtdNo);
         
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok("success");
     }
 
     // 출결 정보 삭제

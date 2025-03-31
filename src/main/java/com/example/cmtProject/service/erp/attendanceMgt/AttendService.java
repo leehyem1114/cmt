@@ -57,8 +57,8 @@ public class AttendService {
         		.empNo(employee.getEmpNo())
                 .empName(employee.getEmpName()) // 사원 이름 자동으로 설정
                 .attendDate(LocalDateTime.now()) // 출근 처리 시 현재 날짜 설정
-                .attendType(dto.getAttendType() != null ? dto.getAttendType() : "WORK") // 출근 유형 기본 NORMAL
-                .attendStatus(dto.getAttendStatus() != null ? dto.getAttendStatus() : "NORMAL") // 출근 상태 기본 NORMAL
+                .attendType(dto.getAttendType() != null ? dto.getAttendType() : "ATT001") // 출근 유형 기본 NORMAL
+                .attendStatus(dto.getAttendStatus() != null ? dto.getAttendStatus() : "ATS001") // 출근 상태 기본 NORMAL
                 .remarks(dto.getRemarks())
                 .build();
 

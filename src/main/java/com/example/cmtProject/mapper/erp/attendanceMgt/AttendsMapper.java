@@ -27,7 +27,7 @@ public interface AttendsMapper {
     // 퇴근 시간 업데이트
     int updateAttendLeave(@Param("atdNo") Long atdNo,
                           @Param("leaveTime") LocalDateTime leaveTime,
-                          @Param("atdType") CommonCodeDetailDTO leave);
+                          @Param("atdType") String leave);
 	
 
 }

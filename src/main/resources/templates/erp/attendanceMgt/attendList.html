@@ -198,15 +198,15 @@
            		  align: "center",
            		  width: 100,
            		formatter: function({ row }) {
-	                   if (row.attendType === 'WORK') {
+	                   if (row.attendType === 'ATT001') {
 	                       return '<a class="btn btn-primary btn-sm">출근</a>';
-	                   } else if (row.attendType === 'LEAVE') {
+	                   } else if (row.attendType === 'ATT002') {
 	                       return '<a class="btn btn-danger btn-sm">휴가</a>';
-	                   }else if (row.attendType === 'BUSINESS_TRIP') {
+	                   }else if (row.attendType === 'ATT003') {
 		                   return '<a class="btn btn-ingo btn-sm">출장</a>';
-	                   } else if (row.attendType === 'OUTSIDE_WORK') {
+	                   } else if (row.attendType === 'ATT004') {
 	                       return '<a class="btn btn-light btn-sm">외근</a>';
-	                   } else if (row.attendType === 'LEAVE_TIME') {
+	                   } else if (row.attendType === 'ATT005') {
 	                       return '<a class="btn btn-secondary btn-sm">퇴근</a>';
 	                   } else return ''; // WORK가 아닌 경우 버튼 표시 안함
            			}
@@ -219,13 +219,13 @@
            	      align: "center",
            	      width: 100,
 	           	   formatter: function({ row }) {
-	                   if (row.attendStatus === 'NORMAL') {
+	                   if (row.attendStatus === 'ATS001') {
 	                       return '<a class="btn btn-primary btn-sm">정상</a>';
-	                   } else if (row.attendStatus === 'LATE') {
+	                   } else if (row.attendStatus === 'ATS002') {
 	                       return '<a class="btn btn-warning btn-sm">지각</a>';
-	                   }else if (row.attendStatus === 'EARLY_LEAVE') {
+	                   }else if (row.attendStatus === 'ATS003') {
 		                   return '<a class="btn btn-secondary btn-sm">조퇴</a>';
-	                   } else if (row.attendStatus === 'ABSENT') {
+	                   } else if (row.attendStatus === 'ATS004') {
 	                       return '<a class="btn btn-danger btn-sm">결근</a>';
 	                   } else return ''; // NORMAL이 아닌 경우 버튼 표시 안함
 	           	   } 
@@ -332,7 +332,7 @@
 	    	      headers: {
 	    	        'Content-Type': 'application/json'
 	    	      },
-	    	      body: JSON.stringify({})
+	    	      body: JSON.stringify({attendType: "ATT005"})
 	    	    });
 
 	    	    if (!response.ok) {

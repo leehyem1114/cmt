@@ -38,10 +38,10 @@ public class AttendDTO {
     private LocalDateTime attendLeave; // 퇴근일자
     
     @JsonProperty("attendtype")
-    private CommonCodeDetailDTO attendType; // 출결유형
+    private String attendType; // 출결유형
     
     @JsonProperty("attendstatus")
-    private CommonCodeDetailDTO attendStatus; // 출결상태
+    private String attendStatus; // 출결상태
     
     private String remarks; // 비고
     
@@ -58,13 +58,13 @@ public class AttendDTO {
     }
 
     @Builder
-	public AttendDTO(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attandLeave, 
-			CommonCodeDetailDTO attendType, CommonCodeDetailDTO attendStatus, String remarks) {
+	public AttendDTO(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, 
+			String attendType, String attendStatus, String remarks) {
 		this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;
 		this.attendDate = attendDate;
-		this.attendLeave = attandLeave;
+		this.attendLeave = attendLeave;
 		this.attendType = attendType;
 		this.attendStatus = attendStatus;
 		this.remarks = remarks;
