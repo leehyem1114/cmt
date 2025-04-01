@@ -5,6 +5,92 @@
     
 
 <mapper namespace="com.example.cmtProject.mapper.erp.attendanceMgt.AttendsMapper">
+
+
+	<!-- 어드민 모든 출결 정보 조회 -->
+	<select id="getAllAttends" resultType="com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO">
+		SELECT 
+		    A.ATD_NO, 
+		    A.EMP_NO, 
+		    A.EMP_NAME, 
+		    E.DEPT_NO, 
+		    A.ATD_DATE, 
+		    A.ATD_LEAVE, 
+		    A.ATD_TYPE, 
+		    A.ATD_STATUS, 
+		    A.ATD_REMARKS,
+		   <![CDATA[
+	       '<a class="btn btn-sm btn-' || C_STATUS.CMN_DETAIL_VALUE || '">' || C_STATUS.CMN_DETAIL_NAME || '</a>'
+	       ]]> AS statusLink,
+	       <![CDATA[
+	       '<a class="btn btn-sm btn-' || C_TYPE.CMN_DETAIL_VALUE || '">' || C_TYPE.CMN_DETAIL_NAME || '</a>'
+	       ]]> AS typeLink
+		FROM ATTENDS A
+		JOIN EMPLOYEES E ON A.EMP_NO = E.EMP_NO
+<!-- 	상태용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_STATUS ON A.ATD_STATUS = C_STATUS.CMN_DETAIL_CODE
+		
+<!-- 	타입용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_TYPE ON A.ATD_TYPE = C_TYPE.CMN_DETAIL_CODE
+	</select>
+	
+	<!-- 매니저 같은 부서 출결 정보 조회 -->
+	<select id="getAttendsByDept" resultType="com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO">
+		SELECT 
+		    A.ATD_NO, 
+		    A.EMP_NO, 
+		    A.EMP_NAME, 
+		    E.DEPT_NO, 
+		    A.ATD_DATE, 
+		    A.ATD_LEAVE, 
+		    A.ATD_TYPE, 
+		    A.ATD_STATUS, 
+		    A.ATD_REMARKS
+		FROM ATTENDS A
+		<![CDATA[
+	       '<a class="btn btn-sm btn-' || C_STATUS.CMN_DETAIL_VALUE || '">' || C_STATUS.CMN_DETAIL_NAME || '</a>'
+	       ]]> AS statusLink,
+	       <![CDATA[
+	       '<a class="btn btn-sm btn-' || C_TYPE.CMN_DETAIL_VALUE || '">' || C_TYPE.CMN_DETAIL_NAME || '</a>'
+	       ]]> AS typeLink
+		FROM ATTENDS A
+		JOIN EMPLOYEES E ON A.EMP_NO = E.EMP_NO
+<!-- 	상태용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_STATUS ON A.ATD_STATUS = C_STATUS.CMN_DETAIL_CODE
+		
+<!-- 	타입용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_TYPE ON A.ATD_TYPE = C_TYPE.CMN_DETAIL_CODE
+		WHERE E.DEPT_NO = #{deptNo}
+	</select>
+	
+	<!-- 유저 개인 출결 정보 조회 -->
+	<select id="getAttendsByEmpNo" resultType="com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO">
+		SELECT 
+		    A.ATD_NO, 
+		    A.EMP_NO, 
+		    A.EMP_NAME, 
+		    E.DEPT_NO, 
+		    A.ATD_DATE, 
+		    A.ATD_LEAVE, 
+		    A.ATD_TYPE, 
+		    A.ATD_STATUS, 
+		    A.ATD_REMARKS
+		FROM ATTENDS A
+		<![CDATA[
+	       '<a class="btn btn-sm btn-' || C_STATUS.CMN_DETAIL_VALUE || '">' || C_STATUS.CMN_DETAIL_NAME || '</a>'
+	       ]]> AS statusLink,
+	       <![CDATA[
+	       '<a class="btn btn-sm btn-' || C_TYPE.CMN_DETAIL_VALUE || '">' || C_TYPE.CMN_DETAIL_NAME || '</a>'
+	       ]]> AS typeLink
+		FROM ATTENDS A
+		JOIN EMPLOYEES E ON A.EMP_NO = E.EMP_NO
+<!-- 	상태용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_STATUS ON A.ATD_STATUS = C_STATUS.CMN_DETAIL_CODE
+		
+<!-- 	타입용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_TYPE ON A.ATD_TYPE = C_TYPE.CMN_DETAIL_CODE
+		WHERE A.EMP_NO = #{empNo}
+	</select>
     
     <!-- 오늘 출근 했는지 조회 -->
 	<select id="hasCheckedInToday" resultType="boolean">
@@ -41,8 +127,8 @@
 	<!-- 퇴근 시간 업데이트 -->
 	<update id="updateAttendLeave">
 	    UPDATE ATTENDS
-	    SET ATD_LEAVE = #{leaveTime},
-	    	ATD_TYPE = #{attendType}
+	    SET ATD_LEAVE = #{atdLeave},
+	    	ATD_TYPE = #{atdType}
 	    WHERE ATD_NO = #{atdNo}
 	</update>
 	

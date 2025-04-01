@@ -11,12 +11,6 @@ import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 
 @Repository
 public interface AttendRepository extends JpaRepository<Attend, Long> {
-	
-	// 출결 목록 조회
-    List<Attend> findByEmpNoOrderByAtdNoDesc(Long empNo);
-    
-    
-    
     
     
 }

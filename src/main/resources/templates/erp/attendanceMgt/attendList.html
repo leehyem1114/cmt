@@ -134,14 +134,6 @@
     	    },
             columns: [
             	{ 
-            	  header: '출결NO', 
-            	  name: 'atdNo', 
-            	  sortable: true, 
-            	  filter: 'text',
-            	  width: 150,
-            	  align: "center" 
-            	},
-            	{ 
                   header: '사원번호', 
             	  name: 'empNo', 
             	  sortable: true, 
@@ -158,26 +150,38 @@
             	  align: "center" 
             	},
             	{ 
+              	  header: '부서', 
+              	  name: 'deptNo', 
+              	  sortable: true, 
+              	  filter: 'text',
+              	  width: 150,
+              	  align: "center" 
+              	},
+            	{ 
             	  header: '출근일자', 
-            	  name: 'attendDate', 
+            	  name: 'atdDate', 
             	  sortable: true, 
             	  filter: 'text',
             	  width: 300,
            		  align: "center",
 	           		formatter: function({ value }) {
-	           		    // 날짜 형식을 'YYYY-MM-DD HH:mm'로 포맷팅
+	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
+	
 	           		    const date = new Date(value);
+	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
+	
 	           		    const year = date.getFullYear();
 	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
 	           		    const day = String(date.getDate()).padStart(2, '0');
 	           		    const hours = String(date.getHours()).padStart(2, '0');
 	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
-	           		 	return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
-	           		  }
+	           		    
+	           		    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		}
            		},
             	{ 
             	  header: '퇴근일자', 
-            	  name: 'attendLeave', 
+            	  name: 'atdLeave', 
             	  sortable: true, 
             	  filter: 'text',
             	  width: 300,
@@ -199,47 +203,29 @@
            		},
             	{ 
            	      header: '출결유형', 
-           		  name: 'attendType', 
+           		  name: 'atdType', 
            		  sortable: true, 
            		  filter: 'text',
            		  align: "center",
            		  width: 150,
-           		formatter: function({ row }) {
-	                   if (row.attendType === 'ATT001') {
-	                       return '<a class="btn btn-primary btn-sm">출근</a>';
-	                   } else if (row.attendType === 'ATT002') {
-	                       return '<a class="btn btn-danger btn-sm">휴가</a>';
-	                   }else if (row.attendType === 'ATT003') {
-		                   return '<a class="btn btn-ingo btn-sm">출장</a>';
-	                   } else if (row.attendType === 'ATT004') {
-	                       return '<a class="btn btn-light btn-sm">외근</a>';
-	                   } else if (row.attendType === 'ATT005') {
-	                       return '<a class="btn btn-secondary btn-sm">퇴근</a>';
-	                   } else return ''; // WORK가 아닌 경우 버튼 표시 안함
-           			}
+	           		formatter: function({ row }) {
+	           		  return row.statusLink;
+	           		}
            		},
             	{ 
            	      header: '출결상태', 
-           	      name: 'attendStatus', 
+           	      name: 'atdStatus', 
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center",
            	      width: 150,
 	           	   formatter: function({ row }) {
-	                   if (row.attendStatus === 'ATS001') {
-	                       return '<a class="btn btn-primary btn-sm">정상</a>';
-	                   } else if (row.attendStatus === 'ATS002') {
-	                       return '<a class="btn btn-warning btn-sm">지각</a>';
-	                   }else if (row.attendStatus === 'ATS003') {
-		                   return '<a class="btn btn-secondary btn-sm">조퇴</a>';
-	                   } else if (row.attendStatus === 'ATS004') {
-	                       return '<a class="btn btn-danger btn-sm">결근</a>';
-	                   } else return ''; // NORMAL이 아닌 경우 버튼 표시 안함
+	           	     return row.typeLink;
 	           	   } 
             	},
             	{ 
            	      header: '비고', 
-           	      name: 'remarks', 
+           	      name: 'atdRemarks', 
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center" 
@@ -339,7 +325,7 @@
 	    	      headers: {
 	    	        'Content-Type': 'application/json'
 	    	      },
-	    	      body: JSON.stringify({attendType: "ATT005"})
+	    	      body: JSON.stringify({atdType: "ATT005"})
 	    	    });
 
 	    	    if (!response.ok) {

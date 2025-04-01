@@ -26,22 +26,21 @@ public class AttendService {
 	@Autowired
     private AttendRepository attendRepository;
     @Autowired
-	private EmployeesRepository employeeRepository;
-    @Autowired
     private AttendsMapper attendsMapper;
     
     // 모든 출결 정보 조회
     public List<AttendDTO> getAllAttends() {
-        return attendRepository.findAll().stream()
-                .map(Attend::toDto)
-                .collect(Collectors.toList());
+        return attendsMapper.getAllAttends();
+    }
+    
+    // 같은 부서 출결 정보 조회
+    public List<AttendDTO> getAttendsByDept(Long deptNo) {
+    	return attendsMapper.getAttendsByDept(deptNo);
     }
     
     // 사원 하나의 정보만 조회
     public List<AttendDTO> getAttendsByEmpNo(Long empNo) {
-    	return attendRepository.findByEmpNoOrderByAtdNoDesc(empNo).stream()
-    			.map(Attend::toDto)
-    			.collect(Collectors.toList());
+    	return attendsMapper.getAttendsByEmpNo(empNo);
     }
     
 
@@ -52,10 +51,10 @@ public class AttendService {
         Attend attend = Attend.builder()
         		.empNo(employee.getEmpNo())
                 .empName(employee.getEmpName()) // 사원 이름 자동으로 설정
-                .attendDate(LocalDateTime.now()) // 출근 처리 시 현재 날짜 설정
-                .attendType(dto.getAttendType() != null ? dto.getAttendType() : "ATT001") // 출근 유형 기본 NORMAL
-                .attendStatus(dto.getAttendStatus() != null ? dto.getAttendStatus() : "ATS001") // 출근 상태 기본 NORMAL
-                .remarks(dto.getRemarks())
+                .atdDate(LocalDateTime.now()) // 출근 처리 시 현재 날짜 설정
+                .atdType(dto.getAtdType() != null ? dto.getAtdType() : "ATT001") // 출근 유형 기본 NORMAL
+                .atdStatus(dto.getAtdStatus() != null ? dto.getAtdStatus() : "ATS001") // 출근 상태 기본 NORMAL
+                .atdRemarks(dto.getAtdRemarks())
                 .build();
 
             Attend savedAttend = attendRepository.save(attend);
@@ -69,10 +68,10 @@ public class AttendService {
     	
 		Attend attend = Attend.builder()
 				.atdNo(atdNo)
-				.attendLeave(LocalDateTime.now()) // 퇴근 처리 시 현재 시간 설정
-				.attendType(dto.getAttendType())
+				.atdLeave(LocalDateTime.now()) // 퇴근 처리 시 현재 시간 설정
+				.atdType(dto.getAtdType())
 				.build();
-		attendsMapper.updateAttendLeave(attend.getAtdNo(), LocalDateTime.now(), attend.getAttendType());
+		attendsMapper.updateAttendLeave(attend.getAtdNo(), LocalDateTime.now(), attend.getAtdType());
 	}
 
     
