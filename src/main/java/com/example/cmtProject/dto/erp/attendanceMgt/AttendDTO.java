@@ -23,41 +23,50 @@ public class AttendDTO {
     private String empName; // 사원이름
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime attendDate; // 출근일자
+    private LocalDateTime atdDate; // 출근일자
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime attendLeave; // 퇴근일자
+    private LocalDateTime atdLeave; // 퇴근일자
     
-    private String attendType; // 출결유형
+    private String atdType; // 출결유형
     
-    private String attendStatus; // 출결상태
+    private String atdStatus; // 출결상태
 
-    private String remarks; // 비고
+    private String atdRemarks; // 비고
+    
+    
+    // join매핑을 위한 dto
+    private Long deptNo; // 부서 번호
+    private String statusLink; // 상태
+    private String typeLink; // 타입
+    
+    
+    
     
     public Attend toEntity() {
         return Attend.builder()
         	.atdNo(atdNo)
             .empNo(empNo)
             .empName(empName)
-            .attendDate(attendDate)
-            .attendLeave(attendLeave)
-            .attendType(attendType)
-            .attendStatus(attendStatus)
-            .remarks(remarks)
+            .atdDate(atdDate)
+            .atdLeave(atdLeave)
+            .atdType(atdType)
+            .atdStatus(atdStatus)
+            .atdRemarks(atdRemarks)
             .build();
     }
 
     @Builder
-	public AttendDTO(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, 
-			String attendType, String attendStatus, String remarks) {
+	public AttendDTO(Long atdNo, Long empNo, String empName, LocalDateTime atdDate, LocalDateTime atdLeave, 
+			String atdType, String atdStatus, String atdRemarks) {
     	this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;
-		this.attendDate = attendDate;
-		this.attendLeave = attendLeave;
-		this.attendType = attendType;
-		this.attendStatus = attendStatus;
-		this.remarks = remarks;
+		this.atdDate = atdDate;
+		this.atdLeave = atdLeave;
+		this.atdType = atdType;
+		this.atdStatus = atdStatus;
+		this.atdRemarks = atdRemarks;
 	}
     
 

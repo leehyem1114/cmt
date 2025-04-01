@@ -37,31 +37,31 @@ public class Attend {
     private String empName; // 사원이름 (EMP_NAME)
 
     @Column(name = "ATD_DATE", nullable = false)
-    private LocalDateTime attendDate; // 출근일자 (ATD_DATE)
+    private LocalDateTime atdDate; // 출근일자 (ATD_DATE)
     
     @Column(name = "ATD_LEAVE")
-    private LocalDateTime attendLeave; // 퇴근일자 (ATD_LEAVE)
+    private LocalDateTime atdLeave; // 퇴근일자 (ATD_LEAVE)
     
     @Column(name = "ATD_TYPE", nullable = false)
-    private String attendType; // 출결유형 (ATD_TYPE)
+    private String atdType; // 출결유형 (ATD_TYPE)
 
     @Column(name = "ATD_STATUS", nullable = false)
-    private String attendStatus; // 출결상태 (ATD_STATUS)
+    private String atdStatus; // 출결상태 (ATD_STATUS)
 
     @Column(name = "ATD_REMARKS", length = 200)
-    private String remarks; // 비고 (ATD_REMARKS)
+    private String atdRemarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, 
-    		String attendType, String attendStatus, String remarks) {
+    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime atdDate, LocalDateTime atdLeave, 
+    		String atdType, String atdStatus, String atdRemarks) {
     	this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;
-		this.attendDate = attendDate;
-		this.attendLeave = attendLeave;
-		this.attendType = attendType;
-		this.attendStatus = attendStatus;
-		this.remarks = remarks;
+		this.atdDate = atdDate;
+		this.atdLeave = atdLeave;
+		this.atdType = atdType;
+		this.atdStatus = atdStatus;
+		this.atdRemarks = atdRemarks;
 	}
     
     public AttendDTO toDto() {
@@ -69,11 +69,11 @@ public class Attend {
             .atdNo(atdNo)
             .empNo(empNo)
             .empName(empName)
-            .attendDate(attendDate)
-            .attendLeave(attendLeave)
-            .attendType(attendType)
-            .attendStatus(attendStatus)
-            .remarks(remarks)
+            .atdDate(atdDate)
+            .atdLeave(atdLeave)
+            .atdType(atdType)
+            .atdStatus(atdStatus)
+            .atdRemarks(atdRemarks)
             .build();
     }
 

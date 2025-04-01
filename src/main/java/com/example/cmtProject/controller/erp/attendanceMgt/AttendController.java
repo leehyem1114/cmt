@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
-import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.mapper.erp.attendanceMgt.AttendsMapper;
@@ -53,6 +52,7 @@ public class AttendController {
     	Employees loginUser = principalDetails.getUser();
     	
     	
+    	
         // 출근하면 퇴근 버튼만 보이게하기, 퇴근하면 출근 버튼만 보이게 하기
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = LocalDate.now().atTime(LocalTime.MAX);
@@ -66,17 +66,21 @@ public class AttendController {
         }
         model.addAttribute("hasCheckedOut", hasCheckedOut);
        
-        // 어드민은 모든정보 보기, 사원은 자기거만 보기
-    	if (principalDetails.getAuthorities().stream().anyMatch(a -> 
-        a.getAuthority().equals("ROLE_ADMIN") || 
-        a.getAuthority().equals("ROLE_MANAGER"))) {
-        // ADMIN, MANAGER는 모든 출결정보 조회
-        List<AttendDTO> attendList = attendService.getAllAttends();
-        model.addAttribute("attendList", attendList);
+        // 어드민은 모든정보 보기, 매니저는 자기 부서만, 사원은 자기거만 보기
+    	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
+    		// ADMIN은 모든 출결정보 조회
+    		List<AttendDTO> attendList = attendService.getAllAttends();
+    		model.addAttribute("attendList", attendList);
+    		
+    	}else if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"))) {
+    		// MANAGER는 같은 부서 출결정보 조회
+    		List<AttendDTO> attendList = attendService.getAttendsByDept(loginUser.getDeptNo());
+        	model.addAttribute("attendList", attendList);
+        	
     	} else {
-		  // USER는 본인의 출결정보만 조회
-		  List<AttendDTO> attendList = attendService.getAttendsByEmpNo(loginUser.getEmpNo());
-		  model.addAttribute("attendList", attendList);
+    		// USER는 본인의 출결정보만 조회
+    		List<AttendDTO> attendList = attendService.getAttendsByEmpNo(loginUser.getEmpNo());
+    		model.addAttribute("attendList", attendList);
     	}
         return "erp/attendanceMgt/attendList"; // templates/erp/attendanceMgt/attendList.html 렌더링
     }
@@ -118,23 +122,6 @@ public class AttendController {
 
         return ResponseEntity.ok().build();
     }
-
-
-
-//    // 특정 사원의 출결 정보 조회 (HTML 렌더링)
-//    @GetMapping("/employee/{employeeId}")
-//    public String getAttendsByEmployee(@PathVariable Long employeeId, Model model) {
-//        List<AttendDTO> attends = attendService.getAttendsByEmployeeId(employeeId);
-//        model.addAttribute("attends", attends);
-//        return "erp/attendanceMgt/attendList"; // 특정 사원의 출결 정보를 렌더링
-//    }
-//
-//    // 출결 정보 수정
-//    @PostMapping("/update/{id}")
-//    public String updateAttend(@PathVariable Long id, @ModelAttribute AttendDTO dto) {
-//        attendService.updateAttend(id, dto);
-//        return "redirect:/attends/view";
-//    }
     
     
     
