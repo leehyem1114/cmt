@@ -4,78 +4,79 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}"> 
 	<head>
-			<!-- date-picker -->
-			<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
-			<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
-				
-			<!-- toast 부트스트랩 기본 -->
-			<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
-			<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
-
 		
-		    <title>수주 등록</title>
+	<!-- date-picker -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
+	<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+		
+	<!-- toast 부트스트랩 기본 -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
 
-		<title>CMT</title>
+	<title>CMT</title>
 	<style>
 		
-	    .container1 {
-	        display: grid;
-			grid-template-columns: 150px 150px 120px 180px 50px 180px 130px 150px 150px 1fr; 
-	        gap: 3px;
-	        background: #f5f5f5;
-	        padding: 4px;
-	        border-radius: 5px;
-			border : 1px solid black;
-			text-align: center;
-	    }
+    .container1 {
+        display: grid;
+		grid-template-columns: 150px 200px 120px 200px 50px 200px 150px 200px 250px 150px 1fr; 
+        gap: 3px;
+        background: #f5f5f5;
+        padding: 4px;
+        border-radius: 5px;
+		border : 1px solid black;
+		text-align: center;
+    }
+	
+	.container2 {
+        display: grid;
+		grid-template-columns: 150px 200px 200px 150px 200px 200px 150px 200px 1fr; 
+        gap: 3px;
+        background: #f5f5f5;
+        padding: 4px;
+        border-radius: 5px;
+		border : 1px solid black;
+		text-align: center;
+    }
 		
-		.container2 {
-	        display: grid;
-			grid-template-columns: 150px 150px 150px 150px 150px 160px 160px 80px 80px 100px 1fr; 
-	        gap: 3px;
-	        background: #f5f5f5;
-	        padding: 4px;
-	        border-radius: 5px;
-			border : 1px solid black;
-			text-align: center;
-	    }
-			
-		
-	    .container input, .container select {
-	        padding: 5px;
-	        border: 1px solid #ccc;
-	        border-radius: 3px;
-	    }
-		
-	    .button-container {
-	        display: flex;
-	        gap: 5px;
-	        margin: 10px;
-			justify-content: space-between;
-	    }
-		
-	    button {
-	        padding: 5px 10px;
-	        border: none;
-	        cursor: pointer;
-	        border-radius: 3px;
-	    }
-		
-		.tui-grid-row-hover td {
-		  background-color:rgb(248, 248, 248) !important;
-		}
-		
-	    .searchBtn { background:dodgerblue; color: white; }
-	    .requestBtn { background: purple; color: white; }
-	    .completeBtn { background: green; color: white; }
-	    .cancelBtn { background: red; color: white; }
-	    .excelBtn { background: darkblue; color: white; }
-	    .helpBtn { background: orange; color: white; }
-		
+	
+    .container input, .container select {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+	
+    .button-container {
+        display: flex;
+        gap: 5px;
+        margin: 10px;
+		justify-content: space-between;
+    }
+	
+    button {
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    
+    .tui-grid-container {
+     	width: 1700px !important; 
+    }
+	
+	.tui-grid-rside-area {
+		width: 1700px !important;
+	}
+	
+    .searchBtn { background:dodgerblue; color: white; }
+    .requestBtn { background: purple; color: white; }
+    .completeBtn { background: green; color: white; }
+    .cancelBtn { background: red; color: white; }
+    .excelBtn { background: darkblue; color: white; }
+    .helpBtn { background: orange; color: white; }
 	</style>
 </head>
-<body>
 
+<body>
     <div layout:fragment="content">
 		<div class="button-container">
 			<div><h2>수주조회</h2></div>
@@ -98,6 +99,7 @@
 		        <input type="date" class="sell_date2">
 		        <label class="sell_sonum_label">수주번호</label>
 		        <input type="text" class="sell_sonum_text">
+		        <span></span>
 				<button class="search">🔍 검색</button>
 				<span></span>
 		    </div>
@@ -132,7 +134,7 @@
 		<br>
 
 		<!-- 그리드 top 시작 -->
-	   	<div id="gridTop" class="tui-grid-row-hover tui-grid-row-selected"></div>
+	   	<div id="gridTop" style="width:1600px"></div>
 	
 	    <script th:inline="javascript">
 	    
@@ -163,7 +165,7 @@
 			//selectionUnit: 'row', //행 단위선택
 			scrollX: true,
             scrollY: true,
-			width: 1300,  // 전체 너비 지정
+			width: 1600,  // 전체 너비 지정
 			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
 	        columns: [
 				{
@@ -179,7 +181,7 @@
 	                name: 'soCode',
 					sortable: true, 
 					filter: 'text',
-					width: 140,
+					width: 200,
 					align: "center" 
 	            },
 				{
@@ -187,7 +189,7 @@
 	                name: 'soDate',
 					fontSize: '40',
 					filter: 'text',
-					width: 140,
+					width: 200,
 					align: 'center',
 					editor: {
 			           type: 'datePicker',
@@ -202,7 +204,7 @@
 	                name: 'shipDate',
 					sortable: true, 
 					filter: 'text',
-					width: 140,
+					width: 200,
 					align: "center" ,
 					editor: {
 			           type: 'datePicker',
@@ -215,7 +217,7 @@
 	            {
 					header: '사원번호',
 	                name: 'empNo',
-					width: 130,
+					width: 100,
 					align: 'center',
 					editor: {
 						type: 'select',
@@ -228,55 +230,116 @@
 				    	return emp ? emp.label : value;
 				    }
 	            },
-	            {
-	                header: '제품명',
-	                name: 'pdtName',
-					sortable: true, 
-					filter: 'text',
-					width: 150,
-					align: "center" 
+				{
+	                header: '재품코드',
+	                name: 'pdtCode', //SalseOrder의 entity에 있는 pdtCode
+					width: 200,
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: productListSelected //Products의 entity에 있는 pdtCode와 pdtName
+						}
+					},
+					formatter: ({ value }) => {
+				    	const pdt = productListSelected.find(item => item.value === value);
+				    	return pdt ? pdt.label : value; 
+				    }
 	            },
 				{
-	                header: '거래처명',
-	                name: 'cltName',
-					sortable: true, 
-					filter: 'text',
-					width: 150,
-					align: "center" 
+	                header: '거래처코드',
+	                name: 'cltCode',
+					width: 200,
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: cltListSelected
+						}
+					},
+					formatter: ({ value }) => {
+				    	const clt = cltListSelected.find(item => item.value === value);
+				    	return clt ? clt.label : value; 
+				    }
 	            },
 	            {
 	                header: '수량',
 	                name: 'soQuantity',
 					sortable: true, 
 					filter: 'text',
-					width: 40,
-					align: "center" 
+					width: 100,
+					align: "center",
+					editor: "text"
 	            },
 	            {
 	                header: '단가',
 	                name: 'pdtShippingPrice',
 					sortable: true, 
 					filter: 'text',
-					width: 80,
-					align: "center" 
+					width: 150,
+					align: "center",
+					editor: "text"
 	            },
 				{
-					header: '현재상태',
-					name: 'statusName',
-					sortable: true, 
-					filter: 'text',
-					width: 100,
-					align: "center" 
-				}
+					header: '진행상태',
+					name: 'soStatus', //salesOrder의 entity에 있는 soStatus
+					width: 200,
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: soStatusListSelected //SalesOrderStatus의 배열 값 
+						}
+					},
+					formatter: ({ value }) => {
+				    	const stu = soStatusListSelected.find(item => item.value === value);
+				    	return stu ? stu.label : value; 
+				    }
+	            },
 	        ], // 열 설정
 			autoEdit: true,
 			editingEvent: 'dblclick' 
 	    });
 	    
-		grid.on('afterChange', (ev) => {
-			alert('afterChange')
-		});
+	    grid.on('afterChange', (ev) => {
+	        ev.changes.forEach(change => {
+	          const { rowKey, columnName, value } = change;
+	          // 선택 즉시 다시 같은 값으로 setValue 실행 (원하는 로직으로 가공도 가능)
+	          grid.setValue(rowKey, columnName, value);
+	          console.log(`rowkey:${rowKey}, columnName:${columnName}, value:${value}`);
+	        });
+	      });
 		
+		
+	    grid.on('dblclick', (ev) => {
+	    	let r = ev.rowKey;
+	    	let c = ev.columnName;
+	    	
+	       	let sellValue = grid.getValue(r,c);
+// 	      	alert('dblclick - ' + grid.getValue(r,c));
+	      	grid.setValue(r, c, sellValue);
+	    });
+	    
+	    grid.on('afterChange', (ev) => {
+	    	
+	    	console.log(ev);
+	        ev.changes.forEach(change => {
+		        const { rowKey, columnName, value } = change;
+		        grid.setValue(rowKey, columnName, value);
+		        console.log(`rowkey:${rowKey}, columnName:${columnName}, value:${value}`);
+	        });
+	    });
+
+	    grid.on('beforeChange', (ev) => {
+	        ev.changes.forEach(change => {
+	          	const { rowKey, columnName, value } = change;
+	          	// 선택 즉시 다시 같은 값으로 setValue 실행 (원하는 로직으로 가공도 가능)
+	          	grid.setValue(rowKey, columnName, value);
+	          	console.log(`rowkey:${rowKey}, columnName:${columnName}, value:${value}`);
+	          	
+	          	changedValue = grid.getValue(rowKey, columnName);
+	        });
+	    });
 		
 	    </script>
 	    <!-- 그리드 끝 --> 

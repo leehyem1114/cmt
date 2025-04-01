@@ -60,6 +60,40 @@
         
         /* 추가 공통 스타일은 여기에 작성 */
     </style>
+    
+    	<!-- date-picker -->
+<!-- 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css"> -->
+<!-- 	<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script> -->
+    
+   	<!-- toast 부트스트랩 기본 -->
+<!-- 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css"> -->
+<!-- 	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script> -->
+	
+	<!-- ======= 공통 JavaScript 파일 (모든 페이지에서 사용) ======= -->
+    <!-- jQuery 라이브러리 -->
+    <script src="/js/jquery-3.7.1.js"></script>
+    
+    <!-- 부트스트랩 및 UI 관련 스크립트 -->
+    <script src="/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/main.js"></script>
+    
+    <!-- TOAST UI 라이브러리 스크립트 -->
+	<script type="text/javascript" src="https://uicdn.toast.com/tui.pagination/v3.4.0/tui-pagination.js"></script>
+    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.js"></script>
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    
+    <!-- SweetAlert2 라이브러리 (알림창) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- ======= 공통 JavaScript 코드 ======= -->
+	<script src="/js/commonJs/commonAlert.js"></script>
+	<script src="/js/commonJs/commonApi.js"></script>
+	<script src="/js/commonJs/commonUI.js"></script>
+	<script src="/js/commonJs/commonValidation.js"></script>
+	<script src="/js/commonJs/commonGrid.js"></script>
+	<script src="/js/commonJs/commonSearch.js"></script>
 </head>
 
 <body>
@@ -89,38 +123,14 @@
         </div>
     </div>
 
-    <!-- ======= 공통 JavaScript 파일 (모든 페이지에서 사용) ======= -->
-    <!-- jQuery 라이브러리 -->
-    <script src="/js/jquery-3.7.1.js"></script>
     
-    <!-- 부트스트랩 및 UI 관련 스크립트 -->
-    <script src="/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="/assets/js/bootstrap.bundle.min.js"></script>
-    <script src="/assets/js/main.js"></script>
-    
-    <!-- TOAST UI 라이브러리 스크립트 -->
-	<script type="text/javascript" src="https://uicdn.toast.com/tui.pagination/v3.4.0/tui-pagination.js"></script>
-    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.js"></script>
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-    
-    <!-- SweetAlert2 라이브러리 (알림창) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- ======= 공통 JavaScript 코드 ======= -->
-	<script src="/js/commonJs/commonAlert.js"></script>
-	<script src="/js/commonJs/commonApi.js"></script>
-	<script src="/js/commonJs/commonUI.js"></script>
-	<script src="/js/commonJs/commonValidation.js"></script>
-	<script src="/js/commonJs/commonGrid.js"></script>
-	<script src="/js/commonJs/commonSearch.js"></script>
 
     <!-- ======= 개별 페이지 JavaScript ======= -->
     <!-- 각 페이지에서 필요한 특정 스크립트를 이 블록에 추가할 수 있음 -->
-	<th:block layout:fragment="script">
+<!-- 	<th:block layout:fragment="script"> -->
 	    <!-- 이 영역은 비워두세요. 각 페이지에서 이 영역을 채웁니다. 
 	    	각 HTML 페이지 에서  작성을 하면 여기에 자동 추가가 되는 구조입니다.-->
-	</th:block>
+<!-- 	</th:block> -->
 	    
     
 </body>
