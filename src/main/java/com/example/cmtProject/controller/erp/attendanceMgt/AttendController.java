@@ -75,7 +75,7 @@ public class AttendController {
         model.addAttribute("attendList", attendList);
     	} else {
 		  // USER는 본인의 출결정보만 조회
-		  List<Attend> attendList = attendService.getAttendsByEmpNo(loginUser.getEmpNo());
+		  List<AttendDTO> attendList = attendService.getAttendsByEmpNo(loginUser.getEmpNo());
 		  model.addAttribute("attendList", attendList);
     	}
         return "erp/attendanceMgt/attendList"; // templates/erp/attendanceMgt/attendList.html 렌더링

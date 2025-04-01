@@ -38,8 +38,10 @@ public class AttendService {
     }
     
     // 사원 하나의 정보만 조회
-    public List<Attend> getAttendsByEmpNo(Long empNo) {
-    	return attendRepository.findByEmpNoOrderByAtdNoDesc(empNo);
+    public List<AttendDTO> getAttendsByEmpNo(Long empNo) {
+    	return attendRepository.findByEmpNoOrderByAtdNoDesc(empNo).stream()
+    			.map(Attend::toDto)
+    			.collect(Collectors.toList());
     }
     
 
