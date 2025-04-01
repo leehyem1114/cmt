@@ -33,15 +33,16 @@
 	    <div th:if="${#authorization.expression('isAuthenticated()')}">
 <!-- 	        <span th:text="${#authentication.name}"></span>님, 환영합니다! -->
 			<br>
-	    <!-- ------------------------------------ -->
+	    <!-- ------------------나의 카드------------------ -->
 			<div class="card-body py-4 px-4">
 	           <div class="d-flex align-items-center">
 	               <div class="avatar avatar-xl">
-	                   <img th:src="@{/images/profile_preview.png}" alt="Face 1">
+	                   <img th:if="${#authentication.principal.user.empProfile == null}" th:src="@{/imagess/profile_preview.png}" alt="Face 1">
+	                   <img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${#authentication.principal.user.empProfile}}">
 	               </div>
 	               <div class="ms-3 name">
-	                   <h5 class="font-bold">[사원이름 적을곳~]</h5>
-	                   <h6 class="text-muted mb-0">[@johnducky]</h6>
+	                   <h5 class="font-bold" th:text="${#authentication.principal.user.empName}"></h5>
+	                   <h6 class="text-muted mb-0" th:text="${'@'+ #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
 	               </div>
 	           </div>
 	       </div>
@@ -51,66 +52,10 @@
 
 	    <!-- 로그아웃 상태일 경우 -->
 	    <div th:unless="${#authorization.expression('isAuthenticated()')}">
-	        <a th:href="@{/loginForm}">로그인</a>
+	        <a th:href="@{/login}">로그인</a>
 	    </div>
 	    <!-- ------------------------------------ -->
-	    
 	     <!-- ------------------------------------ -->
-		<div class="card">
-        <div class="card-header">
-            <h4 class="card-title">LogIn [만드는 중이라서 진짜 로그인은 ↖ 이쪽으로..^^]</h4>
-        </div>
-        <div class="card-content">
-            <div class="card-body">
-                <form class="form form-horizontal" action="login" method="post">
-                    <div class="form-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="first-name-horizontal-icon">ID</label>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group has-icon-left">
-                                    <div class="position-relative">
-                                        <input type="text" class="form-control" placeholder="ID" id="first-name-horizontal-icon">
-                                        <div class="form-control-icon">
-                                            <i class="bi bi-person"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="password-horizontal-icon">Password</label>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group has-icon-left">
-                                    <div class="position-relative">
-                                        <input type="password" class="form-control" placeholder="Password" id="password-horizontal-icon">
-                                        <div class="form-control-icon">
-                                            <i class="bi bi-lock"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group col-md-8 offset-md-4">
-                                <div class="form-check">
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="checkbox2" class="form-check-input" checked="">
-                                        <label for="checkbox2">Remember Me</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>
-                                <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>	    
-	    
-	    
 	    <!-- ----------------- -->
 	</div>
 	<br>

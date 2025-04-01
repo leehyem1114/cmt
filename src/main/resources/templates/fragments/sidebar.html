@@ -186,12 +186,17 @@
 			        <span th:text="${#authentication.principal.user.empName}"></span>님,반갑읍니다 ^^...
 			    
 		        <!-- 로그아웃 버튼 -->
-				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='/logout'">
+
+				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="logout()">
 					로그아웃 &nbsp; <i class="bi bi-box-arrow-right "></i>
 				</button>
+				
+				
+				
 				</th:block>
 				<th:block th:if="${!#authorization.expression('isAuthenticated()')}">
-					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='/loginForm'">
+
+					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='login
 					로그인 &nbsp; <i class="bi bi-box-arrow-right "></i>
 					</button>
 				</th:block>
@@ -462,16 +467,19 @@
 		            </ul>
 		            
 		            
+		            <script type="text/javascript">
+					function logout(){
+						if(confirm("로그아웃 하시겠습니까?")){
+							location.href='/logout';
+						}
+					}				
+				
+					</script>	
 		            
-		            
-		            
-		            
-		            
-						
 		        </div>
 		        <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
 		    </div>
 		</div> <!-- sidebar -->
-		
 	</div> <!-- th:fragment -->
+		
 </html>
