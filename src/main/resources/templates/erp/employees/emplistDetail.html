@@ -34,7 +34,6 @@
 <!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
                 <!-- 표 예시 -->
                 <div class="table-responsive">
-                <div>
 					<form th:action="@{/emp/empUpdate/{id}(id=${emp.empId})}" th:object="${emp}" id="empDetail" name="empDetail" method="post" enctype="multipart/form-data">
 						                <div class="body">
 											<label for="empProfileFile">프로필사진</label>
@@ -42,7 +41,7 @@
 											
 											    <div id="preview_profile">
 											        <img th:if="${emp.empProfile != null}" th:src="@{'/images/' + ${emp.empProfile}}" class="profile-thumb" alt="profile" height="100px">
-											        <img th:if="${emp.empProfile == null}" th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+											        <img th:if="${emp.empProfile == null}" th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 											    </div>
 											</div>
 												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
@@ -170,19 +169,17 @@
 						                    <div class="form-group">
 						                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control" th:value="${emp.salBankAccount}">
 						                    </div>						                    
-						                </div> <!-- form body -->
 						                <div class="modal-footer">
 <!-- 						                    <button type="submit" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary">수정</button> -->
 						                    <button type="button" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary" onclick="empDetail_view()">수정</button>
 						                </div>
 						            </form>	
+						        </div> <!-- form body -->
 				</div>
                 </div>
-            </div>
-        </div>
         
         <!-- 페이지 내용 작성 영역 끝 -->
-    </div>
+ </div>
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 	<script type="text/javascript">
             /* 

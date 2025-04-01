@@ -44,8 +44,8 @@
 								                   <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">
 								               </div>
 								               <div class="ms-3 name">
-								                   <h5 class="font-bold"><span th:text="*{empName}"></span></h5>
-								                   <h6 class="text-muted mb-0">@johnducky</h6>
+								                   <h5 class="font-bold" ><span th:text="*{empName}"></span></h5>
+	                   							   <h6 class="text-muted mb-0" th:text="${'@' + #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
 								               </div>
 								           </div>
 								       </div> <!-- 카드 -->
@@ -57,7 +57,7 @@
 											</div>
 											<div th:unless="${emp.empProfile != null}">
 												<div id="preview_profile">
-												    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+												    <img th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 												</div>
 <!-- 												<input type="file" name="empProfile" id="empProfile" accept="image/*" multiple> -->
 						                    </div>
@@ -75,7 +75,7 @@
 						                    <label for="empName">이름</label>
 						                    <div class="form-group">
 <!-- 												<input type="text" id="empName" class="form-control" name="empName" th:value="${emp.empName}"> -->
-												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" readonly>
+												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" >
 						                    </div>
 						                    <label for="empId">사원 번호</label>
 						                    <div class="form-group">

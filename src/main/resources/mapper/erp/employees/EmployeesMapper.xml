@@ -124,6 +124,7 @@
 	    UPDATE EMPLOYEES
 	    SET 
 	        EMP_LEVEL = #{empLevel},
+	        EMP_NAME = #{empName},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
 	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
@@ -150,6 +151,7 @@
 		UPDATE EMPLOYEES
 	    SET 
 	        EMP_LEVEL = #{empLevel},
+	        EMP_NAME = #{empName},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
 	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
@@ -175,7 +177,7 @@
 	
 	<select id="selectEmpDetail" resultType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
 		 SELECT 
-	         E.EMP_NO              AS empNo,
+	        E.EMP_NO              AS empNo,
 	        E.EMP_LEVEL           AS empLevel,
 	        E.EMP_NAME            AS empName,
 	        E.EMP_ID              AS empId,

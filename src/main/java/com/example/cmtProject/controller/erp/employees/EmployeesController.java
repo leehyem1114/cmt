@@ -53,10 +53,6 @@ public class EmployeesController {
 		return "erp/employees/emp/home";
 	}
 	
-	@GetMapping("/login")
-	public String login() {
-		return "erp/employees/emp/login";
-	}
 	
 	/***나의 인사카드***/
 	@GetMapping("/myEmplist")
@@ -86,7 +82,7 @@ public class EmployeesController {
 	    	model.addAttribute("emp", result);
 	    	return "사원정보 수정 완료";
 	    }
-	    System.out.println("받은 DTO: " + result);
+	    System.out.println("바뀐 사원정보~~~~~~~~~~"+ result);
 	    return "erp/employees/myEmplist";
 	}
 	

@@ -2,16 +2,23 @@
 <!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
 <html xmlns:th="http://www.thymeleaf.org" 
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"> 
 <head>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	
+  
+	<link rel="stylesheet" href="assets/css/app.css">
+	<link rel="stylesheet" href="assets/css/app-dark.css">
+	<link rel="stylesheet" href="assets/static/css/pages/auth.css">
+	<link rel="stylesheet" href="assets/css/bootstrap.css">
+	<link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
+
 
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMT</title>
-    
 </head>
 <body>
     <!-- 
@@ -20,115 +27,59 @@
     -->
     <div layout:fragment="content">
         <!-- 페이지 내용 작성 영역 시작 -->
-        
-        <h3>HOME</h3>
-			
-			
 			
 			<!-- 여기에 HTML 뷰페이지 코드 작성하세요!!!!!!!!!!!!!!!!!!! -->
-			
-	<div>
-	    <!-- ------------------------------------ -->
-		<!-- 로그인 상태일 경우 -->
-	    <div th:if="${#authorization.expression('isAuthenticated()')}">
-	        <span th:text="${#authentication.name}"></span>님, 환영합니다!
-			<br>
-	        <a th:href="@{/logout}">로그아웃</a>
+	<script src="assets/static/js/initTheme.js"></script>
+    <div id="auth">
+        
+	<div class="row h-100">
+	    <div class="col-lg-5 col-12">
+	        <div id="auth-left">
+	            <div class="auth-logo">
+<!-- 	                <a href="index.html"><img src="./assets/compiled/svg/logo.svg" alt="Logo"></a> --> <!-- 로고 -->
+	            </div>
+	            <h1 class="auth-title">Log in.</h1>
+	            <p class="auth-subtitle mb-5">행운 가득한 하루 되세요 🍀🍀🍀</p>
+	
+	            <form action="login" method="post" onsubmit="return validityCheck()" id="loginForm">
+	                <div class="form-group position-relative has-icon-left mb-4">
+	                    <input type="text" class="form-control form-control-xl" placeholder="ID" id="empId" name="empId">
+	                    <div class="form-control-icon">
+	                        <i class="bi bi-person"></i>
+	                    </div>
+	                </div>
+	                <div class="form-group position-relative has-icon-left mb-4">
+	                    <input type="password" class="form-control form-control-xl" placeholder="Password" id="empPassword" name = "empPassword">
+	                    <div class="form-control-icon">
+	                        <i class="bi bi-shield-lock"></i>
+	                    </div>
+	                </div>
+	                <div class="form-check form-check-lg d-flex align-items-end">
+	                    <input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault">
+	                    <label class="form-check-label text-gray-600" for="flexCheckDefault">
+	                        아이디 기억하기
+	                    </label>
+	                </div>
+	                <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">로그인</button>
+	                <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5" id="userLogin">User 로그인</button>
+	                <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5" id="managerLogin">Manager 로그인</button>
+	                <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5" id="adminLogin">Admin 로그인</button>
+	            </form>
+	            <div class="text-center mt-5 text-lg fs-4">
+	<!--                 <p class="text-gray-600">Don't have an account? <a href="auth-register.html" class="font-bold">Sign -->
+	<!--                         up</a>.</p> -->
+	<!--                 <p><a class="font-bold" href="auth-forgot-password.html">Forgot password?</a>.</p> -->
+	            </div>
+	        </div>
 	    </div>
+	    <div class="col-lg-7 d-none d-lg-block">
+	        <div id="auth-right">
+	
+	        </div>
+	    </div>
+	</div> <!-- 로그인 -->
 
-	    <!-- 로그아웃 상태일 경우 -->
-	    <div th:unless="${#authorization.expression('isAuthenticated()')}">
-	        <a th:href="@{/loginForm}">로그인</a>
-	    </div>
-	    <!-- ------------------------------------ -->
-		<div class="card">
-	                   <div class="card-header">
-	                       <h4 class="card-title">LogIn</h4>
-	                   </div>
-	                   <div class="card-content">
-	                       <div class="card-body">
-	                           <form class="form form-horizontal" action="login" method="post">
-	                               <div class="form-body">
-	                                   <div class="row">
-	                                       <div class="col-md-4">
-	                                           <label for="first-name-horizontal-icon">Name</label>
-	                                       </div>
-	                                       <div class="col-md-8">
-	                                           <div class="form-group has-icon-left">
-	                                               <div class="position-relative">
-	                                                   <input type="text" class="form-control" placeholder="Name" id="first-name-horizontal-icon">
-	                                                   <div class="form-control-icon">
-	                                                       <i class="bi bi-person"></i>
-	                                                   </div>
-	                                               </div>
-	                                           </div>
-	                                       </div>
-	                                       <div class="col-md-4">
-	                                           <label for="email-horizontal-icon">Email</label>
-	                                       </div>
-	                                       <div class="col-md-8">
-	                                           <div class="form-group has-icon-left">
-	                                               <div class="position-relative">
-	                                                   <input type="email" class="form-control" placeholder="Email" id="email-horizontal-icon">
-	                                                   <div class="form-control-icon">
-	                                                       <i class="bi bi-envelope"></i>
-	                                                   </div>
-	                                               </div>
-	                                           </div>
-	                                       </div>
-	                                       <div class="col-md-4">
-	                                           <label for="contact-info-horizontal-icon">Mobile</label>
-	                                       </div>
-	                                       <div class="col-md-8">
-	                                           <div class="form-group has-icon-left">
-	                                               <div class="position-relative">
-	                                                   <input type="number" class="form-control" placeholder="Mobile" id="contact-info-horizontal-icon">
-	                                                   <div class="form-control-icon">
-	                                                       <i class="bi bi-phone"></i>
-	                                                   </div>
-	                                               </div>
-	                                           </div>
-	                                       </div>
-	                                       <div class="col-md-4">
-	                                           <label for="password-horizontal-icon">Password</label>
-	                                       </div>
-	                                       <div class="col-md-8">
-	                                           <div class="form-group has-icon-left">
-	                                               <div class="position-relative">
-	                                                   <input type="password" class="form-control" placeholder="Password" id="password-horizontal-icon">
-	                                                   <div class="form-control-icon">
-	                                                       <i class="bi bi-lock"></i>
-	                                                   </div>
-	                                               </div>
-	                                           </div>
-	                                       </div>
-	                                       <div class="form-group col-md-8 offset-md-4">
-	                                           <div class="form-check">
-	                                               <div class="checkbox">
-	                                                   <input type="checkbox" id="checkbox2" class="form-check-input" checked="">
-	                                                   <label for="checkbox2">Remember Me</label>
-	                                               </div>
-	                                           </div>
-	                                       </div>
-	                                       <div class="col-12 d-flex justify-content-end">
-	                                           <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>
-	                                           <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
-	                                       </div>
-	                                   </div>
-	                               </div>
-	                           </form>
-	                       </div>
-	                   </div>
-	               </div>	    
-	    
-	    
-	</div>
-	<br>
-	<a href="joinForm">회원가입</a>
-	<br>
-	<br>
-	<br>
-	<a href="pdt">완제품 페이지</a>			
+    </div>
 	</div>
     
     <!-- 
@@ -138,25 +89,37 @@
     -->
     <th:block layout:fragment="script">
         <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
+        
+        function validityCheck(){
+    		
+    		let username = document.getElementById("empId").value;
+    		let pwd = document.getElementById("empPassword").value;
+    		
+    		if(username.trim() === "" || pwd.trim() === "")
+    		{
+    			alert("아이디와 비밀번호를 입력해주세요.");
+    			return false;
+    		}
+    	}	
+			        
+			function submitLoginForm(id, pw) {
+				$('#empId').val(id);
+			    $('#empPassword').val(pw);
+			    $('#loginForm').submit();
+			}
+			    
+		        $('#userLogin').on('click', function() {
+					submitLoginForm('971114', '1234');
+				});
+				
+				$('#managerLogin').on('click', function() {
+					submitLoginForm('981114', '1234');
+				});
+				
+				$('#adminLogin').on('click', function() {
+					submitLoginForm('991114', '1234');
+				
+				});
         </script>
     </th:block>
 </body>
