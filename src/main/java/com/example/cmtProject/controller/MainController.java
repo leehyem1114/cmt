@@ -6,11 +6,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.cmtProject.entity.Member;
 import com.example.cmtProject.entity.erp.employees.Employees;
@@ -29,7 +31,13 @@ public class MainController {
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
 	
 	@GetMapping({"","/"})
-	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails, RedirectAttributes redirectAttributes) {
+		
+		if (principalDetails ==null) {
+			redirectAttributes.addFlashAttribute("msg","로그인 필수!\n로그인창으로 이동합니다.");
+			return "redirect:/login";
+		}
+		
 		principalDetails.getUser();
 		
 		return "home";
