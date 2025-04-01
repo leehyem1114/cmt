@@ -22,7 +22,6 @@ import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
-import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
@@ -53,16 +52,17 @@ public class EmployeesController {
 		return "erp/employees/emp/home";
 	}
 	
-	@GetMapping("/login")
-	public String login() {
-		return "erp/employees/emp/login";
-	}
 	
 	/***나의 인사카드***/
 	@GetMapping("/myEmplist")
-	public String myEmplist(@AuthenticationPrincipal PrincipalDetails principalDetails,Model model) {
+	public String myEmplist(@AuthenticationPrincipal PrincipalDetails principalDetails,Model model,RedirectAttributes redirectAttributes) {
+		
+		if (principalDetails ==null) {
+			redirectAttributes.addFlashAttribute("msg","로그인 필수!\n로그인창으로 이동합니다.");
+			return "redirect:/login";
+		}
+		
 		String empId = principalDetails.getUser().getEmpId();
-		System.out.println(">>>>>>>!!!!!!!!!!!"+empId);;
 		EmpRegistDTO emp = empService.getMyEmpList(empId);
 		model.addAttribute("emp",emp);
 		System.out.println("~~~DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
@@ -86,7 +86,7 @@ public class EmployeesController {
 	    	model.addAttribute("emp", result);
 	    	return "사원정보 수정 완료";
 	    }
-	    System.out.println("받은 DTO: " + result);
+	    System.out.println("바뀐 사원정보~~~~~~~~~~"+ result);
 	    return "erp/employees/myEmplist";
 	}
 	
@@ -112,7 +112,6 @@ public class EmployeesController {
 	public String searchDept(@ModelAttribute searchEmpDTO searchEmpDTO,Model model)throws Exception {
 		commonCodeName(model, commonService);
 		
-		System.out.println("~~~"+searchEmpDTO.getDept());
 		List<searchEmpDTO> searchDTO = empService.getSearchDept(searchEmpDTO);
 		model.addAttribute("emplist",searchDTO);
 		System.out.println(">>>>>>>>"+searchDTO);
@@ -125,13 +124,11 @@ public class EmployeesController {
 	@PostMapping("/empRegi")
 	public String empRegist(@ModelAttribute("empRegistDTO") EmpRegistDTO empRegistDTO
 							,@RequestParam("empProfileFile") MultipartFile empProfileFile //파일받는용도
-							,Model model
-							,RedirectAttributes redirectAttributes) throws Exception {
+							,Model model) throws Exception {
 		//프로필 업로드
 		int empRegi = empService.insertEmp(empRegistDTO,empProfileFile);
 		
 		if(empRegi > 0) {
-			redirectAttributes.addFlashAttribute("msg", "사원 등록이 완료되었습니다.");
 			return "redirect:/emp/emplist";
 		}
 		System.out.println("직원추가 완료 : " + empRegistDTO);
@@ -147,7 +144,7 @@ public class EmployeesController {
 //		List<EmpRegistDTO> emplist = empService.getEmpDetail(id);
 		EmpRegistDTO emp = empService.getEmpDetail(id);
 		model.addAttribute("emp",emp);
-		System.out.println("무슨값일까????"+emp);
+		System.out.println("사원 상세 정보 >>"+emp);
 		return "erp/employees/emplistDetail";
 	}
 	
@@ -171,6 +168,13 @@ public class EmployeesController {
 		
 	}
 	
+	//아이디 유효성 검사
+	@PostMapping("/checkId")
+	@ResponseBody
+	public boolean checkId(@RequestParam("empId")String empId) {
+		 System.out.println("넘어온 empId >>> " + empId);
+		return empService.checkId(empId);
+	}
 	// 객체 -> JSON 변환 샘플
 //	@Autowired
 //	private ObjectMapper objectMapper;

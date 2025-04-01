@@ -72,15 +72,7 @@ public class saleController {
 	@GetMapping("/soform")
 	public String soform(Model model) {
 		
-		//수주 전체 목록
- 		List<SalesOrder> allList = salesOrderRepository.findAll();
- 		model.addAttribute("soModel", allList);
- 		
-		//수주 메인 목록(clients, products, warehouses, employees 조인)
- 		//JAP에서 현재 JOIN이 안되기 때문에 mapper사용
- 		List<SalesOrderMainDTO> soMainList = salesOrderService.soMainSelect();
- 		model.addAttribute("soMainList",soMainList);
-
+		//========== 상단 container2의 제품 코드와 거래처 코드 목록 가져오기 ==========
  		//-수주 목록에 있는 제품-
  		//수주 목록에 있는 제품 코드를 가져와 중복 제거 후 제품에서 제품명 출력
  		//-- 수주테이블에 있는 제품 코드 --
@@ -93,7 +85,22 @@ public class saleController {
  		List<String> cltCode = salesOrderRepository.findByGetCltCode();
  		Collections.sort(cltCode);
  		model.addAttribute("cltCode",cltCode);
+ 		//============================== 끝 ================================
  		
+ 		//========================= 하단 메인 list부분 ========================
+ 		//수주 메인 목록(clients, products, warehouses, employees 조인)
+ 		List<SalesOrderMainDTO> soMainList = salesOrderService.soMainSelect();
+ 		model.addAttribute("soMainList",soMainList);
+ 		//salesOrderModels로 clients와 products와 warehouses 데이터를 다 가져오기 때문에 이거 사용 안함
+ 		
+ 		//수주 목록
+ 		//거래처명, 고객명, 사원명, 창고명이 안뜬다, code에 대한 정보만 있다
+ 		List<SalesOrder> allList = salesOrderRepository.findAll();
+ 		model.addAttribute("soModel", allList);
+ 		
+ 		//거래처명, 고객명, 사원명, 창고명 등을 가져오기 위해 전달하는 model
+ 		salesOrderModels.commonSalesOrderModels(model);
+
 		return "erp/salesMgt/salesOrderForm";
  		//return "erp/salesMgt/aaa";
 	}

@@ -81,16 +81,16 @@
 	        #{empLevel},
 	        #{empPassword},
 	        #{empName},
-	        #{empProfile},
+	        #{empProfile,jdbcType=VARCHAR},
 <!-- 	        NULL, -->
 	        <choose>
-	            <when test="empStartDate != null">
-	                #{empBirthday}
-	            </when>
-	            <otherwise>
-	                SYSDATE
-	            </otherwise>
-	        </choose>,
+			    <when test="empBirthday != null">
+			        #{empBirthday}
+			    </when>
+			    <otherwise>
+			        NULL
+			    </otherwise>
+			</choose>,
 	        #{empEmail},
 	        #{empGender},
 	        #{deptNo},
@@ -100,21 +100,21 @@
 	        #{empAddress1},
 	        #{empAddress2},
 	       <choose>
-	            <when test="empStartDate != null">
-	                #{empStartDate}
-	            </when>
-	            <otherwise>
-	                SYSDATE
-	            </otherwise>
+			    <when test="empStartDate != null">
+			        #{empStartDate}
+			    </when>
+			    <otherwise>
+			        SYSDATE
+			    </otherwise>
 	        </choose>,
 	        #{empMaritalStatus},
 	        #{empStatus},
 	        #{empType},
 	        #{empEducationLevel},
 	        #{empParkingStatus},
-	        #{empCarNumber},
-	        #{salBankName},
-	        #{salBankAccount}
+	        #{empCarNumber , jdbcType=VARCHAR},
+	        #{salBankName , jdbcType=VARCHAR},
+	        #{salBankAccount , jdbcType=VARCHAR}
 	    )
 	    
 	</insert>
@@ -124,6 +124,7 @@
 	    UPDATE EMPLOYEES
 	    SET 
 	        EMP_LEVEL = #{empLevel},
+	        EMP_NAME = #{empName},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
 	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
@@ -150,6 +151,7 @@
 		UPDATE EMPLOYEES
 	    SET 
 	        EMP_LEVEL = #{empLevel},
+	        EMP_NAME = #{empName},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
 	        EMP_GENDER = #{empGender, jdbcType=VARCHAR},
@@ -175,7 +177,7 @@
 	
 	<select id="selectEmpDetail" resultType="com.example.cmtProject.dto.erp.employees.EmpRegistDTO">
 		 SELECT 
-	         E.EMP_NO              AS empNo,
+	        E.EMP_NO              AS empNo,
 	        E.EMP_LEVEL           AS empLevel,
 	        E.EMP_NAME            AS empName,
 	        E.EMP_ID              AS empId,
@@ -185,7 +187,7 @@
 	        E.POSITION_NO		  AS positionNo,
 	        P.CMN_DETAIL_NAME     AS deptPosition,
 	        E.EMP_PROFILE         AS empProfile,
-<!-- 	        TO_CHAR(E.EMP_BIRTHDAY, 'YYYY-MM-DD') AS empBirthday, -->
+	        E.EMP_BIRTHDAY        AS empBirthday,
 	        E.EMP_EMAIL           AS empEmail,
 	        E.EMP_GENDER          AS empGender,
 	        E.EMP_PHONE           AS empPhone,
@@ -224,7 +226,7 @@
 	        E.POSITION_NO		  AS positionNo,
 	        P.CMN_DETAIL_NAME     AS deptPosition,
 	        E.EMP_PROFILE         AS empProfile,
-<!-- 	        TO_CHAR(E.EMP_BIRTHDAY, 'YYYY-MM-DD') AS empBirthday, -->
+	        E.EMP_BIRTHDAY        AS empBirthday,
 	        E.EMP_EMAIL           AS empEmail,
 	        E.EMP_GENDER          AS empGender,
 	        E.EMP_PHONE           AS empPhone,
@@ -252,6 +254,9 @@
 	
 	
 	</select>
-	
+	<!-- 아이디 중복체크 -->
+	<select id="selectEmpId" resultType="int" parameterType="string">
+		SELECT COUNT(*) FROM EMPLOYEES WHERE EMP_ID = #{empId}
+	</select>
 	
 </mapper>

@@ -44,8 +44,8 @@
 								                   <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">
 								               </div>
 								               <div class="ms-3 name">
-								                   <h5 class="font-bold"><span th:text="*{empName}"></span></h5>
-								                   <h6 class="text-muted mb-0">@johnducky</h6>
+								                   <h5 class="font-bold" ><span th:text="*{empName}"></span></h5>
+	                   							   <h6 class="text-muted mb-0" th:text="${'@' + #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
 								               </div>
 								           </div>
 								       </div> <!-- 카드 -->
@@ -57,7 +57,7 @@
 											</div>
 											<div th:unless="${emp.empProfile != null}">
 												<div id="preview_profile">
-												    <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+												    <img th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 												</div>
 <!-- 												<input type="file" name="empProfile" id="empProfile" accept="image/*" multiple> -->
 						                    </div>
@@ -75,7 +75,7 @@
 						                    <label for="empName">이름</label>
 						                    <div class="form-group">
 <!-- 												<input type="text" id="empName" class="form-control" name="empName" th:value="${emp.empName}"> -->
-												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" readonly>
+												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" >
 						                    </div>
 						                    <label for="empId">사원 번호</label>
 						                    <div class="form-group">
@@ -105,11 +105,53 @@
 						                    <div class="form-group">
 						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="${emp.empEmail}">
 						                    </div>
-						                    <label for="empStartDate">입사일</label>
-						                    <div class="date-range">
-												<div class="date-range">
-												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:value="${emp.empStartDate}" readonly>
-												</div>
+						                    
+						                    <label for="empStartDate">생년월일</label>
+										    <div style="position: relative;">
+										      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+										        <input type="text" id="empBirthday" aria-label="empBirthday" th:field="*{empBirthday}">
+										        <span class="tui-ico-date"></span>
+										      </div>
+										      <div id="empBirthdayWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+										    </div>
+										    <br>
+											<label for="empStartDate">입사일</label>
+										    <div style="position: relative;">
+										      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+										        <input type="text" id="empStartDate" aria-label="empStartDate" th:field="*{empStartDate}">
+										        <span class="tui-ico-date"></span>
+										      </div>
+										      <div id="empStartDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+										    </div>
+							
+							
+							  
+										<!-- TOAST UI DatePicker 스크립트 -->
+											<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
+											<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+											<script type="text/javascript">
+											  // 생년월일 DatePicker
+											  const startPicker = new tui.DatePicker('#empBirthdayWrapper', {
+												language: 'ko',  
+											    date: new Date(),
+											    input: {
+											      element: '#empBirthday',
+											      format: 'yyyy-MM-dd'
+											    }
+											  });
+											
+											  // 입사일 DatePicker
+											  const endPicker = new tui.DatePicker('#empStartDateWrapper', {
+												language: 'ko',  
+											    date: new Date(),
+											    input: {
+											      element: '#empStartDate',
+											      format: 'yyyy-MM-dd'
+											    }
+											  });
+											  
+											</script>
+							
 											</div>
 						                    <label for="empGender">성별</label>
 						                    <div class="form-group" >
@@ -215,6 +257,7 @@
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
     <th:block layout:fragment="script">
+    	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
@@ -241,12 +284,22 @@
             	        processData: false, //FormData 사용시 필수
             	        contentType: false,//FormData 사용시 필수
             	        success: function(response) {
-            	            alert(response);
-            	            location.reload();
-
+            	        	Swal.fire({
+        				        title: '수정 하시겠습니까?',
+        				        icon: 'warning',
+        				        showCancelButton: true,   
+        				        confirmButtonColor: '#435ebe',   
+        				        cancelButtonColor: '#f27474',       
+        				        confirmButtonText: '네',         
+        				        cancelButtonText: '아니오'       
+        				    }).then((result) => {
+        				        if (result.isConfirmed) {
+	            	            location.reload();
+        				        }
+        				    });
             	        },
             	        error: function(error) {
-            	            alert("정보 수정 실패ㅠㅠ");
+            	        	Swal.fire("정보 수정 실패ㅠㅠ");
             	        }
             	    });
             	});

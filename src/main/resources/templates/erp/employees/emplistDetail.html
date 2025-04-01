@@ -8,8 +8,11 @@
 <title>Insert title here</title>
 		<!-- 부트스트랩 모달 css -->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+		
 		<!-- 부트스트랩 모달 js -->
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+		
+		
 		
 		<!-- 그리드 -->
 		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
@@ -34,7 +37,6 @@
 <!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
                 <!-- 표 예시 -->
                 <div class="table-responsive">
-                <div>
 					<form th:action="@{/emp/empUpdate/{id}(id=${emp.empId})}" th:object="${emp}" id="empDetail" name="empDetail" method="post" enctype="multipart/form-data">
 						                <div class="body">
 											<label for="empProfileFile">프로필사진</label>
@@ -42,7 +44,7 @@
 											
 											    <div id="preview_profile">
 											        <img th:if="${emp.empProfile != null}" th:src="@{'/images/' + ${emp.empProfile}}" class="profile-thumb" alt="profile" height="100px">
-											        <img th:if="${emp.empProfile == null}" th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+											        <img th:if="${emp.empProfile == null}" th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 											    </div>
 											</div>
 												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
@@ -86,12 +88,53 @@
 						                    <div class="form-group">
 						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="*{empEmail}">
 						                    </div>
-						                    <label for="empStartDate">입사일</label>
-						                    <div class="date-range">
-												<div class="date-range">
-												    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" th:value="*{empStartDate}">
-												</div>
-											</div>
+						                    
+											
+											<label for="empStartDate">생년월일</label>
+										    <div style="position: relative;">
+										      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+										        <input type="text" id="empBirthday" aria-label="empBirthday" th:field="*{empBirthday}">
+										        <span class="tui-ico-date"></span>
+										      </div>
+										      <div id="endDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+										    </div>
+										    <br>
+											<label for="empStartDate">입사일</label>
+										    <div style="position: relative;">
+										      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+										        <input type="text" id="empStartDate" aria-label="empStartDate" th:field="*{empStartDate}">
+										        <span class="tui-ico-date"></span>
+										      </div>
+										      <div id="endDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+										    </div>
+							
+							
+							  
+										<!-- TOAST UI DatePicker 스크립트 -->
+											<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
+											<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+											<script type="text/javascript">
+											  // 입사일 DatePicker
+											  const startPicker = new tui.DatePicker('#startDateWrapper', {
+												language: 'ko',  
+											    date: new Date(),
+											    input: {
+											      element: '#empStartDate',
+											      format: 'yyyy-MM-dd'
+											    }
+											  });
+											
+											  // 생년월일 DatePicker
+											  const endPicker = new tui.DatePicker('#endDateWrapper', {
+												language: 'ko',  
+											    date: new Date(),
+											    input: {
+											      element: '#empBirthday',
+											      format: 'yyyy-MM-dd'
+											    }
+											  });
+											  
+											</script>
 						                    <label for="empGender">성별</label>
 						                    <div class="form-group" >
 						                      <select id="empGender" name="empGender" class="form-select" th:field="*{empGender}">
@@ -170,20 +213,19 @@
 						                    <div class="form-group">
 						                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control" th:value="${emp.salBankAccount}">
 						                    </div>						                    
-						                </div> <!-- form body -->
 						                <div class="modal-footer">
 <!-- 						                    <button type="submit" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary">수정</button> -->
 						                    <button type="button" id="btnDetailUpdate" name ="btnUpdate" class="btn btn-primary" onclick="empDetail_view()">수정</button>
 						                </div>
 						            </form>	
+						        </div> <!-- form body -->
 				</div>
                 </div>
-            </div>
-        </div>
         
         <!-- 페이지 내용 작성 영역 끝 -->
-    </div>
+ </div>
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
@@ -206,9 +248,20 @@
             	            processData: false,
             	            contentType: false,
             	            success: function(response) {
-            	                alert(response);
-            	                location.reload();
-            	            },
+                   	        	Swal.fire({
+               				        title: '수정 하시겠습니까?',
+               				        icon: 'warning',
+               				        showCancelButton: true,   
+               				        confirmButtonColor: '#435ebe',   
+               				        cancelButtonColor: '#f27474',       
+               				        confirmButtonText: '네',         
+               				        cancelButtonText: '아니오'       
+               				    }).then((result) => {
+               				        if (result.isConfirmed) {
+       	            	            location.reload();
+               				        }
+               				    });
+                   	        },
             	            error: function(error) {
             	                alert("정보 수정 실패ㅠㅠ");
             	            }

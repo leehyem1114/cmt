@@ -23,6 +23,10 @@
 	.date-range input {width: 150px; /* 입력 필드 크기 조정 */}
 	
 	.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
+
+	#idCheckMsg {
+    color: black !important;
+}
 </style>
 </head>
 <body>
@@ -67,41 +71,65 @@
 						<input type="text" id="empNameID" th:field="*{empName}" class="" maxlength="9">
 		                <div class="date-range">
 							입사일 
-							<div class="date-range">
-							    <input type="text" id="startDate" th:field="*{startDate}" class="form-control datepicker" placeholder="시작 날짜">~
-							    <input type="text" id="endDate"  th:field="*{endDate}" class="form-control datepicker" placeholder="종료 날짜">
-							</div>
+<!-- 							<div class="date-range"> -->
+<!-- 							    <input type="text" id="startDate" th:field="*{startDate}" class="form-control datepicker" placeholder="시작 날짜">~ -->
+<!-- 							    <input type="text" id="endDate"  th:field="*{endDate}" class="form-control datepicker" placeholder="종료 날짜"> -->
+<!-- 							</div> -->
+							<label for="startDate"></label>
+							    <div style="position: relative;">
+							      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+							        <input type="text" id="startDate" aria-label="Start Date" th:field="*{startDate}">
+							        <span class="tui-ico-date"></span>
+							      </div> 
+							      <div id="startDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;" ></div>
+							    </div>
+							
+							    <label for="endDate"></label>
+							    <div style="position: relative;">
+							      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+							        <input type="text" id="endDate" aria-label="End Date" th:field="*{endDate}">
+							        <span class="tui-ico-date"></span>
+							      </div>
+							      <div id="endDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+							    </div>
+							
+							
+							  
+							<!-- TOAST UI DatePicker 스크립트 -->
+							<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
+							<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+							<script type="text/javascript">
+							  // 시작일 DatePicker
+							  const startPicker = new tui.DatePicker('#startDateWrapper', {
+								language: 'ko',  
+							    date: new Date(),
+							    input: {
+							      element: '#startDate',
+							      format: 'yyyy-MM-dd'
+							    }
+							  });
+							
+							  // 종료일 DatePicker
+							  const endPicker = new tui.DatePicker('#endDateWrapper', {
+								language: 'ko',  
+							    date: new Date(),
+							    input: {
+							      element: '#endDate',
+							      format: 'yyyy-MM-dd'
+							    }
+							  });
+							  
+							</script>
+							
+							<button type="submit" class="btn btn-primary btnSearchEmp">검색</button>    
+							
 						</div>
-						<button type="submit" class="btn btn-primary btnSearchEmp">검색</button>      
 	                </form>
                 </div>
                 <!-- 표 예시 -->
                 <div class="table-responsive">
                     <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-<!--                                 <th>항목 1</th> -->
-<!--                                 <th>항목 2</th> -->
-<!--                                 <th>항목 3</th> -->
-                            </tr>
-                        </thead>
                         <tbody>
-<!--                            <tr>-->
-<!--                                <th>NO</th>-->
-<!--                                <th>사원번호</th>-->
-<!--                                <th>이름</th>-->
-<!--                                <th>부서명</th>-->
-<!--                                <th>직급</th>-->
-<!--                                <th>입사일</th>-->
-<!--                            </tr>-->
-<!--                             <tr th:each="emp, stat : ${emplist}" th:data-id="${emp.empId}" class="clickable-row">-->
-<!--						        <td th:text="${stat.count}"></td>  순번 -->
-<!--						        <td th:text="${emp.empId}"></td>  사번 -->
-<!--						        <td th:text="${emp.empName}"></td>  이름 -->
-<!--						        <td th:text="${emp.deptName}"></td>  부서명 -->
-<!--						        <td th:text="${emp.deptPosition}"></td>  직급 -->
-<!--						        <td th:text="${#temporals.format(emp.empStartDate, 'yyyy-MM-dd')}"></td>  입사일 -->
-<!--						    </tr>-->
 							<!-- 1. grid 들어갈 자리 -->
 							<div id="gridTop" style="margin-top:30px;"></div>
 							
@@ -181,7 +209,7 @@
 	                    <div class="form-group" >
 							<div>
 							    <div id="preview_profile">
-							        <img th:src="@{/images/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+							        <img th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 							    </div>
 							</div>
 							<input type="file" id="empProfileFile" name="empProfileFile" accept="image/*" multiple> <!-- multipart로 받아야함 -->
@@ -201,6 +229,7 @@
 	                    <label for="empId">사원 번호</label>
 	                    <div class="form-group">
 	                        <input type="text" id="empId" class="form-control" name="empId" placeholder="사원 번호 입력" required>
+	                        <small id="idCheckMsg" class="text-danger"></small>
 	                    </div>
 	                    <label for="empPassword">비밀번호 [ *초기 비밀번호 1234 권장 ]</label>
 	                    <div class="form-group">
@@ -230,18 +259,53 @@
 	                    <div class="form-group">
 	                        <input type="text" id="empEmail" name="empEmail" class="form-control" placeholder="이메일 입력">
 	                    </div>
-	                    <label for="empBirthday">생년월일</label>
-	                    <div class="date-range">
-							<div class="date-range">
-							    <input type="text" id="empBirthday" name="empBirthday" class="form-control datepicker" >
-							</div>
-						</div>
-	                    <label for="empStartDate">입사일</label>
-	                    <div class="date-range">
-							<div class="date-range">
-							    <input type="text" id="empStartDate" name="empStartDate" class="form-control datepicker" >
-							</div>
-						</div>
+	                    
+	                    <label for="empbirthDay">생년월일</label>
+					    <div style="position: relative;">
+					      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+					        <input type="text" id="empBirthday" aria-label="empBirthday" >
+					        <span class="tui-ico-date"></span>
+					      </div>
+					      <div id="birthdayWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+					    </div>
+					    <br>
+						<label for="empStartDate2">입사일</label>
+					    <div style="position: relative;">
+					      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+					        <input type="text" id="empStartDate2" aria-label="empStartDate2" >
+					        <span class="tui-ico-date"></span>
+					      </div>
+					      <div id="startDateWrapper2" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+					    </div>
+		
+		
+		  
+					<!-- TOAST UI DatePicker 스크립트 -->
+						<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
+						<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+						<script type="text/javascript">
+						  // 생년월일 DatePicker
+						  const startPicker2 = new tui.DatePicker('#birthdayWrapper', {
+							language: 'ko',  
+						    date: new Date(),
+						    input: {
+						      element: '#empBirthday',
+						      format: 'yyyy-MM-dd'
+						    }
+						  });
+						
+						  // 입사일 DatePicker
+						  const endPicker2 = new tui.DatePicker('#startDateWrapper2', {
+							language: 'ko',  
+						    date: new Date(),
+						    input: {
+						      element: '#empStartDate2',
+						      format: 'yyyy-MM-dd'
+						    }
+						  });
+						  
+						</script>
+						<br>
 	                    <label for="empGender">성별</label>
 	                    <div class="form-group" >
 	                       <select id="empGender" name="empGender" class="form-select">
@@ -322,7 +386,7 @@
 		                    </div>	                    
 	                <div class="modal-footer">
 	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                    <button type="submit" id="btnEmpRegi" class="btn btn-primary">등록</button>
+	                    <button type="button" id="btnEmpRegi" class="btn btn-primary" onclick="empSubmit()">등록</button>
 	                </div>
 	            </form>
 	        </div>
@@ -342,9 +406,7 @@
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
     <th:block layout:fragment="script">
-	    <script th:if="${msg != null}">
-		    alert('[[${msg}]]');
-		</script>
+	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
@@ -381,7 +443,43 @@
 		    });
 		  });
 		});
+            //사원등록 얼럿창
+            function empSubmit(){
+            	Swal.fire({
+                    title: '사원등록을 저장하겠습니까?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '사원등록',
+                    cancelButtonText: '아니오'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('empRegi').submit();
+                    }
+                });
+            }
+            // 사원번호 유효성 검사
+			$('#empId').on('input', function(){
+			    console.log("입력되는중 .. . . . .  . ..");
+			    var empId = $(this).val();
+			    $.ajax({
+			        url : '/emp/checkId',
+			        type : 'post',
+			        data : { empId : empId },
+			        success : function(response){
+			            if(response){
+			                $('#idCheckMsg').text('[중복 아이디] 이미 사용중인 아이디 입니다.').css('color', 'black');
+			            } else {
+			                $('#idCheckMsg').text('사용 가능한 아이디 입니다.').css('color', 'black');
+			            } 
+			        },
+			        error : function(){
+			            console.log("아이디 중복체크 오류")
+			        }
+			    });
+			});
             
+            
+          
         </script>
 		
         <!-- 캘린더 -->
