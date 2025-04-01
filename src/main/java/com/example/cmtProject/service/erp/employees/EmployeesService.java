@@ -110,4 +110,9 @@ public class EmployeesService {
 		// TODO Auto-generated method stub
 		return empMapper.updateEmpDetail(id);
 	}
+	
+	//아이디 중복검사
+	public boolean checkId(String empId) {
+		return empMapper.selectEmpId(empId) > 0;
+	}
 }
