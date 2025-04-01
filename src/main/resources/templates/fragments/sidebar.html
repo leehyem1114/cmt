@@ -54,11 +54,10 @@
 						    <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
 						</th:block>
 					    
-				        <th:block th:if="${!hasCheckedOut}">
+				        <th:block th:if="${hasCheckedIn && !hasCheckedOut}">
 				        	<button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
-				        	<button type="button" class="btn btn-lg btn-secondary" onclick="earlyLeave()">조퇴</button>
 						</th:block>
-						<th:block th:if="${hasCheckedOut and hasCheckedIn}">
+						<th:block th:if="${hasCheckedOut && hasCheckedIn}">
 						    <button type="button" class="btn btn-lg btn-primary disabled " onclick="checkOut()">퇴근</button>
 						</th:block>
 					</div>
@@ -187,12 +186,12 @@
 			        <span th:text="${#authentication.principal.user.empName}"></span>님,반갑읍니다 ^^...
 			    
 		        <!-- 로그아웃 버튼 -->
-				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='logout'">
+				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='/logout'">
 					로그아웃 &nbsp; <i class="bi bi-box-arrow-right "></i>
 				</button>
 				</th:block>
 				<th:block th:if="${!#authorization.expression('isAuthenticated()')}">
-					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='loginForm'">
+					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='/loginForm'">
 					로그인 &nbsp; <i class="bi bi-box-arrow-right "></i>
 					</button>
 				</th:block>

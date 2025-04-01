@@ -1,27 +1,18 @@
 package com.example.cmtProject.entity.erp.attendanceMgt;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
-import com.example.cmtProject.entity.erp.employees.Employees;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -61,8 +52,8 @@ public class Attend {
     private String remarks; // 비고 (ATD_REMARKS)
     
     @Builder
-    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, String attendType, String attendStatus,
-			String remarks) {
+    public Attend(Long atdNo, Long empNo, String empName, LocalDateTime attendDate, LocalDateTime attendLeave, 
+    		String attendType, String attendStatus, String remarks) {
     	this.atdNo = atdNo;
 		this.empNo = empNo;
 		this.empName = empName;

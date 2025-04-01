@@ -22,7 +22,7 @@
 		SELECT ATD_NO
 	    FROM ATTENDS
 	    WHERE EMP_NO = #{empNo}
-	      AND ATD_TYPE = 'WORK'
+	      AND ATD_TYPE = 'ATT001'
 	    ORDER BY ATD_DATE DESC
 	    FETCH FIRST 1 ROWS ONLY
 	</select>
@@ -42,7 +42,7 @@
 	<update id="updateAttendLeave">
 	    UPDATE ATTENDS
 	    SET ATD_LEAVE = #{leaveTime},
-	    	ATD_TYPE = #{atdType}
+	    	ATD_TYPE = #{attendType}
 	    WHERE ATD_NO = #{atdNo}
 	</update>
 	
