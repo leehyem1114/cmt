@@ -15,8 +15,6 @@ public interface AttendRepository extends JpaRepository<Attend, Long> {
 	// 출결 목록 조회
     List<Attend> findByEmpNoOrderByAtdNoDesc(Long empNo);
     
-    // 페이징 처리
-    Page<Attend> findAllByOrderByAttendDateDesc(Pageable pageable);
     
     
     
