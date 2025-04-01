@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
 
 @Mapper
@@ -26,7 +27,7 @@ public interface AttendsMapper {
     // 퇴근 시간 업데이트
     int updateAttendLeave(@Param("atdNo") Long atdNo,
                           @Param("leaveTime") LocalDateTime leaveTime,
-                          @Param("atdType") String leave);
+                          @Param("attendType") String attendType);
 	
 
 }

@@ -5,17 +5,22 @@
 	      layout:decorate="~{layouts/layout}"> 
 	<head>
 		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
-	    
+	    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	    <title>출퇴근 관리</title>
 
+<style>
+  .tui-datepicker {
+    z-index: 99999 !important;
+    position: absolute !important;
+  }
+</style>
+
+
 </head>
 
-<style>
-
-</style>
 
 <body>
 
@@ -30,25 +35,86 @@
 	   	
 		
 		
-		<div class="btn-group-custom" style="text-align: right;">
-        <th:block th:if="${!hasCheckedIn}">
-		    <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
-		</th:block>
-	    
-        <th:block th:if="${!hasCheckedOut}">
-        	<button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
-        	<button type="button" class="btn btn-lg btn-secondary" onclick="earlyLeave()">조퇴</button>
-		</th:block>
-	    
-        
-            <button type="button" 
-            class="btn btn-lg btn-outline-danger " 
-            onclick="deleteAttend()" 
-            sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
-	        삭제
-	    </button>
-    	</div>
-    	<br>
+		
+    	<!-- 전체 한 줄, 버튼 오른쪽 -->
+		<div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+		
+		  <!-- 왼쪽: 검색창 + 날짜 -->
+		  <div style="display: flex; align-items: center; gap: 10px;">
+		    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
+		
+		    <label for="startDate">시작일:</label>
+		    <div style="position: relative;">
+		      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+		        <input type="text" id="startDate" aria-label="Start Date">
+		        <span class="tui-ico-date"></span>
+		      </div> 
+		      <div id="startDateWrapper" style="margin-top: -1px;"></div>
+		    </div>
+		
+		    <label for="endDate">종료일:</label>
+		    <div style="position: relative;">
+		      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+		        <input type="text" id="endDate" aria-label="End Date">
+		        <span class="tui-ico-date"></span>
+		      </div>
+		      <div id="endDateWrapper" style="margin-top: -1px;"></div>
+		    </div>
+		
+		    <button id="dateSearchBtn" class="btn btn-primary">검색</button>
+		  </div>
+		
+		  <!-- 오른쪽: 버튼 묶음 (이게 flex item이자 margin-left: auto 적용 대상!) -->
+		  <div class="btn-group-custom" style="margin-left: auto; display: flex; gap: 10px;">
+		    <th:block th:if="${!hasCheckedIn}">
+		      <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
+		    </th:block>
+		    
+		    <th:block th:if="${hasCheckedIn && !hasCheckedOut}">
+		      <button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
+		    </th:block>
+		    
+		    <th:block th:if="${hasCheckedOut && hasCheckedIn}">
+			    <button type="button" class="btn btn-lg btn-primary disabled " onclick="checkOut()">퇴근</button>
+			</th:block>
+		    
+		    <button type="button" 
+		            class="btn btn-lg btn-danger" 
+		            onclick="deleteAttend()" 
+		            sec:authorize="hasAnyRole('ADMIN')">
+		      삭제
+		    </button>
+		  </div>
+		</div>
+		
+		<!-- TOAST UI DatePicker 스크립트 -->
+		<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
+		<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+		<script type="text/javascript">
+		  // 시작일 DatePicker
+		  const startPicker = new tui.DatePicker('#startDateWrapper', {
+			language: 'ko',  
+		    date: new Date(),
+		    input: {
+		      element: '#startDate',
+		      format: 'yyyy-MM-dd'
+		    }
+		  });
+		
+		  // 종료일 DatePicker
+		  const endPicker = new tui.DatePicker('#endDateWrapper', {
+			language: 'ko',  
+		    date: new Date(),
+		    input: {
+		      element: '#endDate',
+		      format: 'yyyy-MM-dd'
+		    }
+		  });
+		  
+		</script>
+		
+		<br>
+		
     	<div id="gridTop"></div>
     	
     
@@ -72,7 +138,7 @@
             	  name: 'atdNo', 
             	  sortable: true, 
             	  filter: 'text',
-            	  width: 100,
+            	  width: 150,
             	  align: "center" 
             	},
             	{ 
@@ -80,7 +146,7 @@
             	  name: 'empNo', 
             	  sortable: true, 
             	  filter: 'text', 
-            	  width: 100,
+            	  width: 150,
             	  align: "center" 
             	},
             	{ 
@@ -88,7 +154,7 @@
             	  name: 'empName', 
             	  sortable: true, 
             	  filter: 'text', 
-            	  width: 100,
+            	  width: 150,
             	  align: "center" 
             	},
             	{ 
@@ -96,6 +162,7 @@
             	  name: 'attendDate', 
             	  sortable: true, 
             	  filter: 'text',
+            	  width: 300,
            		  align: "center",
 	           		formatter: function({ value }) {
 	           		    // 날짜 형식을 'YYYY-MM-DD HH:mm'로 포맷팅
@@ -113,6 +180,7 @@
             	  name: 'attendLeave', 
             	  sortable: true, 
             	  filter: 'text',
+            	  width: 300,
            		  align: "center",
 	           		formatter: function({ value }) {
 	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
@@ -135,17 +203,17 @@
            		  sortable: true, 
            		  filter: 'text',
            		  align: "center",
-           		  width: 100,
+           		  width: 150,
            		formatter: function({ row }) {
-	                   if (row.attendType === 'WORK') {
+	                   if (row.attendType === 'ATT001') {
 	                       return '<a class="btn btn-primary btn-sm">출근</a>';
-	                   } else if (row.attendType === 'LEAVE') {
+	                   } else if (row.attendType === 'ATT002') {
 	                       return '<a class="btn btn-danger btn-sm">휴가</a>';
-	                   }else if (row.attendType === 'BUSINESS_TRIP') {
+	                   }else if (row.attendType === 'ATT003') {
 		                   return '<a class="btn btn-ingo btn-sm">출장</a>';
-	                   } else if (row.attendType === 'OUTSIDE_WORK') {
+	                   } else if (row.attendType === 'ATT004') {
 	                       return '<a class="btn btn-light btn-sm">외근</a>';
-	                   } else if (row.attendType === 'LEAVE_TIME') {
+	                   } else if (row.attendType === 'ATT005') {
 	                       return '<a class="btn btn-secondary btn-sm">퇴근</a>';
 	                   } else return ''; // WORK가 아닌 경우 버튼 표시 안함
            			}
@@ -156,15 +224,15 @@
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center",
-           	      width: 100,
+           	      width: 150,
 	           	   formatter: function({ row }) {
-	                   if (row.attendStatus === 'NORMAL') {
+	                   if (row.attendStatus === 'ATS001') {
 	                       return '<a class="btn btn-primary btn-sm">정상</a>';
-	                   } else if (row.attendStatus === 'LATE') {
+	                   } else if (row.attendStatus === 'ATS002') {
 	                       return '<a class="btn btn-warning btn-sm">지각</a>';
-	                   }else if (row.attendStatus === 'EARLY_LEAVE') {
+	                   }else if (row.attendStatus === 'ATS003') {
 		                   return '<a class="btn btn-secondary btn-sm">조퇴</a>';
-	                   } else if (row.attendStatus === 'ABSENT') {
+	                   } else if (row.attendStatus === 'ATS004') {
 	                       return '<a class="btn btn-danger btn-sm">결근</a>';
 	                   } else return ''; // NORMAL이 아닌 경우 버튼 표시 안함
 	           	   } 
@@ -258,7 +326,7 @@
 
 	    	  if (result.isDenied) {
 	    	    await Swal.fire({
-	    	      icon: "info",
+	    	      icon: "error",
 	    	      title: "퇴근이 취소되었습니다.",
 	    	    });
 	    	    return;
@@ -271,7 +339,7 @@
 	    	      headers: {
 	    	        'Content-Type': 'application/json'
 	    	      },
-	    	      body: JSON.stringify({})
+	    	      body: JSON.stringify({attendType: "ATT005"})
 	    	    });
 
 	    	    if (!response.ok) {
@@ -297,8 +365,132 @@
 	    	    });
 	    	  }
 	    	}
+	    	
+	    	
+	    	async function deleteAttend() {
+	    		  const checkedRows = grid.getCheckedRows();
+	    		  const ids = checkedRows.map(row => row.atdNo);
+
+	    		  if (ids.length === 0) {
+	    		    await Swal.fire({
+	    		      icon: "warning",
+	    		      title: "삭제할 데이터를 선택해주세요."
+	    		    });
+	    		    return;
+	    		  }
+
+	    		  const result = await Swal.fire({
+	    		    title: "정말 삭제하시겠습니까?",
+	    		    text: `총 ${ids.length}건의 데이터를 삭제합니다.`,
+	    		    icon: "warning",
+	    		    showDenyButton: true,
+	    		    confirmButtonText: "삭제",
+	    		    denyButtonText: "취소",
+	    		  });
+
+	    		  if (result.isDenied) {
+	    		    await Swal.fire({
+	    		      icon: "error",
+	    		      title: "삭제가 취소되었습니다.",
+	    		    });
+	    		    return;
+	    		  }
+
+	    		  // 삭제 API 요청
+	    		  try {
+	    		    const response = await fetch('/attends/delete', {
+	    		      method: 'POST',
+	    		      headers: {
+	    		        'Content-Type': 'application/json'
+	    		      },
+	    		      body: JSON.stringify({ ids: ids }) // 필요 시 선택한 ID 전달
+	    		    });
+
+	    		    if (!response.ok) {
+	    		      await Swal.fire({
+	    		        icon: "error",
+	    		        title: "삭제 처리 중 서버 오류가 발생했습니다",
+	    		      });
+	    		      throw new Error("삭제 처리 중 서버 오류");
+	    		    }
+
+	    		    await Swal.fire({
+	    		      title: "삭제가 완료되었습니다",
+	    		      icon: "success",
+	    		    });
+
+	    		    location.reload();
+
+	    		  } catch (error) {
+	    		    console.error('Error:', error);
+	    		    await Swal.fire({
+	    		      icon: "error",
+	    		      title: "삭제 처리 중 예외가 발생했습니다",
+	    		    });
+	    		  }
+	    		}
 	    
+
+	    	
+	    	
+	    	// grid 데이터 원본 저장
+	    	const originalData = grid.getData();
+
+	    	document.getElementById('searchInput').addEventListener('input', function (e) {
+	    	  const keyword = e.target.value.toLowerCase();
+
+	    	  // 원본 데이터를 기준으로 필터링
+	    	  const filtered = originalData.filter(row => {
+	    	    return Object.values(row).some(val => {
+	    	      if (val == null) return false;
+	    	      return String(val).toLowerCase().includes(keyword);
+	    	    });
+	    	  });
+
+	    	  // 필터링된 데이터로 그리드 업데이트
+	    	  grid.resetData(filtered);
+	    	});
+	    	
+	    	
+	    	function applyFilter() {
+	    		  const keyword = document.getElementById('searchInput').value.toLowerCase();
+	    		  const start = document.getElementById('startDate').value;
+	    		  const end = document.getElementById('endDate').value;
+
+	    		  let filtered = originalData;
+
+	    		  if (start && end) {
+	    		    const startDate = new Date(start);
+	    		    const endDate = new Date(end);
+	    		    endDate.setHours(23, 59, 59, 999);
+
+	    		    filtered = filtered.filter(row => {
+	    		      const attendDate = new Date(row.attendDate);
+	    		      return attendDate >= startDate && attendDate <= endDate;
+	    		    });
+	    		  }
+
+	    		  if (keyword) {
+	    		    filtered = filtered.filter(row =>
+	    		      Object.values(row).some(val =>
+	    		        val != null && String(val).toLowerCase().includes(keyword)
+	    		      )
+	    		    );
+	    		  }
+
+	    		  grid.resetData(filtered);
+	    		}
+
+	    		document.getElementById('dateSearchBtn').addEventListener('click', applyFilter);
+	    		document.getElementById('searchInput').addEventListener('input', applyFilter);
+	    	
 		</script> 
+		
+		
+	
+		
+		
+		
 		
     </div>
    	

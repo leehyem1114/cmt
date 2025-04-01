@@ -11,6 +11,7 @@ import com.example.cmtProject.dto.comm.CommonCodeDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.mapper.common.CommonCodeMapper;
+import com.example.cmtProject.repository.comm.CommonCodeDetailRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +24,9 @@ public class CommonService {
     
     @Autowired
     private CommonCodeMapper commonCodeMapper;
+    
+    @Autowired
+    private CommonCodeDetailRepository commonCodeDetailRepository;
     
     
     /*공통코드 디테일값(디테일코드/네임) 불러오기*/
@@ -341,6 +345,17 @@ public class CommonService {
             }
         }
         return false;
+    }
+    
+    
+    public CommonCodeDetailDTO getDefaultCode(String group, String code) {
+        CommonCodeDetailDTO entity = commonCodeDetailRepository.findByCmnDetailCodeAndCmnCode(group, code);
+
+        return CommonCodeDetailDTO.builder()
+            .cmnDetailCode(entity.getCmnDetailCode())
+            .cmnCode(entity.getCmnCode())
+            .cmnDetailName(entity.getCmnDetailName())
+            .build();
     }
 
 	

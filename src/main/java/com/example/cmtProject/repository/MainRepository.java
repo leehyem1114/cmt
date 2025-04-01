@@ -8,5 +8,5 @@ import com.example.cmtProject.entity.Member;
 @Repository
 public interface MainRepository extends JpaRepository<Member, Long>{
 
-	public Member findByEmpName(String empName);
+	public Member findByEmpNo(Long empNo);
 }

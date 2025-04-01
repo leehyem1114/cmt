@@ -8,7 +8,7 @@
 //
 //import com.example.cmtProject.entity.Member;
 //import com.example.cmtProject.repository.MainRepository;
-
+//
 //@Service
 //public class PrincipalDetailsService implements UserDetailsService {
 //
@@ -29,9 +29,9 @@
 //	 * Security의 Session내부(Authentication의 내부(UserDetails))
 //	 */
 //	@Override
-//	public UserDetails loadUserByUsername(String empName) throws UsernameNotFoundException {
+//	public UserDetails loadUserByUsername(String empNo) throws UsernameNotFoundException {
 //		
-//		Member member = mainRepository.findByEmpName(empName);
+//		Member member = mainRepository.findByEmpNo(empNo);
 //		System.out.println("member : " + member);
 //		
 //		if (member == null) {
