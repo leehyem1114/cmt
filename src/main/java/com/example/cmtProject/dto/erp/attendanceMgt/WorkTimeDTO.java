@@ -23,9 +23,9 @@ public class WorkTimeDTO {
     private Long empNo; // 사원번호
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime wktDate; // 근무일자
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "HH:mm")
     private LocalDateTime wktStartTime; // 출근시간
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "HH:mm")
     private LocalDateTime wktEndTime; // 퇴근시간
     private String wktStatus; // 근무상태
     private String wktType; // 기준근무유형
