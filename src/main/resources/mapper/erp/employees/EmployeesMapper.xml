@@ -255,8 +255,15 @@
 	
 	</select>
 	<!-- 아이디 중복체크 -->
-	<select id="selectEmpId" resultType="int" parameterType="string">
+	<select id="selectEmpId" resultType="int" parameterType="string"> <!-- 단일 파라미터 받음 -->
 		SELECT COUNT(*) FROM EMPLOYEES WHERE EMP_ID = #{empId}
+	</select>
+	
+	<select id="selectId" parameterType="map"> <!-- 파라미터 여러개 받음 -->
+		SELECT EMP_ID , EMP_EMAIL , EMP_NAME
+		FROM EMPLOYEES
+		WHERE EMP_NAME = #{empName} AND EMP_EMAIL = #{empEmail}
+	
 	</select>
 	
 </mapper>

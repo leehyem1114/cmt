@@ -12,6 +12,7 @@ import com.example.cmtProject.dto.comm.CommonCodeDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.mapper.common.CommonCodeMapper;
+import com.example.cmtProject.repository.comm.CommonCodeDetailRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 

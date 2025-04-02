@@ -34,12 +34,8 @@ public class MainController {
 	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails, RedirectAttributes redirectAttributes) {
 		
 		if (principalDetails ==null) {
-			redirectAttributes.addFlashAttribute("msg","로그인 필수!\n로그인창으로 이동합니다.");
 			return "redirect:/login";
 		}
-		
-		principalDetails.getUser();
-		
 		return "home";
 	}
 	

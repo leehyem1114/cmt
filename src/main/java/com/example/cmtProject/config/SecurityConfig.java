@@ -42,8 +42,9 @@ public class SecurityConfig{
             .logout(logout -> logout
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/login")
-                    .invalidateHttpSession(true)
-                    //.deleteCookies("JSESSIONID") //세션 삭제
+                    .invalidateHttpSession(true) //세션삭제
+                    .clearAuthentication(true) // SecurityContext 정리
+//                    .deleteCookies("JSESSIONID") //쿠키삭제
                 );
 
         //.anyRequest().authenticated()); 모든 요청에 대해 인증(로그인) 필요

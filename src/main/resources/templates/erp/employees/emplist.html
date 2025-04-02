@@ -24,10 +24,119 @@
 	
 	.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
 
-	#idCheckMsg {
-    color: black !important;
-}
+/* 	#idCheckMsg { */
+/*     color: black !important; */
+/* } */
 </style>
+<th:block layout:fragment="script">
+	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+            
+           //프로필사진 미리보기
+		$(function () {
+			$("#empProfileFile").on("change", function (e) {
+		    let files = e.target.files;
+		    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+		
+		    if (imageFiles.length > 1) {
+		    	alert("프로필 사진은 1장만 업로드 가능합니다.");
+		    	imageFiles = imageFiles.slice(0, 1);
+		    }
+		
+		    $("#preview_profile").html("");
+		
+		    imageFiles.forEach(file => {
+		      let reader = new FileReader();
+		      reader.onload = function (event) {
+		      	let img = $("<img>")
+		          .attr("src", event.target.result)
+		          .attr("height", "100px")
+		          .addClass("profile-thumb");
+		
+		        $("#preview_profile").append(img);
+		      };
+		      reader.readAsDataURL(file);
+		    });
+		  });
+			
+			
+			  // 사원번호 유효성 검사
+			$("#empId").on("keyup", function() {
+			    var empId = $(this).val();
+			    $.ajax({
+			        url : '/emp/checkId',
+			        type : 'post',
+			        data : { empId : empId },
+			        success : function(response){
+			        	console.log(response);
+			            if(response == 1){
+			                $('#idCheckMsg').text('[중복 아이디] 이미 사용중인 아이디 입니다.').css('color', 'black');
+			            } else {
+			                $('#idCheckMsg').text('사용 가능한 아이디 입니다.').css('color', 'green');
+			            } 
+			        },
+			        error : function(){
+			            console.log("아이디 중복체크 오류");
+			        }
+			    });
+			});
+		});
+            //사원등록 얼럿창
+            function empSubmit(){
+            	Swal.fire({
+                    title: '사원등록을 저장하겠습니까?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '사원등록',
+                    cancelButtonText: '아니오'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('empRegi').submit();
+                    }
+                });
+            }
+        </script>
+		
+        <!-- 캘린더 -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+		<script>
+		    document.addEventListener("DOMContentLoaded", function() {
+		        flatpickr(".datepicker", {
+// 		            enableTime: true,  // 시간 선택 가능
+		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
+// 		            time_24hr: true,  // 24시간 형식
+// 		            minDate: "today", // 오늘 이후 선택 가능
+		            locale: "ko" // 한국어 설정 (선택 사항)
+		        });
+		    });
+		</script>
+		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script type="text/javascript">
+			function search_address() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						console.log(data);
+						document.empRegi.empPostCode.value = data.zonecode;
+	
+						let address = data.address;
+						if (data.buildingName != "") {
+							address += " (" + data.buildingName + ")";
+						}
+	
+						document.empRegi.empAddress1.value = address;
+						document.empRegi.empAddress2.focus();
+					}
+				}).open();
+			}
+		</script>
+    </th:block>
 </head>
 <body>
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -229,7 +338,7 @@
 	                    <label for="empId">사원 번호</label>
 	                    <div class="form-group">
 	                        <input type="text" id="empId" class="form-control" name="empId" placeholder="사원 번호 입력" required>
-	                        <small id="idCheckMsg" class="text-danger"></small>
+	                        <p id="idCheckMsg"></p>
 	                    </div>
 	                    <label for="empPassword">비밀번호 [ *초기 비밀번호 1234 권장 ]</label>
 	                    <div class="form-group">
@@ -405,115 +514,6 @@
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-    <th:block layout:fragment="script">
-	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-           //프로필사진 미리보기
-		$(function () {
-			$("#empProfileFile").on("change", function (e) {
-		    let files = e.target.files;
-		    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
-		
-		    if (imageFiles.length > 1) {
-		    	alert("프로필 사진은 1장만 업로드 가능합니다.");
-		    	imageFiles = imageFiles.slice(0, 1);
-		    }
-		
-		    $("#preview_profile").html("");
-		
-		    imageFiles.forEach(file => {
-		      let reader = new FileReader();
-		      reader.onload = function (event) {
-		      	let img = $("<img>")
-		          .attr("src", event.target.result)
-		          .attr("height", "100px")
-		          .addClass("profile-thumb");
-		
-		        $("#preview_profile").append(img);
-		      };
-		      reader.readAsDataURL(file);
-		    });
-		  });
-		});
-            //사원등록 얼럿창
-            function empSubmit(){
-            	Swal.fire({
-                    title: '사원등록을 저장하겠습니까?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: '사원등록',
-                    cancelButtonText: '아니오'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('empRegi').submit();
-                    }
-                });
-            }
-            // 사원번호 유효성 검사
-			$('#empId').on('input', function(){
-			    console.log("입력되는중 .. . . . .  . ..");
-			    var empId = $(this).val();
-			    $.ajax({
-			        url : '/emp/checkId',
-			        type : 'post',
-			        data : { empId : empId },
-			        success : function(response){
-			            if(response){
-			                $('#idCheckMsg').text('[중복 아이디] 이미 사용중인 아이디 입니다.').css('color', 'black');
-			            } else {
-			                $('#idCheckMsg').text('사용 가능한 아이디 입니다.').css('color', 'black');
-			            } 
-			        },
-			        error : function(){
-			            console.log("아이디 중복체크 오류")
-			        }
-			    });
-			});
-            
-            
-          
-        </script>
-		
-        <!-- 캘린더 -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script>
-		    document.addEventListener("DOMContentLoaded", function() {
-		        flatpickr(".datepicker", {
-// 		            enableTime: true,  // 시간 선택 가능
-		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
-// 		            time_24hr: true,  // 24시간 형식
-// 		            minDate: "today", // 오늘 이후 선택 가능
-		            locale: "ko" // 한국어 설정 (선택 사항)
-		        });
-		    });
-		</script>
-		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-		<script type="text/javascript">
-			function search_address() {
-				new daum.Postcode({
-					oncomplete : function(data) {
-						console.log(data);
-						document.empRegi.empPostCode.value = data.zonecode;
-	
-						let address = data.address;
-						if (data.buildingName != "") {
-							address += " (" + data.buildingName + ")";
-						}
-	
-						document.empRegi.empAddress1.value = address;
-						document.empRegi.empAddress2.focus();
-					}
-				}).open();
-			}
-		</script>
-    </th:block>
+    
 </body>
 </html>
