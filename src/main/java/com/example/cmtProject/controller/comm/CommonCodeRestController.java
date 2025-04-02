@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import com.example.cmtProject.comm.response.ApiResponse;
 import com.example.cmtProject.dto.comm.CommonCodeDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.service.comm.CommonService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,9 +32,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/common/codes")
 @Slf4j
 public class CommonCodeRestController {
+	
+	@Autowired
+	private CommonService commonService;
+	
+//    @Autowired
+//    @Qualifier("basicObjectMapper")
+//    private ObjectMapper objectMapper;
 
-    @Autowired
-    private CommonService commonService;
 
     /**
      * 공통코드 목록 조회

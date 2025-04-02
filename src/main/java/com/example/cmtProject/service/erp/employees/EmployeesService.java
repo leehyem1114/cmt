@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,5 +110,15 @@ public class EmployeesService {
 	public int updateEmpDetail(String id) {
 		// TODO Auto-generated method stub
 		return empMapper.updateEmpDetail(id);
+	}
+	
+	//아이디 중복검사
+	public boolean checkId(String empId) {
+		return empMapper.selectEmpId(empId) > 0;
+	}
+	//아이디 찾기
+	public String getEmpId(Map<String, String> map) {
+		// TODO Auto-generated method stub
+		return empMapper.selectId(map);
 	}
 }

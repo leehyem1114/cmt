@@ -410,36 +410,38 @@ const GridUtil = (function() {
      * @param {string|Array<string>} keyColumns - 제어할 키 컬럼명 또는 컬럼명 배열
      * @returns {boolean} 설정 성공 여부
      */
-    function setupKeyColumnControl(gridId, keyColumns) {
-        try {
-            const grid = _gridInstances[gridId];
-            if (!grid) {
-                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
-            }
+	function setupKeyColumnControl(gridId, keyColumns) {
+	    try {
+	        const grid = _gridInstances[gridId];
+	        if (!grid) {
+	            throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+	        }
 
-            // 문자열을 배열로 변환
-            const columns = Array.isArray(keyColumns) ? keyColumns : [keyColumns];
+	        // 문자열을 배열로 변환
+	        const columns = Array.isArray(keyColumns) ? keyColumns : [keyColumns];
 
-            grid.on('dblclick', ev => {
-                const rowType = grid.getValue(ev.rowKey, "ROW_TYPE");
+	        // 더블클릭 이벤트보다 선행하는 editingStart 이벤트 사용
+	        grid.on('editingStart', ev => {
+	            const rowData = grid.getRow(ev.rowKey);
+	            const rowType = rowData?.ROW_TYPE;
 
-                columns.forEach(column => {
-                    if (rowType === "select") {
-                        // 조회 데이터는 키 컬럼 비활성화
-                        grid.disableCell(ev.rowKey, column);
-                    } else {
-                        // 신규/수정 데이터는 키 컬럼 활성화
-                        grid.enableCell(ev.rowKey, column);
-                    }
-                });
-            });
+	            // 키 컬럼에 해당하는지 확인
+	            if (columns.includes(ev.columnName)) {
+	                // INSERT가 아닌 데이터의 키 컬럼 편집 방지
+	                if (rowType !== 'insert') {
+	                    // 기존 데이터는 키 컬럼 편집 취소
+	                    ev.stop();
+	                    console.log(`키 컬럼(${ev.columnName}) 편집이 방지되었습니다. 행 타입: ${rowType}`);
+	                }
+	            }
+	        });
 
-            return true;
-        } catch (error) {
-            console.error('키 컬럼 제어 설정 중 오류:', error);
-            return false;
-        }
-    }
+	        return true;
+	    } catch (error) {
+	        console.error('키 컬럼 제어 설정 중 오류:', error);
+	        return false;
+	    }
+	}
 
     // =============================
     // 이벤트 관리 유틸리티

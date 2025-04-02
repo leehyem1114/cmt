@@ -33,9 +33,14 @@ public class CommonCodeDetailDTO {
     /** 상세코드 값 */
     private String cmnDetailValue;
     
+    /** 상세코드 값2 */
+    private String cmnDetailValue2;
+    
     /** 상세코드 사용 여부 */
     private String cmnDetailCodeIsActive;
     
     /** 행 타입 (조회:select, 등록:insert, 수정:update, 삭제:delete) */
     private String rowType;
 } //CommonCodeDetailDTO
+
+

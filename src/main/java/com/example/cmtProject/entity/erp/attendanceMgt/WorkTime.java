@@ -1,13 +1,17 @@
 package com.example.cmtProject.entity.erp.attendanceMgt;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.WorkTimeDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -25,8 +29,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "WORK_TIMES")
 public class WorkTime {
 
@@ -35,40 +39,52 @@ public class WorkTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long wktNo; // 근무시간NO (WKT_NO)
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EMP_NO", nullable = false)
-    private Employees empNo; // 사원번호 (EMP_NO), 사원 테이블 참조
+    @Column(name = "EMP_NO", unique = true)
+    private Long empNo; // 사원번호 (EMP_NO), 사원 테이블 참조
 
-    @Column(name = "WKT_DATE", nullable = false)
-    private LocalDate workDate; // 근무일자 (WKT_DATE)
+    @Column(name = "WKT_DATE")
+    private LocalDateTime wktDate; // 근무일자 (WKT_DATE)
 
     @Column(name = "WKT_START_TIME")
-    private LocalTime startTime; // 출근시간 (WKT_START_TIME)
+    private LocalDateTime wktStartTime; // 출근시간 (WKT_START_TIME)
 
     @Column(name = "WKT_END_TIME")
-    private LocalTime endTime; // 퇴근시간 (WKT_END_TIME)
+    private LocalDateTime wktEndTime; // 퇴근시간 (WKT_END_TIME)
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "WKT_STATUS", nullable = false)
-    private WorkStatus workStatus; // 근무상태 (WKT_STATUS)
+    @Column(name = "WKT_STATUS")
+    private String wktStatus; // 근무상태 (WKT_STATUS)
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "WKT_TYPE", nullable = false)
-    private WorkType workType; // 기준근무유형 (WKT_TYPE)
+    @Column(name = "WKT_TYPE")
+    private String wktType; // 기준근무유형 (WKT_TYPE)
 
     @Column(name = "WKT_REMARKS", length = 200)
-    private String remarks; // 비고 (WKT_REMARKS)
+    private String wktRemarks; // 비고 (WKT_REMARKS)
     
-    public static WorkTime toEntity(WorkTimeDTO dto, Employees employee) {
+    public WorkTime toDto() {
         return WorkTime.builder()
-            .empNo(employee)
-            .workDate(dto.getWorkDate())
-            .startTime(dto.getStartTime())
-            .endTime(dto.getEndTime())
-            .workStatus(dto.getWorkStatus())
-            .workType(dto.getWorkType())
-            .remarks(dto.getRemarks())
+        	.wktNo(wktNo)
+            .empNo(empNo)
+            .wktDate(wktDate)
+            .wktStartTime(wktStartTime)
+            .wktEndTime(wktEndTime)
+            .wktStatus(wktStatus)
+            .wktType(wktType)
+            .wktRemarks(wktRemarks)
             .build();
+    }
+    
+    @Builder
+    public WorkTime(Long wktNo, Long empNo, LocalDateTime wktDate,
+                    LocalDateTime wktStartTime, LocalDateTime wktEndTime,
+                    String wktStatus, String wktType, String wktRemarks) {
+        this.wktNo = wktNo;
+        this.empNo = empNo;
+        this.wktDate = wktDate;
+        this.wktStartTime = wktStartTime;
+        this.wktEndTime = wktEndTime;
+        this.wktStatus = wktStatus;
+        this.wktType = wktType;
+        this.wktRemarks = wktRemarks;
     }
 
 }

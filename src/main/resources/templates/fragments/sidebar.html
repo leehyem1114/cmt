@@ -1,9 +1,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 	<div th:fragment="sidebar" >
-
+		
 		<div id="topbar" class="d-block row d-flex justify-content-between align-items-center" >
 	        <div class="col-md-8 d-flex justify-content-start">
-	        
 	        
 		        <!-- 반응형 사이드바 메뉴 아이콘 -->
 		        <div id="sidebar-burger" class="d-flex align-items-center mx-4">
@@ -54,11 +53,10 @@
 						    <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
 						</th:block>
 					    
-				        <th:block th:if="${!hasCheckedOut}">
+				        <th:block th:if="${hasCheckedIn && !hasCheckedOut}">
 				        	<button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
-				        	<button type="button" class="btn btn-lg btn-secondary" onclick="earlyLeave()">조퇴</button>
 						</th:block>
-						<th:block th:if="${hasCheckedOut and hasCheckedIn}">
+						<th:block th:if="${hasCheckedOut && hasCheckedIn}">
 						    <button type="button" class="btn btn-lg btn-primary disabled " onclick="checkOut()">퇴근</button>
 						</th:block>
 					</div>
@@ -139,7 +137,7 @@
 		    	      headers: {
 		    	        'Content-Type': 'application/json'
 		    	      },
-		    	      body: JSON.stringify({})
+		    	      body: JSON.stringify({atdType: "ATT005"})
 		    	    });
 	
 		    	    if (!response.ok) {
@@ -187,13 +185,23 @@
 			        <span th:text="${#authentication.principal.user.empName}"></span>님,반갑읍니다 ^^...
 			    
 		        <!-- 로그아웃 버튼 -->
-				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='logout'">
+
+				<button type="button" id="logoutBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="logout()">
 					로그아웃 &nbsp; <i class="bi bi-box-arrow-right "></i>
 				</button>
+				
+				
+				
 				</th:block>
 				<th:block th:if="${!#authorization.expression('isAuthenticated()')}">
-					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='loginForm'">
-					로그인 &nbsp; <i class="bi bi-box-arrow-right "></i>
+
+
+
+					<button type="button" 
+				        id="loginBtn" 
+				        class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" 
+				        onclick="location.href='/login'">
+				        로그인 &nbsp; <i class="bi bi-box-arrow-right "></i>
 					</button>
 				</th:block>
 	        </div> <!-- right -->
@@ -241,17 +249,10 @@
 		                    </a>
 		                    <ul class="submenu">
 		                        <li class="submenu-item ">
-		                            <a href="/eapproval/approvalList">기안서목록</a>
+		                            <a href="/eapproval/documents">문서함</a>
 		                        </li>
 		                        <li class="submenu-item ">
 		                            <a href="/eapproval/document/new">기안서 작성</a>
-		                        </li>
-		                        <li class="submenu-item ">
-		                            <a href="/eapproval/approvalList">결재대기</a>
-		                        </li>
-		                        <li class="submenu-item ">
-		                            <a href="/eapproval/approvalList">수신문서함</a>
-		                        </li>
 		                    </ul>
 		                </li>
 		                
@@ -300,10 +301,7 @@
 		                    </a>
 		                    <ul class="submenu ">
 		                        <li class="submenu-item ">
-		                            <a href="/salaries/salaryItem">급여 유형 관리</a>
-		                        </li>
-		                        <li class="submenu-item ">
-		                            <a href="/salaries/salaryList">급여 지급 내역</a>
+		                            <a href="/salaries/payList">급여 지급 내역</a>
 		                        </li>
 		                        <li class="submenu-item" >
 		                        <!-- <li class="submenu-item" sec:authorize="hasRole('ROLE_ATHR001')"> -->
@@ -463,16 +461,29 @@
 		            </ul>
 		            
 		            
+		            <script type="text/javascript">
+					function logout(){
+					Swal.fire({
+				        title: '로그아웃 하시겠습니까?',
+				        icon: 'warning',
+				        showCancelButton: true,   // ← 반드시 켜줘야 No 버튼 나옴
+				        confirmButtonColor: '#435ebe',   // 네 버튼 색
+				        cancelButtonColor: '#f27474',       // 아니오 버튼 색
+				        confirmButtonText: '네',         // 네 버튼 이름
+				        cancelButtonText: '아니오'       // 아니오 버튼 이름
+				    }).then((result) => {
+				        if (result.isConfirmed) {
+							location.href='/logout';
+				        }
+				    });
+					}				
+				
+					</script>	
 		            
-		            
-		            
-		            
-		            
-						
 		        </div>
 		        <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
 		    </div>
 		</div> <!-- sidebar -->
-		
 	</div> <!-- th:fragment -->
+		
 </html>

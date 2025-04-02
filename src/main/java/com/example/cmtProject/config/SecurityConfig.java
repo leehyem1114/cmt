@@ -31,7 +31,7 @@ public class SecurityConfig{
             .anyRequest().permitAll() //그 외 모든 요청은 허용
             )
             .formLogin(login -> login
-                    .loginPage("/loginForm") // 로그인 페이지 설정
+                    .loginPage("/login") // 로그인 페이지 설정
                     .usernameParameter("empId") // username 필드 이름 변경
                     .passwordParameter("empPassword") // password 필드 이름 변경
                     .loginProcessingUrl("/login") //login주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인을 진행해준다. 그렇기 때문에 cotroller에 login페이지가 없다.
@@ -41,9 +41,10 @@ public class SecurityConfig{
             )
             .logout(logout -> logout
                     .logoutUrl("/logout")
-                    .logoutSuccessUrl("/")
-                    .invalidateHttpSession(true)
-                    //.deleteCookies("JSESSIONID") //세션 삭제
+                    .logoutSuccessUrl("/login")
+                    .invalidateHttpSession(true) //세션삭제
+                    .clearAuthentication(true) // SecurityContext 정리
+//                    .deleteCookies("JSESSIONID") //쿠키삭제
                 );
 
         //.anyRequest().authenticated()); 모든 요청에 대해 인증(로그인) 필요

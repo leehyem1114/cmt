@@ -26,7 +26,7 @@ public class PrincipalDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    	return List.of(new SimpleGrantedAuthority("ROLE_" + user.getEmpLevel()));
     }
 
     @Override public boolean isAccountNonExpired() { return true; }

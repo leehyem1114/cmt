@@ -1,6 +1,7 @@
 package com.example.cmtProject.mapper.erp.employees;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,5 +28,9 @@ public interface EmployeesMapper {
 	EmpRegistDTO selectMyEmpList(String empId);
 
 	int updateEmpDetail(String id);
+	//아이디 중복체크
+	int selectEmpId(String empId);
+	//아이디 찾기
+	String selectId(Map<String, String> map);
 
 }

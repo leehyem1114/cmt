@@ -3,16 +3,20 @@ package com.example.cmtProject.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.cmtProject.entity.Member;
 import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.repository.MainRepository;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
@@ -27,13 +31,19 @@ public class MainController {
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
 	
 	@GetMapping({"","/"})
-	public String main() {
+
+	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails, RedirectAttributes redirectAttributes) {
+		
+		if (principalDetails ==null) {
+			return "redirect:/login";
+		}
+
 		return "home";
 	}
 	
-	@GetMapping("/loginForm") //로그인폼
+	@GetMapping("/login") //로그인폼
 	public String loginForm() {
-		return "loginForm";
+		return "login";
 	}
 	
 	@GetMapping("/loginSuccess")
@@ -49,7 +59,7 @@ public class MainController {
 	public @ResponseBody String loginFail() {
 		
 		System.out.println("login 실패");
-		return "login 실패";
+		return "<script>alert('[ 로그인 실패 ] \\n아이디와 비밀번호를 다시 확인해주세요'); location.href='/';</script>";
 	}
 	
 	@GetMapping("/joinForm") //회원가입폼

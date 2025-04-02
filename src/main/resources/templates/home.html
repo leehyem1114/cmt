@@ -6,6 +6,64 @@
       layout:decorate="~{layouts/layout}"> 
 <head>
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" /> <!-- 토스트 -->
+	 <th:block layout:fragment="script">
+    	<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
+<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+
+        <script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+             document.addEventListener('DOMContentLoaded', function() {
+                 const calendar = new tui.Calendar('#calendar', {
+                     defaultView: 'month',
+                     template: {
+                         time(event) {
+                             const { start, end, title } = event;
+                             return `<span style="color: white;">${formatTime(start)}~${formatTime(end)} ${title}</span>`;
+                         },
+                         allday(event) {
+                             return `<span style="color: gray;">${event.title}</span>`;
+                         },
+                     },
+                     calendars: [
+                         {
+                             id: 'cal1',
+                             name: 'Personal',
+                             backgroundColor: '#03bd9e',
+                         },
+                         {
+                             id: 'cal2',
+                             name: 'Work',
+                             backgroundColor: '#00a9ff',
+                         },
+                     ],
+                 });
+             });
+            
+
+             
+             
+             
+            
+            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('페이지가 로드되었습니다.');
+                
+                // 여기에 초기화 코드 작성
+            });
+            
+            // 함수 예시
+            function exampleFunction() {
+                alert('버튼이 클릭되었습니다!');
+            }
+        </script>
+    </th:block>
 
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
@@ -26,91 +84,37 @@
 			
 			
 			<!-- 여기에 HTML 뷰페이지 코드 작성하세요!!!!!!!!!!!!!!!!!!! -->
-			
 	<div>
 	    <!-- ------------------------------------ -->
 		<!-- 로그인 상태일 경우 -->
 	    <div th:if="${#authorization.expression('isAuthenticated()')}">
 <!-- 	        <span th:text="${#authentication.name}"></span>님, 환영합니다! -->
 			<br>
-	    <!-- ------------------------------------ -->
+	    <!-- ------------------나의 카드------------------ -->
 			<div class="card-body py-4 px-4">
 	           <div class="d-flex align-items-center">
 	               <div class="avatar avatar-xl">
-	                   <img th:src="@{/images/profile_preview.png}" alt="Face 1">
+	                   <img th:if="${#authentication.principal.user.empProfile == null}" th:src="@{/imagess/profile_preview.png}" alt="Face 1">
+	                   <img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${#authentication.principal.user.empProfile}}">
 	               </div>
 	               <div class="ms-3 name">
-	                   <h5 class="font-bold">[사원이름 적을곳~]</h5>
-	                   <h6 class="text-muted mb-0">[@johnducky]</h6>
+	                   <h5 class="font-bold" th:text="${#authentication.principal.user.empName}"></h5>
+	                   <h6 class="text-muted mb-0" th:text="${'@'+ #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
 	               </div>
 	           </div>
 	       </div>
+	       
+	       
+	    <!-- ------------------------------------ -->
+			<div id="calendar" style="height: 600px" ></div> <!-- 캘린더 -->
 	    <!-- ------------------------------------ -->
 	        <a th:href="@{/logout}">로그아웃</a>
 	    </div>
 
 	    <!-- 로그아웃 상태일 경우 -->
 	    <div th:unless="${#authorization.expression('isAuthenticated()')}">
-	        <a th:href="@{/loginForm}">로그인</a>
+	        <a th:href="@{/login}">로그인</a>
 	    </div>
-	    <!-- ------------------------------------ -->
-	    
-	     <!-- ------------------------------------ -->
-		<div class="card">
-        <div class="card-header">
-            <h4 class="card-title">LogIn [만드는 중이라서 진짜 로그인은 ↖ 이쪽으로..^^]</h4>
-        </div>
-        <div class="card-content">
-            <div class="card-body">
-                <form class="form form-horizontal" action="login" method="post">
-                    <div class="form-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="first-name-horizontal-icon">ID</label>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group has-icon-left">
-                                    <div class="position-relative">
-                                        <input type="text" class="form-control" placeholder="ID" id="first-name-horizontal-icon">
-                                        <div class="form-control-icon">
-                                            <i class="bi bi-person"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="password-horizontal-icon">Password</label>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group has-icon-left">
-                                    <div class="position-relative">
-                                        <input type="password" class="form-control" placeholder="Password" id="password-horizontal-icon">
-                                        <div class="form-control-icon">
-                                            <i class="bi bi-lock"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group col-md-8 offset-md-4">
-                                <div class="form-check">
-                                    <div class="checkbox">
-                                        <input type="checkbox" id="checkbox2" class="form-check-input" checked="">
-                                        <label for="checkbox2">Remember Me</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary me-1 mb-1">Submit</button>
-                                <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>	    
-	    
-	    
 	    <!-- ----------------- -->
 	</div>
 	<br>
@@ -126,28 +130,6 @@
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-    <th:block layout:fragment="script">
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
-        </script>
-    </th:block>
+   
 </body>
 </html>
