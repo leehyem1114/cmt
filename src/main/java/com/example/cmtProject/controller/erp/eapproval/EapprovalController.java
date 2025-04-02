@@ -16,6 +16,8 @@ import com.example.cmtProject.dto.erp.eapproval.DocFormDTO;
 import com.example.cmtProject.service.erp.eapproval.DocumentService;
 import com.example.cmtProject.service.erp.eapproval.DocFormService;
 import com.example.cmtProject.service.erp.eapproval.ApprovalProcessService;
+import com.example.cmtProject.comm.exception.DocumentAccessDeniedException;
+import com.example.cmtProject.comm.exception.DocumentNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,37 +44,28 @@ public class EapprovalController {
      */
     @GetMapping
     public String index() {
-        return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+        return PathConstants.REDIRECT_DOCUMENT_LIST;
     }
 
     /**
      * 전자결재 문서함 페이지
      */
-    @GetMapping(PathConstants.APPROVAL_LIST)
-    public String approvalList(Model model, Principal principal) {
+    @GetMapping(PathConstants.DOCUMENT_LIST)
+    public String documentList(Model model, Principal principal) {
         String currentUserId = principal.getName();
         log.info("전자결재 문서함 접속: {}", currentUserId);
         
         try {
-            // 기안 문서 목록
-            List<DocumentDTO> draftDocuments = documentService.getDrafterDocumentsByEmpId(currentUserId);
-            // 대기 문서 목록
-            List<DocumentDTO> pendingDocuments = documentService.getPendingDocumentsByEmpId(currentUserId);
-            // 완료 문서 목록
-            List<DocumentDTO> completedDocuments = documentService.getDocumentsByStatus(DocumentStatus.COMPLETED);
-            // 반려 문서 목록
-            List<DocumentDTO> rejectedDocuments = documentService.getDocumentsByStatus(DocumentStatus.REJECTED);
+            model.addAttribute("myDrafts", documentService.getDrafterDocumentsByEmpId(currentUserId));
+            model.addAttribute("pendingDocs", documentService.getPendingDocumentsByEmpId(currentUserId));
+            model.addAttribute("completedDocs", documentService.getDocumentsByStatus(DocumentStatus.COMPLETED));
+            model.addAttribute("rejectedDocs", documentService.getDocumentsByStatus(DocumentStatus.REJECTED));
             
-            model.addAttribute("myDrafts", draftDocuments);
-            model.addAttribute("pendingDocs", pendingDocuments);
-            model.addAttribute("completedDocs", completedDocuments);
-            model.addAttribute("rejectedDocs", rejectedDocuments);
-            
-            return PathConstants.VIEW_APPROVAL_LIST;
+            return PathConstants.VIEW_DOCUMENT_LIST;
         } catch (Exception e) {
             log.error("문서함 조회 중 오류 발생", e);
             model.addAttribute("errorMessage", "문서 목록을 불러오는 중 오류가 발생했습니다.");
-            return PathConstants.VIEW_APPROVAL_LIST;
+            return PathConstants.VIEW_DOCUMENT_LIST;
         }
     }
 
@@ -93,7 +86,7 @@ public class EapprovalController {
             return PathConstants.VIEW_DOCUMENT_FORM;
         } catch (Exception e) {
             log.error("문서 작성 폼 로딩 중 오류 발생", e);
-            return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         }
     }
 
@@ -109,13 +102,11 @@ public class EapprovalController {
             
             // 문서 접근 권한 확인 (기안자만 수정 가능)
             if (!document.getDrafterId().equals(principal.getName())) {
-                log.warn("문서 수정 권한 없음: {} (요청자: {})", docId, principal.getName());
-                return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+                throw new DocumentAccessDeniedException("문서 수정 권한이 없습니다.");
             }
             
             // 임시저장 문서만 수정 가능
             if (!"Y".equals(document.getIsTempSaved())) {
-                log.warn("임시저장 문서가 아닙니다: {}", docId);
                 return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.DOCUMENT_VIEW + "/" + docId;
             }
             
@@ -126,9 +117,12 @@ public class EapprovalController {
             model.addAttribute("forms", forms);
             
             return PathConstants.VIEW_DOCUMENT_FORM;
+        } catch (DocumentNotFoundException | DocumentAccessDeniedException e) {
+            log.warn(e.getMessage());
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         } catch (Exception e) {
             log.error("임시저장 문서 수정 폼 로딩 중 오류 발생", e);
-            return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         }
     }
 
@@ -141,7 +135,7 @@ public class EapprovalController {
         String message = isTempSave ? "문서가 임시저장되었습니다." : "결재요청이 완료되었습니다.";
         redirectAttributes.addFlashAttribute("successMessage", message);
         
-        return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+        return PathConstants.REDIRECT_DOCUMENT_LIST;
     }
 
     /**
@@ -165,9 +159,12 @@ public class EapprovalController {
             model.addAttribute("isCurrentApprover", isCurrentApprover);
             
             return PathConstants.VIEW_DOCUMENT_VIEW;
+        } catch (DocumentNotFoundException e) {
+            log.warn(e.getMessage());
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         } catch (Exception e) {
             log.error("문서 조회 중 오류 발생", e);
-            return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         }
     }
 
@@ -200,7 +197,7 @@ public class EapprovalController {
             return PathConstants.VIEW_PENDING_LIST;
         } catch (Exception e) {
             log.error("결재 대기 문서 조회 중 오류 발생", e);
-            return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         }
     }
 
@@ -220,7 +217,7 @@ public class EapprovalController {
             return PathConstants.VIEW_COMPLETED_LIST;
         } catch (Exception e) {
             log.error("완료 문서 조회 중 오류 발생", e);
-            return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         }
     }
 
@@ -240,7 +237,7 @@ public class EapprovalController {
             return PathConstants.VIEW_REJECTED_LIST;
         } catch (Exception e) {
             log.error("반려 문서 조회 중 오류 발생", e);
-            return "redirect:" + PathConstants.APPROVAL_BASE + PathConstants.APPROVAL_LIST;
+            return PathConstants.REDIRECT_DOCUMENT_LIST;
         }
     }
 }

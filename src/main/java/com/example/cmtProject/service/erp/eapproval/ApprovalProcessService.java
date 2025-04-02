@@ -5,6 +5,7 @@ import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
+import com.example.cmtProject.comm.exception.ApprovalProcessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +37,12 @@ public class ApprovalProcessService {
         // 결재자의 결재라인 조회
         ApprovalLineDTO approvalLine = approvalLineMapper.selectApprovalLineByDocIdAndApproverId(docId, approverId);
         if (approvalLine == null) {
-            throw new RuntimeException("결재 권한이 없습니다.");
+            throw new ApprovalProcessException("결재 권한이 없습니다");
         }
         
         // 이미 처리된 결재인지 확인
         if (!ApprovalStatus.PENDING.equals(approvalLine.getApprovalStatus())) {
-            throw new RuntimeException("이미 처리된 결재입니다.");
+            throw new ApprovalProcessException("이미 처리된 결재입니다");
         }
         
         // 결재 처리
@@ -64,12 +65,17 @@ public class ApprovalProcessService {
         // 결재자의 결재라인 조회
         ApprovalLineDTO approvalLine = approvalLineMapper.selectApprovalLineByDocIdAndApproverId(docId, approverId);
         if (approvalLine == null) {
-            throw new RuntimeException("결재 권한이 없습니다.");
+            throw new ApprovalProcessException("결재 권한이 없습니다");
         }
         
         // 이미 처리된 결재인지 확인
         if (!ApprovalStatus.PENDING.equals(approvalLine.getApprovalStatus())) {
-            throw new RuntimeException("이미 처리된 결재입니다.");
+            throw new ApprovalProcessException("이미 처리된 결재입니다");
+        }
+        
+        // 필수 입력값 확인
+        if (comment == null || comment.trim().isEmpty()) {
+            throw new ApprovalProcessException("반려 시 의견을 입력해야 합니다");
         }
         
         // 결재 처리
@@ -115,13 +121,21 @@ public class ApprovalProcessService {
      */
     @Transactional
     public void createApprovalLines(String docId, List<ApprovalLineDTO> approvalLines) {
-        if (approvalLines != null && !approvalLines.isEmpty()) {
-            log.debug("결재선 생성: 문서={}, 결재선 수={}", docId, approvalLines.size());
-            for (ApprovalLineDTO line : approvalLines) {
-                line.setDocId(docId);
-                line.setApprovalStatus(ApprovalStatus.PENDING);
-                approvalLineMapper.insertApprovalLine(line);
-            }
+        if (approvalLines == null || approvalLines.isEmpty()) {
+            log.warn("결재선이 비어있습니다: {}", docId);
+            return;
+        }
+        
+        log.debug("결재선 생성: 문서={}, 결재선 수={}", docId, approvalLines.size());
+        
+        // 이전 결재선 삭제
+        approvalLineMapper.deleteApprovalLinesByDocId(docId);
+        
+        // 새 결재선 생성
+        for (ApprovalLineDTO line : approvalLines) {
+            line.setDocId(docId);
+            line.setApprovalStatus(ApprovalStatus.PENDING);
+            approvalLineMapper.insertApprovalLine(line);
         }
     }
 }
