@@ -36,9 +36,6 @@
 	        <if test="dept != null and dept != ''">
 	            AND D.CMN_DETAIL_CODE = #{dept}
 	        </if>
-	         <if test="empId != null and empId != ''">
-	            AND E.EMP_ID LIKE '%' || #{empId} || '%'
-	        </if>
 	        <if test="empName != null and empName != ''">
 	            AND E.EMP_NAME LIKE '%' || #{empName} || '%'
 	        </if>
