@@ -1,10 +1,9 @@
 /**
- * documentView.js - 문서 상세 보기 및 결재 처리
+ * document-view.js - 문서 상세 보기 및 결재 처리
  * 
  * 결재 문서 상세 정보 표시 및 결재/반려 처리 기능을 제공합니다.
  * 
- * @version 1.0.0
- * @since 2025-04-01
+ * @version 1.1.0
  */
 
 // 전역 변수 선언
@@ -72,6 +71,22 @@ function registerEvents() {
             openApprovalModal('반려');
         });
     }
+    
+    // 뒤로가기 버튼 클릭 이벤트
+    const backBtn = document.querySelector('button[onclick="history.back()"]');
+    if (backBtn) {
+        backBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            goToDocumentList();
+        });
+    }
+}
+
+/**
+ * 문서 목록 페이지로 이동
+ */
+function goToDocumentList() {
+    location.href = '/eapproval/documents';
 }
 
 /**
@@ -138,38 +153,63 @@ async function processApproval() {
             return;
         }
         
-        // API 호출 - 일반 AJAX 사용
-        const result = await ApiUtil.processRequest(
-            async () => {
-                return await $.ajax({
-                    url: `/api/eapproval/document/${docId}/process`,
-                    type: 'POST',
-                    data: {
-                        decision: decision,
-                        comment: comment
-                    }
-                });
-            },
-            {
-                loadingMessage: '결재 처리 중...',
-                successMessage: decision === '승인' ? '결재가 승인되었습니다.' : '결재가 반려되었습니다.',
-                errorMessage: '결재 처리 중 오류가 발생했습니다.',
-                successCallback: function() {
-                    // 모달 닫기
-                    approvalModal.hide();
-                    
-                    // 페이지 새로고침 또는 목록 페이지 이동
-                    setTimeout(function() {
-                        location.href = '/eapproval/documents';
-                    }, 1000);
-                }
-            }
-        );
+        // 로딩 표시 시작
+        const loading = AlertUtil.showLoading('결재 처리 중...');
         
-        return result;
+        // API 호출 준비
+        const formData = new FormData();
+        formData.append('decision', decision);
+        formData.append('comment', comment);
+        
+        try {
+            // 현재 사용자의 결재자 번호 가져오기 (데이터 속성에서)
+            const approverNo = document.getElementById('approverNo').value;
+            if (!approverNo) {
+                throw new Error('결재자 정보를 찾을 수 없습니다.');
+            }
+            
+            formData.append('approverId', approverNo);
+            
+            // API 호출
+            const response = await fetch(`/api/eapproval/document/${docId}/process`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            // 로딩 종료
+            loading.close();
+            
+            if (!response.ok) {
+                throw new Error('서버 응답 오류: ' + response.status);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 성공 알림
+                await AlertUtil.showSuccess(
+                    '결재 처리 완료', 
+                    decision === '승인' ? '결재가 승인되었습니다.' : '결재가 반려되었습니다.'
+                );
+                
+                // 모달 닫기
+                approvalModal.hide();
+                
+                // 페이지 이동
+                setTimeout(function() {
+                    goToDocumentList();
+                }, 500);
+            } else {
+                // 오류 메시지 표시
+                await AlertUtil.showError('결재 처리 실패', result.message || '결재 처리 중 오류가 발생했습니다.');
+            }
+        } catch (error) {
+            // 로딩 종료
+            loading.close();
+            throw error;
+        }
     } catch (error) {
         console.error('결재 처리 중 오류:', error);
-        await AlertUtil.showError('결재 처리 오류', '결재 처리 중 오류가 발생했습니다.');
-        return false;
+        await AlertUtil.showError('결재 처리 오류', error.message || '결재 처리 중 오류가 발생했습니다.');
     }
 }

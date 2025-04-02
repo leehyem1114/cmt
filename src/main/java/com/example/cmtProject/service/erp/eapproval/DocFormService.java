@@ -2,6 +2,8 @@ package com.example.cmtProject.service.erp.eapproval;
 
 import com.example.cmtProject.dto.erp.eapproval.DocFormDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocFormMapper;
+import com.example.cmtProject.comm.exception.DocFormNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +32,13 @@ public class DocFormService {
      */
     public DocFormDTO getDocFormById(String formId) {
         log.debug("양식 조회: {}", formId);
-        return docFormMapper.selectDocFormById(formId);
+        DocFormDTO formDTO = docFormMapper.selectDocFormById(formId);
+        
+        if (formDTO == null) {
+            throw new DocFormNotFoundException("양식을 찾을 수 없습니다: " + formId);
+        }
+        
+        return formDTO;
     }
     
     /**
@@ -41,7 +49,9 @@ public class DocFormService {
         log.info("양식 저장: {}", docFormDTO.getFormId());
         
         try {
-            if (docFormMapper.selectDocFormById(docFormDTO.getFormId()) == null) {
+            boolean isNewForm = docFormMapper.selectDocFormById(docFormDTO.getFormId()) == null;
+            
+            if (isNewForm) {
                 log.debug("신규 양식 저장");
                 // 생성 시간, 생성자 ID 설정
                 docFormDTO.setCreateDate(LocalDateTime.now());
@@ -68,6 +78,11 @@ public class DocFormService {
     @Transactional
     public boolean deleteDocForm(String formId) {
         log.info("양식 삭제: {}", formId);
+        
+        DocFormDTO existingForm = docFormMapper.selectDocFormById(formId);
+        if (existingForm == null) {
+            throw new DocFormNotFoundException("삭제할 양식이 존재하지 않습니다: " + formId);
+        }
         
         try {
             docFormMapper.deleteDocForm(formId);

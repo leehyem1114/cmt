@@ -60,7 +60,7 @@
         WHERE DOC_ID = #{docId, jdbcType=VARCHAR}
     </update>
 
-    <!-- 문서 조회 - JOIN 제거하여 기본 정보만 조회 -->
+    <!-- 문서 조회 - 기본 정보만 조회 -->
     <select id="selectDocumentById" resultMap="documentResultMap">
         SELECT 
             d.DOC_ID, 
@@ -69,15 +69,17 @@
             d.TITLE, 
             d.CONTENT, 
             d.DRAFTER_ID, 
-            NULL as DRAFTER_NAME, 
+            e.EMP_NAME as DRAFTER_NAME, 
             d.DRAFT_DEPT, 
-            NULL as DRAFT_DEPT_NAME, 
+            c.CODE_NAME as DRAFT_DEPT_NAME, 
             d.DRAFT_DATE, 
             d.DOC_STATUS, 
             d.APPROVAL_DATE, 
             d.IS_TEMP_SAVED, 
             d.UPDATE_DATE 
         FROM DOCUMENTS d 
+        LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
+        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CODE_ID
         WHERE d.DOC_ID = #{docId, jdbcType=VARCHAR}
     </select>
 
@@ -90,6 +92,7 @@
             d.TITLE, 
             d.DRAFT_DATE, 
             d.DOC_STATUS, 
+            d.IS_TEMP_SAVED,
             d.APPROVAL_DATE 
         FROM DOCUMENTS d 
         WHERE d.DRAFTER_ID = #{drafterId, jdbcType=VARCHAR} 
@@ -120,12 +123,14 @@
             d.FORM_ID, 
             d.TITLE, 
             d.DRAFTER_ID, 
-            NULL as DRAFTER_NAME, 
+            e.EMP_NAME as DRAFTER_NAME, 
             d.DRAFT_DEPT, 
-            NULL as DRAFT_DEPT_NAME, 
+            c.CODE_NAME as DRAFT_DEPT_NAME, 
             d.DRAFT_DATE, 
             d.DOC_STATUS 
         FROM DOCUMENTS d 
+        LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
+        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CODE_ID
         WHERE d.DOC_STATUS = #{docStatus} 
         ORDER BY d.DRAFT_DATE DESC
     </select>
@@ -138,15 +143,18 @@
             d.FORM_ID, 
             d.TITLE, 
             d.DRAFTER_ID, 
-            NULL as DRAFTER_NAME, 
+            e.EMP_NAME as DRAFTER_NAME, 
             d.DRAFT_DEPT, 
-            NULL as DRAFT_DEPT_NAME, 
+            c.CODE_NAME as DRAFT_DEPT_NAME, 
             d.DRAFT_DATE, 
             d.DOC_STATUS 
         FROM DOCUMENTS d 
         JOIN APPROVAL_LINES a ON d.DOC_ID = a.DOC_ID 
+        LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
+        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CODE_ID
         WHERE a.APPROVER_NO = #{approverId, jdbcType=VARCHAR} 
         AND a.APPROVAL_STATUS = '대기' 
+        AND d.DOC_STATUS = '진행중'
         ORDER BY d.DRAFT_DATE DESC
     </select>
 
@@ -162,7 +170,7 @@
         AND IS_TEMP_SAVED = 'Y'
     </delete>
     
-    <!-- 직원 ID로 직원 번호 조회 (임시 구현) -->
+    <!-- 직원 ID로 직원 번호 조회 -->
     <select id="selectEmployeeNoByEmpId" resultType="java.lang.Integer">
         SELECT EMP_NO FROM EMPLOYEES WHERE EMP_ID = #{empId}
     </select>

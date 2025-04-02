@@ -6,6 +6,8 @@ import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
+import com.example.cmtProject.comm.exception.DocumentAccessDeniedException;
+import com.example.cmtProject.comm.exception.DocumentNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,8 +55,14 @@ public class DocumentService {
             log.debug("문서 번호 생성: {}", documentDTO.getDocNumber());
         }
         
+        // 기안일자 설정
+        if (documentDTO.getDraftDate() == null) {
+            documentDTO.setDraftDate(LocalDateTime.now());
+        }
+        
         // 문서 저장
-        if (documentMapper.selectDocumentById(documentDTO.getDocId()) == null) {
+        boolean isNewDocument = documentMapper.selectDocumentById(documentDTO.getDocId()) == null;
+        if (isNewDocument) {
             log.debug("신규 문서 삽입");
             documentMapper.insertDocument(documentDTO);
         } else {
@@ -76,39 +84,19 @@ public class DocumentService {
     }
 
     /**
-     * 결재 처리 (승인/반려)
-     */
-    @Transactional
-    public void processApproval(String docId, Integer approverId, String decision, String comment) {
-        log.info("결재 처리: 문서={}, 결재자={}, 결정={}", docId, approverId, decision);
-        
-        // 문서 조회
-        DocumentDTO document = documentMapper.selectDocumentById(docId);
-        if (document == null) {
-            log.error("결재 처리 실패: 문서를 찾을 수 없음 {}", docId);
-            throw new RuntimeException("문서를 찾을 수 없습니다: " + docId);
-        }
-        
-        // 결재 처리를 위임
-        if (DocumentStatus.REJECTED.equals(decision)) {
-            approvalProcessService.reject(docId, approverId, comment);
-        } else {
-            approvalProcessService.approve(docId, approverId, comment);
-        }
-    }
-
-    /**
      * 문서 상세 조회
      */
     public DocumentDTO getDocumentDetail(String docId) {
         log.debug("문서 상세 조회: {}", docId);
         
         DocumentDTO document = documentMapper.selectDocumentById(docId);
-        if (document != null) {
-            List<ApprovalLineDTO> approvalLines = approvalLineMapper.selectApprovalLinesByDocId(docId);
-            document.setApprovalLines(approvalLines);
-            log.debug("결재선 조회: {}개", approvalLines.size());
+        if (document == null) {
+            throw new DocumentNotFoundException("문서를 찾을 수 없습니다: " + docId);
         }
+        
+        List<ApprovalLineDTO> approvalLines = approvalLineMapper.selectApprovalLinesByDocId(docId);
+        document.setApprovalLines(approvalLines);
+        log.debug("결재선 조회: {}개", approvalLines.size());
         
         return document;
     }
@@ -157,22 +145,27 @@ public class DocumentService {
     
     /**
      * 문서 삭제 (임시저장 문서만 삭제 가능)
+     * @param docId 문서 ID
+     * @param userId 요청한 사용자 ID
      * @return 삭제 성공 여부
      */
     @Transactional
-    public boolean deleteDocument(String docId) {
-        log.info("문서 삭제 요청: {}", docId);
+    public boolean deleteDocument(String docId, String userId) {
+        log.info("문서 삭제 요청: {}, 요청자: {}", docId, userId);
         
         DocumentDTO document = documentMapper.selectDocumentById(docId);
         
         if (document == null) {
-            log.warn("삭제할 문서가 존재하지 않음: {}", docId);
-            return false;
+            throw new DocumentNotFoundException("삭제할 문서가 존재하지 않습니다: " + docId);
+        }
+        
+        // 문서 소유자 검증
+        if (!document.getDrafterId().equals(userId)) {
+            throw new DocumentAccessDeniedException("문서 삭제 권한이 없습니다");
         }
         
         if (!"Y".equals(document.getIsTempSaved())) {
-            log.warn("임시저장 문서가 아니므로 삭제 불가: {}", docId);
-            return false;
+            throw new DocumentAccessDeniedException("임시저장 문서만 삭제할 수 있습니다");
         }
         
         // 관련 데이터 삭제
@@ -188,13 +181,14 @@ public class DocumentService {
     
     /**
      * 직원 ID로 직원 번호 조회 (Helper 메서드)
-     * EmployeesService 구현 후에는 해당 서비스로 대체될 예정
      */
     public Integer getEmployeeNoByEmpId(String empId) {
         try {
-            // 현재는 DocumentMapper를 통해 조회하지만,
-            // EmployeesService 구현 후에는 해당 서비스로 대체될 수 있음
-            return documentMapper.selectEmployeeNoByEmpId(empId);
+            Integer empNo = documentMapper.selectEmployeeNoByEmpId(empId);
+            if (empNo == null) {
+                throw new RuntimeException("직원 정보를 찾을 수 없습니다: " + empId);
+            }
+            return empNo;
         } catch (Exception e) {
             log.error("직원 번호 조회 중 오류: {}", empId, e);
             throw new RuntimeException("직원 정보를 조회할 수 없습니다.", e);
