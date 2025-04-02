@@ -43,6 +43,13 @@ public class CommonService {
 	}
     
     
+  //공통코드 그룹 가져오기
+  	public List<String> getAllGroupCodes() {
+  		// TODO Auto-generated method stub
+  		return commonCodeMapper.selectGroupList();
+  	}
+  	
+    
     /**
      * 공통코드 목록 조회 (Map 반환)
      * 기존 API와의 호환성을 위한 메서드
@@ -365,6 +372,8 @@ public class CommonService {
             .cmnDetailName(entity.getCmnDetailName())
             .build();
     }
+
+    
 
 	
 }

@@ -21,5 +21,8 @@ public class CommonCodeDetailNameDTO {
     /*상세코드값*/
     private String cmnDetailValue;
     
+    /*코드 그룹*/
+    private String cmnCode;
+    
     
 }

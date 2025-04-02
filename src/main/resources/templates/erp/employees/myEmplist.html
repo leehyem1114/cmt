@@ -10,6 +10,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMT</title>
     
+    <th:block layout:fragment="script">
+    	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+
+             function update(){
+            	    const form = document.getElementById("empUpdate");
+            	    const formData = new FormData(form);
+
+            	    // 파일 추가
+            	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
+
+            	    // AJAX 전송
+            	    $.ajax({
+            	        url: "/emp/myEmplist",
+            	        method: "POST",
+//             	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
+            	        data: formData,
+            	        processData: false, //FormData 사용시 필수
+            	        contentType: false,//FormData 사용시 필수
+            	        success: function(response) {
+            	        	Swal.fire({
+        				        title: '수정 하시겠습니까?',
+        				        icon: 'warning',
+        				        showCancelButton: true,   
+        				        confirmButtonColor: '#435ebe',   
+        				        cancelButtonColor: '#f27474',       
+        				        confirmButtonText: '네',         
+        				        cancelButtonText: '아니오'       
+            	        	 }).then((result) => {
+            	        	        if (result.isConfirmed) {
+            	        	            Swal.fire({
+            	        	                title: '수정이 완료되었습니다!',
+            	        	                icon: 'success'
+            	        	            }).then(() => {
+            	        	                location.reload();
+            	        	            });
+            	        	        }
+            	        	    });
+            	        	},
+            	        error: function(error) {
+            	        	Swal.fire("정보 수정 실패ㅠㅠ");
+            	        }
+            	    });
+            	};
+            
+           //프로필사진 미리보기
+ 			$(function () {
+//  			  $("#empProfile").on("change", function (e) {
+ 			  $("#empProfileFile").on("change", function (e) {
+ 			    let files = e.target.files;
+ 			    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+ 			
+ 			    if (imageFiles.length > 1) {
+ 			      alert("프로필 사진은 1장만 업로드 가능합니다.");
+ 			      imageFiles = imageFiles.slice(0, 1);
+ 			    }
+ 			
+ 			    $("#preview_profile").html("");
+ 			
+ 			    imageFiles.forEach(file => {
+ 			      let reader = new FileReader();
+ 			      reader.onload = function (event) {
+ 			        let img = $("<img>")
+ 			          .attr("src", event.target.result)
+ 			          .attr("height", "100px")
+ 			          .addClass("profile-thumb");
+ 			
+ 			        $("#preview_profile").append(img);
+ 			      };
+ 			      reader.readAsDataURL(file);
+ 			    });
+ 			  });
+ 			});
+
+        </script>
+        <!-- 카카오주소 api -->
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+		<script type="text/javascript">
+			function search_address() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						console.log(data);
+						document.empUpdate.empPostCode.value = data.zonecode;
+	
+						let address = data.address;
+						if (data.buildingName != "") {
+							address += " (" + data.buildingName + ")";
+						}
+	
+						document.empUpdate.empAddress1.value = address;
+						document.empUpdate.empAddress2.focus();
+					}
+				}).open();
+			}
+		</script>
+    </th:block>
+    
 </head>
 <body>
     <!-- 
@@ -53,16 +157,16 @@
 							<div class="form-group">
 							    <div id="preview_profile">
 							        <img th:if="${emp.empProfile != null}" th:src="@{'/images/' + ${emp.empProfile}}" class="profile-thumb" alt="profile" height="100px">
-							        <img th:if="${emp.empProfile == null}" th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+							        <img th:if="${emp.empProfile == null or emp.empProfile == ''}" th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 							    </div>
 							</div>
 							<div>
-								<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
+								<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" class="form-control" multiple>
 		                    </div>
 		                	<label for="empLevel">사원권한</label>
 		                    <div class="form-group" >
 		                       <input type="hidden" th:field="*{empLevel}"/>
-		                       <select id="empLevel" class="form-select" name="empLevel" th:filed="*{empLevel}" disabled>
+		                       <select id="empLevel" class="form-select" name="empLevel" th:field="*{empLevel}" disabled>
 			                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
 								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}" ></option>
 								    </th:block>
@@ -231,7 +335,7 @@
 		                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control" th:value="${emp.salBankAccount}">
 		                    </div>
 		                <div class="modal-footer">
-		                    <button type="button" id="btnUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
+		                    <button type="button" id="btnUpdate" name ="btnUpdate" class="btn btn-primary" onclick="update()">수정</button>
 		                </div>
 					</div>		           
 		            </form>	
@@ -250,104 +354,6 @@
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-    <th:block layout:fragment="script">
-    	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-
-             $("#btnUpdate").on("click", function () {
-
-            	    const form = document.getElementById("empUpdate");
-            	    const formData = new FormData(form);
-
-            	    // 파일 추가
-            	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
-
-            	    // AJAX 전송
-            	    $.ajax({
-            	        url: "/emp/myEmplist",
-            	        method: "POST",
-//             	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
-            	        data: formData,
-            	        processData: false, //FormData 사용시 필수
-            	        contentType: false,//FormData 사용시 필수
-            	        success: function(response) {
-            	        	Swal.fire({
-        				        title: '수정 하시겠습니까?',
-        				        icon: 'warning',
-        				        showCancelButton: true,   
-        				        confirmButtonColor: '#435ebe',   
-        				        cancelButtonColor: '#f27474',       
-        				        confirmButtonText: '네',         
-        				        cancelButtonText: '아니오'       
-        				    }).then((result) => {
-        				        if (result.isConfirmed) {
-	            	            location.reload();
-        				        }
-        				    });
-            	        },
-            	        error: function(error) {
-            	        	Swal.fire("정보 수정 실패ㅠㅠ");
-            	        }
-            	    });
-            	});
-            
-           //프로필사진 미리보기
- 			$(function () {
-//  			  $("#empProfile").on("change", function (e) {
- 			  $("#empProfileFile").on("change", function (e) {
- 			    let files = e.target.files;
- 			    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
- 			
- 			    if (imageFiles.length > 1) {
- 			      alert("프로필 사진은 1장만 업로드 가능합니다.");
- 			      imageFiles = imageFiles.slice(0, 1);
- 			    }
- 			
- 			    $("#preview_profile").html("");
- 			
- 			    imageFiles.forEach(file => {
- 			      let reader = new FileReader();
- 			      reader.onload = function (event) {
- 			        let img = $("<img>")
- 			          .attr("src", event.target.result)
- 			          .attr("height", "100px")
- 			          .addClass("profile-thumb");
- 			
- 			        $("#preview_profile").append(img);
- 			      };
- 			      reader.readAsDataURL(file);
- 			    });
- 			  });
- 			});
-
-        </script>
-        <!-- 카카오주소 api -->
-        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-		<script type="text/javascript">
-			function search_address() {
-				new daum.Postcode({
-					oncomplete : function(data) {
-						console.log(data);
-						document.empUpdate.empPostCode.value = data.zonecode;
-	
-						let address = data.address;
-						if (data.buildingName != "") {
-							address += " (" + data.buildingName + ")";
-						}
-	
-						document.empUpdate.empAddress1.value = address;
-						document.empUpdate.empAddress2.focus();
-					}
-				}).open();
-			}
-		</script>
-    </th:block>
+    
 </body>
 </html>

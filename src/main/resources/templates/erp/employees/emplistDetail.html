@@ -47,7 +47,7 @@
 											        <img th:if="${emp.empProfile == null}" th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
 											    </div>
 											</div>
-												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
+												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" class="form-control" multiple>
 						                    </div>
 						                	<label for="empLevel">사원권한</label>
 						                    <div class="form-group" >
@@ -96,7 +96,7 @@
 										        <input type="text" id="empBirthday" aria-label="empBirthday" th:field="*{empBirthday}">
 										        <span class="tui-ico-date"></span>
 										      </div>
-										      <div id="endDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+										      <div id="birthDayDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
 										    </div>
 										    <br>
 											<label for="empStartDate">입사일</label>
@@ -105,7 +105,7 @@
 										        <input type="text" id="empStartDate" aria-label="empStartDate" th:field="*{empStartDate}">
 										        <span class="tui-ico-date"></span>
 										      </div>
-										      <div id="endDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+										      <div id="startDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
 										    </div>
 							
 							
@@ -125,7 +125,7 @@
 											  });
 											
 											  // 생년월일 DatePicker
-											  const endPicker = new tui.DatePicker('#endDateWrapper', {
+											  const endPicker = new tui.DatePicker('#birthDayDateWrapper', {
 												language: 'ko',  
 											    date: new Date(),
 											    input: {
@@ -165,7 +165,7 @@
 						                    
 						                    <label for="empStatus">재직상태</label>
 						                    <div class="form-group" >
-						                       <select id="empStatus" name="empStatus" class="form-select" th:field=*{empStatus}>
+						                       <select id="empStatus" name="empStatus" class="form-select" th:field="*{empStatus}">
 							                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 												    </th:block>
@@ -173,7 +173,7 @@
 						                    </div>
 						                    <label for="empType">고용유형</label>
 						                   <div class="form-group" >
-						                       <select id="empType" name="empType" class="form-select" th:field=*{empType}>
+						                       <select id="empType" name="empType" class="form-select" th:field="*{empType}">
 							                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 												    </th:block>
@@ -181,7 +181,7 @@
 						                    </div>
 						                    <label for="empEducationLevel">학력</label>
 						                   <div class="form-group" >
-						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select" th:field=*{empEducationLevel}>
+						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select" th:field="*{empEducationLevel}">
 							                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 												    </th:block>
@@ -189,7 +189,7 @@
 						                    </div>
 						                    <label for="empParkingStatus">주차등록</label>
 						                    <div class="form-group" >
-						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select"  th:field=*{empParkingStatus}>
+						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select"  th:field="*{empParkingStatus}">
 							                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
 												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 												    </th:block>
@@ -256,12 +256,17 @@
                				        cancelButtonColor: '#f27474',       
                				        confirmButtonText: '네',         
                				        cancelButtonText: '아니오'       
-               				    }).then((result) => {
-               				        if (result.isConfirmed) {
-       	            	            location.reload();
-               				        }
-               				    });
-                   	        },
+		                   	         }).then((result) => {
+		         	        	        if (result.isConfirmed) {
+		         	        	            Swal.fire({
+		         	        	                title: '수정이 완료되었습니다!',
+		         	        	                icon: 'success'
+		         	        	            }).then(() => {
+		         	        	                location.reload();
+		         	        	            });
+		         	        	        }
+		         	        	    });
+		         	        	},
             	            error: function(error) {
             	                alert("정보 수정 실패ㅠㅠ");
             	            }

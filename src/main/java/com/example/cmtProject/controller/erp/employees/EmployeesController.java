@@ -36,8 +36,12 @@ public class EmployeesController {
 
 	//공통코드 DetailName 불러오는 메서드
 	public static void commonCodeName(Model model , CommonService commonService) {
-		String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
+		
+		List<String> groupCodes = commonService.getAllGroupCodes();
+		System.out.println("그룹코드 리스트 :::::"+groupCodes);
+//		String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
 		//공통코드 추가시 "NEW_CODE" 추가
+		
 		Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
 		
 		for(String groupCode : groupCodes) {

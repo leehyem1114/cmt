@@ -1,15 +1,9 @@
 package com.example.cmtProject.dto.erp.attendanceMgt;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkStatus;
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkTime;
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
