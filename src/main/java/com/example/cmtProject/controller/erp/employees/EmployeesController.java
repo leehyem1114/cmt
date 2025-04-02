@@ -175,6 +175,35 @@ public class EmployeesController {
 		 System.out.println("넘어온 empId >>> " + empId);
 		return empService.checkId(empId);
 	}
+	
+	//아이디 찾기
+	@GetMapping("/findId")
+	public String findId() {
+		
+		return"erp/employees/findId";
+	}
+	
+	
+	@PostMapping("/findId")
+	@ResponseBody
+	public Map<String, Object> getFindId(@RequestParam Map<String, String> map) {
+		String empName = map.get("empName");
+		String empEmail = map.get("empEmail");
+		
+		String empId = empService.getEmpId(map);
+		
+		Map<String, Object> result = new HashMap<>();
+		if(empId != null) {
+			result.put("success", true);
+	        result.put("empId", empId);
+		} else {
+			result.put("success", false);
+		}
+		System.out.println("아이디 찾기@@"+result);
+		
+		return result;
+	}
+	
 	// 객체 -> JSON 변환 샘플
 //	@Autowired
 //	private ObjectMapper objectMapper;

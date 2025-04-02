@@ -49,9 +49,7 @@
 	       </div>
 	       
 	       
-			<button id="btn-prev">이전달</button>
-			<button id="btn-today">오늘</button>
-			<button id="btn-next">다음달</button>
+	    <!-- ------------------------------------ -->
 			<div id="calendar" style="height: 600px"></div> <!-- 캘린더 -->
 	    <!-- ------------------------------------ -->
 	        <a th:href="@{/logout}">로그아웃</a>
@@ -86,45 +84,34 @@
              * - Ajax 요청
              * - 기타 페이지별 로직
              */
-             
-             const container = document.getElementById('calendar');
-             const options = {
-               defaultView: 'month',
-               timezone: {
-                 zones: [
-                   {
-                     timezoneName: 'Asia/Seoul',
-                     displayLabel: 'Korea Standard Time',
-                   },
-                 ],
-               },
-               calendars: [
-                 {
-                   id: 'cal1',
-                   name: '개인',
-                   backgroundColor: '#03bd9e',
-                 },
-                 {
-                   id: 'cal2',
-                   name: '직장',
-                   backgroundColor: '#00a9ff',
-                 },
-               ],
-             };
+             const calendar = new Calendar('#calendar', {
+            	  defaultView: 'week',
+            	  template: {
+            	    time(event) {
+            	      const { start, end, title } = event;
+
+            	      return `<span style="color: white;">${formatTime(start)}~${formatTime(end)} ${title}</span>`;
+            	    },
+            	    allday(event) {
+            	      return `<span style="color: gray;">${event.title}</span>`;
+            	    },
+            	  },
+            	  calendars: [
+            	    {
+            	      id: 'cal1',
+            	      name: 'Personal',
+            	      backgroundColor: '#03bd9e',
+            	    },
+            	    {
+            	      id: 'cal2',
+            	      name: 'Work',
+            	      backgroundColor: '#00a9ff',
+            	    },
+            	  ],
+            	});
            
-             $('#btn-prev').on('click', function() {
-            	    calendar.prev();
-            	});
-
-            	$('#btn-today').on('click', function() {
-            	    calendar.today();
-            	});
-
-            	$('#btn-next').on('click', function() {
-            	    calendar.next();
-            	});
-
-             const calendar = new tui.Calendar(container, options);
+//              const calendar = new tui.Calendar(container, options);
+//              const calendar = new Calendar(container, options);
              
              
              

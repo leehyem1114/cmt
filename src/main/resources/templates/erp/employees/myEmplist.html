@@ -36,212 +36,206 @@
                 <div class="table-responsive">
                 <div>
 					<form action="myEmplist" id="empUpdate" name="empUpdate" method="post" enctype="multipart/form-data" th:object="${emp}">
-										
-						                <div class="modal-body">
-						                <div class="card-body py-4 px-4"><!-- 카드 -->
-								           <div class="d-flex align-items-center">
-								               <div class="avatar avatar-xl">
-								                   <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">
-								               </div>
-								               <div class="ms-3 name">
-								                   <h5 class="font-bold" ><span th:text="*{empName}"></span></h5>
-	                   							   <h6 class="text-muted mb-0" th:text="${'@' + #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
-								               </div>
-								           </div>
-								       </div> <!-- 카드 -->
-								       <hr>
-						                	<label for="empProfile">프로필사진</label>
-						                    <div class="form-group" >
-						                    <div th:if="${emp.empProfile != null}" id="preview_profile">
-											    <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">
-											</div>
-											<div th:unless="${emp.empProfile != null}">
-												<div id="preview_profile">
-												    <img th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
-												</div>
-<!-- 												<input type="file" name="empProfile" id="empProfile" accept="image/*" multiple> -->
-						                    </div>
-												<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
-											</div>
-						                	<label for="empLevel">사원권한</label>
-						                    <div class="form-group" >
-						                       <input type="hidden" th:field="*{empLevel}"/>
-						                       <select id="empLevel" class="form-select" name="empLevel" th:filed="*{empLevel}" disabled>
-							                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}" ></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empName">이름</label>
-						                    <div class="form-group">
-<!-- 												<input type="text" id="empName" class="form-control" name="empName" th:value="${emp.empName}"> -->
-												<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" >
-						                    </div>
-						                    <label for="empId">사원 번호</label>
-						                    <div class="form-group">
-						                        <input type="text" id="empId" name="empId" class="form-control" th:field="*{empId}" readonly>
-						                    </div>
-						                    <label for="deptNo">부서</label>
-						                        <input type="hidden" th:field="*{deptNo}"/> 
-												<select id="deptNo" name="deptNo" class="form-select" th:field="*{deptNo}" disabled>
-													<th:block th:each="code : ${commonCodeMap['DEPT']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    <label for="positionNo">직급</label>
-						                    <div class="form-group" >
-						                       <input type="hidden" th:field="*{positionNo}"/>
-						                       <select id="positionNo" name="positionNo" class="form-select" th:field="*{positionNo}" disabled>
-							                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empPhone">전화번호</label>
-						                    <div class="form-group">
-						                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="${emp.empPhone}">
-						                    </div>
-						                    <label for="empEmail">이메일</label>
-						                    <div class="form-group">
-						                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="${emp.empEmail}">
-						                    </div>
-						                    
-						                    <label for="empStartDate">생년월일</label>
-										    <div style="position: relative;">
-										      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-										        <input type="text" id="empBirthday" aria-label="empBirthday" th:field="*{empBirthday}">
-										        <span class="tui-ico-date"></span>
-										      </div>
-										      <div id="empBirthdayWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
-										    </div>
-										    <br>
-											<label for="empStartDate">입사일</label>
-										    <div style="position: relative;">
-										      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-										        <input type="text" id="empStartDate" aria-label="empStartDate" th:field="*{empStartDate}">
-										        <span class="tui-ico-date"></span>
-										      </div>
-										      <div id="empStartDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
-										    </div>
+		                <div class="modal-body">
+		                <div class="card-body py-4 px-4"><!-- 카드 -->
+				           <div class="d-flex align-items-center">
+				               <div class="avatar avatar-xl">
+				                   <img th:src="@{'/images/' + ${emp.empProfile}}" id="profile_preview" height="100px">
+				               </div>
+				               <div class="ms-3 name">
+				                   <h5 class="font-bold" ><span th:text="*{empName}"></span></h5>
+	               							   <h6 class="text-muted mb-0" th:text="${'@' + #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
+				               </div>
+				           </div>
+				       </div> <!-- 카드 -->
+				       <hr>
+		                	<label for="empProfileFile">프로필사진</label>
+							<div class="form-group">
+							    <div id="preview_profile">
+							        <img th:if="${emp.empProfile != null}" th:src="@{'/images/' + ${emp.empProfile}}" class="profile-thumb" alt="profile" height="100px">
+							        <img th:if="${emp.empProfile == null}" th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
+							    </div>
+							</div>
+							<div>
+								<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" multiple>
+		                    </div>
+		                	<label for="empLevel">사원권한</label>
+		                    <div class="form-group" >
+		                       <input type="hidden" th:field="*{empLevel}"/>
+		                       <select id="empLevel" class="form-select" name="empLevel" th:filed="*{empLevel}" disabled>
+			                       		<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}" ></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empName">이름</label>
+		                    <div class="form-group">
+	<!-- 												<input type="text" id="empName" class="form-control" name="empName" th:value="${emp.empName}"> -->
+								<input type="text" id="empName" class="form-control" name="empName" th:field="*{empName}" >
+		                    </div>
+		                    <label for="empId">사원 번호</label>
+		                    <div class="form-group">
+		                        <input type="text" id="empId" name="empId" class="form-control" th:field="*{empId}" readonly>
+		                    </div>
+		                    <label for="deptNo">부서</label>
+		                        <input type="hidden" th:field="*{deptNo}"/> 
+								<select id="deptNo" name="deptNo" class="form-select" th:field="*{deptNo}" disabled>
+									<th:block th:each="code : ${commonCodeMap['DEPT']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    <label for="positionNo">직급</label>
+		                    <div class="form-group" >
+		                       <input type="hidden" th:field="*{positionNo}"/>
+		                       <select id="positionNo" name="positionNo" class="form-select" th:field="*{positionNo}" disabled>
+			                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empPhone">전화번호</label>
+		                    <div class="form-group">
+		                        <input type="text" id="empPhone" name="empPhone" class="form-control" th:value="${emp.empPhone}">
+		                    </div>
+		                    <label for="empEmail">이메일</label>
+		                    <div class="form-group">
+		                        <input type="text" id="empEmail" name="empEmail" class="form-control" th:value="${emp.empEmail}">
+		                    </div>
+		                    
+		                    <label for="empStartDate">생년월일</label>
+						    <div style="position: relative;">
+						      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+						        <input type="text" id="empBirthday" aria-label="empBirthday" th:field="*{empBirthday}">
+						        <span class="tui-ico-date"></span>
+						      </div>
+						      <div id="empBirthdayWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+						    </div>
+						    <br>
+							<label for="empStartDate">입사일</label>
+						    <div style="position: relative;">
+						      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+						        <input type="text" id="empStartDate" aria-label="empStartDate" th:field="*{empStartDate}">
+						        <span class="tui-ico-date"></span>
+						      </div>
+						      <div id="empStartDateWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+						    </div>
+			
+			
+			  
+						<!-- TOAST UI DatePicker 스크립트 -->
+							<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
+							<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+							<script type="text/javascript">
+							  // 생년월일 DatePicker
+							  const startPicker = new tui.DatePicker('#empBirthdayWrapper', {
+								language: 'ko',  
+							    date: new Date(),
+							    input: {
+							      element: '#empBirthday',
+							      format: 'yyyy-MM-dd'
+							    }
+							  });
 							
-							
+							  // 입사일 DatePicker
+							  const endPicker = new tui.DatePicker('#empStartDateWrapper', {
+								language: 'ko',  
+							    date: new Date(),
+							    input: {
+							      element: '#empStartDate',
+							      format: 'yyyy-MM-dd'
+							    }
+							  });
 							  
-										<!-- TOAST UI DatePicker 스크립트 -->
-											<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
-											<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-											<script type="text/javascript">
-											  // 생년월일 DatePicker
-											  const startPicker = new tui.DatePicker('#empBirthdayWrapper', {
-												language: 'ko',  
-											    date: new Date(),
-											    input: {
-											      element: '#empBirthday',
-											      format: 'yyyy-MM-dd'
-											    }
-											  });
-											
-											  // 입사일 DatePicker
-											  const endPicker = new tui.DatePicker('#empStartDateWrapper', {
-												language: 'ko',  
-											    date: new Date(),
-											    input: {
-											      element: '#empStartDate',
-											      format: 'yyyy-MM-dd'
-											    }
-											  });
-											  
-											</script>
-							
-											</div>
-						                    <label for="empGender">성별</label>
-						                    <div class="form-group" >
-						                      <input type="hidden" th:field="*{empGender}"/>
-						                      <select id="empGender" name="empGender" class="form-select" th:field="*{empGender}" disabled>
-												    <th:block th:each="code : ${commonCodeMap['GENDER']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empAddress1">주소</label>
-											<div>
-												<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${emp.empAddress1}">
-												<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
-											</div>
-											<div>
-												<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="${emp.empAddress2}">
-												<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="${emp.empPostCode}" readonly><br>
-											</div>
-						                    <label for="empMaritalStatus">결혼여부</label>
-						                   <div class="form-group" >
-						                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select" th:field="*{empMaritalStatus}">
-							                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    
-						                    <hr>
-						                    
-						                    <label for="empStatus">재직상태</label>
-						                    <div class="form-group" >
-						                       <input type="hidden" th:field="*{empStatus}"/>
-						                       <select id="empStatus" name="empStatus" class="form-select" th:field="*{empStatus}" disabled>
-							                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empType">고용유형</label>
-						                   <div class="form-group" >
-						                       <input type="hidden" th:field="*{empType}"/>
-						                       <select id="empType" name="empType" class="form-select" th:field="*{empType}" disabled>
-							                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empEducationLevel">학력</label>
-						                   <div class="form-group" >
-						                       <input type="hidden" th:field="*{empEducationLevel}"/>
-						                       <select id="empEducationLevel" name="empEducationLevel" class="form-select" th:field="*{empEducationLevel}" disabled>
-							                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empParkingStatus">주차등록</label>
-						                    <div class="form-group" >
-						                       <select id="empParkingStatus" name="empParkingStatus" class="form-select" th:field="*{empParkingStatus}">
-							                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
-												        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-												    </th:block>
-												</select>
-						                    </div>
-						                    <label for="empCarNumber">차량번호</label>
-						                    <div class="form-group">
-						                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" th:value="${emp.empCarNumber}">
-						                    </div>
-						                    
-						                    <hr>
-<!-- 						                    <label for="salNo">기본급(월급)</label> -->
-<!-- 						                    <div class="form-group"> -->
-<!-- 						                        <input type="text" id="salNo" name="salNo" class="form-control" placeholder=""> -->
-<!-- 						                    </div> -->
-						                    <label for="salBankName">은행</label>
-						                    <div class="form-group">
-						                        <input type="text" id="salBankName" name="salBankName" class="form-control" th:value="${emp.salBankName}">
-						                    </div>
-						                    <label for="salBankAccount">계좌번호</label>
-						                    <div class="form-group">
-						                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control" th:value="${emp.salBankAccount}">
-						                    </div>
-						                    
-						                </div>
-						                <div class="modal-footer">
-						                    <button type="button" id="btnUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
-						                </div>
-						            </form>	
-					
+							</script>
+			
+		                    <label for="empGender">성별</label>
+		                    <div class="form-group" >
+		                      <input type="hidden" th:field="*{empGender}"/>
+		                      <select id="empGender" name="empGender" class="form-select" th:field="*{empGender}" disabled>
+								    <th:block th:each="code : ${commonCodeMap['GENDER']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empAddress1">주소</label>
+							<div>
+								<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${emp.empAddress1}">
+								<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
+							</div>
+							<div>
+								<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="${emp.empAddress2}">
+								<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="${emp.empPostCode}" readonly><br>
+							</div>
+		                    <label for="empMaritalStatus">결혼여부</label>
+		                   <div class="form-group" >
+		                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select" th:field="*{empMaritalStatus}">
+			                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    
+		                    <hr>
+		                    
+		                    <label for="empStatus">재직상태</label>
+		                    <div class="form-group" >
+		                       <input type="hidden" th:field="*{empStatus}"/>
+		                       <select id="empStatus" name="empStatus" class="form-select" th:field="*{empStatus}" disabled>
+			                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empType">고용유형</label>
+		                   <div class="form-group" >
+		                       <input type="hidden" th:field="*{empType}"/>
+		                       <select id="empType" name="empType" class="form-select" th:field="*{empType}" disabled>
+			                       	<th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empEducationLevel">학력</label>
+		                   <div class="form-group" >
+		                       <input type="hidden" th:field="*{empEducationLevel}"/>
+		                       <select id="empEducationLevel" name="empEducationLevel" class="form-select" th:field="*{empEducationLevel}" disabled>
+			                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empParkingStatus">주차등록</label>
+		                    <div class="form-group" >
+		                       <select id="empParkingStatus" name="empParkingStatus" class="form-select" th:field="*{empParkingStatus}">
+			                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+								</select>
+		                    </div>
+		                    <label for="empCarNumber">차량번호</label>
+		                    <div class="form-group">
+		                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" th:value="${emp.empCarNumber}">
+		                    </div>
+		                    
+		                    <hr>
+	<!-- 						                    <label for="salNo">기본급(월급)</label> -->
+	<!-- 						                    <div class="form-group"> -->
+	<!-- 						                        <input type="text" id="salNo" name="salNo" class="form-control" placeholder=""> -->
+	<!-- 						                    </div> -->
+		                    <label for="salBankName">은행</label>
+		                    <div class="form-group">
+		                        <input type="text" id="salBankName" name="salBankName" class="form-control" th:value="${emp.salBankName}">
+		                    </div>
+		                    <label for="salBankAccount">계좌번호</label>
+		                    <div class="form-group">
+		                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control" th:value="${emp.salBankAccount}">
+		                    </div>
+		                <div class="modal-footer">
+		                    <button type="button" id="btnUpdate" name ="btnUpdate" class="btn btn-primary">수정</button>
+		                </div>
+					</div>		           
+		            </form>	
+
 					
 				</div>
                 </div>
@@ -249,7 +243,7 @@
         </div>
         
         <!-- 페이지 내용 작성 영역 끝 -->
-    </div>
+    </div> <!-- layout:fragment -->
     
     <!-- 
         페이지별 JavaScript 추가 영역.

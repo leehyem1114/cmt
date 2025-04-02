@@ -32,13 +32,12 @@ public class MainController {
 	
 	@GetMapping({"","/"})
 
-	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-//		principalDetails.getUser();
-		if(principalDetails == null) {
-	        return "redirect:/login";  // Security의 loginPage("/login") 으로 이동
-	    }
-
+	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails, RedirectAttributes redirectAttributes) {
 		
+		if (principalDetails ==null) {
+			return "redirect:/login";
+		}
+
 		return "home";
 	}
 	
