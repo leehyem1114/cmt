@@ -29,7 +29,7 @@
 
     <!-- TOAST UI 라이브러리 스타일 -->
     <!-- Grid와 DatePicker는 많은 페이지에서 사용되므로 공통으로 포함 -->
-	<!-- TOAST UI Pagination CSS -->
+    <!-- TOAST UI Pagination CSS -->
     <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
     <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
@@ -60,16 +60,6 @@
 
         /* 추가 공통 스타일은 여기에 작성 */
     </style>
-	<!--principal 이슈로 인해 여기로 이동같은데 Body로 이동해야함 임시로 defer 로 로드순위 바꾸엇으나 근본 해결은 아님
-	다른 로딩 이슈 발생할수 있음 -->
-	<!-- ======= 공통 JavaScript 코드 ======= -->
-	<script src="/js/commonJs/commonAlert.js" defer></script>
-	<script src="/js/commonJs/commonApi.js" defer></script>
-	<script src="/js/commonJs/commonUI.js" defer></script>
-	<script src="/js/commonJs/commonValidation.js" defer></script>
-	<script src="/js/commonJs/commonGrid.js" defer></script>
-	<script src="/js/commonJs/commonSearch.js" defer></script>
-
 </head>
 
 <body>
@@ -100,7 +90,7 @@
     </div>
 
     <!-- ======= 공통 JavaScript 파일 (모든 페이지에서 사용) ======= -->
-    <!-- jQuery 라이브러리 -->
+    <!-- jQuery 라이브러리 - 가장 먼저 로드해서 의존성 문제 해결 -->
     <script src="/js/jquery-3.7.1.js"></script>
     
     <!-- 부트스트랩 및 UI 관련 스크립트 -->
@@ -109,7 +99,7 @@
     <script src="/assets/js/main.js"></script>
     
     <!-- TOAST UI 라이브러리 스크립트 -->
-	<script type="text/javascript" src="https://uicdn.toast.com/tui.pagination/v3.4.0/tui-pagination.js"></script>
+    <script type="text/javascript" src="https://uicdn.toast.com/tui.pagination/v3.4.0/tui-pagination.js"></script>
     <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.js"></script>
     <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
@@ -117,19 +107,18 @@
     <!-- SweetAlert2 라이브러리 (알림창) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-	
+    <!-- 공통 JavaScript 코드 (jQuery 이후에 로드) -->
+    <script src="/js/commonJs/commonAlert.js"></script>
+    <script src="/js/commonJs/commonApi.js"></script>
+    <script src="/js/commonJs/commonUI.js"></script>
+    <script src="/js/commonJs/commonValidation.js"></script>
+    <script src="/js/commonJs/commonGrid.js"></script>
+    <script src="/js/commonJs/commonSearch.js"></script>
+
     <!-- ======= 개별 페이지 JavaScript ======= -->
     <!-- 각 페이지에서 필요한 특정 스크립트를 이 블록에 추가할 수 있음 -->
-	<th:block layout:fragment="script">
-	    <!-- 이 영역은 비워두세요. 각 페이지에서 이 영역을 채웁니다. 
-	    	각 HTML 페이지 에서  작성을 하면 여기에 자동 추가가 되는 구조입니다.-->
-	</th:block>
-	
-	
-    <!-- ======= 개별 페이지 JavaScript ======= -->
     <th:block layout:fragment="script">
         <!-- 이 영역은 비워두세요. 각 페이지에서 이 영역을 채웁니다. -->
     </th:block>
-
-    </script>
 </body>
+</html>
