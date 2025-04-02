@@ -99,4 +99,14 @@ public interface DocumentMapper {
      * @return 직원 번호
      */
     Integer selectEmployeeNoByEmpId(String empId);
+    
+    /**
+     * 직원 번호로 부서 코드 조회
+     * @param empNo 직원 번호
+     * @return 부서 코드
+     */
+    static String selectEmployeeDeptCode(Integer empNo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

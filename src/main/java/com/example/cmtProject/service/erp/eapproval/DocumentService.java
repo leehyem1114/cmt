@@ -4,6 +4,7 @@ import com.example.cmtProject.constants.ApprovalStatus;
 import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
+import com.example.cmtProject.dto.erp.eapproval.AttachmentDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
 import com.example.cmtProject.comm.exception.DocumentAccessDeniedException;
@@ -27,6 +28,7 @@ public class DocumentService {
     private final DocumentMapper documentMapper;
     private final ApprovalLineMapper approvalLineMapper;
     private final ApprovalProcessService approvalProcessService;
+    private final AttachmentService attachmentService;
 
     /**
      * 문서 저장 (임시저장 또는 결재요청)
@@ -94,9 +96,15 @@ public class DocumentService {
             throw new DocumentNotFoundException("문서를 찾을 수 없습니다: " + docId);
         }
         
+        // 결재선 조회
         List<ApprovalLineDTO> approvalLines = approvalLineMapper.selectApprovalLinesByDocId(docId);
         document.setApprovalLines(approvalLines);
         log.debug("결재선 조회: {}개", approvalLines.size());
+        
+        // 첨부파일 조회
+        List<AttachmentDTO> attachments = attachmentService.getAttachmentsByDocId(docId);
+        document.setAttachments(attachments);
+        log.debug("첨부파일 조회: {}개", attachments.size());
         
         return document;
     }
@@ -171,6 +179,10 @@ public class DocumentService {
         // 관련 데이터 삭제
         approvalLineMapper.deleteApprovalLinesByDocId(docId);
         log.debug("결재선 삭제 완료: {}", docId);
+        
+        // 첨부파일 삭제
+        attachmentService.deleteAttachmentsByDocId(docId);
+        log.debug("첨부파일 삭제 완료: {}", docId);
         
         // 문서 삭제
         int result = documentMapper.deleteDocument(docId);
