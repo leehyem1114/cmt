@@ -294,9 +294,9 @@
 							</select>
   						<div class="input-group mb-2">
 							<select class="form-select" id="position" name="position">
-								<option th:each="position : ${positionList}"
-									th:value="${position.cmnDetailCode}"
-									th:text="${position.cmnDetailName}"></option>
+								<option th:each="code : ${commonCodeMap['POSITION']}"
+									th:value="${code.cmnDetailCode}"
+									th:text="${code.cmnDetailName}"></option>
 							</select>
 							<button type="submit" class="btn btn-secondary ms-2">조회</button>
 						</div>
