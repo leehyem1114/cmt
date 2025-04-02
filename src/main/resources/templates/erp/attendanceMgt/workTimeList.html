@@ -9,6 +9,10 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    
+	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	    <title>근무 시간</title>
 
 <style>
@@ -52,21 +56,24 @@
 		      		  class="btn btn-lg btn-primary block" 
 		      		  data-bs-toggle="modal"
 		      		  data-bs-target="#border-less"
-		      		  sec:authorize="hasAnyRole('ADMIN')">직원 등록</button>
+		      		  sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">직원 등록</button>
 		      		  
-		      		  <div class="modal fade text-left modal-borderless" id="border-less" tabindex="-1" aria-labelledby="myModalLabel1" style="display: none;" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-scrollable" role="document">
+		      		  <div class="modal fade text-left modal-borderless" id="border-less" tabindex="-1" aria-labelledby="myModalLabel1">
+                            <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h1 class="modal-title">직원 등록</h1>
-                                        <button type="button" class="close rounded-pill" data-bs-dismiss="modal" aria-label="Close">
+                                        <button type="button" class="close rounded-pill">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                         </button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>
-                                            
-                                        </p>
+                                      
+                                        
+                                        <div id="gridModal"></div>
+                                           
+                                        
+                                        
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light-primary" data-bs-dismiss="modal">
@@ -81,6 +88,78 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        
+                        
+                        
+                        <script th:inline="javascript">
+                        
+                        document.getElementById('border-less').addEventListener('shown.bs.modal', () => {
+                        	  // 모달 완전히 열린 후에 grid 생성
+                        
+	                        const gridModal = new tui.Grid({
+				            el: document.getElementById('gridModal'),
+				            data: /*[[${workTimeList}]]*/ [],
+				            rowHeaders: ['checkbox'],
+				            scrollX: false,
+				            scrollY: false,
+				            pageOptions: {
+				    	        useClient: true,  // 서버 사이드 페이징 활성화
+				    	        perPage: 20
+				    	    },
+				            columns: [
+				            	{ 
+				                  header: 'NO', 
+				            	  name: 'wktNo', 
+				            	  sortable: true, 
+				            	  filter: 'text', 
+				            	  width: 150,
+				            	  align: "center" 
+				            	},
+				            	{ 
+				                  header: '사원번호', 
+				            	  name: 'empNo', 
+				            	  sortable: true, 
+				            	  filter: 'text', 
+				            	  width: 150,
+				            	  align: "center" 
+				            	},
+				            	{ 
+				                  header: '사원이름', 
+				              	  name: 'empName', 
+				              	  sortable: true, 
+				              	  filter: 'text', 
+				              	  width: 150,
+				              	  align: "center" 
+				              	},
+				            	{ 
+				               	  header: '부서', 
+				               	  name: 'deptName', 
+				               	  sortable: true, 
+				               	  filter: 'text',
+				               	  width: 150,
+				               	  align: "center",
+				             		formatter: function({ row }) {
+				 	           		  return row.deptName;
+				 	           		}
+				            	},
+				            	{ 
+			             	      header: '비고', 
+			             	      name: 'wktRemarks', 
+			             	      sortable: true, 
+			             	      filter: 'text',
+			             	      align: "center" 
+				             	}
+				              	],
+	                        
+	
+	                        });
+	                            });
+			            	
+			            	</script>
+                        
+                        
+                        
 		    
 		      <button type="button" 
 		      		  class="btn btn-lg btn-success" 
@@ -100,8 +179,6 @@
     	
     
 
-	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
-	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
@@ -228,7 +305,6 @@
         
 	    </script>
 	    <!-- 그리드 끝 -->
-	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	    <script th:inline="javascript">	    
 	    	async function deleteWorkTimes() {
 	    		  const checkedRows = grid.getCheckedRows();

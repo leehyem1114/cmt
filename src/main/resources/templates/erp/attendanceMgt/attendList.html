@@ -9,6 +9,10 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    
+	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	    <title>출퇴근 관리</title>
 
 <style>
@@ -116,9 +120,6 @@
     	<div id="gridTop"></div>
     	
     
-
-	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
-	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
@@ -261,7 +262,6 @@
 
 	    </script>
 	    <!-- 그리드 끝 -->
-	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	    <script th:inline="javascript">
 	    async function checkIn() {
 	    	  // 사용자에게 출근 확인 알림 표시

@@ -39,7 +39,7 @@ public class WorkTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long wktNo; // 근무시간NO (WKT_NO)
 
-    @Column(name = "EMP_NO")
+    @Column(name = "EMP_NO", unique = true)
     private Long empNo; // 사원번호 (EMP_NO), 사원 테이블 참조
 
     @Column(name = "WKT_DATE")
