@@ -62,25 +62,25 @@
 
     <!-- 문서 조회 - 기본 정보만 조회 -->
     <select id="selectDocumentById" resultMap="documentResultMap">
-        SELECT 
-            d.DOC_ID, 
-            d.DOC_NUMBER, 
-            d.FORM_ID, 
-            d.TITLE, 
-            d.CONTENT, 
-            d.DRAFTER_ID, 
-            e.EMP_NAME as DRAFTER_NAME, 
-            d.DRAFT_DEPT, 
-            c.CODE_NAME as DRAFT_DEPT_NAME, 
-            d.DRAFT_DATE, 
-            d.DOC_STATUS, 
-            d.APPROVAL_DATE, 
-            d.IS_TEMP_SAVED, 
-            d.UPDATE_DATE 
-        FROM DOCUMENTS d 
-        LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
-        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CODE_ID
-        WHERE d.DOC_ID = #{docId, jdbcType=VARCHAR}
+		SELECT 
+		    d.DOC_ID, 
+		    d.DOC_NUMBER, 
+		    d.FORM_ID, 
+		    d.TITLE, 
+		    d.CONTENT, 
+		    d.DRAFTER_ID, 
+		    e.EMP_NAME as DRAFTER_NAME, 
+		    d.DRAFT_DEPT, 
+		    c.CMN_DETAIL_NAME as DRAFT_DEPT_NAME, 
+		    d.DRAFT_DATE, 
+		    d.DOC_STATUS, 
+		    d.APPROVAL_DATE, 
+		    d.IS_TEMP_SAVED, 
+		    d.UPDATE_DATE 
+		FROM DOCUMENTS d 
+		LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
+		LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CMN_DETAIL_CODE
+		WHERE d.DOC_ID = ?
     </select>
 
     <!-- 기안자별 문서 목록 조회 -->
