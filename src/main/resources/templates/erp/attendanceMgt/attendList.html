@@ -134,6 +134,14 @@
     	    },
             columns: [
             	{ 
+                  header: '출결번호', 
+              	  name: 'atdNo', 
+              	  sortable: true, 
+              	  filter: 'text', 
+              	  width: 150,
+              	  align: "center" 
+              	},
+            	{ 
                   header: '사원번호', 
             	  name: 'empNo', 
             	  sortable: true, 
@@ -326,6 +334,7 @@
 	    	        'Content-Type': 'application/json'
 	    	      },
 	    	      body: JSON.stringify({atdType: "ATT005"})
+// 	    	      body: JSON.stringify({atxxxxdType: "ATT005"})
 	    	    });
 
 	    	    if (!response.ok) {
@@ -451,8 +460,8 @@
 	    		    endDate.setHours(23, 59, 59, 999);
 
 	    		    filtered = filtered.filter(row => {
-	    		      const attendDate = new Date(row.attendDate);
-	    		      return attendDate >= startDate && attendDate <= endDate;
+	    		      const atdDate = new Date(row.atdDate);
+	    		      return atdDate >= startDate && atdDate <= endDate;
 	    		    });
 	    		  }
 

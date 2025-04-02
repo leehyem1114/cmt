@@ -1,18 +1,14 @@
 package com.example.cmtProject.service.erp.attendanceMgt;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.WorkTimeDTO;
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkTime;
-import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.erp.attendanceMgt.WorkTimeMapper;
 import com.example.cmtProject.repository.erp.attendanceMgt.WorkTimeRepository;
-import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
 @Service
 public class WorkTimeService {

@@ -31,11 +31,13 @@ public class MainController {
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
 	
 	@GetMapping({"","/"})
+
 	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails, RedirectAttributes redirectAttributes) {
 		
 		if (principalDetails ==null) {
 			return "redirect:/login";
 		}
+
 		return "home";
 	}
 	

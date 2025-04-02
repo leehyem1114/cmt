@@ -84,10 +84,11 @@
             APPROVAL_COMMENT, 
             APPROVAL_TYPE 
         FROM APPROVAL_LINES 
-        WHERE DOC_ID = #{docId, jdbcType=VARCHAR} AND APPROVER_NO = #{approverNo}
+        WHERE DOC_ID = #{docId, jdbcType=VARCHAR} 
+        AND APPROVER_NO = #{approverNo}
     </select>
     
-    <!-- 문서의 다음 결재자 조회 -->
+    <!-- 문서의 다음 결재자 조회 (대기 상태인 결재선 조회) -->
     <select id="selectNextApproversByDocId" resultMap="approvalLineResultMap">
         SELECT 
             APPROVAL_NO, 
@@ -99,7 +100,8 @@
             APPROVAL_COMMENT, 
             APPROVAL_TYPE 
         FROM APPROVAL_LINES 
-        WHERE DOC_ID = #{docId, jdbcType=VARCHAR} AND APPROVAL_STATUS = '대기' 
+        WHERE DOC_ID = #{docId, jdbcType=VARCHAR} 
+        AND APPROVAL_STATUS = '대기' 
         ORDER BY APPROVAL_ORDER
     </select>
     
@@ -122,5 +124,4 @@
         <result property="approvalComment" column="APPROVAL_COMMENT"/>
         <result property="approvalType" column="APPROVAL_TYPE"/>
     </resultMap>
-
 </mapper>

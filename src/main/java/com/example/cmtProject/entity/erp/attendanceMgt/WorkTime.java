@@ -39,10 +39,10 @@ public class WorkTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long wktNo; // 근무시간NO (WKT_NO)
 
-    @Column(name = "EMP_NO", nullable = false)
+    @Column(name = "EMP_NO")
     private Long empNo; // 사원번호 (EMP_NO), 사원 테이블 참조
 
-    @Column(name = "WKT_DATE", nullable = false)
+    @Column(name = "WKT_DATE")
     private LocalDateTime wktDate; // 근무일자 (WKT_DATE)
 
     @Column(name = "WKT_START_TIME")
@@ -51,10 +51,10 @@ public class WorkTime {
     @Column(name = "WKT_END_TIME")
     private LocalDateTime wktEndTime; // 퇴근시간 (WKT_END_TIME)
 
-    @Column(name = "WKT_STATUS", nullable = false)
+    @Column(name = "WKT_STATUS")
     private String wktStatus; // 근무상태 (WKT_STATUS)
 
-    @Column(name = "WKT_TYPE", nullable = false)
+    @Column(name = "WKT_TYPE")
     private String wktType; // 기준근무유형 (WKT_TYPE)
 
     @Column(name = "WKT_REMARKS", length = 200)
