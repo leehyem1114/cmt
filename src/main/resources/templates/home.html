@@ -7,7 +7,63 @@
 <head>
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" /> <!-- 토스트 -->
-	
+	 <th:block layout:fragment="script">
+    	<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
+<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+
+        <script type="text/javascript">
+            /* 
+             * 페이지별 JavaScript 코드 작성 영역
+             * - TOAST UI 초기화
+             * - 이벤트 핸들러
+             * - Ajax 요청
+             * - 기타 페이지별 로직
+             */
+             document.addEventListener('DOMContentLoaded', function() {
+                 const calendar = new tui.Calendar('#calendar', {
+                     defaultView: 'month',
+                     template: {
+                         time(event) {
+                             const { start, end, title } = event;
+                             return `<span style="color: white;">${formatTime(start)}~${formatTime(end)} ${title}</span>`;
+                         },
+                         allday(event) {
+                             return `<span style="color: gray;">${event.title}</span>`;
+                         },
+                     },
+                     calendars: [
+                         {
+                             id: 'cal1',
+                             name: 'Personal',
+                             backgroundColor: '#03bd9e',
+                         },
+                         {
+                             id: 'cal2',
+                             name: 'Work',
+                             backgroundColor: '#00a9ff',
+                         },
+                     ],
+                 });
+             });
+            
+
+             
+             
+             
+            
+            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('페이지가 로드되었습니다.');
+                
+                // 여기에 초기화 코드 작성
+            });
+            
+            // 함수 예시
+            function exampleFunction() {
+                alert('버튼이 클릭되었습니다!');
+            }
+        </script>
+    </th:block>
 
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
@@ -50,7 +106,7 @@
 	       
 	       
 	    <!-- ------------------------------------ -->
-			<div id="calendar" style="height: 600px"></div> <!-- 캘린더 -->
+			<div id="calendar" style="height: 600px" ></div> <!-- 캘린더 -->
 	    <!-- ------------------------------------ -->
 	        <a th:href="@{/logout}">로그아웃</a>
 	    </div>
@@ -74,61 +130,6 @@
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-    <th:block layout:fragment="script">
-    	<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-             const calendar = new Calendar('#calendar', {
-            	  defaultView: 'week',
-            	  template: {
-            	    time(event) {
-            	      const { start, end, title } = event;
-
-            	      return `<span style="color: white;">${formatTime(start)}~${formatTime(end)} ${title}</span>`;
-            	    },
-            	    allday(event) {
-            	      return `<span style="color: gray;">${event.title}</span>`;
-            	    },
-            	  },
-            	  calendars: [
-            	    {
-            	      id: 'cal1',
-            	      name: 'Personal',
-            	      backgroundColor: '#03bd9e',
-            	    },
-            	    {
-            	      id: 'cal2',
-            	      name: 'Work',
-            	      backgroundColor: '#00a9ff',
-            	    },
-            	  ],
-            	});
-           
-//              const calendar = new tui.Calendar(container, options);
-//              const calendar = new Calendar(container, options);
-             
-             
-             
-             
-            
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
-        </script>
-    </th:block>
+   
 </body>
 </html>

@@ -44,6 +44,7 @@ public class SalaryController {
 	// 급여 지급 내역 조회
 	@GetMapping("/payList")
 	public String getPayList(Model model) {
+		commonCodeName(model,commonService);
 		
 		//List<PaymentDTO> payList = salaryService.getPayList();
 		//model.addAttribute("payList", payList);
@@ -242,5 +243,22 @@ public class SalaryController {
 		return "erp/salaries/payroll";
 	}
 	
+	
+	//=====================================================
+	//공통코드 DetailName 불러오는 메서드
+		public static void commonCodeName(Model model , CommonService commonService) {
+			
+			List<String> groupCodes = commonService.getAllGroupCodes();
+			System.out.println("그룹코드 리스트 :::::"+groupCodes);
+//			String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
+			//공통코드 추가시 "NEW_CODE" 추가
+			
+			Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
+			
+			for(String groupCode : groupCodes) {
+				commonCodeMap.put(groupCode, commonService.getCodeListByGroup(groupCode));
+			}
+			model.addAttribute("commonCodeMap",commonCodeMap);
+		}
 	
 }
