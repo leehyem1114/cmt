@@ -81,9 +81,7 @@
 		    <button type="button" 
 		            class="btn btn-lg btn-danger" 
 		            onclick="deleteAttend()" 
-		            sec:authorize="hasAnyRole('ADMIN')">
-		      삭제
-		    </button>
+		            sec:authorize="hasAnyRole('ADMIN')">삭제</button>
 		  </div>
 		</div>
 		
@@ -159,11 +157,14 @@
             	},
             	{ 
               	  header: '부서', 
-              	  name: 'deptNo', 
+              	  name: 'deptName', 
               	  sortable: true, 
               	  filter: 'text',
               	  width: 150,
-              	  align: "center" 
+              	  align: "center",
+            		formatter: function({ row }) {
+	           		  return row.deptName;
+	           		}
               	},
             	{ 
             	  header: '출근일자', 
@@ -211,7 +212,7 @@
            		},
             	{ 
            	      header: '출결유형', 
-           		  name: 'atdType', 
+           		  name: 'statusLink', 
            		  sortable: true, 
            		  filter: 'text',
            		  align: "center",
@@ -222,7 +223,7 @@
            		},
             	{ 
            	      header: '출결상태', 
-           	      name: 'atdStatus', 
+           	      name: 'typeLink', 
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center",
@@ -334,7 +335,6 @@
 	    	        'Content-Type': 'application/json'
 	    	      },
 	    	      body: JSON.stringify({atdType: "ATT005"})
-// 	    	      body: JSON.stringify({atxxxxdType: "ATT005"})
 	    	    });
 
 	    	    if (!response.ok) {

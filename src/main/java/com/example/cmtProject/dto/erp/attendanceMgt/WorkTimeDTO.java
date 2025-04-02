@@ -1,15 +1,9 @@
 package com.example.cmtProject.dto.erp.attendanceMgt;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkStatus;
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkTime;
-import com.example.cmtProject.entity.erp.attendanceMgt.WorkType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,9 +17,9 @@ public class WorkTimeDTO {
     private Long empNo; // 사원번호
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime wktDate; // 근무일자
-    @JsonFormat(pattern = "HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime wktStartTime; // 출근시간
-    @JsonFormat(pattern = "HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime wktEndTime; // 퇴근시간
     private String wktStatus; // 근무상태
     private String wktType; // 기준근무유형
@@ -33,7 +27,9 @@ public class WorkTimeDTO {
     
     
     // join매핑을 위한 dto
-    private Long deptNo; // 부서 번호
+    private String deptName; // 부서명 공통코드
+    private String wktTypeName; // 근무타입 공통코드
+    private String empName; // 사원이름
     
     
     public WorkTimeDTO toEntity() {

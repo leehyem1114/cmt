@@ -2,6 +2,7 @@ package com.example.cmtProject.service.erp.attendanceMgt;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -64,12 +65,12 @@ public class AttendService {
     
     // 퇴근 정보 저장
     @Transactional
-	public void updateAttendLeave(AttendDTO dto, Long atdNo) {
+	public void updateAttendLeave(Map<String, String> dto, Long atdNo) {
     	
 		Attend attend = Attend.builder()
 				.atdNo(atdNo)
 				.atdLeave(LocalDateTime.now()) // 퇴근 처리 시 현재 시간 설정
-				.atdType(dto.getAtdType())
+				.atdType(dto.get("atdtype"))
 				.build();
 		attendsMapper.updateAttendLeave(attend.getAtdNo(), LocalDateTime.now(), attend.getAtdType());
 	}

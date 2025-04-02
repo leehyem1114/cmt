@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class AttendDTO {
@@ -27,8 +28,7 @@ public class AttendDTO {
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime atdLeave; // 퇴근일자
-    
-    @JsonProperty("atdType")
+
     private String atdType; // 출결유형
     
     private String atdStatus; // 출결상태
@@ -37,9 +37,9 @@ public class AttendDTO {
     
     
     // join매핑을 위한 dto
-    private Long deptNo; // 부서 번호
-    private String statusLink; // 상태
-    private String typeLink; // 타입
+    private String statusLink; // 출결 상태 공통코드
+    private String typeLink; // 출결 타입 공통코드
+    private String deptName; // 부서명 공통코드
     
     
     

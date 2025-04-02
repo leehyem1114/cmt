@@ -43,77 +43,58 @@
 		  <div style="display: flex; align-items: center; gap: 10px;">
 		    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
 		
-		    <label for="startDate">시작일:</label>
-		    <div style="position: relative;">
-		      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-		        <input type="text" id="startDate" aria-label="Start Date">
-		        <span class="tui-ico-date"></span>
-		      </div> 
-		      <div id="startDateWrapper" style="margin-top: -1px;"></div>
-		    </div>
-		
-		    <label for="endDate">종료일:</label>
-		    <div style="position: relative;">
-		      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-		        <input type="text" id="endDate" aria-label="End Date">
-		        <span class="tui-ico-date"></span>
-		      </div>
-		      <div id="endDateWrapper" style="margin-top: -1px;"></div>
-		    </div>
-		
 		    <button id="dateSearchBtn" class="btn btn-primary">검색</button>
 		  </div>
 		
 		  <!-- 오른쪽: 버튼 묶음 (이게 flex item이자 margin-left: auto 적용 대상!) -->
 		  <div class="btn-group-custom" style="margin-left: auto; display: flex; gap: 10px;">
-		    <th:block th:if="${!hasCheckedIn}">
-		      <button type="button" class="btn btn-lg btn-primary" onclick="checkIn()">출근</button>
-		    </th:block>
+		      <button type="button" 
+		      		  class="btn btn-lg btn-primary block" 
+		      		  data-bs-toggle="modal"
+		      		  data-bs-target="#border-less"
+		      		  sec:authorize="hasAnyRole('ADMIN')">직원 등록</button>
+		      		  
+		      		  <div class="modal fade text-left modal-borderless" id="border-less" tabindex="-1" aria-labelledby="myModalLabel1" style="display: none;" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-scrollable" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title">직원 등록</h1>
+                                        <button type="button" class="close rounded-pill" data-bs-dismiss="modal" aria-label="Close">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>
+                                            
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light-primary" data-bs-dismiss="modal">
+                                            <i class="bx bx-x d-block d-sm-none"></i>
+                                            <span class="d-none d-sm-block">닫기</span>
+                                        </button>
+                                        <button type="button" class="btn btn-primary ms-1" data-bs-dismiss="modal" onclick="regist()">
+                                            <i class="bx bx-check d-block d-sm-none"></i>
+                                            <span class="d-none d-sm-block">등록</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 		    
-		    <th:block th:if="${hasCheckedIn && !hasCheckedOut}">
-		      <button type="button" class="btn btn-lg btn-primary" onclick="checkOut()">퇴근</button>
-		    </th:block>
-		    
-		    <th:block th:if="${hasCheckedOut && hasCheckedIn}">
-			    <button type="button" class="btn btn-lg btn-primary disabled " onclick="checkOut()">퇴근</button>
-			</th:block>
+		      <button type="button" 
+		      		  class="btn btn-lg btn-success" 
+		      		  onclick="update()"
+		      		  sec:authorize="hasAnyRole('ADMIN')">수정</button>
 		    
 		    <button type="button" 
 		            class="btn btn-lg btn-danger" 
-		            onclick="deleteAttend()" 
-		            sec:authorize="hasAnyRole('ADMIN')">
-		      삭제
-		    </button>
+		            onclick="deleteWorkTimes()" 
+		            sec:authorize="hasAnyRole('ADMIN')">삭제</button>
 		  </div>
 		</div>
-		
-		<!-- TOAST UI DatePicker 스크립트 -->
-		<script src="https://uicdn.toast.com/tui.date-picker/latest/i18n/ko.js"></script>
-		<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-		<script type="text/javascript">
-		  // 시작일 DatePicker
-		  const startPicker = new tui.DatePicker('#startDateWrapper', {
-			language: 'ko',  
-		    date: new Date(),
-		    input: {
-		      element: '#startDate',
-		      format: 'yyyy-MM-dd'
-		    }
-		  });
-		
-		  // 종료일 DatePicker
-		  const endPicker = new tui.DatePicker('#endDateWrapper', {
-			language: 'ko',  
-		    date: new Date(),
-		    input: {
-		      element: '#endDate',
-		      format: 'yyyy-MM-dd'
-		    }
-		  });
-		  
-		</script>
-		
 		<br>
+
 		
     	<div id="gridTop"></div>
     	
@@ -124,7 +105,7 @@
 	    <script th:inline="javascript">
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
-            data: /*[[${attendList}]]*/ [],
+            data: /*[[${workTimeList}]]*/ [],
             rowHeaders: ['checkbox'],
             scrollX: false,
             scrollY: false,
@@ -133,6 +114,14 @@
     	        perPage: 20
     	    },
             columns: [
+            	{ 
+                  header: 'NO', 
+            	  name: 'wktNo', 
+            	  sortable: true, 
+            	  filter: 'text', 
+            	  width: 150,
+            	  align: "center" 
+            	},
             	{ 
                   header: '사원번호', 
             	  name: 'empNo', 
@@ -143,26 +132,48 @@
             	},
             	{ 
                   header: '사원이름', 
-            	  name: 'empName', 
-            	  sortable: true, 
-            	  filter: 'text', 
-            	  width: 150,
-            	  align: "center" 
-            	},
-            	{ 
-              	  header: '부서', 
-              	  name: 'deptNo', 
+              	  name: 'empName', 
               	  sortable: true, 
-              	  filter: 'text',
+              	  filter: 'text', 
               	  width: 150,
               	  align: "center" 
               	},
             	{ 
-            	  header: '출근일자', 
-            	  name: 'atdDate', 
+               	  header: '부서', 
+               	  name: 'deptName', 
+               	  sortable: true, 
+               	  filter: 'text',
+               	  width: 150,
+               	  align: "center",
+             		formatter: function({ row }) {
+ 	           		  return row.deptName;
+ 	           		}
+            	},
+            	{ 
+            	  header: '출근시간', 
+            	  name: 'wktStartTime', 
             	  sortable: true, 
             	  filter: 'text',
-            	  width: 300,
+            	  width: 200,
+           		  align: "center",
+	           		formatter: function({ value }) {
+	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
+	
+	           		    const date = new Date(value);
+	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
+
+		           		const hours = String(date.getHours()).padStart(2, '0');
+		           	    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		    
+	           		    return `${hours}시 ${minutes}분`;
+	           		}
+           		},
+            	{ 
+            	  header: '퇴근시간', 
+            	  name: 'wktEndTime', 
+            	  sortable: true, 
+            	  filter: 'text',
+            	  width: 200,
            		  align: "center",
 	           		formatter: function({ value }) {
 	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
@@ -170,62 +181,26 @@
 	           		    const date = new Date(value);
 	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
 	
-	           		    const year = date.getFullYear();
-	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
-	           		    const day = String(date.getDate()).padStart(2, '0');
 	           		    const hours = String(date.getHours()).padStart(2, '0');
 	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
 	           		    
-	           		    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		    return `${hours}시 ${minutes}분`;
 	           		}
            		},
             	{ 
-            	  header: '퇴근일자', 
-            	  name: 'atdLeave', 
-            	  sortable: true, 
-            	  filter: 'text',
-            	  width: 300,
-           		  align: "center",
-	           		formatter: function({ value }) {
-	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
-	
-	           		    const date = new Date(value);
-	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
-	
-	           		    const year = date.getFullYear();
-	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
-	           		    const day = String(date.getDate()).padStart(2, '0');
-	           		    const hours = String(date.getHours()).padStart(2, '0');
-	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
-	           		    
-	           		    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
-	           		}
-           		},
-            	{ 
-           	      header: '출결유형', 
-           		  name: 'atdType', 
+           	      header: '기준근무유형', 
+           		  name: 'wktTypeName', 
            		  sortable: true, 
            		  filter: 'text',
            		  align: "center",
            		  width: 150,
-	           		formatter: function({ row }) {
-	           		  return row.statusLink;
+           			formatter: function({ row }) {
+	           		  return row.wktTypeName;
 	           		}
-           		},
-            	{ 
-           	      header: '출결상태', 
-           	      name: 'atdStatus', 
-           	      sortable: true, 
-           	      filter: 'text',
-           	      align: "center",
-           	      width: 150,
-	           	   formatter: function({ row }) {
-	           	     return row.typeLink;
-	           	   } 
             	},
             	{ 
            	      header: '비고', 
-           	      name: 'atdRemarks', 
+           	      name: 'wktRemarks', 
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center" 
@@ -250,112 +225,14 @@
         });
         
 
+        
 	    </script>
 	    <!-- 그리드 끝 -->
 	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	    <script th:inline="javascript">
-	    async function checkIn() {
-	    	  // 사용자에게 출근 확인 알림 표시
-	    	  const result = await Swal.fire({
-	    	    title: "출근 하시겠습니까?",
-	    	    showDenyButton: true,
-	    	    confirmButtonText: "출근",
-	    	    denyButtonText: "아니요"
-	    	  });
-	    	  if (result.isDenied) {
-	    		  Swal.fire({
-	    			  icon: "error",
-		    		  title: "출근 처리에 실패했습니다.",
-		    		});
-	    		  return;
-	    		  }
-	    	  // 출근 API 요청
-	    	  try {
-	    	    const response = await fetch('/attends/check-in', {
-	    	      method: 'POST',
-	    	      headers: {
-	    	        'Content-Type': 'application/json'
-	    	      },
-	    	      body: JSON.stringify({})
-	    	    });
-	    	    if (!response.ok) {
-	    	      await Swal.fire({
-	    	        icon: "error",
-	    	        title: "출근 처리 중 서버 오류가 발생했습니다",
-	    	      });
-	    	      throw new Error("출근 처리 중 서버 오류");
-	    	    }
-	    	    await Swal.fire({
-	    	      title: "출근이 처리되었습니다",
-	    	      icon: "success",
-	    	    });
-
-	    	    location.reload();
-
-	    	  } catch (error) {
-	    	    console.error('Error:', error);
-	    	    await Swal.fire({
-	    	        icon: "error",
-	    	        title: "출근 처리 중 서버 오류가 발생했습니다",
-	    	      });
-	    	  }
-	    	}
-	    
-	    	async function checkOut() {
-	    	  // 사용자에게 퇴근 확인 알림 표시
-	    	  const result = await Swal.fire({
-	    	    title: "퇴근 하시겠습니까?",
-	    	    showDenyButton: true,
-	    	    confirmButtonText: "퇴근",
-	    	    denyButtonText: "아니요"
-	    	  });
-
-	    	  if (result.isDenied) {
-	    	    await Swal.fire({
-	    	      icon: "error",
-	    	      title: "퇴근이 취소되었습니다.",
-	    	    });
-	    	    return;
-	    	  }
-
-	    	  // 퇴근 API 요청
-	    	  try {
-	    	    const response = await fetch('/attends/check-out', {
-	    	      method: 'POST',
-	    	      headers: {
-	    	        'Content-Type': 'application/json'
-	    	      },
-	    	      body: JSON.stringify({atdType: "ATT005"})
-	    	    });
-
-	    	    if (!response.ok) {
-	    	      await Swal.fire({
-	    	        icon: "error",
-	    	        title: "퇴근 처리 중 서버 오류가 발생했습니다",
-	    	      });
-	    	      throw new Error("퇴근 처리 중 서버 오류");
-	    	    }
-
-	    	    await Swal.fire({
-	    	      title: "퇴근이 처리되었습니다",
-	    	      icon: "success",
-	    	    });
-
-	    	    location.reload();
-
-	    	  } catch (error) {
-	    	    console.error('Error:', error);
-	    	    await Swal.fire({
-	    	      icon: "error",
-	    	      title: "퇴근 처리 중 서버 오류가 발생했습니다",
-	    	    });
-	    	  }
-	    	}
-	    	
-	    	
-	    	async function deleteAttend() {
+	    <script th:inline="javascript">	    
+	    	async function deleteWorkTimes() {
 	    		  const checkedRows = grid.getCheckedRows();
-	    		  const ids = checkedRows.map(row => row.atdNo);
+	    		  const ids = checkedRows.map(row => row.wktNo);
 
 	    		  if (ids.length === 0) {
 	    		    await Swal.fire({
@@ -384,7 +261,7 @@
 
 	    		  // 삭제 API 요청
 	    		  try {
-	    		    const response = await fetch('/attends/delete', {
+	    		    const response = await fetch('/worktimes/delete', {
 	    		      method: 'POST',
 	    		      headers: {
 	    		        'Content-Type': 'application/json'
