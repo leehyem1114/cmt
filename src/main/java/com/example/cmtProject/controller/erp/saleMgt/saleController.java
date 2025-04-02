@@ -14,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,15 +21,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.cmtProject.controller.erp.saleMgt.commonModel.SalesOrderModels;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
-import com.example.cmtProject.entity.comm.CommoncodeDetail;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
-import com.example.cmtProject.entity.erp.salesMgt.SalesOrderStatus;
-import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
-import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
+import com.example.cmtProject.repository.comm.CommonCodeDetailRepository;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
-import com.example.cmtProject.repository.erp.saleMgt.CommoncodeDetailRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderStatusRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
@@ -57,7 +52,7 @@ public class saleController {
 	private EmployeesRepository employeesRepository;
 	
 	@Autowired
-	private CommoncodeDetailRepository commoncodeDetailRepository;
+	private CommonCodeDetailRepository commoncodeDetailRepository;
 	
 	@Autowired
 	private SalesOrderService salesOrderService;
