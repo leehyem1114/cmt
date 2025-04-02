@@ -21,13 +21,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "PAYMENT")
+@Table(name = "PAYMENTS")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PayMent { // 급여 지급 이력 엔티티
+public class Payment { // 급여 지급 이력 엔티티
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,40 +44,31 @@ public class PayMent { // 급여 지급 이력 엔티티
     private Long payBasic; // 기본급
 
     @Column(name = "PAY_BONUS_OVERTIME")
-    private Long payBonusOvertime; // 야근수당
-
-    @Column(name = "PAY_BONUS_TECH")
-    private Long payBonusTech; // 기술수당
-
-    @Column(name = "PAY_BONUS_LONG")
-    private Long payBonusLong; // 근속수당
-
-    @Column(name = "PAY_BONUS_COMMITION")
-    private Long payBonusCommition; // 성과급
+    private Double payBonusOvertime; // 야근수당
 
     @Column(name = "PAY_BONUS_HOLIDAY")
-    private Long payBonusHoliday; // 명절수당
+    private Double payBonusHoliday; // 명절수당
 
     @Column(name = "PAY_BONUS_TOTAL", nullable = false)
     private Long payBonusTotal; // 총수당금액
 
     @Column(name = "PAY_TAX_PENSION")
-    private Long payTaxPension; // 국민연금
+    private Double payTaxPension; // 국민연금
 
     @Column(name = "PAY_TAX_CARE")
-    private Long payTaxCare; // 장기요양보험
+    private Double payTaxCare; // 장기요양보험
 
     @Column(name = "PAY_TAX_HEALTH")
-    private Long payTaxHealth; // 건강보험
+    private Double payTaxHealth; // 건강보험
 
     @Column(name = "PAY_TAX_EMPLOYMENT")
-    private Long payTaxEmployment; // 고용보험
+    private Double payTaxEmployment; // 고용보험
 
     @Column(name = "PAY_TAX_INCOME")
-    private Long payTaxIncome; // 소득세
+    private Double payTaxIncome; // 소득세
 
     @Column(name = "PAY_TAX_RESIDENCE")
-    private Long payTaxResidence; // 주민세
+    private Double payTaxResidence; // 주민세
 
     @Column(name = "PAY_TAX_TOTAL", nullable = false)
     private Long payTaxTotal; // 총공제금액
@@ -96,9 +87,6 @@ public class PayMent { // 급여 지급 이력 엔티티
 				.payDate(payDate)
 				.payBasic(payBasic)
 				.payBonusOvertime(payBonusOvertime)
-				.payBonusTech(payBonusTech)
-				.payBonusLong(payBonusLong)
-				.payBonusCommition(payBonusCommition)
 				.payBonusHoliday(payBonusHoliday)
 				.payBonusTotal(payBonusTotal)
 				.payTaxPension(payTaxPension)

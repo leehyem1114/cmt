@@ -6,12 +6,122 @@
 <mapper namespace="com.example.cmtProject.mapper.erp.salaries.SalariesMapper">
     
 	<!-- 급여 유형명 항목별로 불러오기 -->
-    <select id="salItemTypes" resultType="com.example.cmtProject.dto.erp.salaries.SalaryItemDTO">
+<!--     <select id="salItemTypes" resultType="com.example.cmtProject.dto.erp.salaries.SalaryItemDTO">
 		SELECT CMN_CODE AS SLI_TYPE, CMN_DETAIL_NAME AS SLI_NAME
 		FROM COMMONCODE_DETAIL
 		WHERE CMN_CODE IN ('BONUS','TAX')
 		ORDER BY CMN_CODE
+    </select> -->
+    
+	<!-- 급여 지급 내역 검색 필터링 -->
+	<select id="searchPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
+	    SELECT
+			C1.PAY_DATE AS payDate,
+        	E.EMP_NO AS empNo,
+        	E.EMP_NAME AS empName,
+        	C2.CMN_DETAIL_NAME AS deptName,
+        	C3.CMN_DETAIL_NAME AS position,
+        	C4.CMN_DETAIL_NAME AS empType,
+        	C5.CMN_DETAIL_VALUE AS payBasic,
+        	P.PAY_BONUS_OVERTIME AS payBonusOvertime,
+        	P.PAY_BONUS_HOLIDAY AS payBonusHoliday,
+        	P.PAY_BONUS_TOTAL AS payBonusTotal,
+        	P.PAY_TAX_PENSION AS payTaxPension,
+        	P.PAY_TAX_HEALTH AS payTaxHealth,
+        	P.PAY_TAX_CARE AS payTaxCare,
+        	P.PAY_TAX_EMPLOYMENT AS payTaxEmployment,
+        	P.PAY_TAX_INCOME AS payTaxIncome,
+        	P.PAY_TAX_RESIDENCE AS payTaxResidence,
+        	P.PAY_TAX_TOTAL AS payTaxTotal,
+        	P.PAY_TOTAL AS payTotal,
+        	C5.CMN_DETAIL_NAME AS payStatus
+    	FROM PAYMENTS P
+    	LEFT JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+    	LEFT JOIN COMMONCODE_DETAIL C1 ON TO_CHAR(P.PAY_DATE) = C1.CMN_DETAIL_CODE
+    	LEFT JOIN COMMONCODE_DETAIL C2 ON TO_CHAR(E.DEPT_NO) = C2.CMN_DETAIL_CODE
+    	LEFT JOIN COMMONCODE_DETAIL C3 ON TO_CHAR(E.POSTION_NO) = C3.CMN_DETAIL_CODE
+    	LEFT JOIM COMMONCODE_DETAIL C4 ON TO_CHAR(E.EMP_TYPE) = C4.CMN_DETAIL_CODE
+    	LEFT JOIN COMMONCODE_DETAIL C5 ON TO_CHAR(P.PAY_BASIC) = C5.CMN_DETAIL_CODE
+        <where>
+        	<if test="deptName != null and deptName != ''">
+        		AND C2.CMN_DETAIL_CODE = #{deptName}
+        	</if>
+        	<if test="empName != null and empName != ''">
+        		AND E.EMP_NAME LIKE '%' || #{empName} || '%'
+        	</if>
+          	<if test="startDate != null and endDate != null">
+          		AND C1.CMN_DETAIL_VALUE BETWEEN #{minDate} AND #{maxDate}
+          	</if>
+        </where>
+        ORDER BY P.PAY_DATE DESC
     </select>
     
+    <!-- 급여 이체 검색 필터링 -->
+	<select id="searchPayTransferList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
+	    SELECT
+        	E.EMP_NO AS empNo,
+        	E.EMP_NAME AS empName,
+        	C1.CMN_DETAIL_NAME AS deptName,
+        	C2.CMN_DETAIL_NAME AS position
+    	FROM PAYMENTS P
+    	LEFT JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+    	LEFT JOIN COMMONCODE_DETAIL C1 ON TO_CHAR(E.DEPT_NO) = C1.CMN_DETAIL_CODE
+    	LEFT JOIN COMMONCODE_DETAIL C2 ON TO_CHAR(E.POSTION_NO) = C2.CMN_DETAIL_CODE
+        <where>
+        	<if test="deptName != null and deptName != ''">
+        		AND C1.CMN_DETAIL_CODE = #{deptName}
+        	</if>
+          	<if test="startDate != null and endDate != null">
+          		AND P.CMN_DETAIL_VALUE BETWEEN #{startDate} AND #{endDate} 
+          	</if>
+        </where>
+        ORDER BY E.EMP_NO
+    </select>
+    
+    
+    
+    <!-- 18시 이후부터 야근수당 계산 -->
+    <select id="getOverTimes" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+    	SELECT
+    		P.EMP_NO,
+    		W.WKT_ID,
+    		ROUND(
+        		CASE 
+            		WHEN TO_CHAR(W.WKT_END_TIME, 'HH24') >= 18 
+            		THEN (W.WKT_END_TIME - TO_DATE(TO_CHAR(W.WKT_DATE, 'YYYY-MM-DD') || ' 18:00:00', 'YYYY-MM-DD HH24:MI:SS')) * 24
+            		ELSE 0
+        		END
+        			* TO_NUMBER(C1.CMN_DETAIL_VALUE2) 
+        		) AS payBonusOvertime
+    	FROM PAYMENTS P
+    	LEFT JOIN WORK_TIMES W ON P.EMP_NO = W.EMP_NO
+    	LEFT JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+    	LEFT JOIN COMMONCODE_DETAIL C1 ON C1.CMN_CODE = 'POSITION' AND C1.CMN_DETAIL_CODE = TO_CHAR(E.POSITION_NO)
+    	LEFT JOIN COMMONCODE_DETAIL C2 ON TO_CHAR(E.DEPT_NO) = C2.CMN_DETAIL_CODE
+    	<where>
+    		<if test="payDay != null">
+            	AND W.WKT_DATE BETWEEN TRUNC(ADD_MONTHS(#{payDay}, -1), 'MM') 
+                	AND LAST_DAY(ADD_MONTHS(#{payDay}, -1))
+            </if>
+        	<if test="deptName != null and deptName != ''">
+            	AND C2.CMN_DETAIL_NAME = #{deptName}
+        	</if>  
+        	<if test="empNo != null and empNo != ''">
+            	AND P.EMP_NO = #{empNo}
+        	</if>        	              
+    	</where>	
+    </select>
+    
+    
+    <insert id="insertBonusResultList" parameterType="java.util.List">
+    	INSERT INTO PAYMENTS (PAY_BONUS_OVERTIME, PAY_BONUS_HOLIDAY)
+    	VALUES
+    	<foreach collection="list" item="item" separator=",">
+        	(#{item.payBonusOvertime}, #{item.payBonusHoliday)
+    	</foreach>
+	</insert>
+
+
+
 
 </mapper>

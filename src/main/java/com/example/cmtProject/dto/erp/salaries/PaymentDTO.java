@@ -15,29 +15,26 @@ import lombok.Setter;
 @Builder
 public class PaymentDTO {
 
-    private Long payNo;               // 지급 번호
+    private Long payNo;              // 지급 번호
     private Long empNo;              // 사원 번호
     private String empName;			 // 사원명
     private String deptName;		 // 부서명
-    private String deptPosition;     // 직급
+    private String position;     	 // 직급
     private String empType;          // 고용유형
     private LocalDate payDate;       // 지급일
 
     private Long payBasic;           // 기본급
-    private Long payBonusOvertime;   // 야근수당
-    private Long payBonusTech;       // 기술수당
-    private Long payBonusLong;       // 근속수당
-    private Long payBonusCommition;  // 성과급
-    private Long payBonusHoliday;    // 명절수당
+    private Double payBonusOvertime;   // 야근수당
+    private Double payBonusHoliday;    // 명절수당
 
     private Long payBonusTotal;      // 총수당금액
 
-    private Long payTaxPension;      // 국민연금
-    private Long payTaxCare;         // 장기요양보험
-    private Long payTaxHealth;       // 건강보험
-    private Long payTaxEmployment;   // 고용보험
-    private Long payTaxIncome;       // 소득세
-    private Long payTaxResidence;    // 주민세
+    private Double payTaxPension;      // 국민연금
+    private Double payTaxCare;         // 장기요양보험
+    private Double payTaxHealth;       // 건강보험
+    private Double payTaxEmployment;   // 고용보험
+    private Double payTaxIncome;       // 소득세
+    private Double payTaxResidence;    // 주민세
 
     private Long payTaxTotal;        // 총공제금액
 

@@ -58,6 +58,9 @@ dependencies {
     annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta' // Q클래스 자동 생성 지원
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api' // @Generated 등 jakarta 어노테이션 지원
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api' // @Entity, @Table 등 어노테이션 지원
+    
+    // 문자열 수식 그대로 연산하기
+	implementation 'org.apache.commons:commons-jexl3:3.4.0'
 }
 
 // ---------- QueryDSL 관련 디렉토리 지정  -------------
