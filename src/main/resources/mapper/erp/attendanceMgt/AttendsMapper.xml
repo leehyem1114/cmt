@@ -32,6 +32,7 @@
 		
 <!-- 	타입용 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_TYPE ON A.ATD_TYPE = C_TYPE.CMN_DETAIL_CODE
+		ORDER BY A.ATD_NO DESC
 	</select>
 	
 	<!-- 매니저 같은 부서 출결 정보 조회 -->
@@ -61,6 +62,7 @@
 <!-- 	타입용 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_TYPE ON A.ATD_TYPE = C_TYPE.CMN_DETAIL_CODE
 		WHERE E.DEPT_NO = #{deptNo}
+		ORDER BY A.ATD_NO DESC
 	</select>
 	
 	<!-- 유저 개인 출결 정보 조회 -->
@@ -90,6 +92,7 @@
 <!-- 	타입용 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_TYPE ON A.ATD_TYPE = C_TYPE.CMN_DETAIL_CODE
 		WHERE A.EMP_NO = #{empNo}
+		ORDER BY A.ATD_NO DESC
 	</select>
     
     <!-- 오늘 출근 했는지 조회 -->

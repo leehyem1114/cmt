@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class AttendDTO {
-
+	
+	@JsonProperty("atdno")
     private Long atdNo; // 출결NO
 	
     private Long empNo; // 사원번호
