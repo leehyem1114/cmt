@@ -45,8 +45,8 @@ public class SalaryController {
 	@GetMapping("/payList")
 	public String getPayList(Model model) {
 		
-		//List<PaymentDTO> payList = salaryService.getPayList();
-		//model.addAttribute("payList", payList);
+		List<PaymentDTO> payList = salaryService.getPayList();
+		model.addAttribute("payList", payList);
 		model.addAttribute("paySearchDTO", new PaySearchDTO());
 		
 		// 공통 코드에서 가져오기
