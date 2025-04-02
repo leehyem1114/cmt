@@ -90,6 +90,8 @@ public class AttendController {
     @PostMapping("/check-in")
     @ResponseBody
     public ResponseEntity<String> createAttend(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+    	System.out.println("check-in dto : " + dto);
+    	
     	// 로그인한 사용자의 아이디 가져오기
     	Employees loginUser = principalDetails.getUser();
     	
@@ -101,12 +103,14 @@ public class AttendController {
     // 퇴근 정보 등록
     @PostMapping("/check-out")
     @ResponseBody
-    public ResponseEntity<String> updateAttendLeave(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+//    public ResponseEntity<String> updateAttendLeave(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+    public ResponseEntity<String> updateAttendLeave(@RequestBody Map<String, String> dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+    	System.out.println("check-out dto : " + dto);
         // 로그인한 사용자의 정보 가져오기
-        Employees loginUser = principalDetails.getUser();
-        // 퇴근 처리 서비스 호출
-        Long findLatestCheckInAtdNo = attendsMapper.findLatestCheckInAtdNo(loginUser.getEmpNo());
-        attendService.updateAttendLeave(dto, findLatestCheckInAtdNo);
+//        Employees loginUser = principalDetails.getUser();
+//        // 퇴근 처리 서비스 호출
+//        Long findLatestCheckInAtdNo = attendsMapper.findLatestCheckInAtdNo(loginUser.getEmpNo());
+//        attendService.updateAttendLeave(dto, findLatestCheckInAtdNo);
         
         return ResponseEntity.ok("success");
     }
@@ -114,13 +118,13 @@ public class AttendController {
     // 출결 정보 삭제
     @PostMapping("/delete")
     @ResponseBody
-    public ResponseEntity<?> deleteAttends(@RequestBody Map<String, List<Long>> data) {
+    public ResponseEntity<String> deleteAttends(@RequestBody Map<String, List<Long>> data) {
         List<Long> ids = data.get("ids");
 
         // 삭제 로직 실행 (예: attendService.deleteByIds(ids))
         attendRepository.deleteAllById(ids);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("success");
     }
     
     

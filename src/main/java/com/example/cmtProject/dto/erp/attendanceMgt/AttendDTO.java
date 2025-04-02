@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AttendDTO {
 	
-	@JsonProperty("atdno")
     private Long atdNo; // 출결NO
 	
     private Long empNo; // 사원번호
@@ -29,6 +28,7 @@ public class AttendDTO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime atdLeave; // 퇴근일자
     
+    @JsonProperty("atdType")
     private String atdType; // 출결유형
     
     private String atdStatus; // 출결상태
