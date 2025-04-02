@@ -120,7 +120,7 @@ const CommonCodeManager = (function() {
                 id: 'commonCode',
                 columns: [
 					{
-                        header: '코드',
+                        header: '코드(PK는 변경불가)',
                         name: 'CMN_CODE',
                         editor: 'text'
                     },
@@ -392,7 +392,7 @@ const CommonCodeManager = (function() {
             commonCodeDetailGrid = GridUtil.registerGrid({
                 id: 'commonCodeDetail',
                 columns: [{
-                        header: '상세코드',
+                        header: '상세코드(PK 수정불가)',
                         name: 'CMN_DETAIL_CODE',
                         editor: 'text',
                         width: 100
@@ -426,6 +426,9 @@ const CommonCodeManager = (function() {
                         name: 'ROW_TYPE'
                     } // 조회/추가 구분
                 ],
+				columnOptions: {
+				  resizable: true
+				},
                 data: initialData,
                 draggable: true,
                 displayColumnName: 'CMN_DETAIL_SORT_ORDER',
@@ -569,7 +572,6 @@ const CommonCodeManager = (function() {
 	            cmnCode: row.CMN_CODE,
 	            cmnName: row.CMN_NAME,
 	            cmnContent: row.CMN_CONTENT || '',
-	            cmnContent: row.CMN_VALUE || '',
 	            cmnCodeIsActive: row.CMN_CODE_IS_ACTIVE,
 	            cmnSortOrder: row.CMN_SORT_ORDER,
 	            action: row.ROW_TYPE // insert, update, delete
@@ -708,16 +710,20 @@ const CommonCodeManager = (function() {
 	        }
 
 	        // 저장할 데이터 준비
-	        const batchData = modifiedData.map(row => ({
-	            cmnCode: selectedCommonCode,
-	            cmnDetailCode: row.CMN_DETAIL_CODE,
-	            cmnDetailName: row.CMN_DETAIL_NAME,
-	            cmnDetailContent: row. CMN_DETAIL_CONTENT || '', // 필요한 경우 여기에 추가
-				cmnDetailValue: row.CMN_DETAIL_VALUE || '',
-	            cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
-	            cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER,
-	            action: row.ROW_TYPE
-	        }));
+			const batchData = modifiedData.map(row => ({
+			    cmnCode: selectedCommonCode,
+			    cmnDetailCode: row.CMN_DETAIL_CODE,
+			    cmnDetailName: row.CMN_DETAIL_NAME,
+			    cmnDetailContent: row.CMN_DETAIL_CONTENT || '',
+			    cmnDetailValue: row.CMN_DETAIL_VALUE || '',
+			    cmnDetailCodeIsActive: row.CMN_DETAIL_CODE_IS_ACTIVE,
+			    cmnDetailSortOrder: row.CMN_DETAIL_SORT_ORDER || 0,
+			    rowType: row.ROW_TYPE  // action을 rowType으로 변경
+			}));
+
+			console.log('상세코드 배치 저장 요청 데이터:', JSON.stringify(batchData));
+
+			
 
 	        // 유효성 검사
 	        for (const item of batchData) {

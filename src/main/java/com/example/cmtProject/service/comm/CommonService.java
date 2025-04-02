@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +12,8 @@ import com.example.cmtProject.dto.comm.CommonCodeDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.mapper.common.CommonCodeMapper;
-import com.example.cmtProject.repository.comm.CommonCodeDetailRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,9 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class CommonService {
-    
-    @Autowired
-    private CommonCodeMapper commonCodeMapper;
+	
+	@Autowired
+	private CommonCodeMapper commonCodeMapper;
+	
+//    @Autowired
+//    @Qualifier("basicObjectMapper")
+//    private ObjectMapper objectMapper;
+//    
     
     @Autowired
     private CommonCodeDetailRepository commonCodeDetailRepository;

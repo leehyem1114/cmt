@@ -5,7 +5,7 @@
  * 결재선 관리, 첨부파일 관리, 기안서 데이터 저장 등의 기능을 제공합니다.
  * 
  * @version 1.0.0
- * @since 2025-03-20
+ * @since 2025-04-01
  */
 
 const DocumentFormManager = (function() {
@@ -23,108 +23,6 @@ const DocumentFormManager = (function() {
             approvalLines = initialData || [];
             render();
         }
-
-    /**
-     * 초기화 함수
-     * 모듈 및 에디터를 초기화합니다.
-     */
-    async function initialize() {
-        console.log('DocumentFormManager 초기화 시작');
-        
-        // 로딩 오버레이 스타일 추가
-        const style = `
-            <style>
-                .loading-overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(255, 255, 255, 0.7);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1000;
-                }
-            </style>
-        `;
-        $(style).appendTo('head');
-        
-        // 에디터 컨테이너에 상대 위치 설정 (오버레이 위치 지정용)
-        $('#contentEditor').closest('.card').css('position', 'relative');
-        
-        try {
-            // Thymeleaf에서 전달한 데이터 사용
-            const approvalLinesStr = window.documentData?.approvalLines;
-            console.log('Thymeleaf 결재선 데이터:', approvalLinesStr);
-            
-            // 에디터 초기화
-            $('#contentEditor').summernote({
-                height: 400,
-                lang: 'ko-KR',
-                placeholder: '내용을 입력하세요',
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
-            
-            // 이벤트 초기화
-            registerEvents();
-            
-            try {
-                // 결재선 초기화
-                let approvalLines = [];
-                
-                if (approvalLinesStr && approvalLinesStr.length > 0) {
-                    try {
-                        // JSON 파싱
-                        approvalLines = Array.isArray(approvalLinesStr) ? 
-                            approvalLinesStr : 
-                            JSON.parse(approvalLinesStr);
-                    } catch (e) {
-                        console.warn('결재선 데이터 파싱 실패:', e);
-                        approvalLines = [];
-                    }
-                }
-                
-                console.log('기존 결재선 데이터:', approvalLines);
-                ApprovalLineManager.initialize(approvalLines);
-                
-                // 초기화 후 결재자 목록 로드
-                console.log('결재자 목록 로드 시작');
-                await loadApprovers();
-            } catch (error) {
-                console.error('초기화 중 오류:', error);
-                // 오류 발생 시 빈 배열로 초기화
-                ApprovalLineManager.initialize([]);
-                
-                // 결재자 목록은 여전히 로드
-                await loadApprovers();
-            }
-            
-            // 양식 선택 상태 확인 및 적용
-            const currentFormId = $('#formId').val();
-            if (currentFormId) {
-                console.log(`기존 선택된 양식 ID: ${currentFormId}, 내용 로드 시도`);
-                // 현재 선택된 양식이 있으면 change 이벤트 강제 발생
-                $('#formId').trigger('change');
-            }
-            
-            console.log('DocumentFormManager 초기화 완료');
-        } catch (error) {
-            console.error('초기화 중 오류:', error);
-            AlertUtil.showWarning('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
-            // 오류 발생 시도 기본 초기화는 수행
-            ApprovalLineManager.initialize([]);
-            await loadApprovers();
-        }
-    }
         
         // 결재자 추가 함수
         function addApprover() {
@@ -154,11 +52,11 @@ const DocumentFormManager = (function() {
         }
         
         // 결재자 정보 업데이트 함수
-        function updateApprover(index, key, value, renderSkip = true) {
+        function updateApprover(index, key, value, renderSkip = false) {
             if (approvalLines[index]) {
                 approvalLines[index][key] = value;
-                // renderSkip이 true일 때만 render 호출
-                if (renderSkip) {
+                // renderSkip이 false일 때만 render 호출
+                if (!renderSkip) {
                     render();
                 }
             }
@@ -230,6 +128,85 @@ const DocumentFormManager = (function() {
             removeApprover,
             updateApprover,
             getApprovalLines
+        };
+    })();
+    
+    // 첨부파일 관리 객체
+    const AttachmentManager = (function() {
+        const fileList = [];
+        
+        // 파일 추가
+        function addFiles(newFiles) {
+            if (!newFiles || newFiles.length === 0) return;
+            
+            // FileList 객체를 배열로 변환하여 추가
+            Array.from(newFiles).forEach(file => {
+                fileList.push(file);
+            });
+            
+            render();
+        }
+        
+        // 파일 삭제
+        function removeFile(index) {
+            if (index >= 0 && index < fileList.length) {
+                fileList.splice(index, 1);
+                render();
+            }
+        }
+        
+        // 파일 목록 렌더링
+        function render() {
+            const $fileList = $('#fileList');
+            
+            if (fileList.length === 0) {
+                $fileList.html('<div class="text-muted text-center">첨부된 파일이 없습니다</div>');
+                return;
+            }
+            
+            let fileListHtml = '';
+            fileList.forEach((file, index) => {
+                fileListHtml += `
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div>
+                            <i class="bi bi-file-earmark mr-2"></i>
+                            <span class="ms-2">${file.name} (${formatFileSize(file.size)})</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file" data-index="${index}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            $fileList.html(fileListHtml);
+            
+            // 삭제 버튼 이벤트 핸들러
+            $('.btn-remove-file').on('click', function() {
+                const index = $(this).data('index');
+                removeFile(index);
+            });
+        }
+        
+        // 파일 크기 포맷팅 함수
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // 파일 목록 가져오기
+        function getFiles() {
+            return [...fileList];
+        }
+        
+        // 공개 메서드
+        return {
+            addFiles,
+            removeFile,
+            getFiles
         };
     })();
 
@@ -306,100 +283,8 @@ const DocumentFormManager = (function() {
             }
         }
         
-        // 5단계: 중첩된 객체 확인 (제한된 깊이)
-        for (const key in data) {
-            if (data[key] && typeof data[key] === 'object' && !Array.isArray(data[key])) {
-                console.log(`중첩 객체 ${key} 확인 중...`);
-                const nestedContent = extractFormContent(data[key]);
-                if (nestedContent) {
-                    return nestedContent;
-                }
-            }
-        }
-        
         console.warn('응답 데이터에서 양식 내용을 찾을 수 없습니다.');
         return null;
-    }
-
-    /**
-     * 양식 선택 기능 설정 함수
-     */
-    function setupFormSelection() {
-        console.log('양식 선택 기능 설정 중...');
-        
-        $('#formId').off('change').on('change', function() {
-            const formId = $(this).val();
-            if (!formId) return;
-            
-            console.log(`양식 ID ${formId} 선택됨, 내용 로드 중...`);
-            
-            // 로딩 표시
-            const $contentCard = $('#contentEditor').closest('.card');
-            $contentCard.append('<div class="loading-overlay"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">로딩 중...</span></div></div>');
-            
-            // AJAX 요청으로 양식 내용 가져오기
-            $.ajax({
-                url: '/api/eapproval/form/' + formId,
-                type: 'GET',
-                dataType: 'json',
-                success: function(response) {
-                    console.log('양식 응답:', response);
-                    
-                    // 로딩 표시 제거
-                    $contentCard.find('.loading-overlay').remove();
-                    
-                    if (response && (response.success === true || response.success === undefined)) {
-                        const data = response.data || response;
-                        console.log('양식 데이터:', data);
-                        
-                        // 내용 추출
-                        const content = extractFormContent(data);
-                        
-                        // 내용이 발견된 경우 에디터에 설정
-                        if (content) {
-                            console.log('설정할 내용:', content);
-                            
-                            // 직접 summernote API 호출
-                            try {
-                                // 먼저 Summernote가 제대로 초기화됐는지 확인
-                                if ($('#contentEditor').next('.note-editor').length > 0) {
-                                    $('#contentEditor').summernote('code', content);
-                                    console.log('Summernote API로 내용 설정 성공');
-                                } else {
-                                    // 일반 textarea로 설정 시도
-                                    $('#contentEditor').val(content);
-                                    console.log('일반 textarea에 내용 설정');
-                                }
-                            } catch (error) {
-                                console.error('내용 설정 오류:', error);
-                                
-                                // 대체 방법 시도
-                                try {
-                                    $('#contentEditor').val(content);
-                                    console.log('대체 방법으로 내용 설정');
-                                } catch (e) {
-                                    console.error('모든 내용 설정 시도 실패:', e);
-                                }
-                            }
-                        } else {
-                            console.warn('응답에서 양식 내용을 찾을 수 없습니다.');
-                            // 간단한 경고 표시
-                            AlertUtil.showWarning('양식 내용 없음', '선택한 양식에 기본 내용이 없습니다.');
-                        }
-                    } else {
-                        console.warn('양식 로드 실패:', response.message);
-                        AlertUtil.showWarning('양식 로드 실패', response.message || '양식을 불러올 수 없습니다.');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('양식 로드 AJAX 오류:', error);
-                    $contentCard.find('.loading-overlay').remove();
-                    AlertUtil.showWarning('양식 로드 오류', '서버 통신 중 오류가 발생했습니다.');
-                }
-            });
-        });
-        
-        console.log('양식 선택 기능 설정 완료');
     }
 
     /**
@@ -465,8 +350,8 @@ const DocumentFormManager = (function() {
                         
                         // ApprovalLineManager 데이터도 업데이트
                         const approverName = $selectedOption.attr('data-name') || '';
-                        ApprovalLineManager.updateApprover(index, 'approverPosition', position, false);
-                        ApprovalLineManager.updateApprover(index, 'approverName', approverName, false);
+                        ApprovalLineManager.updateApprover(index, 'approverPosition', position, true);
+                        ApprovalLineManager.updateApprover(index, 'approverName', approverName, true);
                     }
                 });
             } else {
@@ -573,317 +458,281 @@ const DocumentFormManager = (function() {
                 console.log(`- ${key}`);
             }
             
-            // 저장 API 호출
-            await ApiUtil.processRequest(
-                () => {
-                    return $.ajax({
-                        url: '/api/eapproval/document',
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false
-                    });
-                },
-                {
-                    loadingMessage: isTempSave ? '임시저장 중...' : '결재요청 중...',
-                    successMessage: isTempSave ? '문서가 임시저장되었습니다.' : '결재요청이 완료되었습니다.',
-                    errorMessage: '문서 저장 중 오류가 발생했습니다.',
-                    successCallback: function(response) {
-                        console.log('저장 성공 응답:', response);
-                        if (response.success) {
-                            // 저장 성공 시 페이지 이동
-                            if (isTempSave) {
-                                location.href = '/eapproval/approvalList';
-                            } else {
-                                location.href = '/eapproval/document/view/' + response.data.docId;
-                            }
-                        }
-                    }
-                }
-            );
-        } catch (error) {
-            console.error('문서 저장 오류:', error);
-        }
-    }
+			// 저장 API 호출
+			            await ApiUtil.processRequest(
+			                () => {
+			                    return $.ajax({
+			                        url: '/api/eapproval/document',
+			                        type: 'POST',
+			                        data: formData,
+			                        processData: false,
+			                        contentType: false
+			                    });
+			                },
+			                {
+			                    loadingMessage: isTempSave ? '임시저장 중...' : '결재요청 중...',
+			                    successMessage: isTempSave ? '문서가 임시저장되었습니다.' : '결재요청이 완료되었습니다.',
+			                    errorMessage: '문서 저장 중 오류가 발생했습니다.',
+			                    successCallback: function(response) {
+			                        console.log('저장 성공 응답:', response);
+			                        if (response.success) {
+			                            // 저장 성공 시 페이지 이동
+			                            if (isTempSave) {
+			                                location.href = '/eapproval/documents';
+			                            } else {
+			                                location.href = '/eapproval/document/view/' + response.data.docId;
+			                            }
+			                        }
+			                    }
+			                }
+			            );
+			        } catch (error) {
+			            console.error('문서 저장 오류:', error);
+			        }
+			    }
 
-    /**
-     * 이벤트 등록 함수
-     * 각종 버튼 및 이벤트 핸들러를 등록합니다.
-     */
-    function registerEvents() {
-        // 결재자 추가 버튼 클릭
-        $('#btnAddApprover').on('click', function() {
-            ApprovalLineManager.addApprover();
-        });
-        
-        // 결재자 삭제 버튼 클릭 (동적 요소에 대한 이벤트 등록)
-        $(document).on('click', '.btn-remove-line', function() {
-            const index = $(this).closest('tr').data('index');
-            ApprovalLineManager.removeApprover(index);
-        });
-        
-        // 결재자 선택 변경 (동적 요소에 대한 이벤트 등록)
-        $(document).on('change', '.approver-select', function() {
-            const $row = $(this).closest('tr');
-            const index = $row.data('index');
-            const approverNo = $(this).val();
-            const $option = $(this).find('option:selected');
-            
-            console.log(`결재자 선택 변경: index=${index}, approverNo=${approverNo}`);
-            
-            if (!approverNo) {
-                $row.find('input[readonly]').eq(1).val('');
-                ApprovalLineManager.updateApprover(index, 'approverNo', '');
-                ApprovalLineManager.updateApprover(index, 'approverPosition', '');
-                ApprovalLineManager.updateApprover(index, 'approverName', '');
-                return;
-            }
-            
-            // 선택된 결재자 정보 업데이트
-            const approverName = $option.attr('data-name') || $option.text().split('(')[0].trim();
-            const approverPosition = $option.attr('data-position') || '';
-            const approverDept = $option.attr('data-dept') || '';
-            
-            console.log(`선택된 결재자 정보: 이름=${approverName}, 직위=${approverPosition}, 부서=${approverDept}`);
-            
-            // UI 업데이트 - 직위 필드 명시적 업데이트
-            $row.find('input[readonly]').eq(1).val(approverPosition);
-            
-            // 데이터 업데이트
-            ApprovalLineManager.updateApprover(index, 'approverNo', approverNo);
-            ApprovalLineManager.updateApprover(index, 'approverName', approverName);
-            ApprovalLineManager.updateApprover(index, 'approverPosition', approverPosition);
-        });
-        
-        // 결재 타입 변경
-        $(document).on('change', 'select[data-field="approvalType"]', function() {
-            const index = $(this).closest('tr').data('index');
-            const value = $(this).val();
-            ApprovalLineManager.updateApprover(index, 'approvalType', value);
-        });
-        
-        // 파일 선택 시 추가
-        $('#fileInput').on('change', function() {
-            AttachmentManager.addFiles(this.files);
-            $(this).val(''); // 파일 선택 초기화 (같은 파일 다시 선택 가능하도록)
-        });
-        
-        // 파일 추가 버튼 클릭
-        $('#btnAddFiles').on('click', function() {
-            $('#fileInput').click();
-        });
-        
-        // 양식 선택 기능 설정
-        setupFormSelection();
-        
-        // 임시저장 버튼 클릭
-        $('#btnTempSave').on('click', function() {
-            saveDocument(true);
-        });
-        
-        // 결재요청 버튼 클릭
-        $('#btnSubmit').on('click', function() {
-            saveDocument(false);
-        });
-    }
-	/**
-	     * 이벤트 등록 함수
-	     * 각종 버튼 및 이벤트 핸들러를 등록합니다.
-	     */
-	    function registerEvents() {
-	        // 결재자 추가 버튼 클릭
-	        $('#btnAddApprover').on('click', function() {
-	            ApprovalLineManager.addApprover();
-	        });
-	        
-	        // 결재자 삭제 버튼 클릭 (동적 요소에 대한 이벤트 등록)
-	        $(document).on('click', '.btn-remove-line', function() {
-	            const index = $(this).closest('tr').data('index');
-	            ApprovalLineManager.removeApprover(index);
-	        });
-	        
-	        // 결재자 선택 변경 (동적 요소에 대한 이벤트 등록)
-	        $(document).on('change', '.approver-select', function() {
-	            const $row = $(this).closest('tr');
-	            const index = $row.data('index');
-	            const approverNo = $(this).val();
-	            const $option = $(this).find('option:selected');
-	            
-	            console.log(`결재자 선택 변경: index=${index}, approverNo=${approverNo}`);
-	            
-	            if (!approverNo) {
-	                $row.find('input[readonly]').eq(1).val('');
-	                ApprovalLineManager.updateApprover(index, 'approverNo', '');
-	                ApprovalLineManager.updateApprover(index, 'approverPosition', '');
-	                ApprovalLineManager.updateApprover(index, 'approverName', '');
-	                return;
-	            }
-	            
-	            // 선택된 결재자 정보 업데이트
-	            const approverName = $option.attr('data-name') || $option.text().split('(')[0].trim();
-	            const approverPosition = $option.attr('data-position') || '';
-	            const approverDept = $option.attr('data-dept') || '';
-	            
-	            console.log(`선택된 결재자 정보: 이름=${approverName}, 직위=${approverPosition}, 부서=${approverDept}`);
-	            
-	            // UI 업데이트 - 직위 필드 명시적 업데이트
-	            $row.find('input[readonly]').eq(1).val(approverPosition);
-	            
-	            // 데이터 업데이트
-	            ApprovalLineManager.updateApprover(index, 'approverNo', approverNo);
-	            ApprovalLineManager.updateApprover(index, 'approverName', approverName);
-	            ApprovalLineManager.updateApprover(index, 'approverPosition', approverPosition);
-	        });
-	        
-	        // 결재 타입 변경
-	        $(document).on('change', 'select[data-field="approvalType"]', function() {
-	            const index = $(this).closest('tr').data('index');
-	            const value = $(this).val();
-	            ApprovalLineManager.updateApprover(index, 'approvalType', value);
-	        });
-	        
-	        // 파일 선택 시 추가
-	        $('#fileInput').on('change', function() {
-	            AttachmentManager.addFiles(this.files);
-	            $(this).val(''); // 파일 선택 초기화 (같은 파일 다시 선택 가능하도록)
-	        });
-	        
-	        // 파일 추가 버튼 클릭
-	        $('#btnAddFiles').on('click', function() {
-	            $('#fileInput').click();
-	        });
-	        
-	        // 양식 선택 기능 설정
-	        setupFormSelection();
-	        
-	        // 임시저장 버튼 클릭
-	        $('#btnTempSave').on('click', function() {
-	            saveDocument(true);
-	        });
-	        
-	        // 결재요청 버튼 클릭
-	        $('#btnSubmit').on('click', function() {
-	            saveDocument(false);
-	        });
-	    }
+			    /**
+			     * 이벤트 등록 함수
+			     * 각종 버튼 및 이벤트 핸들러를 등록합니다.
+			     */
+			    function registerEvents() {
+			        // 결재자 추가 버튼 클릭
+			        $('#btnAddApprover').on('click', function() {
+			            ApprovalLineManager.addApprover();
+			        });
+			        
+			        // 결재자 삭제 버튼 클릭 (동적 요소에 대한 이벤트 등록)
+			        $(document).on('click', '.btn-remove-line', function() {
+			            const index = $(this).closest('tr').data('index');
+			            ApprovalLineManager.removeApprover(index);
+			        });
+			        
+			        // 결재자 선택 변경 (동적 요소에 대한 이벤트 등록)
+			        $(document).on('change', '.approver-select', function() {
+			            const $row = $(this).closest('tr');
+			            const index = $row.data('index');
+			            const approverNo = $(this).val();
+			            const $option = $(this).find('option:selected');
+			            
+			            console.log(`결재자 선택 변경: index=${index}, approverNo=${approverNo}`);
+			            
+			            if (!approverNo) {
+			                $row.find('input[readonly]').eq(1).val('');
+			                ApprovalLineManager.updateApprover(index, 'approverNo', '');
+			                ApprovalLineManager.updateApprover(index, 'approverPosition', '');
+			                ApprovalLineManager.updateApprover(index, 'approverName', '');
+			                return;
+			            }
+			            
+			            // 선택된 결재자 정보 업데이트
+			            const approverName = $option.attr('data-name') || $option.text().split('(')[0].trim();
+			            const approverPosition = $option.attr('data-position') || '';
+			            const approverDept = $option.attr('data-dept') || '';
+			            
+			            console.log(`선택된 결재자 정보: 이름=${approverName}, 직위=${approverPosition}, 부서=${approverDept}`);
+			            
+			            // UI 업데이트 - 직위 필드 명시적 업데이트
+			            $row.find('input[readonly]').eq(1).val(approverPosition);
+			            
+			            // 데이터 업데이트
+			            ApprovalLineManager.updateApprover(index, 'approverNo', approverNo);
+			            ApprovalLineManager.updateApprover(index, 'approverName', approverName);
+			            ApprovalLineManager.updateApprover(index, 'approverPosition', approverPosition);
+			        });
+			        
+			        // 결재 타입 변경
+			        $(document).on('change', 'select[data-field="approvalType"]', function() {
+			            const index = $(this).closest('tr').data('index');
+			            const value = $(this).val();
+			            ApprovalLineManager.updateApprover(index, 'approvalType', value);
+			        });
+			        
+			        // 파일 선택 시 추가
+			        $('#fileInput').on('change', function() {
+			            AttachmentManager.addFiles(this.files);
+			            $(this).val(''); // 파일 선택 초기화 (같은 파일 다시 선택 가능하도록)
+			        });
+			        
+			        // 파일 추가 버튼 클릭
+			        $('#btnAddFiles').on('click', function() {
+			            $('#fileInput').click();
+			        });
+			        
+			        // 양식 선택 시 내용 로드
+			        $('#formId').on('change', function() {
+			            const formId = $(this).val();
+			            if (!formId) return;
+			            
+			            console.log(`양식 ID ${formId} 선택됨, 내용 로드 중...`);
+			            
+			            // 로딩 표시
+			            const $contentCard = $('#contentEditor').closest('.card');
+			            $contentCard.append('<div class="loading-overlay"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">로딩 중...</span></div></div>');
+			            
+			            // AJAX 요청으로 양식 내용 가져오기
+			            $.ajax({
+			                url: '/api/eapproval/form/' + formId,
+			                type: 'GET',
+			                dataType: 'json',
+			                success: function(response) {
+			                    console.log('양식 응답:', response);
+			                    
+			                    // 로딩 표시 제거
+			                    $contentCard.find('.loading-overlay').remove();
+			                    
+			                    if (response && response.success && response.data) {
+			                        // 내용 추출
+			                        const formContent = extractFormContent(response.data);
+			                        
+			                        if (formContent) {
+			                            // Summernote 에디터에 내용 설정
+			                            $('#contentEditor').summernote('code', formContent);
+			                            console.log('양식 내용이 에디터에 로드되었습니다.');
+			                        } else {
+			                            console.warn('양식 내용이 비어 있습니다.');
+			                            AlertUtil.showWarning('양식 내용 없음', '선택한 양식에 기본 내용이 없습니다.');
+			                        }
+			                    } else {
+			                        console.warn('양식 로드 실패:', response.message);
+			                        AlertUtil.showWarning('양식 로드 실패', response.message || '양식을 불러올 수 없습니다.');
+			                    }
+			                },
+			                error: function(xhr, status, error) {
+			                    console.error('양식 로드 AJAX 오류:', error);
+			                    $contentCard.find('.loading-overlay').remove();
+			                    AlertUtil.showWarning('양식 로드 오류', '서버 통신 중 오류가 발생했습니다.');
+			                }
+			            });
+			        });
+			        
+			        // 임시저장 버튼 클릭
+			        $('#btnTempSave').on('click', function() {
+			            saveDocument(true);
+			        });
+			        
+			        // 결재요청 버튼 클릭
+			        $('#btnSubmit').on('click', function() {
+			            saveDocument(false);
+			        });
+			    }
 
-	    /**
-	     * 초기화 함수
-	     * 모듈 및 에디터를 초기화합니다.
-	     */
-	    async function initialize() {
-	        console.log('DocumentFormManager 초기화 시작');
-	        
-	        // 로딩 오버레이 스타일 추가
-	        const style = `
-	            <style>
-	                .loading-overlay {
-	                    position: absolute;
-	                    top: 0;
-	                    left: 0;
-	                    width: 100%;
-	                    height: 100%;
-	                    background: rgba(255, 255, 255, 0.7);
-	                    display: flex;
-	                    justify-content: center;
-	                    align-items: center;
-	                    z-index: 1000;
-	                }
-	            </style>
-	        `;
-	        $(style).appendTo('head');
-	        
-	        // 에디터 컨테이너에 상대 위치 설정 (오버레이 위치 지정용)
-	        $('#contentEditor').closest('.card').css('position', 'relative');
-	        
-	        try {
-	            // Thymeleaf에서 전달한 데이터 사용
-	            const approvalLinesStr = window.documentData?.approvalLines;
-	            console.log('Thymeleaf 결재선 데이터:', approvalLinesStr);
-	            
-	            // 에디터 초기화
-	            $('#contentEditor').summernote({
-	                height: 400,
-	                lang: 'ko-KR',
-	                placeholder: '내용을 입력하세요',
-	                toolbar: [
-	                    ['style', ['style']],
-	                    ['font', ['bold', 'underline', 'clear']],
-	                    ['color', ['color']],
-	                    ['para', ['ul', 'ol', 'paragraph']],
-	                    ['table', ['table']],
-	                    ['insert', ['link']],
-	                    ['view', ['fullscreen', 'codeview', 'help']]
-	                ]
-	            });
-	            
-	            // 이벤트 초기화
-	            registerEvents();
-	            
-	            try {
-	                // 결재선 초기화
-	                let approvalLines = [];
-	                
-	                if (approvalLinesStr && approvalLinesStr.length > 0) {
-	                    try {
-	                        // JSON 파싱
-	                        approvalLines = Array.isArray(approvalLinesStr) ? 
-	                            approvalLinesStr : 
-	                            JSON.parse(approvalLinesStr);
-	                    } catch (e) {
-	                        console.warn('결재선 데이터 파싱 실패:', e);
-	                        approvalLines = [];
-	                    }
-	                }
-	                
-	                console.log('기존 결재선 데이터:', approvalLines);
-	                ApprovalLineManager.initialize(approvalLines);
-	                
-	                // 초기화 후 결재자 목록 로드
-	                console.log('결재자 목록 로드 시작');
-	                await loadApprovers();
-	            } catch (error) {
-	                console.error('초기화 중 오류:', error);
-	                // 오류 발생 시 빈 배열로 초기화
-	                ApprovalLineManager.initialize([]);
-	                
-	                // 결재자 목록은 여전히 로드
-	                await loadApprovers();
-	            }
-	            
-	            // 양식 선택 상태 확인 및 적용
-	            const currentFormId = $('#formId').val();
-	            if (currentFormId) {
-	                console.log(`기존 선택된 양식 ID: ${currentFormId}, 내용 로드 시도`);
-	                // 현재 선택된 양식이 있으면 change 이벤트 강제 발생
-	                $('#formId').trigger('change');
-	            }
-	            
-	            console.log('DocumentFormManager 초기화 완료');
-	        } catch (error) {
-	            console.error('초기화 중 오류:', error);
-	            AlertUtil.showWarning('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
-	            // 오류 발생 시도 기본 초기화는 수행
-	            ApprovalLineManager.initialize([]);
-	            await loadApprovers();
-	        }
-	    }
+			    /**
+			     * 초기화 함수
+			     * 모듈 및 에디터를 초기화합니다.
+			     */
+			    async function initialize() {
+			        console.log('DocumentFormManager 초기화 시작');
+			        
+			        // 로딩 오버레이 스타일 추가
+			        const style = `
+			            <style>
+			                .loading-overlay {
+			                    position: absolute;
+			                    top: 0;
+			                    left: 0;
+			                    width: 100%;
+			                    height: 100%;
+			                    background: rgba(255, 255, 255, 0.7);
+			                    display: flex;
+			                    justify-content: center;
+			                    align-items: center;
+			                    z-index: 1000;
+			                }
+			            </style>
+			        `;
+			        $(style).appendTo('head');
+			        
+			        // 에디터 컨테이너에 상대 위치 설정 (오버레이 위치 지정용)
+			        $('#contentEditor').closest('.card').css('position', 'relative');
+			        
+			        try {
+			            // Thymeleaf에서 전달한 데이터 사용
+			            const approvalLinesStr = window.documentData?.approvalLines;
+			            console.log('Thymeleaf 결재선 데이터:', approvalLinesStr);
+			            
+			            // 에디터 초기화
+			            $('#contentEditor').summernote({
+			                height: 400,
+			                lang: 'ko-KR',
+			                placeholder: '내용을 입력하세요',
+			                toolbar: [
+			                    ['style', ['style']],
+			                    ['font', ['bold', 'underline', 'clear']],
+			                    ['color', ['color']],
+			                    ['para', ['ul', 'ol', 'paragraph']],
+			                    ['table', ['table']],
+			                    ['insert', ['link']],
+			                    ['view', ['fullscreen', 'codeview', 'help']]
+			                ]
+			            });
+			            
+			            // 이벤트 초기화
+			            registerEvents();
+			            
+			            try {
+			                // 결재선 초기화
+			                let approvalLines = [];
+			                
+			                if (approvalLinesStr && approvalLinesStr.length > 0) {
+			                    try {
+			                        // JSON 파싱
+			                        approvalLines = Array.isArray(approvalLinesStr) ? 
+			                            approvalLinesStr : 
+			                            JSON.parse(approvalLinesStr);
+			                    } catch (e) {
+			                        console.warn('결재선 데이터 파싱 실패:', e);
+			                        approvalLines = [];
+			                    }
+			                }
+			                
+			                console.log('기존 결재선 데이터:', approvalLines);
+			                ApprovalLineManager.initialize(approvalLines);
+			                
+			                // 초기화 후 결재자 목록 로드
+			                console.log('결재자 목록 로드 시작');
+			                await loadApprovers();
+			            } catch (error) {
+			                console.error('초기화 중 오류:', error);
+			                // 오류 발생 시 빈 배열로 초기화
+			                ApprovalLineManager.initialize([]);
+			                
+			                // 결재자 목록은 여전히 로드
+			                await loadApprovers();
+			            }
+			            
+			            // 양식 선택 상태 확인 및 적용
+			            const currentFormId = $('#formId').val();
+			            if (currentFormId) {
+			                console.log(`기존 선택된 양식 ID: ${currentFormId}, 내용 로드 시도`);
+			                // 현재 선택된 양식이 있으면 change 이벤트 강제 발생
+			                $('#formId').trigger('change');
+			            }
+			            
+			            console.log('DocumentFormManager 초기화 완료');
+			        } catch (error) {
+			            console.error('초기화 중 오류:', error);
+			            AlertUtil.showWarning('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
+			            // 오류 발생 시도 기본 초기화는 수행
+			            ApprovalLineManager.initialize([]);
+			            await loadApprovers();
+			        }
+			    }
 
-	    // 공개 API
-	    return {
-	        initialize,
-	        saveDocument,
-	        validateForm
-	    };
-	})();
+			    // 공개 API
+			    return {
+			        initialize,
+			        saveDocument,
+			        validateForm
+			    };
+			})();
 
-	// 페이지 로드 시 초기화
-	$(async function() {
-	    console.log('페이지 로드: 초기화 시작');
-	    try {
-	        await DocumentFormManager.initialize();
-	        console.log('페이지 로드: 초기화 완료');
-	    } catch (error) {
-	        console.error('페이지 초기화 오류:', error);
-	    }
-	});
+			// 페이지 로드 시 초기화
+			$(async function() {
+			    console.log('페이지 로드: 초기화 시작');
+			    try {
+			        await DocumentFormManager.initialize();
+			        console.log('페이지 로드: 초기화 완료');
+			    } catch (error) {
+			        console.error('페이지 초기화 오류:', error);
+			    }
+			});

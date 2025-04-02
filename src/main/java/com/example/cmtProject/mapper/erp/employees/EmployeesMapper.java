@@ -27,5 +27,7 @@ public interface EmployeesMapper {
 	EmpRegistDTO selectMyEmpList(String empId);
 
 	int updateEmpDetail(String id);
+	//아이디 중복체크
+	int selectEmpId(String empId);
 
 }

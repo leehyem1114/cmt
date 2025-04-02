@@ -1,6 +1,6 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 	<div th:fragment="sidebar" >
-
+		
 		<div id="topbar" class="d-block row d-flex justify-content-between align-items-center" >
 	        <div class="col-md-8 d-flex justify-content-start">
 	        
@@ -196,8 +196,13 @@
 				</th:block>
 				<th:block th:if="${!#authorization.expression('isAuthenticated()')}">
 
-					<button type="button" id="loginBtn" class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" onclick="location.href='login'">
-    				로그인 &nbsp; <i class="bi bi-box-arrow-right"></i>
+
+
+					<button type="button" 
+				        id="loginBtn" 
+				        class="btn btn-outline-secondary rounded-pill ms-3 me-4 d-flex align-items-center" 
+				        onclick="location.href='/login'">
+				        로그인 &nbsp; <i class="bi bi-box-arrow-right "></i>
 					</button>
 				</th:block>
 	        </div> <!-- right -->
@@ -245,17 +250,10 @@
 		                    </a>
 		                    <ul class="submenu">
 		                        <li class="submenu-item ">
-		                            <a href="/eapproval/approvalList">기안서목록</a>
+		                            <a href="/eapproval/documents">문서함</a>
 		                        </li>
 		                        <li class="submenu-item ">
 		                            <a href="/eapproval/document/new">기안서 작성</a>
-		                        </li>
-		                        <li class="submenu-item ">
-		                            <a href="/eapproval/approvalList">결재대기</a>
-		                        </li>
-		                        <li class="submenu-item ">
-		                            <a href="/eapproval/approvalList">수신문서함</a>
-		                        </li>
 		                    </ul>
 		                </li>
 		                
@@ -469,9 +467,19 @@
 		            
 		            <script type="text/javascript">
 					function logout(){
-						if(confirm("로그아웃 하시겠습니까?")){
-							location.href='/logout';
-						}
+					Swal.fire({
+				        title: '로그아웃 하시겠습니까?',
+				        icon: 'warning',
+				        showCancelButton: true,   // ← 반드시 켜줘야 No 버튼 나옴
+				        confirmButtonColor: '#435ebe',   // 네 버튼 색
+				        cancelButtonColor: '#f27474',       // 아니오 버튼 색
+				        confirmButtonText: '네',         // 네 버튼 이름
+				        cancelButtonText: '아니오'       // 아니오 버튼 이름
+				    }).then((result) => {
+				        if (result.isConfirmed) {
+							location.href='/login';
+				        }
+				    });
 					}				
 				
 					</script>	
