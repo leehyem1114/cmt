@@ -30,7 +30,10 @@ public class MainController {
 	
 	@GetMapping({"","/"})
 	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-		principalDetails.getUser();
+//		principalDetails.getUser();
+		if(principalDetails == null) {
+	        return "redirect:/login";  // Security의 loginPage("/login") 으로 이동
+	    }
 		
 		return "home";
 	}
