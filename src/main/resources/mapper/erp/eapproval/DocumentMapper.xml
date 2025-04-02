@@ -174,6 +174,13 @@
     <select id="selectEmployeeNoByEmpId" resultType="java.lang.Integer">
         SELECT EMP_NO FROM EMPLOYEES WHERE EMP_ID = #{empId}
     </select>
+    
+    <!-- 직원 번호로 부서 코드 조회 -->
+	<select id="selectEmployeeDeptCode" resultType="java.lang.String">
+	    SELECT DEPT_NO
+	    FROM EMPLOYEES
+	    WHERE EMP_NO = #{empNo}
+	</select>
 
     <!-- Result Map -->
     <resultMap id="documentResultMap" type="com.example.cmtProject.dto.erp.eapproval.DocumentDTO">
