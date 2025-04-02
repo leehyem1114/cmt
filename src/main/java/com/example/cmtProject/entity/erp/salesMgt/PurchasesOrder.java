@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+//에러처리
 @Data
 @Entity
 @Table(name = "PURCHASES_ORDER")
