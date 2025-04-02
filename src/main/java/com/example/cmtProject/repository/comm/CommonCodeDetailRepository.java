@@ -1,5 +1,7 @@
 package com.example.cmtProject.repository.comm;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +13,6 @@ public interface CommonCodeDetailRepository extends JpaRepository<CommoncodeDeta
 
 	CommonCodeDetailDTO findByCmnDetailCodeAndCmnCode(String group, String code);
 	
-
+	//공통코드에서 부서명, 직급명 가져오기
+	List<CommoncodeDetail> findByCmnCode(String cmnCode);
 }

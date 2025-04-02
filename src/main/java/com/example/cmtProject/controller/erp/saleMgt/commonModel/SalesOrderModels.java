@@ -11,9 +11,9 @@ import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrderStatus;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
+import com.example.cmtProject.repository.comm.CommonCodeDetailRepository;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.repository.erp.saleMgt.ClientsRepository;
-import com.example.cmtProject.repository.erp.saleMgt.CommoncodeDetailRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderRepository;
 import com.example.cmtProject.repository.erp.saleMgt.SalesOrderStatusRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
@@ -35,7 +35,7 @@ public class SalesOrderModels {
 	private EmployeesRepository employeesRepository;
 	
 	@Autowired
-	private CommoncodeDetailRepository commoncodeDetailRepository;
+	private CommonCodeDetailRepository commoncodeDetailRepository;
 	
 	@Autowired
 	private SalesOrderService salesOrderService;
