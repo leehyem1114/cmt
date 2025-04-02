@@ -61,8 +61,12 @@
 		function findId(){
 			const empName = $('#empName').val();
 		    const empEmail = $('#empEmail').val();
-		    console.log("findId 호출");
-			
+
+		    if(empName === '') {
+		        $('#idPreview').text("아이디를 입력하세요.");
+		        return;
+		    }
+		    
 			$.ajax({
 				url : '/emp/findId',
 				method : 'post',
@@ -70,7 +74,7 @@
 				success : function(response){
 					 console.log("response.success 값 =", response.success, "타입 =", typeof response.success , response);
 				if(response.SUCCESS === true) {
-					 $('#idPreview').text("회원님의 아이디는: " + response.EMP_ID).css('color', 'green');;
+					 $('#idPreview').text("회원님의 아이디는 [ " + response.EMP_ID + " ] 입니다.").css('color', 'green');;
 					 console.log(empName, empEmail,response);
                 } else {
                     $('#idPreview').text("일치하는 회원정보가 없습니다.");

@@ -221,5 +221,12 @@
 	      AND CMN_DETAIL_CODE_IS_ACTIVE = 'Y'
 	    ORDER BY CMN_DETAIL_SORT_ORDER ASC
     </select>
+    
+    
+    <select id="selectGroupList" resultType="String">
+    	SELECT CMN_CODE
+    	FROM COMMONCODE_DETAIL
+    
+    </select>
   
 </mapper>

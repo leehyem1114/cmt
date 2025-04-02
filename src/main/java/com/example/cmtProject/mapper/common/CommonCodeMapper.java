@@ -92,4 +92,8 @@ public interface CommonCodeMapper {
 	
 	//공통코드 디테일리스트 불러오기 - hymm
 	public List<CommonCodeDetailNameDTO> selectDetailCodeList(String groupCode);
+	
+	//그룹코드 가져오기
+	public List<String> selectGroupList();
+	
 }//CommonCodeMapper
