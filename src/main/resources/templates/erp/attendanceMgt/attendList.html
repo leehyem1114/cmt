@@ -9,6 +9,10 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    
+	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	    <title>출퇴근 관리</title>
 
 <style>
@@ -81,9 +85,7 @@
 		    <button type="button" 
 		            class="btn btn-lg btn-danger" 
 		            onclick="deleteAttend()" 
-		            sec:authorize="hasAnyRole('ADMIN')">
-		      삭제
-		    </button>
+		            sec:authorize="hasAnyRole('ADMIN')">삭제</button>
 		  </div>
 		</div>
 		
@@ -118,9 +120,6 @@
     	<div id="gridTop"></div>
     	
     
-
-	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
-	    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	    <script th:inline="javascript">
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
@@ -159,11 +158,14 @@
             	},
             	{ 
               	  header: '부서', 
-              	  name: 'deptNo', 
+              	  name: 'deptName', 
               	  sortable: true, 
               	  filter: 'text',
               	  width: 150,
-              	  align: "center" 
+              	  align: "center",
+            		formatter: function({ row }) {
+	           		  return row.deptName;
+	           		}
               	},
             	{ 
             	  header: '출근일자', 
@@ -211,7 +213,7 @@
            		},
             	{ 
            	      header: '출결유형', 
-           		  name: 'atdType', 
+           		  name: 'statusLink', 
            		  sortable: true, 
            		  filter: 'text',
            		  align: "center",
@@ -222,7 +224,7 @@
            		},
             	{ 
            	      header: '출결상태', 
-           	      name: 'atdStatus', 
+           	      name: 'typeLink', 
            	      sortable: true, 
            	      filter: 'text',
            	      align: "center",
@@ -260,7 +262,6 @@
 
 	    </script>
 	    <!-- 그리드 끝 -->
-	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	    <script th:inline="javascript">
 	    async function checkIn() {
 	    	  // 사용자에게 출근 확인 알림 표시
@@ -334,7 +335,6 @@
 	    	        'Content-Type': 'application/json'
 	    	      },
 	    	      body: JSON.stringify({atdType: "ATT005"})
-// 	    	      body: JSON.stringify({atxxxxdType: "ATT005"})
 	    	    });
 
 	    	    if (!response.ok) {

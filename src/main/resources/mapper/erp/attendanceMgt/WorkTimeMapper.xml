@@ -12,16 +12,22 @@
 		SELECT 
 		    W.WKT_NO, 
 		    E.EMP_NO, 
+		    E.EMP_NAME,
+		    C_DEPT.CMN_DETAIL_NAME AS DEPT_NAME,
 		    W.WKT_DATE, 
 		    W.WKT_START_TIME, 
 		    W.WKT_END_TIME, 
 		    W.WKT_STATUS, 
-		    W.WKT_TYPE, 
+		    C_TYPE.CMN_DETAIL_NAME AS WKT_TYPE_NAME,
 		    W.WKT_REMARKS
 		FROM WORK_TIMES W
 		JOIN EMPLOYEES E ON W.EMP_NO = E.EMP_NO
 <!-- 	타입용 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_TYPE ON W.WKT_TYPE = C_TYPE.CMN_DETAIL_CODE
+		
+<!-- 	부서명 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
+		ORDER BY W.WKT_NO DESC
 	</select>
 	
 	<!-- 매니저 같은 부서 출결 정보 조회 -->
@@ -40,6 +46,7 @@
 <!-- 	타입용 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_TYPE ON W.WKT_TYPE = C_TYPE.CMN_DETAIL_CODE
 		WHERE E.DEPT_NO = #{deptNo}
+		ORDER BY W.WKT_NO DESC
 	</select>
 	
 	<!-- 유저 개인 출결 정보 조회 -->
@@ -58,6 +65,7 @@
 <!-- 	타입용 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_TYPE ON W.WKT_TYPE = C_TYPE.CMN_DETAIL_CODE
 		WHERE A.EMP_NO = #{empNo}
+		ORDER BY W.WKT_NO DESC
 	</select>
     
 

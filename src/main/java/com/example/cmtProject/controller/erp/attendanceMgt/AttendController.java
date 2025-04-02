@@ -14,12 +14,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
+import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.mapper.erp.attendanceMgt.AttendsMapper;
@@ -46,7 +48,7 @@ public class AttendController {
     public String showAttendPage(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
         
     	if (principalDetails == null) {
-            return "redirect:/loginForm"; // 로그인 페이지로 리다이렉트
+            return "redirect:/login"; // 로그인 페이지로 리다이렉트
         }
     	// 유저정보
     	Employees loginUser = principalDetails.getUser();
@@ -103,15 +105,15 @@ public class AttendController {
     // 퇴근 정보 등록
     @PostMapping("/check-out")
     @ResponseBody
-//    public ResponseEntity<String> updateAttendLeave(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+//    public ResponseEntity<String> updateAttendLeave(@ModelAttribute("AttendDTO") AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
     public ResponseEntity<String> updateAttendLeave(@RequestBody Map<String, String> dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
-    	System.out.println("check-out dto : " + dto);
-        // 로그인한 사용자의 정보 가져오기
-//        Employees loginUser = principalDetails.getUser();
-//        // 퇴근 처리 서비스 호출
-//        Long findLatestCheckInAtdNo = attendsMapper.findLatestCheckInAtdNo(loginUser.getEmpNo());
-//        attendService.updateAttendLeave(dto, findLatestCheckInAtdNo);
-        
+//         로그인한 사용자의 정보 가져오기
+    	logger.info("check-out : " + dto);
+        Employees loginUser = principalDetails.getUser();
+        // 퇴근 처리 서비스 호출
+        Long findLatestCheckInAtdNo = attendsMapper.findLatestCheckInAtdNo(loginUser.getEmpNo());
+        attendService.updateAttendLeave(dto, findLatestCheckInAtdNo);
+
         return ResponseEntity.ok("success");
     }
 
