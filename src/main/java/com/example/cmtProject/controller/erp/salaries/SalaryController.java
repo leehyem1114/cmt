@@ -46,8 +46,8 @@ public class SalaryController {
 	public String getPayList(Model model) {
 		commonCodeName(model,commonService);
 		
-		//List<PaymentDTO> payList = salaryService.getPayList();
-		//model.addAttribute("payList", payList);
+		List<PaymentDTO> payList = salaryService.getPayList();
+		model.addAttribute("payList", payList);
 		model.addAttribute("paySearchDTO", new PaySearchDTO());
 		
 		// 공통 코드에서 가져오기

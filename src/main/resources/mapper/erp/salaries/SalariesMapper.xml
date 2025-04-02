@@ -12,10 +12,56 @@
 		WHERE CMN_CODE IN ('BONUS','TAX')
 		ORDER BY CMN_CODE
     </select> -->
-    
+  
+    <!-- 급여 지급 내역 -->
+    <select id="getPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+    SELECT
+    	P.PAY_NO                 	AS payNo,
+		    E.EMP_NO                AS empNo,
+		    E.EMP_NAME              AS empName,
+		    DN.CMN_DETAIL_NAME      AS deptName,
+		    PO.CMN_DETAIL_NAME      AS position,
+		    ET.CMN_DETAIL_NAME      AS empType,
+		    P.PAY_DATE              AS payDate,
+		
+		    P.PAY_BASIC             AS payBasic,
+		    P.PAY_BONUS_OVERTIME    AS payBonusOvertime,
+		    P.PAY_BONUS_HOLIDAY     AS payBonusHoliday,
+		    P.PAY_BONUS_TOTAL       AS payBonusTotal,
+		
+		    P.PAY_TAX_PENSION       AS payTaxPension,
+		    P.PAY_TAX_CARE          AS payTaxCare,
+		    P.PAY_TAX_HEALTH        AS payTaxHealth,
+		    P.PAY_TAX_EMPLOYMENT    AS payTaxEmployment,
+		    P.PAY_TAX_INCOME        AS payTaxIncome,
+		    P.PAY_TAX_RESIDENCE     AS payTaxResidence,
+		    P.PAY_TAX_TOTAL         AS payTaxTotal,
+		
+		    P.PAY_TOTAL             AS payTotal,
+		    PS.CMN_DETAIL_NAME      AS payStatus
+		
+		FROM PAYMENTS P
+		LEFT JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+		LEFT JOIN COMMONCODE_DETAIL DN 
+		  ON TO_CHAR(E.DEPT_NO) = DN.CMN_DETAIL_CODE 
+		 AND DN.CMN_CODE = 'DEPT'
+		
+		LEFT JOIN COMMONCODE_DETAIL PO 
+		  ON TO_CHAR(E.POSITION_NO) = PO.CMN_DETAIL_CODE 
+		 AND PO.CMN_CODE = 'POSITION'
+		
+		LEFT JOIN COMMONCODE_DETAIL ET 
+		  ON E.EMP_TYPE = ET.CMN_DETAIL_CODE 
+		 AND ET.CMN_CODE = 'EMP_TYPE'
+		
+		LEFT JOIN COMMONCODE_DETAIL PS 
+		  ON P.PAY_STATUS = PS.CMN_DETAIL_CODE 
+		 AND PS.CMN_CODE = 'PAY_STATUS'
+	</select>
+
 	<!-- 급여 지급 내역 검색 필터링 -->
 	<select id="searchPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
-	    SELECT
+	  	SELECT
 			C1.PAY_DATE AS payDate,
         	E.EMP_NO AS empNo,
         	E.EMP_NAME AS empName,
@@ -58,7 +104,7 @@
     
     <!-- 급여 이체 검색 필터링 -->
 	<select id="searchPayTransferList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
-	    SELECT
+		SELECT
         	E.EMP_NO AS empNo,
         	E.EMP_NAME AS empName,
         	C1.CMN_DETAIL_NAME AS deptName,
@@ -77,12 +123,10 @@
         </where>
         ORDER BY E.EMP_NO
     </select>
-    
-    
-    
+ 
     <!-- 18시 이후부터 야근수당 계산 -->
     <select id="getOverTimes" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
-    	SELECT
+		SELECT
     		P.EMP_NO,
     		W.WKT_ID,
     		ROUND(
@@ -111,7 +155,6 @@
         	</if>        	              
     	</where>	
     </select>
-    
     
     <insert id="insertBonusResultList" parameterType="java.util.List">
     	INSERT INTO PAYMENTS (PAY_BONUS_OVERTIME, PAY_BONUS_HOLIDAY)

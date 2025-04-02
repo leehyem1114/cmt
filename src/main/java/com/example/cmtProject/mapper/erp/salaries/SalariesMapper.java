@@ -11,11 +11,17 @@ import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 public interface SalariesMapper {
 
 	// List<SalaryItemDTO> salItemTypes();
+	
+	// 급여 지급 내역
+	List<PaymentDTO> getPayList();
+	
 	// 급여 지급 내역 필터링 검색
 	List<PaySearchDTO> searchPayList(PaySearchDTO paySearchDTO);
 	
 	// 야근 수당 계산
 	List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO);
+
+
 
 
 
