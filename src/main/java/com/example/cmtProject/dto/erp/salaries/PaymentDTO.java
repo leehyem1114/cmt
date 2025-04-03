@@ -41,4 +41,8 @@ public class PaymentDTO {
     private Long payTotal;           // 실수령액
 
     private String payStatus;        // 지급 상태 (미발급 / 발급완료 등)
+    
+    private String salBankName;	     // 은행명
+    private String salBankAccount;	 // 계좌번호
+    
 }
