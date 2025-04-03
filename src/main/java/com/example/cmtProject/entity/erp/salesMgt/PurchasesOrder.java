@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class PurchasesOrder {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "PO_NO")
 	private Long poNo; //발주주문번호(pk)
 	

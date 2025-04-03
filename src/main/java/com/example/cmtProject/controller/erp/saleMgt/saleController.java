@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.cmtProject.controller.erp.saleMgt.commonModel.SalesOrderModels;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderSearchDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.repository.comm.CommonCodeDetailRepository;
@@ -253,6 +255,7 @@ public class saleController {
 		return soCode;
 	}
 	
+	//employees 테이블에서 부서와 직급에 해당하는 사원 이름 목록 가져오기
 	@GetMapping("/getEmpName")
 	@ResponseBody
 	public List<Employees> getEmpName(@RequestParam("deptCode") Long deptNo1,
@@ -263,10 +266,19 @@ public class saleController {
 		return empList;
 	}
 	
-	@GetMapping("/so")
-	public String salesOrder() {
+	@GetMapping("/searchForm")
+	@ResponseBody
+	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
+	public String searchForm(@ModelAttribute SalesOrderSearchDTO searchDto) {
 		
-		return "redirect:/";
+		//SalesOrderSearchDTO로 받아서 검색을 한 후 결과를 SalseOrderMainDTO로 넘겨준다
+		//List<SalesOrderMainDTO> mainDtoList = "";
+		
+		//System.out.println(searchDto);
+		
+//		salesOrderService.soma
+		
+		return "mainDtoList";
 	}
 	
 	@GetMapping("/poform")
