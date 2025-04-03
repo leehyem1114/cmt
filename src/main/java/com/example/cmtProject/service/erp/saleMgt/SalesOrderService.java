@@ -28,8 +28,7 @@ public class SalesOrderService {
 	public List<SalesOrderMainDTO> soMainSearch(SalesOrderSearchDTO searchDto){
 		
 		System.out.println("searchDto service:"+ searchDto);
-		
-		 return salesOrderMapper.soMainSearch(searchDto);
+		return salesOrderMapper.soMainSearch(searchDto);
 	}
 	
 	//메인 Edit(Update)

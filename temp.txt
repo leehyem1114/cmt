@@ -60,40 +60,73 @@
         LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
+        ORDER BY SO.SO_NO DESC
     </select>
     
+    <!-- 수주 메인에서 수정 -->
     <update id="soMainUpdate" parameterType="com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO">
-    UPDATE SALES_ORDER SET
-        <choose>
-            <when test="columnName == 'soDate'">
+    UPDATE SALES_ORDER 
+    <set>
+        <if test="columnName == 'soDate'">
                 SO_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
-            </when>
-            <when test="columnName == 'shipDate'">
-                SHIP_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
-            </when>
-            <when test="columnName == 'whsCode'">
-                WHS_CODE = #{value}
-            </when>
-            <when test="columnName == 'pdtCode'">
-                PDT_CODE = #{value}
-            </when>
-            <when test="columnName == 'cltCode'">
-                CLT_CODE = #{value}
-            </when>
-            <when test="columnName == 'soQuantity'">
-                SO_QUANTITY = CAST(#{value} AS NUMBER)
-            </when>
-            <when test="columnName == 'pdtShippingPrice'">
-                PDT_SHIPPING_PRICE = CAST(#{value} AS NUMBER)
-            </when>
-            <when test="columnName == 'soStatus'">
-                SO_STATUS = #{value}
-            </when>
-            <otherwise>
-            	NULL = NULL
-            </otherwise>
-        </choose>
+        </if>
+        <if test="columnName == 'shipDate'">
+            SHIP_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
+        </if>
+        <if test="columnName == 'whsCode'">
+            WHS_CODE = #{value}
+        </if>
+        <if test="columnName == 'pdtCode'">
+            PDT_CODE = #{value}
+        </if>
+        <if test="columnName == 'cltCode'">
+            CLT_CODE = #{value}
+        </if>
+        <if test="columnName == 'soQuantity'">
+            SO_QUANTITY = CAST(#{value} AS NUMBER)
+        </if>
+        <if test="columnName == 'pdtShippingPrice'">
+            PDT_SHIPPING_PRICE = CAST(#{value} AS NUMBER)
+        </if>
+        <if test="columnName == 'soStatus'">
+            SO_STATUS = #{value}
+        </if>
+    </set>
     WHERE so_no = #{soNo}
-</update>
+	</update>
+	
+	<!-- 수주 메인에서 검색-->
+	<select id="selectSalesOrderList" resultType="com.example.dto.SalesOrderDTO"
+        parameterType="com.example.dto.SearchDTO">
+    SELECT 
+        SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QUANTITY,
+        SO.PDT_SHIPPING_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
+        C.CLT_NAME, P.PDT_NAME, W.WHS_NAME, E.EMP_NAME, S.STATUS_NAME
+    FROM SALES_ORDER SO
+    LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
+    LEFT JOIN EMPLOYEES E ON SO.EMP_NO = E.EMP_NO
+    LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
+    LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
+    LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
+
+    <where>
+        <if test="soCode != null and soCode != ''">
+            AND SO.SO_CODE = #{soCode}
+        </if>
+        <if test="cltName != null and cltName != ''">
+            AND C.CLT_NAME LIKE '%' || #{cltName} || '%'
+        </if>
+        <if test="soStatus != null and soStatus != ''">
+            AND SO.SO_STATUS = #{soStatus}
+        </if>
+        <if test="startDate != null and endDate != null and startDate != '' and endDate != ''">
+            AND SO.SO_DATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') 
+                               AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+        </if>
+    </where>
+
+    ORDER BY SO.SO_NO DESC
+</select>
+	
 	
 </mapper>
