@@ -18,7 +18,7 @@
 		
     .container1 {
         display: grid;
-		grid-template-columns: 150px 170px 100px 200px 50px 200px 160px 150px 100px 100px 100px 1fr; 
+		grid-template-columns: 150px 170px 100px 200px 50px 200px 160px 150px 150px 100px 1fr; 
         gap: 3px;
         background: #f5f5f5;
         padding: 4px;
@@ -52,6 +52,7 @@
         gap: 5px;
         margin: 10px;
 		justify-content: space-between;
+		width: 1600px;
     }
 	
     button {
@@ -91,6 +92,7 @@
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
 	        <button class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
 	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
 				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
 	        <button class="helpBtn">❓ HELP</button>
@@ -126,7 +128,6 @@
 		        <span></span>
 				
 				<!-- 검색 버튼 -->
-				<button type="button" class="search" id="searchBtn">🔍 검색</button>
 				<span></span>
 		    </div>
 	
@@ -170,7 +171,8 @@
 		<!-- grid 출력 태그 -->
 	   	<div id="gridTop" style="width:1600px"></div>
 		
-		<!-- 자바 스크립트 시작, jQuery포함 -->
+		<!-- 자바 스크립트 시작, jQuery 구문 포함 -->
+		<script src="/js/jquery-3.7.1.js"></script>
 	    <script th:inline="javascript">
 		console.log(/*[[${soStatusList}]]*/ []);
 		//===================================== Grid부분 시작 ===============================================
@@ -182,11 +184,15 @@
 		let soStatusList = /*[[${soStatusList}]]*/ [];
 		
 		//2개의 컬럼으로 label과 value를 맞춘다
-		let cltListSelected = cltList.map(item => ({label: item.cltCode, value: item.cltName+'('+item.cltCode+')'}));
-		let empListSelected = empList.map(item => ({label: item.empNo, value: item.empName+'('+ item.empNo + ')'}));
-		let productListSelected = productList.map(item => ({label: item.pdtCode, value: item.pdtName+'('+item.pdtCode+')'}))
-		let soStatusListSelected = soStatusList.map(item => ({label: item.statusCode, value: item.statusName+'('+item.statusCode+')'}))
+// 		let cltListSelected = cltList.map(item => ({label: item.cltCode, value: item.cltName+'('+item.cltCode+')'}));
+// 		let empListSelected = empList.map(item => ({label: item.empNo, value: item.empName+'('+ item.empNo + ')'}));
+// 		let productListSelected = productList.map(item => ({label: item.pdtCode, value: item.pdtName+'('+item.pdtCode+')'}))
+// 		let soStatusListSelected = soStatusList.map(item => ({label: item.statusCode, value: item.statusName+'('+item.statusCode+')'}))
 		
+		let empListSelected = empList.map(item1 => ({text: item1.empName, label: item1.empName, value: item1.empId}));
+		let cltListSelected = cltList.map(item2 => ({text: item2.cltName, label: item2.cltName, value: item2.cltCode}));
+		let productListSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtCode}));
+		let soStatusListSelected = soStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
 		
 		console.log(cltList)
 		console.log(empList);
@@ -256,8 +262,8 @@
 	            },
 	            {
 					header: '사원번호',
-	                name: 'empNo',
-					width: 100,
+	                name: 'empId',
+					width: 200,
 					align: 'center',
 					editor: {
 						type: 'select',
@@ -267,7 +273,8 @@
 					},
 					formatter: ({ value }) => {
 				    	const emp = empListSelected.find(item => item.value === value);
-				    	return emp ? emp.label : value;
+				    	return emp ?  emp.label : value;
+				    	//return emp.label;
 				    }
 	            },
 				{
@@ -353,6 +360,40 @@
 			grid.addRowClassName(selectedEv.rowKey, 'selecedRowClass');
 			
 		});
+		
+		 grid.on('afterChange', (ev) => {
+			 
+			let evValue = ev.changes[0];
+			let rk = evValue.rowKey;
+			let rowData = grid.getRow(rk);
+			let sono = rowData.soNo;
+			console.log("sono:"+sono);
+			
+			//console.log(ev.changes[0]); 
+			//{rowKey: 5, columnName: 'empId', value: '930216', prevValue: '921114'}
+			
+			let sendData = {
+				soNo : sono,
+				columnName : evValue.columnName,
+				value : evValue.value
+			};
+			
+			console.log(sendData);
+			//{soNo: 445, columnName: 'soStatus', value: 'SO_INPRODUCTION'}
+			
+			$.ajax({
+				url: "/sales/soeditexe",
+				type: "GET",
+				data: sendData,
+				success: function(result) {
+					console.log(result);
+				},
+				error: function(errorResult) {
+					grid.restore(); // 이전 상태로 롤백
+				}
+			});
+	    });
+
 
 		//===================================== 일반 함수 부분 시작 ===============================================
 		
