@@ -23,10 +23,27 @@
 	.date-range input {width: 150px; /* 입력 필드 크기 조정 */}
 	
 	.btnRegiEmp {margin-left: 10px; /* 버튼과의 간격 조정 */}
+	
+	.modal-body .form-select {
+	width: 120px !important;}
+	
+	#empProfileFile {width: 50%!important;}
 
-/* 	#idCheckMsg { */
-/*     color: black !important; */
-/* } */
+	.form-select {width: 110px;}
+
+	.form-control{width: 200px !important;}
+    
+    .form-row {display: flex;flex-wrap: wrap;}
+    
+    .form-item {flex: 1 1 41%;display: flex;align-items: center;     /* 글씨 + input 높이 맞춤 */gap: 12px;padding-left: 25px;margin-bottom: 21px;
+	}
+	.form-row label {
+		display: inline-block;
+		width: 60px;    /* 라벨은 왼쪽에서 딱 맞게 */
+		text-align: right;  /* 글자 오른쪽 정렬 (보통 많이 씀) */
+		margin-right: 8px;  /* input과 간격 */
+	}
+
 </style>
 <th:block layout:fragment="script">
 	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -169,7 +186,7 @@
 	                <form th:action="@{/emp/emplist/searchEmp}" method="post" th:object="${searchEmpDTO}" >
 	                	부서
 						<div class="form-group">
-							<select id="searchType" name="dept" th:field="*{dept}"class="form-select" >
+							<select id="searchType" name="dept" th:field="*{dept}"class=form-select >
 								<option value="">전체</option>
 								<th:block th:each="code : ${commonCodeMap['DEPT']}">
 							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
@@ -315,7 +332,7 @@
 	            <form action="empRegi" id="empRegi" name="empRegi" method="post" enctype="multipart/form-data">
 	                <div class="modal-body">
 						<label for="empProfile">프로필사진</label>
-	                    <div class="form-group" >
+	                    <div class="form-item" >
 							<div>
 							    <div id="preview_profile">
 							        <img th:src="@{/imagess/profile_preview.png}" class="profile-thumb" alt="profile" height="100px">
@@ -323,70 +340,91 @@
 							</div>
 							<input type="file" id="empProfileFile" name="empProfileFile" accept="image/*" class="form-control"  multiple> <!-- multipart로 받아야함 -->
 	                    </div>
+	                    
+	                     <div class="form-row">
 	                	<label for="empLevel">사원권한</label>
-	                    <div class="form-group" >
+	                    <div class="form-item" >
 	                       <select name ="empLevel" id="empLevel" class="form-select">
 								<th:block th:each="code : ${commonCodeMap['USER_ROLE']}">
 							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 							    </th:block>
 	                       </select>
 	                    </div>
-	                    <label for="empName">이름</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empName" class="form-control" name="empName" placeholder="이름 입력" required>
 	                    </div>
-	                    <label for="empId">사원 번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empId" class="form-control" name="empId" placeholder="사원 번호 입력" required>
-	                        <p id="idCheckMsg"></p>
+	                    <div class="form-row">
+		                    <label for="empName">이름</label>
+		                    <div class="form-item">
+		                        <input type="text" id="empName" class="form-control" name="empName" placeholder="이름 입력" required>
+		                    </div>
+		                    <label for="empId">사원번호</label>
+		                    <div class="form-item">
+		                        <input type="text" id="empId" class="form-control" name="empId" placeholder="사원 번호 입력" required>
+		                        <p id="idCheckMsg"></p>
+		                    </div>
 	                    </div>
-	                    <label for="empPassword">비밀번호 [ *초기 비밀번호 1234 권장 ]</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empPassword" class="form-control" name="empPassword" value="1234" required>
+	                    <div class="form-row">
+		                    <label for="empPassword">비밀번호</label>
+		                    <div class="form-item">
+		                        <input type="text" id="empPassword" class="form-control" name="empPassword" value="1234" required>
+		                    </div>
+		                    <label for="deptNo">부서</label>
+		                    <div class="form-item">
+		                       <select id="deptNo" name="deptNo" class="form-select">
+			                       	<th:block th:each="code : ${commonCodeMap['DEPT']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
 	                    </div>
-	                    <label for="deptNo">부서</label>
-	                    <div class="form-group">
-	                       <select id="deptNo" name="deptNo" class="form-select">
-		                       	<th:block th:each="code : ${commonCodeMap['DEPT']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
+	                    <div class="form-row">
+		                    <label for="positionNo">직급</label>
+		                    <div class="form-item" >
+		                       <select id="positionNo" name="positionNo" class="form-select" required>
+			                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
+		                    <label for="empPhone">전화번호</label>
+		                    <div class="form-item">
+		                        <input type="text" id="empPhone" name="empPhone" class="form-control" placeholder="전화번호 입력">
+		                    </div>
 	                    </div>
-	                    <label for="positionNo">직급</label>
-	                    <div class="form-group" >
-	                       <select id="positionNo" name="positionNo" class="form-select" required>
-		                       	<th:block th:each="code : ${commonCodeMap['POSITION']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
+	                    <div class="form-row">
+		                    <label for="empEmail">이메일</label>
+		                    <div class="form-item">
+		                        <input type="text" id="empEmail" name="empEmail" class="form-control" placeholder="이메일 입력">
+		                    </div>
+		                    <label for="empGender">성별</label>
+		                    <div class="form-item" >
+		                       <select id="empGender" name="empGender" class="form-select">
+			                       	<th:block th:each="code : ${commonCodeMap['GENDER']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
 	                    </div>
-	                    <label for="empPhone">전화번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empPhone" name="empPhone" class="form-control" placeholder="전화번호 입력">
-	                    </div>
-	                    <label for="empEmail">이메일</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empEmail" name="empEmail" class="form-control" placeholder="이메일 입력">
-	                    </div>
-	                    
-	                    <label for="empbirthDay">생년월일</label>
-					    <div style="position: relative;">
-					      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-					        <input type="text" id="empBirthday" aria-label="empBirthday" >
-					        <span class="tui-ico-date"></span>
-					      </div>
-					      <div id="birthdayWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+	                    <div class="form-row">
+		                    <label for="empbirthDay">생년월일</label>
+						    <div style="position: relative;" class="form-item">
+						      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+						        <input type="text" id="empBirthday" aria-label="empBirthday" >
+						        <span class="tui-ico-date"></span>
+						      </div>
+						      <div id="birthdayWrapper" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+						    </div>
+						    
+						    <br>
+						    
+							<label for="empStartDate2">입사일</label>
+						    <div style="position: relative;" class="form-item">
+						      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+						        <input type="text" id="empStartDate2" aria-label="empStartDate2" >
+						        <span class="tui-ico-date"></span>
+						      </div>
+						      <div id="startDateWrapper2" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
+						    </div>
 					    </div>
-					    <br>
-						<label for="empStartDate2">입사일</label>
-					    <div style="position: relative;">
-					      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-					        <input type="text" id="empStartDate2" aria-label="empStartDate2" >
-					        <span class="tui-ico-date"></span>
-					      </div>
-					      <div id="startDateWrapper2" style="margin-top: -1px; position: relative; z-index: 1000;"></div>
-					    </div>
-		
 		
 		  
 					<!-- TOAST UI DatePicker 스크립트 -->
@@ -414,89 +452,95 @@
 						  });
 						  
 						</script>
+						
+						</div>
+						
 						<br>
-	                    <label for="empGender">성별</label>
-	                    <div class="form-group" >
-	                       <select id="empGender" name="empGender" class="form-select">
-		                       	<th:block th:each="code : ${commonCodeMap['GENDER']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
-	                    </div>
-	                    <label for="">주소</label>
-						<div>
-							<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25">
-							<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
-						</div>
-						<div>
-							<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" placeholder="상세주소" >
-							<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" readonly><br>
-						</div>
-	                    <label for="empMaritalStatus">결혼여부</label>
-	                   <div class="form-group" >
-	                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select">
-		                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
+						
+	                   <div class="form-row">
+		                    <label for="empAddress1">주소</label>
+							<div class="form-item">
+								<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25">
+								<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
+							</div>
+							<div class="form-item">
+								<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" placeholder="상세주소" >
+								<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" readonly><br>
+							</div>
 	                    </div>
 	                    
 	                    <hr>
 	                    
-	                    <label for="empStatus">재직상태</label>
-	                    <div class="form-group" >
-	                       <select id="empStatus" name="empStatus" class="form-select">
-		                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
-	                    </div>
-	                    <label for="empType">고용유형</label>
-	                   <div class="form-group" >
-	                       <select id="empType" name="empType" class="form-select">
-		                       <th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
-	                    </div>
-	                    <label for="empEducationLevel">학력</label>
-	                   <div class="form-group" >
-	                       <select id="empEducationLevel" name="empEducationLevel" class="form-select">
-		                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
-	                    </div>
-	                    <label for="empParkingStatus">주차등록</label>
-	                    <div class="form-group" >
-	                       <select id="empParkingStatus" name="empParkingStatus" class="form-select">
-		                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
-							        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
-							    </th:block>
-	                       </select>
-	                    </div>
-	                    <label for="empCarNumber">차량번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" placeholder="차량번호 입력">
-	                    </div>
-	                    
-	                    <hr>
-<!-- 	                    <label for="salNo">기본급(월급)</label> -->
-<!-- 	                    <div class="form-group"> -->
-<!-- 	                        <input type="text" id="salNo" name="salNo" class="form-control" placeholder=""> -->
-<!-- 	                    </div> -->
- 						<label for="salBankName">은행</label>
-		                    <div class="form-group">
-		                        <input type="text" id="salBankName" name="salBankName" class="form-control">
+	                    <div class="form-row">
+		                    <label for="empStatus">재직상태</label>
+		                    <div class="form-item" >
+		                       <select id="empStatus" name="empStatus" class="form-select">
+			                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
 		                    </div>
-		                    <label for="salBankAccount">계좌번호</label>
-		                    <div class="form-group">
-		                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control">
-		                    </div>	                    
+		                    <label for="empType">고용유형</label>
+		                   <div class="form-item" >
+		                       <select id="empType" name="empType" class="form-select">
+			                       <th:block th:each="code : ${commonCodeMap['EMP_TYPE']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
+	                    </div>
+	                    <div class="form-row">
+		                   <label for="empEducationLevel">학력</label>
+		                   <div class="form-item" >
+		                       <select id="empEducationLevel" name="empEducationLevel" class="form-select">
+			                       	<th:block th:each="code : ${commonCodeMap['EDUCATION']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
+		                    
+		                   <label for="empMaritalStatus">결혼여부</label>
+		                   <div class="form-item" >
+		                       <select id="empMaritalStatus" name="empMaritalStatus" class="form-select">
+			                       	<th:block th:each="code : ${commonCodeMap['MARITAL']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
+	                    </div>
+	                    <div class="form-row">
+		                    <label for="empParkingStatus">주차등록</label>
+		                    <div class="form-item" >
+		                       <select id="empParkingStatus" name="empParkingStatus" class="form-select">
+			                       	<th:block th:each="code : ${commonCodeMap['PARKING']}">
+								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
+								    </th:block>
+		                       </select>
+		                    </div>
+		                    <label for="empCarNumber">차량번호</label>
+		                    <div class="form-item">
+		                        <input type="text" id="empCarNumber" name="empCarNumber" class="form-control" placeholder="차량번호 입력">
+		                    </div>
+	                    </div>
+	                    <hr>
+	                    <div class="form-row">
+	                    <hr>
+	 						<label for="salBankName">은행</label>
+			                    <div class="form-item">
+			                        <input type="text" id="salBankName" name="salBankName" class="form-control">
+			                    </div>
+			                    <label for="salBankAccount">계좌번호</label>
+			                    <div class="form-item">
+			                        <input type="text" id="salBankAccount" name="salBankAccount" class="form-control">
+			                    </div>	
+		                 </div>
+		                                        
 	                <div class="modal-footer">
 	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
 	                    <button type="button" id="btnEmpRegi" class="btn btn-primary" onclick="empSubmit()">등록</button>
 	                </div>
+	                
+	                
 	            </form>
 	        </div>
 	    </div>
