@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.example.cmtProject.constants.PathConstants;
+
 @Configuration //자바가 인식하는 설정 클래스로 지정
 @EnableWebSecurity //스프링 시큐리티 필터가 스프링 필터체인에 등록이 됨
 @EnableMethodSecurity(securedEnabled = true, prePostEnabled = true) 
@@ -26,6 +28,7 @@ public class SecurityConfig{
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests((authorizeRequests) -> authorizeRequests
             .requestMatchers("/user/**").authenticated() //user는 로그인하면 접근 가능
+            .requestMatchers("/eapproval/**").authenticated()
             .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER") //ADMIN또는 MANAGER가 접근
             .requestMatchers("/admin/**").hasRole("ADMIN") //ADMIN만 접근
             .anyRequest().permitAll() //그 외 모든 요청은 허용
