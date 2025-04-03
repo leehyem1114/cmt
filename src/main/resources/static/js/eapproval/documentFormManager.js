@@ -197,6 +197,7 @@ const DocumentFormManager = (function() {
             
             const result = await response.json();
             
+            // 최상위 속성은 소문자로 접근
             if (result.success) {
                 // 성공 알림
                 await AlertUtil.showSuccess(
@@ -209,6 +210,7 @@ const DocumentFormManager = (function() {
                     if (isTempSave) {
                         location.href = '/eapproval/documents';
                     } else {
+                        // 내부 데이터는 대문자 속성으로 접근
                         const docId = result.data?.DOC_ID;
                         if (docId) {
                             location.href = `/eapproval/document/view/${docId}`;
@@ -218,6 +220,7 @@ const DocumentFormManager = (function() {
                     }
                 }, 500);
             } else {
+                // 오류 메시지 소문자로 접근
                 throw new Error(result.message || '문서 저장 중 오류가 발생했습니다.');
             }
         } catch (error) {

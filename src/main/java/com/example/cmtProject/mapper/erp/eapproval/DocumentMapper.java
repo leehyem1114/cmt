@@ -50,19 +50,19 @@ public interface DocumentMapper {
     
     /**
      * 기안자별 문서 목록 조회
-     * @param drafterId 기안자 ID
+     * @param drafterId 기안자 ID(사번)
      * @return 문서 목록
      */
-    List<DocumentDTO> selectDocumentsByDrafterId(Integer drafterId);
+    List<DocumentDTO> selectDocumentsByDrafterId(String drafterId);
     
     /**
      * 기안자 및 상태별 문서 목록 조회
-     * @param drafterId 기안자 ID
+     * @param drafterId 기안자 ID(사번)
      * @param status 문서 상태
      * @return 문서 목록
      */
     List<DocumentDTO> selectDocumentsByDrafterAndStatus(
-            @Param("drafterId") Integer drafterId, 
+            @Param("drafterId") String drafterId, 
             @Param("status") String status);
     
     /**
@@ -74,10 +74,10 @@ public interface DocumentMapper {
     
     /**
      * 결재자별 대기 문서 목록 조회
-     * @param approverId 결재자 ID
+     * @param approverId 결재자 ID(사번)
      * @return 문서 목록
      */
-    List<DocumentDTO> selectPendingDocumentsByApproverId(Integer approverId);
+    List<DocumentDTO> selectPendingDocumentsByApproverId(String approverId);
     
     /**
      * 문서 번호 자동 생성을 위한 시퀀스 조회
@@ -93,20 +93,9 @@ public interface DocumentMapper {
     int deleteDocument(String docId);
     
     /**
-     * 직원 ID로 직원 번호 조회
-     * EmployeesService 구현 후에는 해당 서비스로 대체될 예정
+     * 직원 ID(사번)의 부서 코드 조회
      * @param empId 직원 ID(사번)
-     * @return 직원 번호
-     */
-    Integer selectEmployeeNoByEmpId(String empId);
-    
-    /**
-     * 직원 번호로 부서 코드 조회
-     * @param empNo 직원 번호
      * @return 부서 코드
      */
-    static String selectEmployeeDeptCode(Integer empNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    String selectEmployeeDeptCodeByEmpId(String empId);
 }

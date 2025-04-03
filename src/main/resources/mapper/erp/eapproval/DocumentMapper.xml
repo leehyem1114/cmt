@@ -80,7 +80,7 @@
 		FROM DOCUMENTS d 
 		LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
 		LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CMN_DETAIL_CODE
-		WHERE d.DOC_ID = ?
+		WHERE d.DOC_ID = #{docId, jdbcType=VARCHAR}
     </select>
 
     <!-- 기안자별 문서 목록 조회 -->
@@ -125,12 +125,12 @@
             d.DRAFTER_ID, 
             e.EMP_NAME as DRAFTER_NAME, 
             d.DRAFT_DEPT, 
-            c.CODE_NAME as DRAFT_DEPT_NAME, 
+            c.CMN_DETAIL_NAME as DRAFT_DEPT_NAME, 
             d.DRAFT_DATE, 
             d.DOC_STATUS 
         FROM DOCUMENTS d 
         LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
-        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CODE_ID
+        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CMN_DETAIL_CODE
         WHERE d.DOC_STATUS = #{docStatus} 
         ORDER BY d.DRAFT_DATE DESC
     </select>
@@ -145,14 +145,14 @@
             d.DRAFTER_ID, 
             e.EMP_NAME as DRAFTER_NAME, 
             d.DRAFT_DEPT, 
-            c.CODE_NAME as DRAFT_DEPT_NAME, 
+            c.CMN_DETAIL_NAME as DRAFT_DEPT_NAME, 
             d.DRAFT_DATE, 
             d.DOC_STATUS 
         FROM DOCUMENTS d 
         JOIN APPROVAL_LINES a ON d.DOC_ID = a.DOC_ID 
         LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
-        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CODE_ID
-        WHERE a.APPROVER_NO = #{approverId, jdbcType=VARCHAR} 
+        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CMN_DETAIL_CODE
+        WHERE a.APPROVER_ID = #{approverId, jdbcType=VARCHAR} 
         AND a.APPROVAL_STATUS = '대기' 
         AND d.DOC_STATUS = '진행중'
         ORDER BY d.DRAFT_DATE DESC
@@ -170,17 +170,12 @@
         AND IS_TEMP_SAVED = 'Y'
     </delete>
     
-    <!-- 직원 ID로 직원 번호 조회 -->
-    <select id="selectEmployeeNoByEmpId" resultType="java.lang.Integer">
-        SELECT EMP_NO FROM EMPLOYEES WHERE EMP_ID = #{empId}
+    <!-- 직원 ID로 부서 코드 조회 -->
+    <select id="selectEmployeeDeptCodeByEmpId" resultType="java.lang.String">
+        SELECT DEPT_NO
+        FROM EMPLOYEES
+        WHERE EMP_ID = #{empId, jdbcType=VARCHAR}
     </select>
-    
-    <!-- 직원 번호로 부서 코드 조회 -->
-	<select id="selectEmployeeDeptCode" resultType="java.lang.String">
-	    SELECT DEPT_NO
-	    FROM EMPLOYEES
-	    WHERE EMP_NO = #{empNo}
-	</select>
 
     <!-- Result Map -->
     <resultMap id="documentResultMap" type="com.example.cmtProject.dto.erp.eapproval.DocumentDTO">

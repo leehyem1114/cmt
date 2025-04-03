@@ -149,11 +149,8 @@ public class EapprovalController {
             DocumentDTO document = documentService.getDocumentDetail(docId);
             String currentUserId = principal.getName();
             
-            // 현재 사용자의 empNo 조회
-            Integer currentUserNo = documentService.getEmployeeNoByEmpId(currentUserId);
-            
             // 현재 사용자가 결재 대기 중인 결재자인지 확인
-            boolean isCurrentApprover = approvalProcessService.isCurrentApprover(docId, currentUserNo);
+            boolean isCurrentApprover = approvalProcessService.isCurrentApprover(docId, currentUserId);
             
             model.addAttribute("document", document);
             model.addAttribute("isCurrentApprover", isCurrentApprover);
