@@ -1,204 +1,387 @@
 /**
- * documentFormManager.js - 문서 폼 관리 모듈
+ * DocumentFormManager - 문서 폼 관리 모듈
  * 
  * 전자결재 문서 폼을 관리하고 제출하는 기능을 제공합니다.
- * - 문서 데이터 초기화
+ * - 문서 데이터 초기화 및 관리
  * - 폼 유효성 검사
- * - 문서 저장 (임시저장/결재요청)
+ * - 임시저장 및 결재요청 처리
+ * - UI 관련 기능 제공
  * 
- * @version 1.0.0
+ * @version 1.1.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
  */
-
-// 즉시 실행 함수로 모듈 스코프 생성
 const DocumentFormManager = (function() {
-    // 문서 정보
+    //===========================================================================
+    // 모듈 내부 변수 - 필요에 맞게 수정하세요
+    //===========================================================================
+    
+    /**
+     * 문서 정보 객체
+     * 문서 관련 주요 데이터를 저장합니다.
+     */
     let documentData = {
-        docId: '',
-        docNumber: '',
-        formId: '',
-        title: '',
-        content: ''
+        docId: '',       // 문서 ID
+        docNumber: '',   // 문서 번호
+        formId: '',      // 양식 ID
+        title: '',       // 제목
+        content: ''      // 내용
     };
     
     /**
-     * 모듈 초기화
+     * API URL 상수 정의
+     * 문서 관련 API 엔드포인트 정의
      */
-    function initialize() {
-        console.log('DocumentFormManager 초기화 시작');
-        
+    const API_URLS = {
+        SAVE: '/api/eapproval/document',           // 문서 저장/제출 API
+        FORM: (formId) => `/api/eapproval/form/${formId}` // 양식 조회 API
+    };
+    
+    //===========================================================================
+    // 초기화 및 이벤트 처리 함수
+    //===========================================================================
+    
+    /**
+     * 모듈 초기화 함수
+     * 문서 폼 관리자를 초기화하고 이벤트 리스너를 등록합니다.
+     * 
+     * @returns {Promise<void>}
+     */
+    async function initialize() {
         try {
+            console.log('DocumentFormManager 초기화를 시작합니다.');
+            
             // 모듈 내부 데이터 초기화
-            initializeData();
+            await initializeData();
             
             // UI 초기화 (스타일 등)
-            initializeUI();
+            await initializeUI();
             
             // 이벤트 핸들러 등록
-            setupEventHandlers();
+            await setupEventHandlers();
             
-            console.log('DocumentFormManager 초기화 완료');
+            console.log('DocumentFormManager 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('DocumentFormManager 초기화 중 오류 발생:', error);
-            AlertUtil.showError('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
         }
     }
     
     /**
      * 데이터 초기화 함수
+     * 서버에서 전달된 데이터 또는 DOM에서 초기 데이터를 로드합니다.
+     * 
+     * @returns {Promise<void>}
      */
-    function initializeData() {
-        // Thymeleaf에서 전달받은 데이터 로드
-        if (window.documentData) {
-			documentData = {
-			    docId: window.documentData.DOC_ID || '',
-			    docNumber: window.documentData.DOC_NUMBER || '',
-			    formId: window.documentData.FORM_ID || '',
-			    title: window.documentData.TITLE || '',
-			    content: window.documentData.CONTENT || ''
-            };
+    async function initializeData() {
+        try {
+            console.log('문서 데이터 초기화를 시작합니다.');
             
-            // 폼 필드 초기화
-            $('#docId').val(documentData.docId);
-            $('#docNumber').val(documentData.docNumber);
-            $('#formId').val(documentData.formId);
-            $('#title').val(documentData.title);
-            
-            console.log('문서 데이터 초기화:', documentData);
-        } else {
-            // DOM에서 직접 데이터 로드
-            documentData.docId = $('#docId').val() || '';
-            documentData.docNumber = $('#docNumber').val() || '';
-            documentData.formId = $('#formId').val() || '';
-            documentData.title = $('#title').val() || '';
-            // content는 에디터 초기화 후 로드
+            // Thymeleaf에서 전달받은 데이터 로드 (window.documentData 전역변수)
+            if (window.documentData) {
+                documentData = {
+                    docId: window.documentData.DOC_ID || '',
+                    docNumber: window.documentData.DOC_NUMBER || '',
+                    formId: window.documentData.FORM_ID || '',
+                    title: window.documentData.TITLE || '',
+                    content: window.documentData.CONTENT || ''
+                };
+                
+                // 폼 필드 초기화
+                const docIdElement = document.getElementById('docId');
+                if (docIdElement) docIdElement.value = documentData.docId;
+                
+                const docNumberElement = document.getElementById('docNumber');
+                if (docNumberElement) docNumberElement.value = documentData.docNumber;
+                
+                const formIdElement = document.getElementById('formId');
+                if (formIdElement) formIdElement.value = documentData.formId;
+                
+                const titleElement = document.getElementById('title');
+                if (titleElement) titleElement.value = documentData.title;
+                
+                console.log('Thymeleaf에서 문서 데이터 초기화 완료:', documentData);
+            } else {
+                // DOM에서 직접 데이터 로드
+                console.log('DOM에서 문서 데이터를 로드합니다.');
+                
+                const docIdElement = document.getElementById('docId');
+                documentData.docId = docIdElement ? docIdElement.value : '';
+                
+                const docNumberElement = document.getElementById('docNumber');
+                documentData.docNumber = docNumberElement ? docNumberElement.value : '';
+                
+                const formIdElement = document.getElementById('formId');
+                documentData.formId = formIdElement ? formIdElement.value : '';
+                
+                const titleElement = document.getElementById('title');
+                documentData.title = titleElement ? titleElement.value : '';
+                
+                // content는 에디터 초기화 후 로드됩니다.
+                console.log('DOM에서 문서 데이터 로드 완료:', documentData);
+            }
+        } catch (error) {
+            console.error('데이터 초기화 중 오류:', error);
+            throw error;
         }
     }
     
     /**
      * UI 초기화 함수
+     * 필요한 UI 스타일이나 동적 요소를 초기화합니다.
+     * 
+     * @returns {Promise<void>}
      */
-    function initializeUI() {
-        // 로딩 오버레이 스타일 추가
-        addLoadingOverlayStyle();
-        
-        // 에디터 컨테이너에 상대 위치 클래스 추가
-        const editorCard = $('#contentEditor').closest('.card');
-        editorCard.addClass('relative-container');
+    async function initializeUI() {
+        try {
+            console.log('UI 초기화를 시작합니다.');
+            
+            // 로딩 오버레이 스타일 추가
+            addLoadingOverlayStyle();
+            
+            // 에디터 컨테이너에 상대 위치 클래스 추가
+            const editorCard = document.getElementById('contentEditor');
+            if (editorCard) {
+                const cardParent = editorCard.closest('.card');
+                if (cardParent) {
+                    cardParent.classList.add('relative-container');
+                    console.log('에디터 카드에 relative-container 클래스 추가됨');
+                }
+            }
+            
+            console.log('UI 초기화가 완료되었습니다.');
+        } catch (error) {
+            console.error('UI 초기화 중 오류:', error);
+            throw error;
+        }
     }
     
     /**
-     * 로딩 오버레이 스타일 추가
+     * 이벤트 핸들러 설정 함수
+     * 버튼 클릭 및 기타 이벤트 리스너를 등록합니다.
+     * 
+     * @returns {Promise<void>}
+     */
+    async function setupEventHandlers() {
+        try {
+            console.log('이벤트 핸들러 등록을 시작합니다.');
+            
+            // 임시저장 버튼 클릭 이벤트
+            const tempSaveBtn = document.getElementById('btnTempSave');
+            if (tempSaveBtn) {
+                tempSaveBtn.addEventListener('click', async function() {
+                    await saveDocument(true);
+                });
+                console.log('임시저장 버튼 이벤트 등록 완료');
+            }
+            
+            // 결재요청 버튼 클릭 이벤트
+            const submitBtn = document.getElementById('btnSubmit');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', async function() {
+                    await saveDocument(false);
+                });
+                console.log('결재요청 버튼 이벤트 등록 완료');
+            }
+            
+            // 취소 버튼 클릭 이벤트 (있는 경우)
+            const cancelBtn = document.getElementById('btnCancel');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', async function() {
+                    const confirmed = await AlertUtil.showConfirm({
+                        title: '작성 취소',
+                        text: '현재 작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?',
+                        icon: 'warning'
+                    });
+                    
+                    if (confirmed) {
+                        location.href = '/eapproval/documents';
+                    }
+                });
+                console.log('취소 버튼 이벤트 등록 완료');
+            }
+            
+            console.log('이벤트 핸들러 등록이 완료되었습니다.');
+        } catch (error) {
+            console.error('이벤트 핸들러 등록 중 오류:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * 로딩 오버레이 스타일 추가 함수
+     * 문서 헤드에 필요한 CSS 스타일을 동적으로 추가합니다.
      */
     function addLoadingOverlayStyle() {
-        const styleEl = document.createElement('style');
-        styleEl.textContent = `
-            .loading-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
+        try {
+            // 이미 스타일이 있는지 확인
+            if (document.getElementById('loadingOverlayStyle')) {
+                return;
             }
             
-            .relative-container {
-                position: relative;
+            // 스타일 요소 생성
+            const styleEl = document.createElement('style');
+            styleEl.id = 'loadingOverlayStyle';
+            styleEl.textContent = `
+                .loading-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                
+                .relative-container {
+                    position: relative;
+                }
+            `;
+            
+            // 문서 헤드에 스타일 추가
+            document.head.appendChild(styleEl);
+            console.log('로딩 오버레이 스타일이 추가되었습니다.');
+        } catch (error) {
+            console.error('스타일 추가 중 오류:', error);
+            // 비 중요 오류이므로 진행 가능
+        }
+    }
+    
+    //===========================================================================
+    // 문서 처리 함수
+    //===========================================================================
+    
+    /**
+     * 폼 유효성 검사 함수
+     * 문서 폼의 필수 필드 및 결재선을 검증합니다.
+     * 
+     * @returns {Promise<boolean>} 유효성 검사 결과
+     */
+    async function validateForm() {
+        try {
+            console.log('문서 폼 유효성 검사를 시작합니다.');
+            
+            // 필수 필드 검사
+            const formId = document.getElementById('formId').value;
+            if (!formId) {
+                await AlertUtil.showWarning('유효성 검사', '문서 양식을 선택해주세요.');
+                document.getElementById('formId').focus();
+                return false;
             }
-        `;
-        document.head.appendChild(styleEl);
+            
+            const title = document.getElementById('title').value.trim();
+            if (!title) {
+                await AlertUtil.showWarning('유효성 검사', '제목을 입력해주세요.');
+                document.getElementById('title').focus();
+                return false;
+            }
+            
+            // 내용 검사 - FormContentLoader를 통해 에디터 내용 확인
+            let content = '';
+            if (window.FormContentLoader && typeof FormContentLoader.getEditorContent === 'function') {
+                content = FormContentLoader.getEditorContent();
+            }
+            
+            if (!content || content === '<p><br></p>') {
+                await AlertUtil.showWarning('유효성 검사', '내용을 입력해주세요.');
+                // 에디터에 포커스 설정 (가능한 경우)
+                const editorElement = document.getElementById('contentEditor');
+                if (editorElement && typeof $(editorElement).summernote === 'function') {
+                    $(editorElement).summernote('focus');
+                }
+                return false;
+            }
+            
+            // 결재선 유효성 검사 (ApprovalLineManager 의존)
+            if (window.ApprovalLineManager && typeof ApprovalLineManager.validateApprovalLines === 'function') {
+                const approvalLinesValid = await ApprovalLineManager.validateApprovalLines();
+                if (!approvalLinesValid) {
+                    return false;
+                }
+            } else {
+                console.warn('ApprovalLineManager가 없어 결재선 검증을 건너뜁니다.');
+            }
+            
+            console.log('유효성 검사 통과');
+            return true;
+        } catch (error) {
+            console.error('유효성 검사 중 오류:', error);
+            await AlertUtil.showError('검증 오류', '폼 유효성 검사 중 오류가 발생했습니다.');
+            return false;
+        }
     }
     
     /**
-     * 이벤트 핸들러 등록
-     */
-    function setupEventHandlers() {
-        // 임시저장 버튼 클릭
-        $('#btnTempSave').on('click', function() {
-            saveDocument(true);
-        });
-        
-        // 결재요청 버튼 클릭
-        $('#btnSubmit').on('click', function() {
-            saveDocument(false);
-        });
-    }
-    
-    /**
-     * 폼 유효성 검사
-     * @returns {boolean} 유효성 검사 결과
-     */
-    function validateForm() {
-        const formId = $('#formId').val();
-        const title = $('#title').val().trim();
-        const content = FormContentLoader.getEditorContent();
-        
-        if (!formId) {
-            AlertUtil.showWarning('유효성 검사', '문서 양식을 선택해주세요.');
-            $('#formId').focus();
-            return false;
-        }
-        
-        if (!title) {
-            AlertUtil.showWarning('유효성 검사', '제목을 입력해주세요.');
-            $('#title').focus();
-            return false;
-        }
-        
-        if (!content || content === '<p><br></p>') {
-            AlertUtil.showWarning('유효성 검사', '내용을 입력해주세요.');
-            $('#contentEditor').summernote('focus');
-            return false;
-        }
-        
-        // 결재선 유효성 검사
-        return ApprovalLineManager.validateApprovalLines();
-    }
-    
-    /**
-     * 문서 저장 (임시저장 또는 결재요청)
-     * @param {boolean} isTempSave - 임시저장 여부
+     * 문서 저장 함수 (임시저장 또는 결재요청)
+     * 문서 데이터를 수집하여 API를 호출하고 결과를 처리합니다.
+     * 
+     * @param {boolean} isTempSave - 임시저장 여부 (true: 임시저장, false: 결재요청)
+     * @returns {Promise<boolean>} 저장 성공 여부
      */
     async function saveDocument(isTempSave) {
-        if (!validateForm()) return;
-        
         try {
-            // 로딩 표시 시작
-            const loading = AlertUtil.showLoading(isTempSave ? '임시저장 중...' : '결재요청 중...');
-            
-            // 폼 데이터 구성
-            const formData = new FormData();
-            formData.append('docId', documentData.docId || '');
-            formData.append('docNumber', documentData.docNumber || '');
-            formData.append('formId', $('#formId').val());
-            formData.append('title', $('#title').val().trim());
-            formData.append('content', FormContentLoader.getEditorContent());
-            formData.append('isTempSave', isTempSave);
-            formData.append('approvalLinesJson', JSON.stringify(ApprovalLineManager.getApprovalLines()));
-            
-            // 첨부파일 추가
-            AttachmentManager.appendFilesToFormData(formData);
-            
-            // API 호출
-            const response = await fetch('/api/eapproval/document', {
-                method: 'POST',
-                body: formData
-            });
-            
-            // 로딩 종료
-            loading.close();
-            
-            if (!response.ok) {
-                throw new Error('서버 응답 오류: ' + response.status);
+            // 유효성 검사
+            if (!await validateForm()) {
+                return false;
             }
             
-            const result = await response.json();
+            console.log(`문서 ${isTempSave ? '임시저장' : '결재요청'} 시작`);
             
-            // 최상위 속성은 소문자로 접근
-            if (result.success) {
+            // 로딩 표시
+            const loading = AlertUtil.showLoading(
+                isTempSave ? '임시저장 중...' : '결재요청 중...'
+            );
+            
+            try {
+                // 폼 데이터 구성
+                const formData = new FormData();
+                
+                // 기본 문서 정보
+                formData.append('docId', documentData.docId || '');
+                formData.append('docNumber', documentData.docNumber || '');
+                formData.append('formId', document.getElementById('formId').value);
+                formData.append('title', document.getElementById('title').value.trim());
+                
+                // 문서 내용 (에디터)
+                let content = '';
+                if (window.FormContentLoader && typeof FormContentLoader.getEditorContent === 'function') {
+                    content = FormContentLoader.getEditorContent();
+                }
+                formData.append('content', content);
+                
+                // 저장 유형
+                formData.append('isTempSave', isTempSave);
+                
+                // 결재선 데이터
+                let approvalLines = [];
+                if (window.ApprovalLineManager && typeof ApprovalLineManager.getApprovalLines === 'function') {
+                    approvalLines = ApprovalLineManager.getApprovalLines();
+                }
+                formData.append('approvalLinesJson', JSON.stringify(approvalLines));
+                
+                // 첨부파일 추가
+                if (window.AttachmentManager && typeof AttachmentManager.appendFilesToFormData === 'function') {
+                    AttachmentManager.appendFilesToFormData(formData);
+                }
+                
+                // API 요청
+                const response = await ApiUtil.postWithLoading(
+                    API_URLS.SAVE,
+                    formData,
+                    isTempSave ? '임시저장 중...' : '결재요청 중...'
+                );
+                
+                // 응답 처리
+                if (!response.success) {
+                    throw new Error(response.message || '문서 저장 중 오류가 발생했습니다.');
+                }
+                
+                // 로딩 종료
+                loading.close();
+                
                 // 성공 알림
                 await AlertUtil.showSuccess(
                     '저장 완료', 
@@ -208,10 +391,11 @@ const DocumentFormManager = (function() {
                 // 저장 완료 후 페이지 이동
                 setTimeout(() => {
                     if (isTempSave) {
+                        // 임시저장 완료 시 문서함으로 이동
                         location.href = '/eapproval/documents';
                     } else {
-                        // 내부 데이터는 대문자 속성으로 접근
-                        const docId = result.data?.DOC_ID;
+                        // 결재요청 완료 시 상세 보기 페이지로 이동
+                        const docId = response.data?.DOC_ID || documentData.docId;
                         if (docId) {
                             location.href = `/eapproval/document/view/${docId}`;
                         } else {
@@ -219,18 +403,31 @@ const DocumentFormManager = (function() {
                         }
                     }
                 }, 500);
-            } else {
-                // 오류 메시지 소문자로 접근
-                throw new Error(result.message || '문서 저장 중 오류가 발생했습니다.');
+                
+                return true;
+            } catch (error) {
+                // 로딩 종료
+                loading.close();
+                
+                console.error('문서 저장 오류:', error);
+                await AlertUtil.showError('저장 실패', error.message || '문서 저장 중 오류가 발생했습니다.');
+                return false;
             }
         } catch (error) {
-            console.error('문서 저장 오류:', error);
-            await AlertUtil.showError('저장 실패', error.message || '문서 저장 중 오류가 발생했습니다.');
+            console.error('문서 저장 처리 중 오류:', error);
+            await AlertUtil.showError('저장 오류', '문서 저장 중 오류가 발생했습니다.');
+            return false;
         }
     }
     
+    //===========================================================================
+    // 유틸리티 및 접근자 함수
+    //===========================================================================
+    
     /**
-     * 문서 ID 가져오기
+     * 문서 ID 가져오기 함수
+     * 현재 문서의 ID를 반환합니다.
+     * 
      * @returns {string} 문서 ID
      */
     function getDocumentId() {
@@ -238,19 +435,54 @@ const DocumentFormManager = (function() {
     }
     
     /**
-     * 문서 내용 가져오기
-     * @returns {string} 문서 내용
+     * 문서 내용 가져오기 함수
+     * 현재 문서의 내용을 반환합니다.
+     * 
+     * @returns {string} 문서 내용 HTML
      */
     function getDocumentContent() {
         return documentData.content;
     }
     
-    // 공개 API
+    /**
+     * 문서 데이터 업데이트 함수
+     * 특정 필드의 문서 데이터를 업데이트합니다.
+     * 
+     * @param {string} field - 업데이트할 필드명
+     * @param {*} value - 새 값
+     */
+    function updateDocumentData(field, value) {
+        if (field in documentData) {
+            documentData[field] = value;
+            console.log(`문서 데이터 '${field}' 필드가 업데이트되었습니다.`);
+            
+            // DOM 요소도 함께 업데이트 (있는 경우)
+            const element = document.getElementById(field);
+            if (element) {
+                element.value = value;
+            }
+        } else {
+            console.warn(`존재하지 않는 필드 '${field}'에 대한 업데이트 시도가 무시되었습니다.`);
+        }
+    }
+    
+    //===========================================================================
+    // 공개 API - 외부에서 접근 가능한 메서드
+    //===========================================================================
+    
     return {
-        initialize,
-        validateForm,
-        saveDocument,
-        getDocumentId,
-        getDocumentContent
+        // 초기화 및 기본 기능
+        initialize,          // 모듈 초기화
+        
+        // 문서 처리 함수
+        validateForm,        // 폼 유효성 검사
+        saveDocument,        // 문서 저장/제출
+        
+        // 유틸리티 및 접근자 함수
+        getDocumentId,       // 문서 ID 조회
+        getDocumentContent,  // 문서 내용 조회
+        updateDocumentData   // 문서 데이터 업데이트
     };
 })();
+
+// DOM 로드 시 documentForm.js에서 초기화하므로 여기서는 자동 초기화하지 않음

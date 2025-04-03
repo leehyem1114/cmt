@@ -5,6 +5,7 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:decorate="~{layouts/layout}">
 <head>
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 <!-- 기본 메타 정보 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,10 +53,7 @@
 </style>
 </head>
 <body>
-	<!-- 
-        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
-        이 부분 안에 페이지별 HTML 내용을 작성하세요.
-    -->
+
 	<div layout:fragment="content">
 
 		<div class="button-container">
@@ -63,25 +61,25 @@
 				<h2>급여 조회</h2>
 			</div>
 			<div>
-				<button class="calculate" data-bs-toggle="modal"
-					data-bs-target="#payCalcModal">📃 급여 계산기</button>
-				<button class="print">✏️ 명세서 출력</button>
-				<button class="transfer" data-bs-toggle="modal"
-					data-bs-target="#payTransferModal">❓ 급여 이체</button>
+				<button type="button" class="calculate" data-bs-toggle="modal" data-bs-target="#payCalcModal">📃 급여 계산기</button>
+				<button type="button" class="print">✏️ 명세서 출력</button>
+				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
+				<button type="button" class="delete">삭제</button>
 			</div>
 		</div>
 
 		<form action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
 			<div class="container">
-				<label class="deptLabel">부서</label> <select class="form-select"
-					id="dept" name="dept">
+				<label class="deptLabel">부서</label>
+				<select class="form-select" id="dept" name="dept">
 					<option th:each="dept : ${deptList}"
 						th:value="${dept.cmnDetailCode}" th:text="${dept.cmnDetailName}"></option>
-				</select> <label class="emp-Label">이름</label> <input type="text" class=""
-					id="empName" maxlength="9" th:field="*{empName}"> <label
-					class="payLabel">지급일</label> <input type="date" id="minDate"
-					th:field="*{minDate}">~ <input type="date" id="maxDate"
-					th:field="*{maxDate}">
+				</select>
+				<label class="emp-Label">이름</label>
+					<input type="text" class="" id="empName" maxlength="9" th:field="*{empName}">
+				<label class="payLabel">지급일</label>
+					<input type="date" id="minDate" th:field="*{minDate}">~ 
+					<input type="date" id="maxDate" th:field="*{maxDate}">
 				<button type="submit" class="btnSearch">🔍 검색</button>
 				<span></span>
 			</div>
@@ -92,7 +90,7 @@
 		<!-- 그리드 top 시작 -->
 		<div id="gridTop"></div>
 
-		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		
 		<script th:inline="javascript">
 	    
 	    const grid = new tui.Grid({
@@ -103,83 +101,102 @@
 				{
 	                header: '지급일',
 	                name: 'payDate',
-	            	sortable: true
+	            	sortable: true,
+					align: "center"
 	            },
 	            {
 	                header: '사원번호',
 	                name: 'empNo',
-	                sortable: true
+	                sortable: true,
+	                align: "center"
 	            },
 	            {
 	                header: '사원명',
 	                name: 'empName',
+					align: "center"
 	            },
 	            {
 	                header: '부서',
-	                name: 'deptName', 
-		            sortable: true
+	                name: 'deptName',
+		            sortable: true,
+		            align: "center"
 	            },
 	            {
 	                header: '직급',
-	                name: 'position', 
-	            	sortable: true
+	                name: 'position',
+	            	sortable: true,
+					align: "center"
 	            },
 	            {
 	                header: '고용유형',
-	                name: 'empType'
+	                name: 'empType',
+					align: "center"
 	            },
 	            {
 	                header: '기본급',
-	                name: 'payBasic'
+	                name: 'payBasic',
+					align: "center"
 	            },
 	            {
 	                header: '야근수당',
-	                name: 'payBonusOvertime'
+	                name: 'payBonusOvertime',
+					align: "center"
 	            },
 	            {
 	                header: '명절수당',
-	                name: 'payBonusHoliday'
+	                name: 'payBonusHoliday',
+					align: "center"
 	            },
 	            {
 	                header: '총수당금액',
-	                name: 'payBonusTotal'
+	                name: 'payBonusTotal',
+					align: "center"
 	            },
 	            {
 	                header: '국민연금',
-	                name: 'payTaxPension'
+	                name: 'payTaxPension',
+					align: "center"
 	            },
 	            {
 	                header: '건강보험',
-	                name: 'payTaxHealth'
+	                name: 'payTaxHealth',
+					align: "center"
 	            },
 	            {
 	                header: '장기요양보험',
-	                name: 'payTaxCare'
+	                name: 'payTaxCare',
+					align: "center"
 	            },
 	            {
 	                header: '고용보험',
-	                name: 'payTaxEmployment'
+	                name: 'payTaxEmployment',
+					align: "center"
 	            },
 	            {
 	                header: '소득세',
-	                name: 'payTaxIncome'
+	                name: 'payTaxIncome',
+					align: "center"
 	            },
 	            {
 	                header: '주민세',
-	                name: 'payTaxResidence'
+	                name: 'payTaxResidence',
+					align: "center"
 	            },
 	            {
 	                header: '총공제금액',
-	                name: 'payTaxTotal'
+	                name: 'payTaxTotal',
+					align: "center"
 	            },
 	            {
 	                header: '실수령액',
-	                name: 'payTotal'
+	                name: 'payTotal',
+					align: "center"
 	            },
 	            {
 	                header: '지급상태',
 	                name: 'payStatus',
-	                sortable: true
+	                sortable: true,
+					align: "center"
 	            }
 	        ] // 열 설정
 	    });
@@ -298,72 +315,88 @@
 									th:value="${code.cmnDetailCode}"
 									th:text="${code.cmnDetailName}"></option>
 							</select>
+						<div class="input-group mb-2">
+							<input type="text" id="payBasic" class="form-control" th:field="*{payBasic}">
+						</div>
 							<button type="submit" class="btn btn-secondary ms-2">조회</button>
 						</div>
 						<!-- 그리드 top 시작 -->
-						<div id="gridTop2"></div>
+						<div id="gridTop2" style="width: 100%"></div>
 						<!-- 그리드 끝 -->
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary"
-								data-bs-dismiss="modal">닫기</button>
-							<button type="button" class="btn btn-primary"
-								data-bs-dismiss="modal">이체</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div><!-- 급여 이체 모달 -->
 	</div>
-</div>	
+
 	<!-- 
         페이지별 JavaScript 추가 영역.
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
-	<th:block layout:fragment="script">
-		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
 		<script th:inline="javascript">
-			$('#payTransferModal').on('shown.bs.modal', function () {
-
-				const grid2 = new tui.Grid({
-				el: document.getElementById('gridTop2'), 
-				data : /*[[${empList}]]*/ [],
-				rowHeaders: ['checkbox'], 
-				columns: [
-					{
-						header: '사원번호',
-						name: 'empNo'
-					},
-					{
-						header: '사원명',
-						name: 'empName',
-					},
-					{
-						header: '부서',
-						name: 'deptName', 
-						sortable: true
-					},
-					{
-						header: '직급',
-						name: 'deptPosition', 
-						sortable: true
-					}	
-				] // 열 설정
-			});
-	    				
-			console.log("empList:", /*[[${empList}]]*/ []);
+		let grid2 = null;
+		
+		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
+      	  // 모달 완전히 열린 후에 grid 생성
+			// $('#payTransferModal').on('shown.bs.modal', function () {
+			if (!grid2) {
+				grid2 = new tui.Grid({
+					el: document.getElementById('gridTop2'), 
+					data : /*[[${empList}]]*/ [],
+					rowHeaders: ['checkbox'], 
+					columns: [
+						{
+							header: '사원번호',
+							name: 'empId',
+							align: "center"
+						},
+						{
+							header: '사원명',
+							name: 'empName',
+							align: "center"
+						},
+						{
+							header: '부서',
+							name: 'deptName', 
+							sortable: true,
+							align: "center"
+						},
+						{
+							header: '직급',
+							name: 'deptPosition', 
+							sortable: true,
+							align: "center"
+						}	
+					] // 열 설정
+				});
+					
+				console.log("empList:", /*[[${empList}]]*/ []);
 	    
-			// 체크박스 클릭 시 이벤트 추가
-			grid2.on('check', (checkItem) => {
-				console.log("체크 확인");
-			});
+				// 체크박스 클릭 시 이벤트 추가
+				grid2.on('check', (checkItem) => {
+					console.log("체크 확인");
+				});
 
-			// 체크 해제 시 이벤트 추가
-			grid2.on('uncheck', (checkItem) => {
-				console.log("체크 해제 확인");
-			}); 
-		});	
+				// 체크 해제 시 이벤트 추가
+				grid2.on('uncheck', (checkItem) => {
+					console.log("체크 해제 확인");
+				});
+			} else {
+				// 이미 Grid 있으면 데이터 리셋
+				grid2.resetData(/*[[${empList}]]*/ []);
+			}	
+		});
 		</script>
+</div>	
+
+		
+	<th:block layout:fragment="script">
 	</th:block>
 </body>
 </html>

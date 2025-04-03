@@ -98,19 +98,19 @@ public class SalaryController {
 		List<EmpListPreviewDTO> empList = employeesService.getEmplist();
 		model.addAttribute("empList", empList);
 		
-		// 결과 저장 리스트 선언
-		List<Map<String, Double>> bonusResultList = new ArrayList<>();
-		List<Map<String, Double>> taxResultList = new ArrayList<>();
-		
 		// 공통 코드에서 가져오기
 		List<CommonCodeDetailDTO> positionList = commonService.getCommonCodeDetails("POSITION", null);
 		model.addAttribute("positionList", positionList);
+		model.addAttribute("payBasic", positionList);
 		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
 		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
 	
 		System.out.println("공통코드 확인 : " + bonusList);
 		System.out.println("공통코드 확인 : " + taxList);
 		
+		// 결과 저장 리스트 선언
+		List<Map<String, Double>> bonusResultList = new ArrayList<>();
+		List<Map<String, Double>> taxResultList = new ArrayList<>();
 		
 		// 기본급 맵 구성
 		Map<String, Integer> payBasicList = positionList.stream()
@@ -125,18 +125,19 @@ public class SalaryController {
 		// context에 기본급 저장
 		Map<String, Object> operandContextMap = new HashMap<>();
 		operandContextMap.put("PAY_BASIC", payBasic.doubleValue()); // 기본급은 PAY_BASIC 변수명으로 등록
+	
 		
-		
-		// 수식 평가 반복
+		// 수식 평가 반복 => 수당 계산
 		for(CommonCodeDetailDTO bonus : bonusList) {
 			String expression = bonus.getCmnDetailValue2(); // 계산식
 			
 			String[] operandNames = expression.split("[+\\-\\*/]");
 			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
 			
-			List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
-			// List<Object> values = List.of(50.0, 20, 30.0);\
-			// System.out.println("조회한 피연산자 데이터 목록 : " + values);
+			// List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
+			// List<Object> values = List.of(50.0, 20, 30.0);
+			List<CommonCodeDetailDTO> values = commonService.getCommonCodeDetails("POSITION", null);
+			System.out.println("조회한 피연산자 데이터 목록 : " + values);
 			
 			// 수식 평가 수행할 JexlEngine 객체 생성
 			JexlEngine jexl = new JexlBuilder().create();
@@ -148,24 +149,24 @@ public class SalaryController {
 			JexlContext context = new MapContext();
 			
 			// 피연산자 갯수만큼 반복하면서 JexlExpression 객체의 set() 메서드로 피연산자 대입
-//			for(int i = 0; i < operandNames.length; i++) {
-//				// 이 때, 피연산자명 앞뒤 공백 제거 위해 trim() 메서드 사용(ex. "a + b = c" 일 때 "a " 처럼 공백 포함됨)
-//				context.set(operandNames[i].trim(), values.get(i));
-//			}
+			for(int i = 0; i < operandNames.length; i++) {
+				// 이 때, 피연산자명 앞뒤 공백 제거 위해 trim() 메서드 사용(ex. "a + b = c" 일 때 "a " 처럼 공백 포함됨)
+				//context.set(operandNames[i].trim(), values.get(i));
+				context.set(operandNames[i].trim(), values.get(i));
+			}
 			
-			
-		    // operandContextMap에 등록된 값들 모두 context에 넣기
-		    for (Map.Entry<String, Object> entry : operandContextMap.entrySet()) {
-		        context.set(entry.getKey(), entry.getValue());
-		    }
+//		    // operandContextMap에 등록된 값들 모두 context에 넣기
+//		    for (Map.Entry<String, Object> entry : operandContext.entrySet()) {
+//		        context.set(entry.getKey(), entry.getValue());
+//		    }
 
-		    // 수식에 필요한 나머지 피연산자들 체크
-		    for (String operand : operandNames) {
-		        String key = operand.trim();
-		        if (!context.has(key)) {
-		            context.set(key, 0.0); // 기본값 처리
-		        }
-		    }
+//		    // 수식에 필요한 나머지 피연산자들 체크
+//		    for (String operand : operandNames) {
+//		        String key = operand.trim();
+//		        if (!context.has(key)) {
+//		            context.set(key, 0.0); // 기본값 처리
+//		        }
+//		    }
 			
 
 			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
@@ -177,16 +178,16 @@ public class SalaryController {
 	        bonusResultList.add(resultMap);
 		}	
 		
-		// 수식 평가 반복
+		// 수식 평가 반복 => 공제 계산
 		for (CommonCodeDetailDTO tax : taxList) {
 			String expression = tax.getCmnDetailValue2(); // 계산식
 
 			String[] operandNames = expression.split("[+\\-\\*/]");
 			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
 
-			List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
+			//List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
 			// List<Object> values = List.of(50.0, 20, 30.0);
-			System.out.println("조회한 피연산자 데이터 목록 : " + values);
+			//System.out.println("조회한 피연산자 데이터 목록 : " + values);
 
 			// 수식 평가 수행할 JexlEngine 객체 생성
 			JexlEngine jexl = new JexlBuilder().create();
@@ -202,12 +203,7 @@ public class SalaryController {
 //				// 이 때, 피연산자명 앞뒤 공백 제거 위해 trim() 메서드 사용(ex. "a + b = c" 일 때 "a " 처럼 공백 포함됨)
 //				context.set(operandNames[i].trim(), values.get(i));
 //			}
-			
-			
-		    // operandContextMap에 등록된 값들 모두 context에 넣기
-		    for (Map.Entry<String, Object> entry : operandContextMap.entrySet()) {
-		        context.set(entry.getKey(), entry.getValue());
-		    }
+
 
 		    // 수식에 필요한 나머지 피연산자들 체크
 		    for (String operand : operandNames) {

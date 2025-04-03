@@ -1,168 +1,335 @@
 /**
- * approvalLineManager.js - 결재선 관리 모듈
+ * ApprovalLineManager - 결재선 관리 모듈
  * 
  * 전자결재 결재선 관리를 위한 기능을 제공합니다.
  * - 결재선 추가/수정/삭제
  * - 결재선 유효성 검증
  * - 결재자 정보 조회 및 설정
+ * - 결재자 순서 자동 관리
  * 
- * @version 1.0.0
+ * @version 1.1.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
  */
-
-// 즉시 실행 함수로 모듈 스코프 생성
 const ApprovalLineManager = (function() {
-    // 결재선 데이터
+    //===========================================================================
+    // 모듈 내부 변수 - 필요에 맞게 수정하세요
+    //===========================================================================
+    
+    /**
+     * 결재선 데이터 배열
+     * 각 항목은 다음 속성을 포함합니다:
+     * - approvalNo: 결재자 번호
+     * - docId: 문서 ID
+     * - approverId: 결재자 ID
+     * - approverName: 결재자 이름
+     * - approverPosition: 결재자 직위
+     * - approvalOrder: 결재 순서
+     * - approvalType: 결재 타입 (결재, 합의, 참조 등)
+     * - approvalStatus: 결재 상태 (대기, 승인, 반려 등)
+     */
     let approvalLines = [];
     
     /**
-     * 모듈 초기화
-     * @param {Array} initialLines - 초기 결재선 데이터
+     * API URL 상수 정의 
+     * 결재선 관련 API 엔드포인트 정의
      */
-    function initialize(initialLines) {
-        console.log('ApprovalLineManager 초기화');
-        if (initialLines && Array.isArray(initialLines)) {
-            approvalLines = [...initialLines];
+    const API_URLS = {
+        APPROVERS: '/api/eapproval/approvers',           // 결재자 목록 조회 API
+        SAVE: '/api/eapproval/approvallines/batch',      // 결재선 일괄 저장 API
+        DELETE: (id) => `/api/eapproval/approvalline/${id}` // 결재선 항목 삭제 API
+    };
+    
+    //===========================================================================
+    // 초기화 및 이벤트 처리 함수
+    //===========================================================================
+
+    /**
+     * 모듈 초기화 함수
+     * 결재선 초기 데이터 설정 및 이벤트 등록을 수행합니다.
+     * 
+     * @param {Array} initialLines - 초기 결재선 데이터 (선택적)
+     * @returns {Promise<void>}
+     */
+    async function initialize(initialLines) {
+        try {
+            console.log('ApprovalLineManager 초기화를 시작합니다.');
+            
+            // 초기 결재선 데이터 설정
+            if (initialLines && Array.isArray(initialLines)) {
+                approvalLines = [...initialLines];
+                console.log(`초기 결재선 ${approvalLines.length}개가 로드되었습니다.`);
+            } else {
+                console.log('초기 결재선 데이터가 없습니다.');
+            }
+            
+            // UI 렌더링
+            await renderApprovalLines();
+            
+            // 이벤트 핸들러 설정
+            await setupEventHandlers();
+            
+            console.log('ApprovalLineManager 초기화가 완료되었습니다.');
+        } catch (error) {
+            console.error('결재선 관리자 초기화 중 오류 발생:', error);
+            await AlertUtil.showError('초기화 오류', '결재선 관리자 초기화 중 오류가 발생했습니다.');
         }
-        renderApprovalLines();
-        setupEventHandlers();
     }
     
     /**
-     * 이벤트 핸들러 설정
+     * 이벤트 핸들러 설정 함수
+     * 결재선 관련 버튼 및 입력 필드에 이벤트 리스너를 등록합니다.
+     * 
+     * @returns {Promise<void>}
      */
-    function setupEventHandlers() {
-        // 결재자 추가 버튼
-        $('#btnAddApprover').on('click', addApprover);
-        
-        // 결재자 삭제 버튼 (동적 요소)
-        $(document).on('click', '.btn-remove-line', function() {
-            const index = $(this).closest('tr').data('index');
-            removeApprover(index);
-        });
-        
-        // 결재자 선택 변경 (동적 요소)
-        $(document).on('change', '.approver-select', function() {
-            const $row = $(this).closest('tr');
-            const index = $row.data('index');
-            const approverNo = $(this).val();
-            handleApproverChange(index, approverNo, $(this));
-        });
-        
-        // 결재 타입 변경 (동적 요소)
-        $(document).on('change', 'select[data-field="approvalType"]', function() {
-            const index = $(this).closest('tr').data('index');
-            const value = $(this).val();
-            updateApproverData(index, 'approvalType', value);
-        });
+    async function setupEventHandlers() {
+        try {
+            console.log('결재선 이벤트 핸들러 등록을 시작합니다.');
+            
+            // 결재자 추가 버튼
+            const addApproverBtn = document.getElementById('btnAddApprover');
+            if (addApproverBtn) {
+                addApproverBtn.addEventListener('click', addApprover);
+                console.log('결재자 추가 버튼 이벤트 등록 완료');
+            }
+            
+            // 동적으로 생성되는 요소에 대한 이벤트 처리 (이벤트 위임)
+            const approvalLineTable = document.getElementById('approvalLineTable');
+            if (approvalLineTable) {
+                // 결재자 삭제 버튼 이벤트
+                approvalLineTable.addEventListener('click', async function(event) {
+                    // 삭제 버튼 클릭 확인
+                    if (event.target.closest('.btn-remove-line')) {
+                        const row = event.target.closest('tr');
+                        if (row && row.dataset.index !== undefined) {
+                            const index = parseInt(row.dataset.index);
+                            await removeApprover(index);
+                        }
+                    }
+                });
+                
+                // 결재자 선택 변경 이벤트
+                approvalLineTable.addEventListener('change', async function(event) {
+                    // 결재자 선택 드롭다운 변경 확인
+                    if (event.target.classList.contains('approver-select')) {
+                        const row = event.target.closest('tr');
+                        if (row && row.dataset.index !== undefined) {
+                            const index = parseInt(row.dataset.index);
+                            const approverId = event.target.value;
+                            await handleApproverChange(index, approverId, event.target);
+                        }
+                    }
+                    
+                    // 결재 타입 변경 확인
+                    if (event.target.dataset.field === 'approvalType') {
+                        const row = event.target.closest('tr');
+                        if (row && row.dataset.index !== undefined) {
+                            const index = parseInt(row.dataset.index);
+                            const value = event.target.value;
+                            updateApproverData(index, 'approvalType', value);
+                        }
+                    }
+                });
+            }
+            
+            console.log('결재선 이벤트 핸들러 등록이 완료되었습니다.');
+        } catch (error) {
+            console.error('이벤트 핸들러 등록 중 오류:', error);
+            throw error;
+        }
     }
     
+    //===========================================================================
+    // 결재선 데이터 관리 함수
+    //===========================================================================
+    
     /**
-     * 결재자 추가
+     * 결재자 추가 함수
+     * 결재선에 새로운 결재자를 추가하고 UI를 업데이트합니다.
+     * 
+     * @returns {Promise<void>}
      */
-    function addApprover() {
-        approvalLines.push({
-            approvalNo: null,
-            docId: DocumentFormManager.getDocumentId() || '',
-            approverNo: '',
-            approverName: '',
-            approverPosition: '',
-            approvalOrder: approvalLines.length + 1,
-            approvalType: '결재',
-            approvalStatus: '대기'
-        });
-        renderApprovalLines();
+    async function addApprover() {
+        try {
+            console.log('결재자 추가');
+            
+            // 새 결재자 데이터 생성
+            const newApprover = {
+                approvalNo: null,
+                docId: getDocumentId() || '',
+                approverId: '',
+                approverName: '',
+                approverPosition: '',
+                approvalOrder: approvalLines.length + 1,
+                approvalType: '결재',
+                approvalStatus: '대기'
+            };
+            
+            // 결재선 배열에 추가
+            approvalLines.push(newApprover);
+            console.log(`새 결재자가 추가되었습니다. 현재 결재자 수: ${approvalLines.length}명`);
+            
+            // UI 업데이트
+            await renderApprovalLines();
+        } catch (error) {
+            console.error('결재자 추가 중 오류:', error);
+            await AlertUtil.showError('결재자 추가 오류', '결재자 추가 중 오류가 발생했습니다.');
+        }
     }
     
     /**
-     * 결재자 삭제
-     * @param {number} index - 삭제할 결재선 인덱스
+     * 결재자 삭제 함수
+     * 지정된 인덱스의 결재자를 결재선에서 제거하고 UI를 업데이트합니다.
+     * 삭제 후 나머지 결재자의 순서를 재조정합니다.
+     * 
+     * @param {number} index - 삭제할 결재자의 인덱스
+     * @returns {Promise<void>}
      */
-    function removeApprover(index) {
-        approvalLines.splice(index, 1);
-        
-        // 순서 재조정
-        approvalLines.forEach((line, idx) => {
-            line.approvalOrder = idx + 1;
-        });
-        
-        renderApprovalLines();
+    async function removeApprover(index) {
+        try {
+            console.log(`결재자 삭제: 인덱스 ${index}`);
+            
+            // 유효한 인덱스 확인
+            if (index < 0 || index >= approvalLines.length) {
+                console.warn(`유효하지 않은 인덱스: ${index}`);
+                return;
+            }
+            
+            // 배열에서 제거
+            approvalLines.splice(index, 1);
+            
+            // 순서 재조정
+            approvalLines.forEach((line, idx) => {
+                line.approvalOrder = idx + 1;
+            });
+            
+            console.log(`결재자가 삭제되었습니다. 남은 결재자 수: ${approvalLines.length}명`);
+            
+            // UI 업데이트
+            await renderApprovalLines();
+        } catch (error) {
+            console.error('결재자 삭제 중 오류:', error);
+            await AlertUtil.showError('결재자 삭제 오류', '결재자 삭제 중 오류가 발생했습니다.');
+        }
     }
     
     /**
-     * 결재자 데이터 업데이트
-     * @param {number} index - 업데이트할 결재선 인덱스
+     * 결재자 데이터 업데이트 함수
+     * 지정된 인덱스의 결재자 정보를 업데이트합니다.
+     * 
+     * @param {number} index - 업데이트할 결재자의 인덱스
      * @param {string} key - 업데이트할 속성 키
      * @param {*} value - 업데이트할 값
      */
     function updateApproverData(index, key, value) {
-        if (approvalLines[index]) {
+        if (index >= 0 && index < approvalLines.length) {
             approvalLines[index][key] = value;
+            console.log(`결재자[${index}] ${key} 필드가 '${value}'로 업데이트되었습니다.`);
+        } else {
+            console.warn(`유효하지 않은 인덱스: ${index}`);
         }
     }
     
     /**
-     * 결재자 선택 변경 처리
+     * 결재자 선택 변경 처리 함수
+     * 결재자 선택 드롭다운 변경 시 관련 데이터를 업데이트합니다.
+     * 
      * @param {number} index - 결재선 인덱스
-     * @param {string} approverNo - 결재자 번호
-     * @param {jQuery} $select - 선택 요소
+     * @param {string} approverId - 결재자 ID
+     * @param {HTMLElement} selectElement - 선택 요소
+     * @returns {Promise<void>}
      */
-    function handleApproverChange(index, approverNo, $select) {
-        console.log(`결재자 선택 변경: index=${index}, approverNo=${approverNo}`);
-        
-        const $row = $select.closest('tr');
-        
-        if (!approverNo) {
-            $row.find('input[readonly]').eq(1).val('');
-            updateApproverData(index, 'approverNo', '');
-            updateApproverData(index, 'approverPosition', '');
-            updateApproverData(index, 'approverName', '');
-            return;
+    async function handleApproverChange(index, approverId, selectElement) {
+        try {
+            console.log(`결재자 선택 변경: index=${index}, approverId=${approverId}`);
+            
+            const row = selectElement.closest('tr');
+            
+            // 선택 취소 처리
+            if (!approverId) {
+                // 관련 필드 초기화
+                const positionInput = row.querySelector('input[readonly]');
+                if (positionInput) {
+                    positionInput.value = '';
+                }
+                
+                // 데이터 초기화
+                updateApproverData(index, 'approverId', '');
+                updateApproverData(index, 'approverPosition', '');
+                updateApproverData(index, 'approverName', '');
+                return;
+            }
+            
+            // 선택된 결재자 정보 추출
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const approverName = selectedOption.getAttribute('data-name') || selectedOption.textContent.split('(')[0].trim();
+            const approverPosition = selectedOption.getAttribute('data-position') || '';
+            const approverDept = selectedOption.getAttribute('data-dept') || '';
+            
+            console.log(`선택된 결재자 정보: 이름=${approverName}, 직위=${approverPosition}, 부서=${approverDept}`);
+            
+            // UI 업데이트 - 직위 필드 명시적 업데이트
+            const positionInput = row.querySelector('input[readonly]');
+            if (positionInput) {
+                positionInput.value = approverPosition;
+            }
+            
+            // 데이터 업데이트
+            updateApproverData(index, 'approverId', approverId);
+            updateApproverData(index, 'approverName', approverName);
+            updateApproverData(index, 'approverPosition', approverPosition);
+        } catch (error) {
+            console.error('결재자 변경 처리 중 오류:', error);
+            await AlertUtil.showError('결재자 변경 오류', '결재자 정보 변경 중 오류가 발생했습니다.');
         }
-        
-        // 선택된 결재자 정보 업데이트
-        const $option = $select.find('option:selected');
-        const approverName = $option.attr('data-name') || $option.text().split('(')[0].trim();
-        const approverPosition = $option.attr('data-position') || '';
-        const approverDept = $option.attr('data-dept') || '';
-        
-        console.log(`선택된 결재자 정보: 이름=${approverName}, 직위=${approverPosition}, 부서=${approverDept}`);
-        
-        // UI 업데이트 - 직위 필드 명시적 업데이트
-        $row.find('input[readonly]').eq(1).val(approverPosition);
-        
-        // 데이터 업데이트
-        updateApproverData(index, 'approverNo', approverNo);
-        updateApproverData(index, 'approverName', approverName);
-        updateApproverData(index, 'approverPosition', approverPosition);
     }
     
+    //===========================================================================
+    // UI 렌더링 및 데이터 조회 함수
+    //===========================================================================
+    
     /**
-     * 결재선 렌더링
+     * 결재선 렌더링 함수
+     * 현재 결재선 데이터를 기반으로 UI를 업데이트합니다.
+     * 
+     * @returns {Promise<void>}
      */
-    function renderApprovalLines() {
-        console.log('결재선 렌더링 시작:', approvalLines);
-        const $tbody = $('#approvalLineTable tbody');
-        $tbody.empty();
-        
-        if (approvalLines.length === 0) {
-            $tbody.html(`
-                <tr>
+    async function renderApprovalLines() {
+        try {
+            console.log('결재선 렌더링 시작:', approvalLines);
+            
+            // 결재선 테이블 본문 요소 조회
+            const tbody = document.getElementById('approvalLineTable').querySelector('tbody');
+            if (!tbody) {
+                throw new Error('결재선 테이블 본문 요소를 찾을 수 없습니다.');
+            }
+            
+            // 기존 내용 초기화
+            tbody.innerHTML = '';
+            
+            // 결재선이 비어있는 경우 안내 메시지 표시
+            if (approvalLines.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
                     <td colspan="5" class="text-center text-muted py-3">
                         결재선을 추가해주세요
                     </td>
-                </tr>
-            `);
-            return;
-        }
-        
-        approvalLines.forEach((line, index) => {
-            const row = `
-                <tr data-index="${index}">
+                `;
+                tbody.appendChild(emptyRow);
+                return;
+            }
+            
+            // 각 결재선 항목에 대한 행 생성
+            approvalLines.forEach((line, index) => {
+                const row = document.createElement('tr');
+                row.dataset.index = index;
+                
+                row.innerHTML = `
                     <td>
                         <input type="text" value="${line.approvalOrder}" class="form-control" readonly />
                     </td>
                     <td>
-                        <select data-field="approverNo" class="form-select approver-select" required>
+                        <select data-field="approverId" class="form-select approver-select" required>
                             <option value="">결재자 선택</option>
                             <!-- 결재자 목록은 별도 함수로 채움 -->
                         </select>
@@ -182,33 +349,42 @@ const ApprovalLineManager = (function() {
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
-                </tr>
-            `;
-            $tbody.append(row);
-        });
-        
-        // 결재자 목록 로드
-        loadApproversToDropdowns();
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // 결재자 목록 드롭다운 로드
+            await loadApproversToDropdowns();
+            
+            console.log('결재선 렌더링 완료');
+        } catch (error) {
+            console.error('결재선 렌더링 중 오류:', error);
+            await AlertUtil.showError('렌더링 오류', '결재선 표시 중 오류가 발생했습니다.');
+        }
     }
     
     /**
-     * 결재자 목록을 드롭다운에 로드
+     * 결재자 목록을 드롭다운에 로드하는 함수
+     * API를 호출하여 결재자 목록을 가져와 모든 드롭다운에 적용합니다.
+     * 
+     * @returns {Promise<void>}
      */
     async function loadApproversToDropdowns() {
         try {
-            // 이미 로드된 목록이 있으면 그대로 사용
+            // 결재자 목록 로드
             const approvers = await loadApprovers();
-            if (!approvers) {
-                console.warn('결재자 목록 로드 실패');
+            if (!approvers || approvers.length === 0) {
+                console.warn('결재자 목록이 비어있거나 로드에 실패했습니다.');
                 return;
             }
             
             // 모든 결재자 선택 드롭다운 업데이트
-            $('.approver-select').each(function() {
-                const $select = $(this);
-                const $row = $select.closest('tr');
-                const index = $row.data('index');
-                const currentValue = approvalLines[index]?.approverNo || '';
+            const selectElements = document.querySelectorAll('.approver-select');
+            selectElements.forEach(selectElement => {
+                const row = selectElement.closest('tr');
+                const index = parseInt(row.dataset.index);
+                const currentValue = approvalLines[index]?.approverId || '';
                 
                 // 기본 옵션 유지
                 let optionsHtml = '<option value="">결재자 선택</option>';
@@ -228,17 +404,24 @@ const ApprovalLineManager = (function() {
                 });
                 
                 // HTML 삽입
-                $select.html(optionsHtml);
+                selectElement.innerHTML = optionsHtml;
                 
                 // 선택된 값이 있으면 직위 정보 업데이트
                 if (currentValue) {
-                    const $selectedOption = $select.find('option:selected');
-                    const position = $selectedOption.attr('data-position') || '';
-                    
-                    // 직위 입력 필드 업데이트
-                    $row.find('input[readonly]').eq(1).val(position);
+                    const selectedOption = selectElement.querySelector('option:checked');
+                    if (selectedOption) {
+                        const position = selectedOption.getAttribute('data-position') || '';
+                        
+                        // 직위 입력 필드 업데이트
+                        const positionInput = row.querySelector('input[readonly]');
+                        if (positionInput) {
+                            positionInput.value = position;
+                        }
+                    }
                 }
             });
+            
+            console.log('결재자 드롭다운 로드 완료');
         } catch (error) {
             console.error('결재자 드롭다운 로드 오류:', error);
             await AlertUtil.showWarning('결재자 목록 로드 실패', '결재자 정보를 불러올 수 없습니다.');
@@ -246,7 +429,9 @@ const ApprovalLineManager = (function() {
     }
     
     /**
-     * 결재자 목록 로드
+     * 결재자 목록 로드 함수
+     * API를 호출하여 결재자 목록을 가져옵니다.
+     * 
      * @returns {Promise<Array|null>} 결재자 목록 또는 실패 시 null
      */
     async function loadApprovers() {
@@ -256,22 +441,20 @@ const ApprovalLineManager = (function() {
             // 로딩 표시
             const loading = AlertUtil.showLoading('결재자 목록 로드 중...');
             
-            // API 호출
-            const response = await fetch('/api/eapproval/approvers');
-            const responseData = await response.json();
+            // API 호출 - ApiUtil 사용으로 통일
+            const response = await ApiUtil.get(API_URLS.APPROVERS);
             
             // 로딩 종료
             loading.close();
             
-            // 최상위 속성은 소문자로 확인
-            if (!responseData.success || !responseData.data) {
-                console.warn('결재자 목록 조회 실패:', responseData.message);
-                throw new Error(responseData.message || '결재자 목록을 불러올 수 없습니다.');
+            // 응답 확인
+            if (!response.success || !response.data) {
+                throw new Error(response.message || '결재자 목록을 불러올 수 없습니다.');
             }
             
-            // 내부 데이터 객체는 대문자 키로 접근
-            const approvers = responseData.data;
-            console.log('결재자 목록:', approvers);
+            // 결재자 목록 추출
+            const approvers = response.data;
+            console.log(`결재자 목록 로드 완료: ${approvers.length}명`);
             
             return approvers;
         } catch (error) {
@@ -281,42 +464,90 @@ const ApprovalLineManager = (function() {
         }
     }
     
+    //===========================================================================
+    // 유틸리티 및 검증 함수
+    //===========================================================================
+    
     /**
-     * 결재선 유효성 검사
-     * @returns {boolean} 유효성 검사 결과
+     * 결재선 유효성 검사 함수
+     * 현재 결재선이 유효한지 검사합니다.
+     * 
+     * @returns {Promise<boolean>} 유효성 검사 결과
      */
-    function validateApprovalLines() {
-        if (approvalLines.length === 0) {
-            AlertUtil.showWarning('유효성 검사', '결재선을 추가해주세요.');
-            return false;
-        }
-        
-        // 결재선 유효성 검사
-        for (let i = 0; i < approvalLines.length; i++) {
-            if (!approvalLines[i].approverNo) {
-                AlertUtil.showWarning('유효성 검사', `${i+1}번째 결재자를 선택해주세요.`);
+    async function validateApprovalLines() {
+        try {
+            // 결재선이 비어있는 경우
+            if (approvalLines.length === 0) {
+                await AlertUtil.showWarning('유효성 검사', '결재선을 추가해주세요.');
                 return false;
             }
+            
+            // 결재선 항목별 유효성 검사
+            for (let i = 0; i < approvalLines.length; i++) {
+                // 결재자 미선택 검사
+                if (!approvalLines[i].approverId) {
+                    await AlertUtil.showWarning('유효성 검사', `${i+1}번째 결재자를 선택해주세요.`);
+                    return false;
+                }
+                
+                // 필요시 추가 검증 로직 구현
+                // 예: 동일 결재자 중복 검사, 결재 유형 검사 등
+            }
+            
+            console.log('결재선 유효성 검사 통과');
+            return true;
+        } catch (error) {
+            console.error('결재선 유효성 검사 중 오류:', error);
+            await AlertUtil.showError('검증 오류', '결재선 검증 중 오류가 발생했습니다.');
+            return false;
         }
-        
-        return true;
     }
     
     /**
-     * 현재 결재선 데이터 반환
+     * 문서 ID 가져오기
+     * DocumentFormManager에서 현재 문서 ID를 가져옵니다.
+     * 
+     * @returns {string} 문서 ID
+     */
+    function getDocumentId() {
+        // DocumentFormManager 의존성 확인
+        if (window.DocumentFormManager && typeof DocumentFormManager.getDocumentId === 'function') {
+            return DocumentFormManager.getDocumentId();
+        }
+        // 대체 방법으로 문서 ID 확인
+        const docIdElement = document.getElementById('docId');
+        return docIdElement ? docIdElement.value : '';
+    }
+    
+    /**
+     * 현재 결재선 데이터 반환 함수
+     * 외부 모듈에서 결재선 데이터에 접근할 수 있도록 합니다.
+     * 
      * @returns {Array} 결재선 데이터 배열
      */
     function getApprovalLines() {
         return approvalLines;
     }
     
-    // 공개 API
+    //===========================================================================
+    // 공개 API - 외부에서 접근 가능한 메서드
+    //===========================================================================
+    
     return {
-        initialize,
-        getApprovalLines,
-        validateApprovalLines,
-        renderApprovalLines,
-        addApprover,
-        removeApprover
+        // 초기화 및 기본 기능
+        initialize,             // 모듈 초기화
+        
+        // 결재선 데이터 관리
+        addApprover,            // 결재자 추가
+        removeApprover,         // 결재자 삭제
+        
+        // UI 렌더링 및 조회
+        renderApprovalLines,    // 결재선 UI 업데이트
+        
+        // 유틸리티 및 검증
+        validateApprovalLines,  // 결재선 유효성 검사
+        getApprovalLines        // 결재선 데이터 조회
     };
 })();
+
+// DOM 로드 시 문서 폼에서 초기화하므로 여기서는 자동 초기화하지 않음

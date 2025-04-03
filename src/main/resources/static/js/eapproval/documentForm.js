@@ -1,35 +1,47 @@
 /**
- * documentForm.js - 통합 문서 폼 스크립트
+ * DocumentForm - 통합 문서 폼 스크립트
  * 
  * 기안서 작성 페이지의 모든 모듈을 통합하고 초기화하는 스크립트입니다.
+ * - 각 기능별 모듈 초기화 및 연동
+ * - 전체 페이지 초기화 관리
+ * - 오류 처리 및 로깅
  * 
- * @version 1.0.0
+ * @version 1.1.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
  */
 
-// 페이지 로드 시 초기화
-$(async function() {
-    console.log('기안서 작성 페이지 초기화 시작');
-    
+// 페이지 로드 시 초기화 - DOM 로드 완료 이벤트에 등록
+document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // 문서 폼 관리자 초기화
-        DocumentFormManager.initialize();
+        console.log('기안서 작성 페이지 초기화를 시작합니다.');
         
-        // 양식 내용 로더 초기화
-        FormContentLoader.initialize();
+        // 각 모듈 순차적 초기화
+        // 1. 문서 폼 관리자 초기화
+        await DocumentFormManager.initialize();
         
-        // 에디터 초기화
-        FormContentLoader.initializeEditor();
+        // 2. 양식 내용 로더 초기화
+        await FormContentLoader.initialize();
         
-        // 결재선 관리자 초기화
-        const initialApprovalLines = window.documentData?.approvalLines || [];
-        ApprovalLineManager.initialize(initialApprovalLines);
+        // 3. 에디터 초기화
+        await FormContentLoader.initializeEditor();
         
-        // 첨부파일 관리자 초기화
-        AttachmentManager.initialize();
+        // 4. 결재선 관리자 초기화 - 서버 데이터에서 초기 결재선 확인
+        const initialApprovalLines = window.documentData?.APPROVAL_LINES || [];
+        await ApprovalLineManager.initialize(initialApprovalLines);
         
-        console.log('기안서 작성 페이지 초기화 완료');
+        // 5. 첨부파일 관리자 초기화
+        await AttachmentManager.initialize();
+        
+        console.log('기안서 작성 페이지 초기화가 완료되었습니다.');
     } catch (error) {
-        console.error('페이지 초기화 오류:', error);
-        await AlertUtil.showError('초기화 오류', '페이지를 불러오는 중 오류가 발생했습니다.');
+        console.error('페이지 초기화 중 오류 발생:', error);
+        
+        // AlertUtil 사용 가능 여부 확인
+        if (window.AlertUtil) {
+            await AlertUtil.showError('초기화 오류', '페이지를 불러오는 중 오류가 발생했습니다.');
+        } else {
+            alert('페이지를 불러오는 중 오류가 발생했습니다.');
+        }
     }
 });
