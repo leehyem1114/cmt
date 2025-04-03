@@ -89,12 +89,18 @@
             d.DOC_ID, 
             d.DOC_NUMBER, 
             d.FORM_ID, 
-            d.TITLE, 
+            d.TITLE,
+            d.DRAFTER_ID,
+            e.EMP_NAME as DRAFTER_NAME,
+            d.DRAFT_DEPT, 
+		    c.CMN_DETAIL_NAME as DRAFT_DEPT_NAME,
             d.DRAFT_DATE, 
             d.DOC_STATUS, 
             d.IS_TEMP_SAVED,
             d.APPROVAL_DATE 
         FROM DOCUMENTS d 
+        LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
+        LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CMN_DETAIL_CODE
         WHERE d.DRAFTER_ID = #{drafterId, jdbcType=VARCHAR} 
         ORDER BY d.DRAFT_DATE DESC
     </select>
@@ -177,7 +183,7 @@
         WHERE EMP_ID = #{empId, jdbcType=VARCHAR}
     </select>
 
-    <!-- Result Map -->
+<!--     Result Map -->
     <resultMap id="documentResultMap" type="com.example.cmtProject.dto.erp.eapproval.DocumentDTO">
         <id property="docId" column="DOC_ID"/>
         <result property="docNumber" column="DOC_NUMBER"/>
