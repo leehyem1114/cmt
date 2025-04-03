@@ -31,7 +31,7 @@ public class ApprovalProcessService {
      * 결재 승인 처리
      */
     @Transactional
-    public void approve(String docId, Integer approverId, String comment) {
+    public void approve(String docId, String approverId, String comment) {
         log.debug("결재 승인 처리: 문서={}, 결재자={}", docId, approverId);
         
         // 결재자의 결재라인 조회
@@ -59,7 +59,7 @@ public class ApprovalProcessService {
      * 결재 반려 처리
      */
     @Transactional
-    public void reject(String docId, Integer approverId, String comment) {
+    public void reject(String docId, String approverId, String comment) {
         log.debug("결재 반려 처리: 문서={}, 결재자={}", docId, approverId);
         
         // 결재자의 결재라인 조회
@@ -110,7 +110,7 @@ public class ApprovalProcessService {
      * 결재 대기 여부 확인
      * 특정 결재자가 해당 문서의 현재 결재자인지 확인
      */
-    public boolean isCurrentApprover(String docId, Integer approverId) {
+    public boolean isCurrentApprover(String docId, String approverId) {
         ApprovalLineDTO approvalLine = approvalLineMapper.selectApprovalLineByDocIdAndApproverId(docId, approverId);
         return approvalLine != null && ApprovalStatus.PENDING.equals(approvalLine.getApprovalStatus());
     }

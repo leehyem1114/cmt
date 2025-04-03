@@ -241,7 +241,7 @@ public class EapprovalRestController {
     @PostMapping(PathConstants.API_DOCUMENT + "/{docId}/process")
     public ApiResponse<Map<String, Object>> processApproval(
             @PathVariable String docId,
-            @RequestParam Integer approverId,
+            @RequestParam String approverId, // Integer -> String으로 변경
             @RequestParam String decision,
             @RequestParam(required = false) String comment) {
         
@@ -269,7 +269,7 @@ public class EapprovalRestController {
             return ApiResponse.error("결재 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-
+    
     /**
      * 기안 문서 목록 조회 API
      */

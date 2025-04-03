@@ -53,14 +53,15 @@ const FormContentLoader = (function() {
             // 로딩 표시 제거
             $contentCard.find('.loading-overlay').remove();
             
+            // 최상위 속성은 소문자로 확인
             if (!responseData.success || !responseData.data) {
                 throw new Error(responseData.message || '양식을 불러올 수 없습니다.');
             }
             
-            // 양식 내용 추출
-			const formData = responseData.data;
-			const formContent = formData.FORM_CONTENT || '';
-			console.log('추출된 양식 내용:', formContent);
+            // 양식 내용 추출 - 내부 데이터는 대문자 키로 접근
+            const formData = responseData.data;
+            const formContent = formData.FORM_CONTENT || '';
+            console.log('추출된 양식 내용:', formContent);
             
             if (formContent) {
                 // Summernote 에디터에 내용 설정

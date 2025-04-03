@@ -263,12 +263,14 @@ const ApprovalLineManager = (function() {
             // 로딩 종료
             loading.close();
             
-            if (!responseData.SUCCESS || !responseData.DATA) {
+            // 최상위 속성은 소문자로 확인
+            if (!responseData.success || !responseData.data) {
                 console.warn('결재자 목록 조회 실패:', responseData.message);
                 throw new Error(responseData.message || '결재자 목록을 불러올 수 없습니다.');
             }
             
-            const approvers = responseData.DATA;
+            // 내부 데이터 객체는 대문자 키로 접근
+            const approvers = responseData.data;
             console.log('결재자 목록:', approvers);
             
             return approvers;

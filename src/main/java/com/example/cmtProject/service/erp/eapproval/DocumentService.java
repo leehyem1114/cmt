@@ -114,18 +114,13 @@ public class DocumentService {
      */
     public List<DocumentDTO> getDrafterDocumentsByEmpId(String empId) {
         log.debug("기안자별 문서 목록 조회: {}", empId);
-        
-        // empId를 사용하여 사원 번호(empNo) 조회
-        Integer drafterId = getEmployeeNoByEmpId(empId);
-        
-        // 사원 번호로 문서 목록 조회
-        return documentMapper.selectDocumentsByDrafterId(drafterId);
+        return documentMapper.selectDocumentsByDrafterId(empId);
     }
     
     /**
      * 기안자 및 상태별 문서 목록 조회
      */
-    public List<DocumentDTO> getDocumentsByDrafterAndStatus(Integer drafterId, String status) {
+    public List<DocumentDTO> getDocumentsByDrafterAndStatus(String drafterId, String status) {
         log.debug("기안자 및 상태별 문서 조회: 기안자={}, 상태={}", drafterId, status);
         return documentMapper.selectDocumentsByDrafterAndStatus(drafterId, status);
     }
@@ -135,12 +130,7 @@ public class DocumentService {
      */
     public List<DocumentDTO> getPendingDocumentsByEmpId(String empId) {
         log.debug("결재 대기 문서 목록 조회: {}", empId);
-        
-        // empId를 사용하여 사원 번호(empNo) 조회
-        Integer approverId = getEmployeeNoByEmpId(empId);
-        
-        // 사원 번호로 대기 문서 목록 조회
-        return documentMapper.selectPendingDocumentsByApproverId(approverId);
+        return documentMapper.selectPendingDocumentsByApproverId(empId);
     }
 
     /**
@@ -192,18 +182,22 @@ public class DocumentService {
     }
     
     /**
-     * 직원 ID로 직원 번호 조회 (Helper 메서드)
+     * 직원 ID의 부서 코드 조회
      */
-    public Integer getEmployeeNoByEmpId(String empId) {
+    public String getEmployeeDeptCodeByEmpId(String empId) {
+        log.debug("부서 코드 조회: 직원ID={}", empId);
         try {
-            Integer empNo = documentMapper.selectEmployeeNoByEmpId(empId);
-            if (empNo == null) {
-                throw new RuntimeException("직원 정보를 찾을 수 없습니다: " + empId);
+            String deptCode = documentMapper.selectEmployeeDeptCodeByEmpId(empId);
+            
+            if (deptCode == null || deptCode.isEmpty()) {
+                log.warn("직원({})의 부서 정보를 찾을 수 없습니다. 기본값 사용", empId);
+                return "DEPT001";
             }
-            return empNo;
+            
+            return deptCode;
         } catch (Exception e) {
-            log.error("직원 번호 조회 중 오류: {}", empId, e);
-            throw new RuntimeException("직원 정보를 조회할 수 없습니다.", e);
+            log.error("부서 코드 조회 중 오류 발생: {}", e.getMessage(), e);
+            return "DEPT001"; // 오류 시 기본값 반환
         }
     }
 }
