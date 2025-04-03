@@ -203,7 +203,7 @@
 		
 		let gridData = /*[[${soMainList}]]*/ [];
 	    
-	    const grid = new tui.Grid({
+	    let grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
 			//data : /*[[${soMainList}]]*/ [],
 			data: gridData,
@@ -216,7 +216,7 @@
 	        columns: [
 				{
 					header: '수주번호',
-					name: 'soNo',
+					name: 'SO_NO',
 					sortable: true, 
 					filter: 'text',
 					width: 100,
@@ -361,6 +361,13 @@
 			
 		});
 		
+		grid.on('onGridUpdated', (ev) => {
+			// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
+		    grid.refreshLayout();
+			
+		
+		});
+		
 		 grid.on('afterChange', (ev) => {
 			 
 			let evValue = ev.changes[0];
@@ -436,6 +443,8 @@
 		           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
 				   data: {pdtCode: pdtValue}, //GET방식 일 때 사용
 		           success: function(response) {
+		        	  	console.log(response.CLT_CODE);
+		        	  	console.log(response.SO_NO);
 						$("#pdtName").val(response);
 		           },
 		           error: function(error) {
@@ -475,10 +484,7 @@
 					endDate: $("#endDate").val(),
 				}
 				
-				console.log(data.endDate);
-				
 				//서버로 검색할 데이터 전송
-				
 				$.ajax({
 					url: "/sales/searchForm",
 					type: "GET",
@@ -486,6 +492,17 @@
 					//data: JSON.stringify(data),
 					data: data,
 					success: function(response){
+						alert("df");
+						
+						console.log(response);
+						console.log(/*[[${response}]]*/ [])
+						//grid.resetData(/*[[${response}]]*/ []);
+						grid.resetData(response);
+						//callGrid();
+						
+						
+
+						// 그리드 업데이트 이벤트 (그리드가 업데이트 됐을 때)
 						
 					},
 					error: function(error){
