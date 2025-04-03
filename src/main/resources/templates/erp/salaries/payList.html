@@ -68,7 +68,7 @@
 			</div>
 		</div>
 
-		<form action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
+		<form th:action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
 			<div class="container">
 				<label class="deptLabel">부서</label>
 				<select class="form-select" id="dept" name="dept">
@@ -106,9 +106,14 @@
 	            },
 	            {
 	                header: '사원번호',
-	                name: 'empNo',
+	                name: 'empId',    
 	                sortable: true,
 	                align: "center"
+	            },
+	            {
+	                header: '사원NO',
+	                name: 'empNo',
+	                hidden: true      //데이터는 넘어가는데 숨겨둠
 	            },
 	            {
 	                header: '사원명',
@@ -210,6 +215,22 @@
 	    grid.on('uncheck', (checkItem) => {
 	    	console.log("체크 해제 확인");
 	    });
+	    
+	    grid.on('click', function(ev) {
+	        const rowKey = ev.rowKey;
+	        const columnName = ev.columnName; // 체크박스 클릭 방지용
+
+	        // 체크박스 클릭 막기
+	        if (columnName === '_checked') return;
+
+	        const rowData = grid.getRow(rowKey);
+
+	        if (rowData) {
+	            window.open('/salaries/insertPayForm/' + rowData.empId, '_blank', 'width=800, height=600');
+	            console.log("넘긴 데이터:", rowData.empId);
+	        }
+	    });
+	    
 
 	    </script>
 		<!-- 그리드 끝 -->
@@ -316,7 +337,7 @@
 									th:text="${code.cmnDetailName}"></option>
 							</select>
 						<div class="input-group mb-2">
-							<input type="text" id="payBasic" class="form-control" th:field="*{payBasic}">
+							<input type="text" id="payBasic" class="form-control" >
 						</div>
 							<button type="submit" class="btn btn-secondary ms-2">조회</button>
 						</div>
@@ -325,7 +346,7 @@
 						<!-- 그리드 끝 -->
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-							<button type="button" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="pay()">이체</button>
 						</div>
 					</div>
 				</div>
@@ -387,11 +408,37 @@
 				grid2.on('uncheck', (checkItem) => {
 					console.log("체크 해제 확인");
 				});
+				
+				
+				
+				 grid2.on('click', function(ev) {
+		            const rowKey = ev.rowKey;
+		            const rowData = grid2.getRow(rowKey);
+		            const columnName = ev.columnName; 
+		           
+		        	 // 체크박스 클릭은 무시
+		            if(columnName === '_checked') return;
+		         
+		            if (rowData) {
+		                // 클릭한 사원번호를 바로 새 창으로 넘김
+		                window.open('/salaries/insertPayForm/' + rowData.empId, '_blank', 'width=800, height=600');
+		                console.log("넘긴데이터"+rowData.empId);
+		            }
+		            
+		        });
+				
+				
+				
 			} else {
 				// 이미 Grid 있으면 데이터 리셋
 				grid2.resetData(/*[[${empList}]]*/ []);
 			}	
 		});
+      	  
+		
+      	  
+      	  
+      	  
 		</script>
 </div>	
 

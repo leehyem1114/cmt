@@ -266,30 +266,54 @@ const DocumentFormManager = (function() {
             
             // 필수 필드 검사
             const formId = document.getElementById('formId').value;
+            console.log('양식 ID 확인:', formId);
             if (!formId) {
+                console.error('유효성 검사 실패: 양식 ID가 없음');
                 await AlertUtil.showWarning('유효성 검사', '문서 양식을 선택해주세요.');
                 document.getElementById('formId').focus();
                 return false;
             }
             
             const title = document.getElementById('title').value.trim();
+            console.log('제목 확인:', title);
             if (!title) {
+                console.error('유효성 검사 실패: 제목이 없음');
                 await AlertUtil.showWarning('유효성 검사', '제목을 입력해주세요.');
                 document.getElementById('title').focus();
                 return false;
             }
             
-            // 내용 검사 - FormContentLoader를 통해 에디터 내용 확인
+            // 내용 검사 - 다양한 방법으로 시도
+            const editorElement = document.getElementById('contentEditor');
             let content = '';
-            if (window.FormContentLoader && typeof FormContentLoader.getEditorContent === 'function') {
-                content = FormContentLoader.getEditorContent();
+            
+            if (editorElement) {
+                // 방법 1: FormContentLoader 사용 시도
+                if (window.FormContentLoader && typeof FormContentLoader.getEditorContent === 'function') {
+                    content = FormContentLoader.getEditorContent();
+                    console.log('FormContentLoader에서 에디터 내용 길이:', content.length);
+                } 
+                // 방법 2: Summernote API 직접 사용
+                else if (window.$ && typeof $(editorElement).summernote === 'function') {
+                    content = $(editorElement).summernote('code');
+                    console.log('Summernote API에서 에디터 내용 길이:', content.length);
+                } 
+                // 방법 3: DOM에서 직접 가져오기
+                else {
+                    content = editorElement.innerHTML || '';
+                    console.log('DOM에서 에디터 내용 길이:', content.length);
+                }
+            } else {
+                console.warn('contentEditor 요소를 찾을 수 없습니다.');
             }
             
-            if (!content || content === '<p><br></p>') {
+            // 내용이 비어있는지 검사
+            if (!content || content === '<p><br></p>' || content === '<p></p>' || content.trim() === '') {
+                console.error('유효성 검사 실패: 내용이 없음');
                 await AlertUtil.showWarning('유효성 검사', '내용을 입력해주세요.');
+                
                 // 에디터에 포커스 설정 (가능한 경우)
-                const editorElement = document.getElementById('contentEditor');
-                if (editorElement && typeof $(editorElement).summernote === 'function') {
+                if (editorElement && window.$ && typeof $(editorElement).summernote === 'function') {
                     $(editorElement).summernote('focus');
                 }
                 return false;
@@ -297,19 +321,21 @@ const DocumentFormManager = (function() {
             
             // 결재선 유효성 검사 (ApprovalLineManager 의존)
             if (window.ApprovalLineManager && typeof ApprovalLineManager.validateApprovalLines === 'function') {
+                console.log('결재선 유효성 검사 시작');
                 const approvalLinesValid = await ApprovalLineManager.validateApprovalLines();
                 if (!approvalLinesValid) {
+                    console.error('유효성 검사 실패: 결재선 유효성 검사 실패');
                     return false;
                 }
             } else {
                 console.warn('ApprovalLineManager가 없어 결재선 검증을 건너뜁니다.');
             }
             
-            console.log('유효성 검사 통과');
+            console.log('문서 폼 유효성 검사 통과');
             return true;
         } catch (error) {
             console.error('유효성 검사 중 오류:', error);
-            await AlertUtil.showError('검증 오류', '폼 유효성 검사 중 오류가 발생했습니다.');
+            await AlertUtil.showError('검증 오류', '폼 유효성 검사 중 오류가 발생했습니다: ' + error.message);
             return false;
         }
     }
@@ -323,12 +349,16 @@ const DocumentFormManager = (function() {
      */
     async function saveDocument(isTempSave) {
         try {
+            console.log(`문서 ${isTempSave ? '임시저장' : '결재요청'} 프로세스 시작`);
+            
             // 유효성 검사
+            console.log('유효성 검사 시작');
             if (!await validateForm()) {
+                console.error('유효성 검사 실패로 저장 중단');
                 return false;
             }
             
-            console.log(`문서 ${isTempSave ? '임시저장' : '결재요청'} 시작`);
+            console.log(`문서 ${isTempSave ? '임시저장' : '결재요청'} 데이터 준비 시작`);
             
             // 로딩 표시
             const loading = AlertUtil.showLoading(
@@ -336,86 +366,181 @@ const DocumentFormManager = (function() {
             );
             
             try {
-                // 폼 데이터 구성
-                const formData = new FormData();
+                // 폼 데이터 수집
+                const docId = documentData.docId || '';
+                const docNumber = documentData.docNumber || '';
+                const formId = document.getElementById('formId').value;
+                const title = document.getElementById('title').value.trim();
                 
-                // 기본 문서 정보
-                formData.append('docId', documentData.docId || '');
-                formData.append('docNumber', documentData.docNumber || '');
-                formData.append('formId', document.getElementById('formId').value);
-                formData.append('title', document.getElementById('title').value.trim());
-                
-                // 문서 내용 (에디터)
+                // 문서 내용 (에디터) - 다양한 방법으로 시도
+                const editorElement = document.getElementById('contentEditor');
                 let content = '';
-                if (window.FormContentLoader && typeof FormContentLoader.getEditorContent === 'function') {
-                    content = FormContentLoader.getEditorContent();
-                }
-                formData.append('content', content);
                 
-                // 저장 유형
-                formData.append('isTempSave', isTempSave);
+                if (editorElement) {
+                    // 방법 1: FormContentLoader 사용 시도
+                    if (window.FormContentLoader && typeof FormContentLoader.getEditorContent === 'function') {
+                        content = FormContentLoader.getEditorContent();
+                        console.log('FormContentLoader에서 에디터 내용 가져옴 - 길이:', content.length);
+                    } 
+                    // 방법 2: Summernote API 직접 사용
+                    else if (window.$ && typeof $(editorElement).summernote === 'function') {
+                        content = $(editorElement).summernote('code');
+                        console.log('Summernote API에서 에디터 내용 가져옴 - 길이:', content.length);
+                    } 
+                    // 방법 3: DOM에서 직접 가져오기
+                    else {
+                        content = editorElement.innerHTML || '';
+                        console.log('DOM에서 에디터 내용 가져옴 - 길이:', content.length);
+                    }
+                } else {
+                    console.warn('contentEditor 요소를 찾을 수 없습니다.');
+                }
                 
                 // 결재선 데이터
                 let approvalLines = [];
                 if (window.ApprovalLineManager && typeof ApprovalLineManager.getApprovalLines === 'function') {
                     approvalLines = ApprovalLineManager.getApprovalLines();
-                }
-                formData.append('approvalLinesJson', JSON.stringify(approvalLines));
-                
-                // 첨부파일 추가
-                if (window.AttachmentManager && typeof AttachmentManager.appendFilesToFormData === 'function') {
-                    AttachmentManager.appendFilesToFormData(formData);
+                    console.log('결재선 데이터:', approvalLines);
+                } else {
+                    console.warn('ApprovalLineManager를 찾을 수 없거나 getApprovalLines 함수가 없습니다.');
                 }
                 
-                // API 요청
-                const response = await ApiUtil.postWithLoading(
-                    API_URLS.SAVE,
-                    formData,
-                    isTempSave ? '임시저장 중...' : '결재요청 중...'
-                );
+                const approvalLinesJson = JSON.stringify(approvalLines);
+
+                // 수정된 FormData 생성 부분 - URLSearchParams로 대체
+                const params = new URLSearchParams();
+                params.append('docId', docId);
+                params.append('docNumber', docNumber);
+                params.append('formId', formId);
+                params.append('title', title);
+                params.append('content', content);
+                params.append('isTempSave', isTempSave);
+                params.append('approvalLinesJson', approvalLinesJson);
                 
-                // 응답 처리
-                if (!response.success) {
-                    throw new Error(response.message || '문서 저장 중 오류가 발생했습니다.');
-                }
-                
-                // 로딩 종료
-                loading.close();
-                
-                // 성공 알림
-                await AlertUtil.showSuccess(
-                    '저장 완료', 
-                    isTempSave ? '문서가 임시저장되었습니다.' : '결재요청이 완료되었습니다.'
-                );
-                
-                // 저장 완료 후 페이지 이동
-                setTimeout(() => {
-                    if (isTempSave) {
-                        // 임시저장 완료 시 문서함으로 이동
-                        location.href = '/eapproval/documents';
-                    } else {
-                        // 결재요청 완료 시 상세 보기 페이지로 이동
-                        const docId = response.data?.DOC_ID || documentData.docId;
-                        if (docId) {
-                            location.href = `/eapproval/document/view/${docId}`;
+                // 첨부파일은 FormData를 사용해야 함
+                let formData = null;
+                if (window.AttachmentManager && typeof AttachmentManager.getFiles === 'function') {
+                    const files = AttachmentManager.getFiles();
+                    if (files && files.length > 0) {
+                        formData = new FormData();
+                        // 기본 필드들 복사
+                        formData.append('docId', docId);
+                        formData.append('docNumber', docNumber);
+                        formData.append('formId', formId);
+                        formData.append('title', title);
+                        formData.append('content', content);
+                        formData.append('isTempSave', isTempSave);
+                        formData.append('approvalLinesJson', approvalLinesJson);
+                        
+                        // 파일 추가
+                        if (window.AttachmentManager && typeof AttachmentManager.appendFilesToFormData === 'function') {
+                            AttachmentManager.appendFilesToFormData(formData);
                         } else {
-                            location.href = '/eapproval/documents';
+                            console.warn('AttachmentManager를 찾을 수 없거나 appendFilesToFormData 함수가 없습니다.');
+                            files.forEach((file, i) => {
+                                formData.append(`files[${i}]`, file);
+                            });
                         }
                     }
-                }, 500);
+                }
+                
+                // FormData 또는 URLSearchParams 중 선택
+                const requestData = formData || params;
+                const contentType = formData ? undefined : 'application/x-www-form-urlencoded';
+                
+                // FormData 주요 필드 로깅
+                console.log('API 요청 데이터 준비 완료:');
+                console.log('- docId:', docId);
+                console.log('- formId:', formId);
+                console.log('- title:', title);
+                console.log('- content 길이:', content.length);
+                console.log('- approvalLinesJson:', approvalLinesJson);
+                console.log('- 요청 데이터 타입:', formData ? 'FormData' : 'URLSearchParams');
+                
+                // API 요청 (직접 jQuery Ajax 사용)
+                console.log('API 요청 시작:', API_URLS.SAVE);
+                
+                const ajaxOptions = {
+                    url: API_URLS.SAVE,
+                    type: 'POST',
+                    data: requestData,
+                    processData: false, // FormData 처리 방지
+                    contentType: contentType,
+                    success: function(response) {
+                        handleSuccess(response);
+                    },
+                    error: function(xhr, status, error) {
+                        handleError(xhr, error);
+                    }
+                };
+                
+                $.ajax(ajaxOptions);
+                
+                function handleSuccess(response) {
+                    // 로딩 종료
+                    loading.close();
+                    
+                    // 성공 알림
+                    AlertUtil.showSuccess(
+                        '저장 완료', 
+                        isTempSave ? '문서가 임시저장되었습니다.' : '결재요청이 완료되었습니다.'
+                    );
+                    
+                    // 저장 완료 후 페이지 이동
+                    setTimeout(() => {
+                        if (isTempSave) {
+                            // 임시저장 완료 시 문서함으로 이동
+                            location.href = '/eapproval/documents';
+                        } else {
+                            // 결재요청 완료 시 상세 보기 페이지로 이동
+                            const docId = response.data?.DOC_ID || documentData.docId;
+                            if (docId) {
+                                location.href = `/eapproval/document/view/${docId}`;
+                            } else {
+                                location.href = '/eapproval/documents';
+                            }
+                        }
+                    }, 500);
+                }
+                
+                function handleError(xhr, error) {
+                    // 로딩 종료
+                    loading.close();
+                    
+                    console.error('문서 저장 API 오류:', xhr);
+                    
+                    // 오류 응답 파싱 시도
+                    let errorMessage = '문서 저장 중 오류가 발생했습니다.';
+                    try {
+                        if (xhr.responseJSON) {
+                            errorMessage = xhr.responseJSON.DETAIL || xhr.responseJSON.message || errorMessage;
+                        } else if (xhr.responseText) {
+                            const errorObj = JSON.parse(xhr.responseText);
+                            errorMessage = errorObj.DETAIL || errorObj.message || errorMessage;
+                        }
+                    } catch (e) {
+                        console.error('오류 응답 파싱 실패:', e);
+                    }
+                    
+                    console.error('오류 세부정보:', errorMessage);
+                    AlertUtil.showError('저장 실패', errorMessage);
+                }
                 
                 return true;
+                
             } catch (error) {
                 // 로딩 종료
                 loading.close();
                 
-                console.error('문서 저장 오류:', error);
+                console.error('문서 저장 API 오류:', error);
+                console.error('오류 세부정보:', error.message);
                 await AlertUtil.showError('저장 실패', error.message || '문서 저장 중 오류가 발생했습니다.');
                 return false;
             }
         } catch (error) {
             console.error('문서 저장 처리 중 오류:', error);
-            await AlertUtil.showError('저장 오류', '문서 저장 중 오류가 발생했습니다.');
+            console.error('오류 세부정보:', error.message);
+            await AlertUtil.showError('저장 오류', '문서 저장 중 오류가 발생했습니다: ' + error.message);
             return false;
         }
     }

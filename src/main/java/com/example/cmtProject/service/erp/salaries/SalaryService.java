@@ -47,5 +47,9 @@ public class SalaryService {
 				.map(payment -> payment.toDto())
 				.collect(Collectors.toList());
 	}
+	//개인 지급내역
+	public PaymentDTO getEmpPayment(String empId) {
+		return salMapper.selectEmpPayment(empId);
+	}
 
 }
