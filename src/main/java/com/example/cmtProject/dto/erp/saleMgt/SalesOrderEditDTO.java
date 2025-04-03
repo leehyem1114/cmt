@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SalesOrderEditDTO {
 	
-	private String soNo;
+	private Long soNo;
 	private String columnName;
 	private String value;
 }

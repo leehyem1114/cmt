@@ -211,6 +211,7 @@ public class saleController {
 	//수주 수정 실행
 	@ResponseBody
 	@GetMapping("/soeditexe")
+	//SalesOrderEditDTO의 soNo가 Long타입이라도 클라이어트로부터 받을 때 Stirng->Long으로 자동 변환해준다
 	public String soEditExe(@ModelAttribute SalesOrderEditDTO soEditDto) throws JsonMappingException, JsonProcessingException {
 		 
 		/* 
@@ -236,21 +237,17 @@ public class saleController {
 		if(soEditDto.getColumnName().equals("empId")) {
 			
 			//empId에 해당하는 empNo를 가져오기 - JPA이용
-			Long empno = salesOrderRepository.findEmpNoByEmpId(soEditDto.getValue());
+			Long empNo = salesOrderRepository.findEmpNoByEmpId(soEditDto.getValue());
 			
-
+			System.out.println("empNo:" + empNo+" ,soNO:" + soEditDto.getSoNo());
+			//sono를 통해 empno를 업데이트한다
+			
+			salesOrderRepository.updateEmpNo(empNo, soEditDto.getSoNo());
 			
 		}else {
 			int updateResult = salesOrderService.soMainUpdate(soEditDto);
+			System.out.println("updateResult:" + updateResult);
 		}
-		
-
-		/*
-		 * if() 
-		 */
-		
-		
-		
 
 		return "success";
 	}
