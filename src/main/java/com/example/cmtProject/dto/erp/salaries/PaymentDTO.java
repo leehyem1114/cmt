@@ -15,7 +15,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-public class PaymentDTO {
+public class PaymentDTO {  
 
     private Long payNo;              // 지급 번호
     private Long empNo;              // 사원 NO
