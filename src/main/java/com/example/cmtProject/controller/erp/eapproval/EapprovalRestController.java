@@ -61,6 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EapprovalRestController {
 
+    private final DocumentMapper documentMapper; // DocumentMapper 추가
     private final DocumentService documentService;
     private final DocFormService docFormService;
     private final ApprovalProcessService approvalProcessService;
@@ -143,8 +144,7 @@ public class EapprovalRestController {
             documentDTO.setDrafterId(currentUserId);
             
             // 사용자 및 부서 정보 설정
-            Integer drafterId = documentService.getEmployeeNoByEmpId(currentUserId);
-            String draftDeptCode = getDraftDeptCode(drafterId);
+            String draftDeptCode = getDraftDeptCode(currentUserId);
             documentDTO.setDraftDept(draftDeptCode);
             
             // 결재선 정보 설정
@@ -201,21 +201,23 @@ public class EapprovalRestController {
     }
     
     /**
-     * 기안자 부서 코드 조회 (실제 기능 구현)
+     * 기안자 부서 코드 조회
+     * @param empId 직원 ID(사번)
+     * @return 부서 코드
      */
-    private String getDraftDeptCode(Integer drafterId) {
-        log.debug("부서 코드 조회: 직원번호={}", drafterId);
+    private String getDraftDeptCode(String empId) {
+        log.debug("부서 코드 조회: 직원ID={}", empId);
         
         try {
-            // DocumentMapper 객체를 통해 메서드 호출 (정적 참조 X)
-            String deptCode = DocumentMapper.selectEmployeeDeptCode(drafterId);    
+            // documentMapper 인스턴스를 통해 메서드 호출
+            String deptCode = documentMapper.selectEmployeeDeptCodeByEmpId(empId);
             
             if (deptCode != null && !deptCode.isEmpty()) {
                 return deptCode;
             }
             
             // 조회 결과가 없으면 기본값 반환
-            log.warn("직원({})의 부서 정보를 찾을 수 없습니다. 기본값 사용", drafterId);
+            log.warn("직원({})의 부서 정보를 찾을 수 없습니다. 기본값 사용", empId);
             return "DEPT001";
         } catch (Exception e) {
             log.error("부서 코드 조회 중 오류 발생: {}", e.getMessage(), e);
