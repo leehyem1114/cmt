@@ -19,6 +19,7 @@
     		P.PAY_NO                AS payNo,
 		    E.EMP_NO                AS empNo,
 		    E.EMP_NAME              AS empName,
+		    E.EMP_ID				AS empId,
 		    DN.CMN_DETAIL_NAME      AS deptName,
 		    PO.CMN_DETAIL_NAME      AS position,
 		    ET.CMN_DETAIL_NAME      AS empType,
@@ -182,6 +183,23 @@
 	</insert>
 
 
-
+	<select id="selectEmpPayment" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+		SELECT
+			P.*,
+		    E.EMP_NAME,
+		    E.EMP_TYPE,
+		    E.SAL_BANK_NAME,
+		    E.SAL_BANK_ACCOUNT,
+		    D.CMN_DETAIL_NAME AS deptName,
+		    PO.CMN_DETAIL_NAME AS position
+		FROM PAYMENTS P
+			JOIN EMPLOYEES E 
+			    ON P.EMP_NO = E.EMP_NO
+			LEFT JOIN COMMONCODE_DETAIL D 
+			    ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE AND D.CMN_CODE = 'DEPT'
+			LEFT JOIN COMMONCODE_DETAIL PO 
+			    ON TO_CHAR(E.POSITION_NO) = PO.CMN_DETAIL_CODE AND PO.CMN_CODE = 'POSITION'
+		WHERE E.EMP_ID = #{empId}
+	</select>
 
 </mapper>
