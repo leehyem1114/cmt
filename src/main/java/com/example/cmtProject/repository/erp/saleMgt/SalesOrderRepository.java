@@ -67,6 +67,12 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
 	@Query(value = "SELECT * FROM SALES_ORDER WHERE SO_NO IN :gridCheckList", nativeQuery = true)
 	List<SalesOrder> findByEditorSelectedList(@Param("gridCheckList") List<Integer> gridCheckList);
+	
+	@Query(value = "SELECT EMP_NO FROM EMPLOYEES WHERE EMP_ID = :empid", nativeQuery = true)
+	Long findEmpNoByEmpId(@Param("empid") String empid);
+	
+	//@Query(value = "UPDATE SALES_ORDER SET EMP_NO = :empno WHERE SO_NO = :sono", nativeQuery = true)
+	//파일 수정
 }
 
 /*

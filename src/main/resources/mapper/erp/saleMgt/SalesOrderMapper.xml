@@ -61,5 +61,41 @@
         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
     </select>
+    
+    <update id="soMainUpdate" parameterType="com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO">
+    UPDATE SALES_ORDER
+    <set>
+        <choose>
+            <when test="columnName == 'soDate'">
+                emp_id = #{value}
+            </when>
+            <when test="columnName == 'shipDate'">
+                CLT_CODE = #{value}
+            </when>
+            <when test="columnName == 'empNo'">
+                status = #{value}
+            </when>
+            <when test="columnName == 'whsCode'">
+                status = #{value}
+            </when>
+            <when test="columnName == 'pdtCode'">
+                status = #{value}
+            </when>
+            <when test="columnName == 'cltCode'">
+                status = #{value}
+            </when>
+            <when test="columnName == 'soQuantity'">
+                status = #{value}
+            </when>
+            <when test="columnName == 'pdtShippingPrice'">
+                status = #{value}
+            </when>
+            <when test="columnName == 'soStatus'">
+                status = #{value}
+            </when>
+        </choose>
+    </set>
+    WHERE so_no = #{soNo}
+</update>
 	
 </mapper>
