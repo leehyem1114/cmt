@@ -7,9 +7,10 @@
  * - 결재자 정보 조회 및 설정
  * - 결재자 순서 자동 관리
  * 
- * @version 1.1.0
+ * @version 1.2.0
  * @since 2025-04-04
  * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @update 2025-04-07 - 결재선 순서 표시 및 업데이트 로직 수정
  */
 const ApprovalLineManager = (function() {
     //===========================================================================
@@ -58,6 +59,10 @@ const ApprovalLineManager = (function() {
             // 초기 결재선 데이터 설정
             if (initialLines && Array.isArray(initialLines)) {
                 approvalLines = [...initialLines];
+                
+                // 결재선 순서 재정렬 확인
+                reorderApprovalLines();
+                
                 console.log(`초기 결재선 ${approvalLines.length}개가 로드되었습니다.`);
             } else {
                 console.log('초기 결재선 데이터가 없습니다.');
@@ -199,9 +204,7 @@ const ApprovalLineManager = (function() {
             approvalLines.splice(index, 1);
             
             // 순서 재조정
-            approvalLines.forEach((line, idx) => {
-                line.approvalOrder = idx + 1;
-            });
+            reorderApprovalLines();
             
             console.log(`결재자가 삭제되었습니다. 남은 결재자 수: ${approvalLines.length}명`);
             
@@ -211,6 +214,24 @@ const ApprovalLineManager = (function() {
             console.error('결재자 삭제 중 오류:', error);
             await AlertUtil.showError('결재자 삭제 오류', '결재자 삭제 중 오류가 발생했습니다.');
         }
+    }
+    
+    /**
+     * 결재선 순서 재조정 함수
+     * 모든 결재선 항목의 순서를 인덱스 순서대로 다시 설정합니다.
+     */
+    function reorderApprovalLines() {
+        // 강제로 인덱스 기준으로 결재 순서 재설정
+        approvalLines.forEach((line, idx) => {
+            if (line.approvalOrder !== idx + 1) {
+                line.approvalOrder = idx + 1;
+                console.log(`결재선[${idx}] 순서를 ${idx + 1}로 조정했습니다.`);
+            }
+        });
+        
+        console.log('결재선 순서가 재조정되었습니다:', 
+            approvalLines.map(line => `${line.approverName || '미지정'}:${line.approvalOrder}`).join(', '));
+        return approvalLines;
     }
     
     /**
@@ -245,6 +266,19 @@ const ApprovalLineManager = (function() {
             
             const row = selectElement.closest('tr');
             
+            // 순서값 명시적 체크
+            const orderInput = row.querySelector('input[name="approvalOrder"]');
+            if (orderInput && parseInt(orderInput.value) !== index + 1) {
+                console.log(`순서값 불일치 감지: ${orderInput.value} !== ${index + 1}, 수정합니다.`);
+                orderInput.value = index + 1;
+                
+                // 순서 표시 텍스트도 업데이트
+                const orderSpan = row.querySelector('td:first-child span');
+                if (orderSpan) {
+                    orderSpan.textContent = index + 1;
+                }
+            }
+            
             // 선택 취소 처리
             if (!approverId) {
                 // 관련 필드 초기화
@@ -278,6 +312,11 @@ const ApprovalLineManager = (function() {
             updateApproverData(index, 'approverId', approverId);
             updateApproverData(index, 'approverName', approverName);
             updateApproverData(index, 'approverPosition', approverPosition);
+            
+            // 순서 필드 명시적 업데이트 
+            updateApproverData(index, 'approvalOrder', index + 1);
+            
+            console.log(`결재자[${index}] 변경 완료: ${approverName}(${approverPosition}), 순서=${index + 1}`);
         } catch (error) {
             console.error('결재자 변경 처리 중 오류:', error);
             await AlertUtil.showError('결재자 변경 오류', '결재자 정보 변경 중 오류가 발생했습니다.');
@@ -319,14 +358,19 @@ const ApprovalLineManager = (function() {
                 return;
             }
             
+            // 순서 재조정 확인
+            reorderApprovalLines();
+            
             // 각 결재선 항목에 대한 행 생성
             approvalLines.forEach((line, index) => {
                 const row = document.createElement('tr');
                 row.dataset.index = index;
                 
+                // input 필드 대신 span으로 변경하여 직접 텍스트 표시
                 row.innerHTML = `
-                    <td>
-                        <input type="text" value="${line.approvalOrder}" class="form-control" readonly />
+                    <td class="text-center">
+                        <span class="form-control-plaintext fw-bold">${index + 1}</span>
+                        <input type="hidden" name="approvalOrder" value="${index + 1}" />
                     </td>
                     <td>
                         <select data-field="approverId" class="form-select approver-select" required>
@@ -526,6 +570,8 @@ const ApprovalLineManager = (function() {
      * @returns {Array} 결재선 데이터 배열
      */
     function getApprovalLines() {
+        // 결재선 반환 전 순서 확인
+        reorderApprovalLines();
         return approvalLines;
     }
     
