@@ -122,6 +122,12 @@ public class EapprovalRestController {
             @RequestParam("isTempSave") boolean isTempSave,
             @RequestParam("approvalLinesJson") String approvalLinesJson,
             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+    	
+        log.debug("문서 저장 요청 시작: 임시저장={}, 제목={}", isTempSave, title);
+        log.debug("문서 ID: {}, 문서번호: {}, 양식ID: {}", docId, docNumber, formId);
+        log.debug("내용 길이: {}", content != null ? content.length() : 0);
+        log.debug("결재선 데이터: {}", approvalLinesJson);
+        log.debug("첨부파일: {}", files != null ? files.size() : 0);
         
         log.debug("문서 저장 요청: 임시저장={}, 제목={}", isTempSave, title);
         try {

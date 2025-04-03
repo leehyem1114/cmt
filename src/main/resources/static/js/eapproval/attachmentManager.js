@@ -8,8 +8,8 @@
  * - 파일 크기 및 형식 검증
  * 
  * @version 1.1.0
- * @since 2025-04-04
- * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @since 2025-04-03
+ * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
  */
 const AttachmentManager = (function() {
     //===========================================================================

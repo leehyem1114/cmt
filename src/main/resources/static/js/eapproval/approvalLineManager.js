@@ -8,9 +8,9 @@
  * - 결재자 순서 자동 관리
  * 
  * @version 1.2.0
- * @since 2025-04-04
- * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
- * @update 2025-04-07 - 결재선 순서 표시 및 업데이트 로직 수정
+ * @since 2025-04-03
+ * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @update 2025-04-03 - 결재선 순서 표시 및 업데이트 로직 수정
  */
 const ApprovalLineManager = (function() {
     //===========================================================================
@@ -435,7 +435,7 @@ const ApprovalLineManager = (function() {
                 
                 // 결재자 옵션 추가
                 approvers.forEach(approver => {
-                    const approverValue = approver.EMP_NO || approver.EMP_ID;
+                    const approverValue =  approver.EMP_ID;
                     const selected = approverValue == currentValue ? 'selected' : '';
                     
                     optionsHtml += `<option value="${approverValue}" 
