@@ -6,32 +6,31 @@
  * - 결재/반려 처리
  * - 결재 의견 관리
  * 
- * @version 1.3.0
+ * @version 1.4.0
  * @since 2025-04-03
- * @update 2025-04-05 - 결재자 ID 처리 관련 코드 개선 및 다양한 선택자 지원
+ * @update 2025-04-05 - ApiUtil 기능 연동 및 코드 개선
  */
 const DocumentView = (function() {
     //===========================================================================
-    // 모듈 내부 변수 - 필요에 맞게 수정하세요
+    // 모듈 내부 변수
     //===========================================================================
     
     /**
      * 문서 관련 정보
      */
     let documentData = {
-        docId: null,           // 현재 문서 ID
-        isCurrentApprover: false,   // 현재 사용자가 결재자인지 여부
+        docId: null,             // 현재 문서 ID
+        isCurrentApprover: false, // 현재 사용자가 결재자인지 여부
         approverId: null          // 결재자 ID
     };
     
     /**
      * UI 관련 요소
      */
-    let approvalModal;       // 결재 모달 참조
+    let approvalModal;           // 결재 모달 참조
     
     /**
      * API URL 상수 정의
-     * 문서 관련 API 엔드포인트 정의
      */
     const API_URLS = {
         PROCESS: (docId) => `/api/eapproval/document/${docId}/process` // 결재 처리 API
@@ -77,67 +76,21 @@ const DocumentView = (function() {
         try {
             console.log('문서 데이터 초기화를 시작합니다.');
             
-            // 디버그용: window 객체의 documentData 내용 출력
-            console.log('window.documentData의 실제 내용:', window.documentData);
+            // 다양한 소스에서 데이터 로드 시도
+            loadDataFromWindowObject();
             
-            // 방법 1: Thymeleaf에서 전달된 데이터 확인
-            if (window.documentData) {
-                console.log('window.documentData 존재함:', window.documentData);
-                
-                if (window.documentData.docId) {
-                    documentData.docId = window.documentData.docId;
-                    console.log('Thymeleaf에서 문서 ID 로드:', documentData.docId);
-                }
-                
-                documentData.isCurrentApprover = window.documentData.isCurrentApprover === true;
-                console.log('Thymeleaf에서 결재자 여부 로드:', documentData.isCurrentApprover);
-                
-                // 결재자 ID 로드
-                if (window.documentData.approverId) {
-                    documentData.approverId = window.documentData.approverId;
-                    console.log('Thymeleaf에서 결재자 ID 로드:', documentData.approverId);
-                }
-            }
-            
-            // 방법 2: DOM에서 직접 데이터 추출
+            // 문서 ID가 없다면 DOM과 URL에서 시도
             if (!documentData.docId) {
-                const docIdElement = document.getElementById('docId');
-                if (docIdElement) {
-                    documentData.docId = docIdElement.value;
-                    console.log('DOM에서 문서 ID 로드:', documentData.docId);
-                }
+                loadDataFromDOM();
             }
             
-            if (documentData.isCurrentApprover === undefined) {
-                const isCurrentApproverElement = document.getElementById('isCurrentApprover');
-                if (isCurrentApproverElement) {
-                    documentData.isCurrentApprover = isCurrentApproverElement.value === 'true';
-                    console.log('DOM에서 결재자 여부 로드:', documentData.isCurrentApprover);
-                }
-            }
-            
-            // 결재자 ID 확인 - hidden input에서 확인
-            if (!documentData.approverId) {
-                const approverIdElement = document.getElementById('approverId');
-                if (approverIdElement && approverIdElement.value) {
-                    documentData.approverId = approverIdElement.value;
-                    console.log('DOM에서 결재자 ID 로드:', documentData.approverId);
-                }
-            }
-            
-            // 방법 3: URL에서 문서 ID 추출 (fallback)
+            // 문서 ID가 여전히 없다면 URL에서 시도
             if (!documentData.docId) {
-                const urlParts = window.location.pathname.split('/');
-                const potentialDocId = urlParts[urlParts.length - 1];
-                if (potentialDocId && potentialDocId.length > 10) {
-                    documentData.docId = potentialDocId;
-                    console.log('URL에서 문서 ID 로드:', documentData.docId);
-                }
+                loadDataFromURL();
             }
             
             // 문서 ID 검증
             if (!documentData.docId) {
-                console.error('어떤 방법으로도 문서 ID를 찾을 수 없습니다');
                 throw new Error('문서 ID를 찾을 수 없습니다.');
             }
             
@@ -151,6 +104,66 @@ const DocumentView = (function() {
         } catch (error) {
             console.error('데이터 초기화 중 오류:', error);
             throw error;
+        }
+    }
+    
+    /**
+     * window 객체에서 데이터 로드
+     */
+    function loadDataFromWindowObject() {
+        // Thymeleaf에서 전달된 데이터 확인
+        if (window.documentData) {
+            console.log('window.documentData 존재함:', window.documentData);
+            
+            if (window.documentData.docId) {
+                documentData.docId = window.documentData.docId;
+                console.log('Thymeleaf에서 문서 ID 로드:', documentData.docId);
+            }
+            
+            documentData.isCurrentApprover = window.documentData.isCurrentApprover === true;
+            console.log('Thymeleaf에서 결재자 여부 로드:', documentData.isCurrentApprover);
+            
+            // 결재자 ID 로드
+            if (window.documentData.approverId) {
+                documentData.approverId = window.documentData.approverId;
+                console.log('Thymeleaf에서 결재자 ID 로드:', documentData.approverId);
+            }
+        }
+    }
+    
+    /**
+     * DOM에서 데이터 로드
+     */
+    function loadDataFromDOM() {
+        const docIdElement = document.getElementById('docId');
+        if (docIdElement) {
+            documentData.docId = docIdElement.value;
+            console.log('DOM에서 문서 ID 로드:', documentData.docId);
+        }
+        
+        const isCurrentApproverElement = document.getElementById('isCurrentApprover');
+        if (isCurrentApproverElement) {
+            documentData.isCurrentApprover = isCurrentApproverElement.value === 'true';
+            console.log('DOM에서 결재자 여부 로드:', documentData.isCurrentApprover);
+        }
+        
+        // 결재자 ID 확인
+        const approverIdElement = document.getElementById('approverId');
+        if (approverIdElement && approverIdElement.value) {
+            documentData.approverId = approverIdElement.value;
+            console.log('DOM에서 결재자 ID 로드:', documentData.approverId);
+        }
+    }
+    
+    /**
+     * URL에서 데이터 로드
+     */
+    function loadDataFromURL() {
+        const urlParts = window.location.pathname.split('/');
+        const potentialDocId = urlParts[urlParts.length - 1];
+        if (potentialDocId && potentialDocId.length > 10) {
+            documentData.docId = potentialDocId;
+            console.log('URL에서 문서 ID 로드:', documentData.docId);
         }
     }
     
@@ -182,7 +195,7 @@ const DocumentView = (function() {
                 console.log('반려 버튼 이벤트 등록 완료');
             }
             
-            // 목록 버튼 클릭 이벤트 (뒤로가기)
+            // 목록 버튼 클릭 이벤트
             const backBtn = document.querySelector('button[onclick="history.back()"]');
             if (backBtn) {
                 // onclick 속성 제거 후 이벤트 리스너로 대체
@@ -352,58 +365,32 @@ const DocumentView = (function() {
             
             console.log('최종 사용할 결재자 ID:', documentData.approverId);
             
-            // 로딩 표시
-            const loading = AlertUtil.showLoading('결재 처리 중...');
+            // 결재 데이터 준비
+            const approvalData = {
+                approverId: documentData.approverId,
+                decision: decision,
+                comment: comment || ''
+            };
             
-            try {
-                // 요청 데이터 구성
-                const formData = new FormData();
-                formData.append('decision', decision);
-                formData.append('comment', comment);
-                formData.append('approverId', documentData.approverId);
-                
-                console.log('API 호출:', API_URLS.PROCESS(documentData.docId));
-                console.log('전송할 데이터:', {
-                    decision: formData.get('decision'),
-                    comment: formData.get('comment'),
-                    approverId: formData.get('approverId')
-                });
-                
-                // API 호출 - ApiUtil 사용
-                const response = await ApiUtil.post(API_URLS.PROCESS(documentData.docId), formData);
-                
-                // 로딩 종료
-                loading.close();
-                
-                console.log('API 응답:', response);
-                
-                // 응답 확인
-                if (!response.success) {
-                    throw new Error(response.message || '결재 처리 중 오류가 발생했습니다.');
+            // ApiUtil을 사용하여 결재 처리 (로딩 및 결과 처리 포함)
+            await ApiUtil.processApprovalWithLoading(
+                documentData.docId, 
+                approvalData,
+                decision === '승인' ? '결재 승인 중...' : '결재 반려 중...',
+                {
+                    successCallback: () => {
+                        // 모달 닫기
+                        if (approvalModal) {
+                            approvalModal.hide();
+                        }
+                        
+                        // 문서 목록으로 이동
+                        setTimeout(() => {
+                            goToDocumentList();
+                        }, 500);
+                    }
                 }
-                
-                // 성공 알림
-                await AlertUtil.showSuccess(
-                    '결재 처리 완료', 
-                    decision === '승인' ? '결재가 승인되었습니다.' : '결재가 반려되었습니다.'
-                );
-                
-                // 모달 닫기
-                if (approvalModal) {
-                    approvalModal.hide();
-                }
-                
-                // 페이지 이동
-                setTimeout(function() {
-                    goToDocumentList();
-                }, 500);
-            } catch (apiError) {
-                // 로딩 종료
-                loading.close();
-                
-                console.error('결재 처리 API 호출 중 오류:', apiError);
-                await AlertUtil.showError('결재 처리 실패', apiError.message || '결재 처리 중 오류가 발생했습니다.');
-            }
+            );
         } catch (error) {
             console.error('결재 처리 중 오류:', error);
             await AlertUtil.showError('결재 처리 오류', error.message || '결재 처리 중 오류가 발생했습니다.');
@@ -431,20 +418,8 @@ const DocumentView = (function() {
         try {
             console.log('결재선 테이블에서 결재자 ID 찾기 시작');
             
-            // 여러 방법으로 결재선 테이블 찾기 시도
-            let approvalTable = document.getElementById('approvalLinesTable');
-            
-            // ID로 찾지 못한 경우 클래스 선택자로 시도
-            if (!approvalTable) {
-                console.log('approvalLinesTable ID로 테이블을 찾지 못해 대체 선택자 사용');
-                approvalTable = document.querySelector('table.table-bordered:not(.text-center)');
-            }
-            
-            // 그래도 찾지 못한 경우 모든 테이블 시도
-            if (!approvalTable) {
-                console.log('클래스 선택자로도 찾지 못해 모든 테이블 중 첫 번째 시도');
-                approvalTable = document.querySelector('table.table-bordered');
-            }
+            // 테이블 요소 찾기 - 여러 선택자 시도
+            const approvalTable = findApprovalTable();
             
             if (!approvalTable) {
                 console.warn('어떤 방법으로도 결재선 테이블을 찾을 수 없습니다.');
@@ -452,6 +427,8 @@ const DocumentView = (function() {
             }
             
             console.log('결재선 테이블 찾음:', approvalTable);
+            
+            // 결재자 ID 찾기 - 여러 방법 시도
             
             // 1. 대기 상태인 행에서 data-approver-id 속성 확인
             const pendingRow = approvalTable.querySelector('tr[data-approval-status="대기"]');
@@ -463,103 +440,135 @@ const DocumentView = (function() {
                 }
             }
             
-			// 2. 대기 상태가 있는 행 찾기
-			            const rows = approvalTable.querySelectorAll('tbody tr');
-			            console.log(`테이블에서 ${rows.length}개 행 찾음`);
-			            
-			            for (let i = 0; i < rows.length; i++) {
-			                console.log(`${i+1}번째 행 검사 중:`, rows[i]);
-			                
-			                // 결재 상태 셀 찾기
-			                const statusCell = rows[i].querySelector('td:nth-child(5) span');
-			                console.log('상태 셀:', statusCell ? statusCell.textContent : '없음');
-			                
-			                if (statusCell && statusCell.textContent.trim() === '대기') {
-			                    console.log('대기 상태인 행 찾음:', rows[i]);
-			                    
-			                    // 결재자 ID를 data-approver-id 속성에서 가져오기
-			                    const approverId = rows[i].getAttribute('data-approver-id');
-			                    if (approverId) {
-			                        console.log(`테이블 대기 행에서 결재자 ID 찾음: ${approverId}`);
-			                        return approverId;
-			                    }
-			                    
-			                    // 결재자 셀에서 data-approver-id 속성 확인
-			                    const approverCell = rows[i].querySelector('td:nth-child(2)');
-			                    if (approverCell) {
-			                        console.log('결재자 셀 찾음:', approverCell);
-			                        
-			                        const cellApproverId = approverCell.getAttribute('data-approver-id');
-			                        if (cellApproverId) {
-			                            console.log(`결재자 셀에서 ID 찾음: ${cellApproverId}`);
-			                            return cellApproverId;
-			                        }
-			                        
-			                        // 결재자 이름 추출 (마지막 대안)
-			                        const approverName = approverCell.textContent.trim();
-			                        if (approverName) {
-			                            console.log(`결재자 이름으로 대체 ID 생성: ${approverName}`);
-			                            return approverName;
-			                        }
-			                    }
-			                    
-			                    // 행 인덱스 + 1을 ID로 사용 (최후의 대안)
-			                    const fallbackId = `approver-${i+1}`;
-			                    console.log(`행 인덱스로 대체 ID 생성: ${fallbackId}`);
-			                    return fallbackId;
-			                }
-			            }
-			            
-			            // DOM에서 hidden input 확인
-			            const approverIdInput = document.getElementById('approverId');
-			            if (approverIdInput && approverIdInput.value) {
-			                console.log(`hidden input에서 결재자 ID 찾음: ${approverIdInput.value}`);
-			                return approverIdInput.value;
-			            }
-			            
-			            console.warn('결재선 테이블에서 대기 상태인 결재자 ID를 찾을 수 없습니다.');
-			            
-			            // 3. URL에서 임시 ID 생성
-			            const urlParts = window.location.pathname.split('/');
-			            const docIdFromUrl = urlParts[urlParts.length - 1] || 'unknown';
-			            const fallbackId = `fallback-${docIdFromUrl}`;
-			            console.warn(`모든 방법 실패: 임시 결재자 ID 생성 - ${fallbackId}`);
-			            return fallbackId;
-			        } catch (error) {
-			            console.error('결재자 ID 찾기 중 오류:', error);
-			            return 'error-fallback-id';
-			        }
-			    }
-			    
-			    //===========================================================================
-			    // 공개 API - 외부에서 접근 가능한 메서드
-			    //===========================================================================
-			    
-			    return {
-			        // 초기화 및 기본 기능
-			        initialize,         // 모듈 초기화
-			        
-			        // 결재 처리 함수
-			        openApprovalModal,  // 결재 모달 열기
-			        processApproval,    // 결재 처리 실행
-			        
-			        // 유틸리티 함수
-			        goToDocumentList,   // 문서 목록으로 이동
-			        findApproverIdFromTable // 테이블에서 결재자 ID 찾기
-			    };
-			})();
+            // 2. 모든 행에서 대기 상태 찾기
+            const result = findApproverIdFromRows(approvalTable);
+            if (result) return result;
+            
+            // 3. DOM에서 hidden input 확인
+            const approverIdInput = document.getElementById('approverId');
+            if (approverIdInput && approverIdInput.value) {
+                console.log(`hidden input에서 결재자 ID 찾음: ${approverIdInput.value}`);
+                return approverIdInput.value;
+            }
+            
+            // 4. URL 기반 임시 ID 생성
+            return createFallbackId();
+        } catch (error) {
+            console.error('결재자 ID 찾기 중 오류:', error);
+            return 'error-fallback-id';
+        }
+    }
+    
+    /**
+     * 결재선 테이블 요소 찾기
+     * 
+     * @returns {HTMLElement|null} 테이블 요소 또는 null
+     */
+    function findApprovalTable() {
+        // ID로 찾기
+        let table = document.getElementById('approvalLinesTable');
+        if (table) return table;
+        
+        // 클래스 선택자로 찾기
+        table = document.querySelector('table.table-bordered.text-center');
+        if (table) return table;
+        
+        // 일반 테이블로 찾기
+        return document.querySelector('table.table-bordered');
+    }
+    
+    /**
+     * 테이블 행에서 결재자 ID 찾기
+     * 
+     * @param {HTMLElement} table - 테이블 요소
+     * @returns {string|null} 결재자 ID 또는 null
+     */
+    function findApproverIdFromRows(table) {
+        const rows = table.querySelectorAll('tbody tr');
+        console.log(`테이블에서 ${rows.length}개 행 찾음`);
+        
+        for (let i = 0; i < rows.length; i++) {
+            // 결재 상태 셀 찾기
+            const statusCell = rows[i].querySelector('td:nth-child(5) span');
+            
+            if (statusCell && statusCell.textContent.trim() === '대기') {
+                console.log('대기 상태인 행 찾음:', rows[i]);
+                
+                // 결재자 ID를 data-approver-id 속성에서 가져오기
+                const approverId = rows[i].getAttribute('data-approver-id');
+                if (approverId) {
+                    console.log(`테이블 대기 행에서 결재자 ID 찾음: ${approverId}`);
+                    return approverId;
+                }
+                
+                // 결재자 셀에서 data-approver-id 속성 확인
+                const approverCell = rows[i].querySelector('td:nth-child(2)');
+                if (approverCell) {
+                    const cellApproverId = approverCell.getAttribute('data-approver-id');
+                    if (cellApproverId) {
+                        console.log(`결재자 셀에서 ID 찾음: ${cellApproverId}`);
+                        return cellApproverId;
+                    }
+                    
+                    // 결재자 이름 추출
+                    const approverName = approverCell.textContent.trim();
+                    if (approverName) {
+                        console.log(`결재자 이름으로 대체 ID 생성: ${approverName}`);
+                        return approverName;
+                    }
+                }
+                
+                // 행 인덱스 + 1을 ID로 사용
+                const fallbackId = `approver-${i+1}`;
+                console.log(`행 인덱스로 대체 ID 생성: ${fallbackId}`);
+                return fallbackId;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * URL 기반 임시 ID 생성
+     * 
+     * @returns {string} 임시 ID
+     */
+    function createFallbackId() {
+        const urlParts = window.location.pathname.split('/');
+        const docIdFromUrl = urlParts[urlParts.length - 1] || 'unknown';
+        const fallbackId = `fallback-${docIdFromUrl}`;
+        console.warn(`모든 방법 실패: 임시 결재자 ID 생성 - ${fallbackId}`);
+        return fallbackId;
+    }
+    
+    //===========================================================================
+    // 공개 API - 외부에서 접근 가능한 메서드
+    //===========================================================================
+    
+    return {
+        // 초기화 및 기본 기능
+        initialize,         // 모듈 초기화
+        
+        // 결재 처리 함수
+        openApprovalModal,  // 결재 모달 열기
+        processApproval,    // 결재 처리 실행
+        
+        // 유틸리티 함수
+        goToDocumentList    // 문서 목록으로 이동
+    };
+})();
 
-			// DOM 로드 시 초기화
-			document.addEventListener('DOMContentLoaded', async function() {
-			    try {
-			        // 모듈 초기화
-			        await DocumentView.initialize();
-			    } catch (error) {
-			        console.error('초기화 중 오류 발생:', error);
-			        if (window.AlertUtil) {
-			            await AlertUtil.showError('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
-			        } else {
-			            alert('페이지 초기화 중 오류가 발생했습니다.');
-			        }
-			    }
-			});
+// DOM 로드 시 초기화
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // 모듈 초기화
+        await DocumentView.initialize();
+    } catch (error) {
+        console.error('초기화 중 오류 발생:', error);
+        if (window.AlertUtil) {
+            await AlertUtil.showError('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
+        } else {
+            alert('페이지 초기화 중 오류가 발생했습니다.');
+        }
+    }
+});

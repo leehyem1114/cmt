@@ -1,4 +1,3 @@
-
 package com.example.cmtProject.controller.erp.eapproval;
 
 import com.example.cmtProject.comm.response.ApiResponse;
@@ -12,6 +11,7 @@ import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.dto.erp.eapproval.DocFormDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.dto.erp.eapproval.AttachmentDTO;
+import com.example.cmtProject.dto.erp.eapproval.ApprovalRequestDTO;
 import com.example.cmtProject.service.erp.eapproval.DocumentService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.eapproval.DocFormService;
@@ -62,7 +62,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EapprovalRestController {
 
-    private final DocumentMapper documentMapper; // DocumentMapper 추가
+    private final DocumentMapper documentMapper; 
     private final DocumentService documentService;
     private final DocFormService docFormService;
     private final ApprovalProcessService approvalProcessService;
@@ -216,7 +216,6 @@ public class EapprovalRestController {
         log.debug("부서 코드 조회: 직원ID={}", empId);
         
         try {
-            // documentMapper 인스턴스를 통해 메서드 호출
             String deptCode = documentMapper.selectEmployeeDeptCodeByEmpId(empId);
             
             if (deptCode != null && !deptCode.isEmpty()) {
@@ -245,24 +244,105 @@ public class EapprovalRestController {
     }
 
     /**
-     * 결재 처리 API (승인/반려)
+     * 결재 처리 API (승인/반려) - JSON 방식
      */
     @PostMapping(PathConstants.API_DOCUMENT + "/{docId}/process")
     public ApiResponse<Map<String, Object>> processApproval(
             @PathVariable String docId,
-            @RequestParam String approverId, // Integer -> String으로 변경
-            @RequestParam String decision,
-            @RequestParam(required = false) String comment) {
+            @RequestBody ApprovalRequestDTO requestData) {
         
-        log.debug("결재 처리 요청: 문서={}, 결재자={}, 의사결정={}", docId, approverId, decision);
+        log.debug("결재 처리 요청: 문서={}, 결재자={}, 의사결정={}", 
+                docId, requestData.getApproverId(), requestData.getDecision());
+        log.debug("결재 의견: {}", requestData.getComment());
+        
         try {
+            if (ApprovalStatus.REJECTED.equals(requestData.getDecision())) {
+                approvalProcessService.reject(docId, requestData.getApproverId(), requestData.getComment());
+            } else {
+                approvalProcessService.approve(docId, requestData.getApproverId(), requestData.getComment());
+            }
+            
+            String message = ApprovalStatus.APPROVED.equals(requestData.getDecision()) ? 
+                           "결재가 승인되었습니다." : "결재가 반려되었습니다.";
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", message);
+            result.put("decision", requestData.getDecision());
+            
+            return ApiResponse.success(message, result);
+        } catch (RuntimeException e) {
+            log.warn("결재 처리 중 비즈니스 오류: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage(), ResponseCode.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("결재 처리 중 오류 발생: {}", e.getMessage(), e);
+            return ApiResponse.error("결재 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+//    @PostMapping(PathConstants.API_DOCUMENT + "/{docId}/process")
+//    public ApiResponse<Map<String, Object>> processApproval(
+//            @PathVariable("docId") String docId,
+//            @RequestParam("approverId") String approverId,
+//            @RequestParam("decision") String decision,
+//            @RequestParam(value = "comment", required = false) String comment) {
+//        
+//        log.debug("결재 처리 요청: 문서={}, 결재자={}, 의사결정={}", docId, approverId, decision);
+//        log.debug("결재 의견: {}", comment);
+//        
+//        try {
+//            if (ApprovalStatus.REJECTED.equals(decision)) {
+//                approvalProcessService.reject(docId, approverId, comment);
+//            } else {
+//                approvalProcessService.approve(docId, approverId, comment);
+//            }
+//            
+//            String message = ApprovalStatus.APPROVED.equals(decision) ? 
+//                           "결재가 승인되었습니다." : "결재가 반려되었습니다.";
+//            
+//            Map<String, Object> result = new HashMap<>();
+//            result.put("success", true);
+//            result.put("message", message);
+//            result.put("decision", decision);
+//            
+//            return ApiResponse.success(message, result);
+//        } catch (RuntimeException e) {
+//            log.warn("결재 처리 중 비즈니스 오류: {}", e.getMessage());
+//            return ApiResponse.error(e.getMessage(), ResponseCode.BAD_REQUEST);
+//        } catch (Exception e) {
+//            log.error("결재 처리 중 오류 발생: {}", e.getMessage(), e);
+//            return ApiResponse.error("결재 처리 중 오류가 발생했습니다: " + e.getMessage());
+//        }
+//    }
+    
+    /**
+     * 결재 처리 API (승인/반려) - Multipart 방식 (첨부파일 지원)
+     */
+    @PostMapping(PathConstants.API_DOCUMENT + "/{docId}/process-with-file")
+    public ApiResponse<Map<String, Object>> processApprovalWithFile(
+            @PathVariable String docId,
+            @RequestParam("approverId") String approverId,
+            @RequestParam("decision") String decision,
+            @RequestParam(value = "comment", required = false) String comment,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        
+        log.debug("첨부파일 포함 결재 처리 요청: 문서={}, 결재자={}, 의사결정={}", docId, approverId, decision);
+        log.debug("첨부파일 수: {}", files != null ? files.size() : 0);
+        
+        try {
+            // 결재 처리 로직
             if (ApprovalStatus.REJECTED.equals(decision)) {
                 approvalProcessService.reject(docId, approverId, comment);
             } else {
                 approvalProcessService.approve(docId, approverId, comment);
             }
             
-            String message = ApprovalStatus.APPROVED.equals(decision) ? "결재가 승인되었습니다." : "결재가 반려되었습니다.";
+            // 첨부파일 처리 (필요한 경우)
+            if (files != null && !files.isEmpty()) {
+                processAttachments(docId, files);
+            }
+            
+            String message = ApprovalStatus.APPROVED.equals(decision) ? 
+                           "결재가 승인되었습니다." : "결재가 반려되었습니다.";
             
             Map<String, Object> result = new HashMap<>();
             result.put("success", true);

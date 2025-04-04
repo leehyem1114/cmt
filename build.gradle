@@ -78,6 +78,7 @@ sourceSets {
 
 tasks.withType(JavaCompile) {
 	options.generatedSourceOutputDirectory = file(querydslSrcDir)
+	options.compilerArgs += ['-parameters']
 }
 // ------------------------------------------------------
 
