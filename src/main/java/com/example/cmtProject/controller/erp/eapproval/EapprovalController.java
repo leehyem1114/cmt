@@ -187,8 +187,8 @@ public class EapprovalController {
         log.info("결재 대기 문서함 접속: {}", principal.getName());
         
         try {
-            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(principal.getName());
-            
+            List<DocumentDTO> documents = documentService.getProcessableDocumentsByEmpId(principal.getName());
+//            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(principal.getName()); 삭제처리
             model.addAttribute("documents", documents);
             model.addAttribute("approvalType", approvalType);
             model.addAttribute("keyword", keyword);

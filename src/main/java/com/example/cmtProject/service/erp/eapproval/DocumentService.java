@@ -239,4 +239,13 @@ public class DocumentService {
             return "DEPT001"; // 오류 시 기본값 반환
         }
     }
+    
+    /**
+     * 결재 가능한 문서 목록 조회 (결재 순서 고려)
+     * 첫 번째 결재자이거나 이전 결재자가 모두 승인한 문서만 조회
+     */
+    public List<DocumentDTO> getProcessableDocumentsByEmpId(String empId) {
+        log.debug("결재 가능한 문서 목록 조회: {}", empId);
+        return documentMapper.selectProcessableDocumentsByApproverId(empId);
+    }
 }
