@@ -52,25 +52,25 @@
         WHERE APPROVAL_NO = #{approvalNo}
     </update>
     
-    <!-- 문서ID로 결재선 조회 -->
-    <select id="selectApprovalLinesByDocId" resultMap="approvalLineResultMap">
-        SELECT 
-            al.APPROVAL_NO, 
-            al.DOC_ID, 
-            al.APPROVER_ID, <!-- APPROVER_NO -> APPROVER_ID로 변경 -->
-            e.EMP_NAME as APPROVER_NAME, 
-            p.CMN_DETAIL_NAME as APPROVER_POSITION, <!-- p.DEPT_POSITION -> p.CMN_DETAIL_NAME로 변경 (CommonCode 사용) -->
-            al.APPROVAL_ORDER, 
-            al.APPROVAL_STATUS, 
-            al.APPROVAL_DATE, 
-            al.APPROVAL_COMMENT, 
-            al.APPROVAL_TYPE 
-        FROM APPROVAL_LINES al 
-        LEFT JOIN EMPLOYEES e ON al.APPROVER_ID = e.EMP_ID <!-- e.EMP_NO -> e.EMP_ID로 변경 -->
-        LEFT JOIN COMMONCODE_DETAIL p ON e.POSITION_NO = p.CMN_DETAIL_CODE <!-- POSITIONS -> COMMONCODE_DETAIL로 변경 -->
-        WHERE al.DOC_ID = #{docId, jdbcType=VARCHAR} 
-        ORDER BY al.APPROVAL_ORDER
-    </select>
+	<!-- 문서ID로 결재선 조회 -->
+	<select id="selectApprovalLinesByDocId" resultMap="approvalLineResultMap">
+	    SELECT 
+	        al.APPROVAL_NO, 
+	        al.DOC_ID, 
+	        al.APPROVER_ID, 
+	        e.EMP_NAME as APPROVER_NAME, 
+	        p.CMN_DETAIL_NAME as APPROVER_POSITION, 
+	        al.APPROVAL_ORDER, 
+	        al.APPROVAL_STATUS, 
+	        al.APPROVAL_DATE, 
+	        al.APPROVAL_COMMENT, 
+	        al.APPROVAL_TYPE 
+	    FROM APPROVAL_LINES al 
+	    LEFT JOIN EMPLOYEES e ON al.APPROVER_ID = e.EMP_ID 
+	    LEFT JOIN COMMONCODE_DETAIL p ON p.CMN_CODE = 'POSITION' AND TO_CHAR(e.POSITION_NO) = p.CMN_DETAIL_CODE 
+	    WHERE al.DOC_ID = #{docId, jdbcType=VARCHAR} 
+	    ORDER BY al.APPROVAL_ORDER
+	</select>
     
     <!-- 특정 결재자의 특정 문서 결재선 조회 -->
     <select id="selectApprovalLineByDocIdAndApproverId" resultMap="approvalLineResultMap">
