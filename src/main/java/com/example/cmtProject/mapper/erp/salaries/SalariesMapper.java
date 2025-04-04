@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.cmtProject.dto.erp.salaries.PayPositionDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 
@@ -21,8 +22,11 @@ public interface SalariesMapper {
 	// 야근 수당 계산
 	List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO);
 
+	// 직급별 기본급
+	List<PayPositionDTO> getPayAndPosition();
 
-
+	// 급여 이체
+	void savePayment(PaymentDTO paymentDTO);
 
 
 }
