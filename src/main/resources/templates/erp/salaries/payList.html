@@ -414,13 +414,13 @@
 	
 	//급여 이체 시작 -------------------------------------------
 	$('#payTransferBtn').on('click', function () {
-		const checkedRows = grid.getCheckedRows();
+		const checkedRows = grid2.getCheckedRows();
 		const empNoList = checkedRows.map(row => row.empNo);
 		const position = $('#position').val();
 
 		$.ajax({
     		type: 'POST',
-    		url: 'erp/salaries/payTransfer',
+    		url: '/salaries/payTransfer',
     		data: { position: position,
     				empNoList: empNoList
     		},

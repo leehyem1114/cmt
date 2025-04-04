@@ -196,11 +196,11 @@
     </select>
     
     <insert id="insertBonusResultList" parameterType="java.util.List">
-<!--     	INSERT INTO PAYMENTS (PAY_BONUS_OVERTIME, PAY_BONUS_HOLIDAY)
-    	VALUES
-    	<foreach collection="list" item="item" separator=",">
-        	(#{item.payBonusOvertime}, #{item.payBonusHoliday)
-    	</foreach> -->
+<!--     	INSERT INTO PAYMENTS (PAY_BONUS_OVERTIME, PAY_BONUS_HOLIDAY) -->
+<!--     	VALUES -->
+<!--     	<foreach collection="list" item="item" separator=","> -->
+<!--         	(#{item.payBonusOvertime}, #{item.payBonusHoliday) -->
+<!--      	</foreach>  -->
 	</insert>
 
 
