@@ -1,29 +1,17 @@
 package com.example.cmtProject.controller.erp.salaries;
 
 
-import java.math.BigDecimal;
-import java.time.LocalDate
-import java.security.PublicKey;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlExpression;
-import org.apache.commons.jexl3.MapContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -33,7 +21,6 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
-import com.example.cmtProject.dto.erp.salaries.PayPositionDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 import com.example.cmtProject.service.comm.CommonService;
