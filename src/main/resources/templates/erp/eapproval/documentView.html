@@ -10,8 +10,11 @@
 </head>
 <body>
     <div layout:fragment="content">
+        <!-- 기본 정보 hidden 필드 -->
         <input type="hidden" id="docId" th:value="${document.docId}" />
         <input type="hidden" id="isCurrentApprover" th:value="${isCurrentApprover}" />
+        <!-- 결재자 ID 추가 -->
+        <input type="hidden" id="approverId" th:value="${approverId}" />
         
         <!-- 버튼 영역 -->
         <div class="d-flex justify-content-between mb-3">
@@ -81,7 +84,7 @@
                 <div class="row mb-4">
                     <div class="col-12">
                         <h5>결재선</h5>
-                        <table class="table table-bordered text-center">
+                        <table class="table table-bordered text-center" id="approvalLinesTable">
                             <thead>
                                 <tr>
                                     <th>순서</th>
@@ -94,9 +97,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="line : ${document.approvalLines}">
+                                <!-- 각 행에 데이터 속성으로 결재자 ID와 상태 추가 -->
+                                <tr th:each="line : ${document.approvalLines}" 
+                                    th:data-approver-id="${line.approverId}"
+                                    th:data-approval-status="${line.approvalStatus}"
+                                    th:class="${line.approvalStatus eq '대기' ? 'approval-pending' : ''}">
                                     <td th:text="${line.approvalOrder}">1</td>
-                                    <td th:text="${line.approverName}">홍길동</td>
+                                    <td th:text="${line.approverName}" th:data-approver-id="${line.approverId}">홍길동</td>
                                     <td th:text="${line.approverPosition}">과장</td>
                                     <td th:text="${line.approvalType}">결재</td>
                                     <td>
@@ -152,6 +159,9 @@
                             <div class="mb-3">
                                 <label for="comment" class="form-label">결재 의견</label>
                                 <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                                <div id="commentHelp" class="form-text text-danger" style="display: none;">
+                                    반려 시에는 의견 입력이 필수입니다.
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -170,7 +180,8 @@
             // Thymeleaf로부터 전달받은 데이터
             window.documentData = {
                 docId: /*[[${document.docId}]]*/ '',
-                isCurrentApprover: /*[[${isCurrentApprover}]]*/ false
+                isCurrentApprover: /*[[${isCurrentApprover}]]*/ false,
+                approverId: /*[[${approverId}]]*/ ''  // 서버에서 전달받은 결재자 ID 추가
             };
         </script>
         <script src="/js/eapproval/documentView.js"></script>

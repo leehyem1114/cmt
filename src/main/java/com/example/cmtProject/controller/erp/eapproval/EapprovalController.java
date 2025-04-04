@@ -143,7 +143,7 @@ public class EapprovalController {
      * 문서 조회 페이지
      */
     @GetMapping(PathConstants.DOCUMENT_VIEW + "/{docId}")
-    public String viewDocument(@PathVariable String docId, Model model, Principal principal) {
+    public String viewDocument(@PathVariable("docId") String docId, Model model, Principal principal) {
         log.info("문서 상세 조회: {}", docId);
         
         try {
