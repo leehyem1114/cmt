@@ -59,6 +59,7 @@ public class EapprovalController {
         try {
             model.addAttribute("myDrafts", documentService.getDrafterDocumentsByEmpId(currentUserId));
             model.addAttribute("pendingDocs", documentService.getPendingDocumentsByEmpId(currentUserId));
+            model.addAttribute("processingDocs", documentService.getDocumentsByStatus(DocumentStatus.PROCESSING));
             model.addAttribute("completedDocs", documentService.getDocumentsByStatus(DocumentStatus.COMPLETED));
             model.addAttribute("rejectedDocs", documentService.getDocumentsByStatus(DocumentStatus.REJECTED));
             

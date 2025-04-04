@@ -95,7 +95,7 @@ public class DocumentService {
         documentDTO.setIsTempSaved(isTempSave ? "Y" : "N");
         
         // 문서 상태 설정
-        documentDTO.setDocStatus(isTempSave ? DocumentStatus.TEMP_SAVED : DocumentStatus.IN_PROGRESS);
+        documentDTO.setDocStatus(isTempSave ? DocumentStatus.TEMP_SAVED : DocumentStatus.PROCESSING);
         
         // 문서 번호 생성 (신규 문서인 경우)
         if (documentDTO.getDocNumber() == null || documentDTO.getDocNumber().isEmpty()) {

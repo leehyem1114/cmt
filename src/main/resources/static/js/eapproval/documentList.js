@@ -35,6 +35,7 @@ const DocumentList = (function() {
     const API_URLS = {
         DRAFTS: '/api/eapproval/drafts',             // 내 기안문서 조회 API
         PENDING: '/api/eapproval/pending',           // 결재대기 문서 조회 API
+		PROCESSING: '/api/eapproval/documents/status/진행중', // 진행중 문서 조회 API
         COMPLETED: '/api/eapproval/documents/status/완료',  // 완료 문서 조회 API
         REJECTED: '/api/eapproval/documents/status/반려'    // 반려 문서 조회 API
     };
@@ -436,6 +437,9 @@ const DocumentList = (function() {
                     case 'pending':
                         apiUrl = API_URLS.PENDING;
                         break;
+					case 'processing':
+						apiUrl = API_URLS.PROCESSING;
+						break;
                     case 'completed':
                         apiUrl = API_URLS.COMPLETED;
                         break;
@@ -567,6 +571,7 @@ const DocumentList = (function() {
         switch (tabId) {
             case 'mydraft': return 'myDraftGrid';
             case 'pending': return 'pendingGrid';
+			case 'processing': return 'processingGrid';
             case 'completed': return 'completedGrid';
             case 'rejected': return 'rejectedGrid';
             default: return 'myDraftGrid';
