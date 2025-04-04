@@ -58,7 +58,7 @@
 					    <input type="text" th:field="*{empType}" class="form-control" readonly>
 					
 					    <label>지급일</label>
-					    <input type="date" id="payDate" name="payDate" class="form-control" value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+						<input type="date" id="payDate" name="payDate" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" />
 					
 					    <label>기본급</label>
 					    <input type="number" th:field="*{payBasic}" class="form-control">
