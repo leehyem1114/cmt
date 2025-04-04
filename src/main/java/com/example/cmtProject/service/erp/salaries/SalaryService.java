@@ -42,7 +42,6 @@ public class SalaryService {
 		return salMapper.getOverTimes(paymentDTO);
 	}
 	
-
 	// 급여 대장 조회
 	public List<PaymentDTO> getPayrolls() {
 		List<Payment> payrolls = salRepository.findAll();
@@ -50,7 +49,7 @@ public class SalaryService {
 				.map(payment -> payment.toDto())
 				.collect(Collectors.toList());
 	}
-	
+
 	// 직급별 기본급 계산
 	public List<PayPositionDTO> getPayAndPosition() {
 		return salMapper.getPayAndPosition();
@@ -86,4 +85,8 @@ public class SalaryService {
 		//salMapper.savePayment(paymentDTO);
 	}	
 
+	//개인 지급내역
+	public PaymentDTO getEmpPayment(String empId) {
+		return salMapper.selectEmpPayment(empId);
+	}
 }

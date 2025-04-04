@@ -52,6 +52,7 @@ public class EapprovalController {
      */
     @GetMapping(PathConstants.DOCUMENT_LIST)
     public String documentList(Model model, Principal principal) {
+    	
         String currentUserId = principal.getName();
         log.info("전자결재 문서함 접속: {}", currentUserId);
         
@@ -142,13 +143,13 @@ public class EapprovalController {
      * 문서 조회 페이지
      */
     @GetMapping(PathConstants.DOCUMENT_VIEW + "/{docId}")
-    public String viewDocument(@PathVariable String docId, Model model, Principal principal) {
+    public String viewDocument(@PathVariable("docId") String docId, Model model, Principal principal) {
         log.info("문서 상세 조회: {}", docId);
         
         try {
             DocumentDTO document = documentService.getDocumentDetail(docId);
             String currentUserId = principal.getName();
-            
+
             // 현재 사용자가 결재 대기 중인 결재자인지 확인
             boolean isCurrentApprover = approvalProcessService.isCurrentApprover(docId, currentUserId);
             

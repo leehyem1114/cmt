@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderSearchDTO;
 import com.example.cmtProject.mapper.erp.saleMgt.SalesOrderMapper;
@@ -24,11 +25,17 @@ public class SalesOrderService {
 	}
 	
 	//메인 search
-	List<SalesOrderMainDTO> soMainSearch(SalesOrderSearchDTO searchDto){
+	public List<SalesOrderMainDTO> soMainSearch(SalesOrderSearchDTO searchDto){
 		
 		System.out.println("searchDto service:"+ searchDto);
-		
-		 return salesOrderMapper.soMainSearch(searchDto);
+		return salesOrderMapper.soMainSearch(searchDto);
 	}
+	
+	//메인 Edit(Update)
+	public int soMainUpdate(SalesOrderEditDTO editDto) {
+		
+		return salesOrderMapper.soMainUpdate(editDto);
+	}
+	
 	
 }

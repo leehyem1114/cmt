@@ -7,14 +7,23 @@
  * - 오류 처리 및 로깅
  * 
  * @version 1.1.0
- * @since 2025-04-04
- * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @since 2025-04-03
+ * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
  */
 
 // 페이지 로드 시 초기화 - DOM 로드 완료 이벤트에 등록
+// documentForm.js
 document.addEventListener('DOMContentLoaded', async function() {
     try {
         console.log('기안서 작성 페이지 초기화를 시작합니다.');
+        
+        // 모든 모듈을 전역 스코프에 명시적으로 노출
+        window.FormContentLoader = FormContentLoader;
+        window.ApprovalLineManager = ApprovalLineManager;
+        window.AttachmentManager = AttachmentManager;
+        window.DocumentFormManager = DocumentFormManager;
+        
+        console.log('모듈 전역 노출 완료');
         
         // 각 모듈 순차적 초기화
         // 1. 문서 폼 관리자 초기화
@@ -32,6 +41,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // 5. 첨부파일 관리자 초기화
         await AttachmentManager.initialize();
+        
+        // 모듈 함수 접근 가능성 확인
+        console.log('모듈 함수 접근 가능성 확인:');
+        console.log('- ApprovalLineManager.getApprovalLines:', !!ApprovalLineManager.getApprovalLines);
+        console.log('- AttachmentManager.appendFilesToFormData:', !!AttachmentManager.appendFilesToFormData);
+        console.log('- FormContentLoader.getEditorContent:', !!FormContentLoader.getEditorContent);
         
         console.log('기안서 작성 페이지 초기화가 완료되었습니다.');
     } catch (error) {

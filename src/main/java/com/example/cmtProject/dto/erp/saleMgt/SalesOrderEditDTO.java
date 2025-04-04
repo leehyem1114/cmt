@@ -6,17 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+//수주 메인버튼에서 수정을 할 때 클라이언트에서 받아올 dto
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesOrderSearchDTO {
+public class SalesOrderEditDTO {
 	
-	private String soCode;
 	private Long soNo;
-	private String pdtCode;
-	private String cltCode;
-	private String soStatus;
-	private String dateType;
-	private LocalDate startDate;
-	private LocalDate endDate;
+	private String columnName;
+	private String value;
 }

@@ -21,6 +21,9 @@ public interface SalariesMapper {
 	
 	// 야근 수당 계산
 	List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO);
+	
+	//개인 지급내역
+	PaymentDTO selectEmpPayment(String empId);
 
 	// 직급별 기본급
 	List<PayPositionDTO> getPayAndPosition();

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.controller.erp.saleMgt.commonModel.SalesOrderModels;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderSearchDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
@@ -210,27 +211,44 @@ public class saleController {
 	//수주 수정 실행
 	@ResponseBody
 	@GetMapping("/soeditexe")
-	public String soEditExe(@RequestParam("gridDataHidden") String json) throws JsonMappingException, JsonProcessingException {
-		 	
-		/* json을 entity로 받는 방식
-		: 하지만 entity로 받는 경우 json값과 필드가 일치해야 하면 ManyToOne처럼 연관관계가 있거나 복잡하면 실패할 가능성이 있음
-		
+	//SalesOrderEditDTO의 soNo가 Long타입이라도 클라이어트로부터 받을 때 Stirng->Long으로 자동 변환해준다
+	public String soEditExe(@ModelAttribute SalesOrderEditDTO soEditDto) throws JsonMappingException, JsonProcessingException {
+		 
+		/* 
+		//json을 entity로 받는 방식
+		//: 하지만 entity로 받는 경우 json값과 필드가 일치해야 하면 ManyToOne처럼 연관관계가 있거나 복잡하면 실패할 가능성이 있음
 		ObjectMapper mapper = new ObjectMapper();
 		List<SalesOrder> orders = mapper.readValue(json, new TypeReference<List<SalesOrder>>() {});
 		
     	salesOrderRepository.saveAll(orders);
-		*/
-		
-		System.out.println("json:" + json);
-		
-		/* json을 dto로 받기 */
+    	
+    	//json을 dto로 받기
 		ObjectMapper mapper = new ObjectMapper(); 
 		List<SalesOrderDTO> editList = mapper.readValue(json, new TypeReference<List<SalesOrderDTO>>() {});
 		
 		System.out.println(editList);
 		
-		//TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
+		TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
+		*/
 		
+		System.out.println("soEditDto:" + soEditDto); //soEditDto:SalesOrderEditDTO(soNo=445, columnName=empId, value=911114)
+		
+		//main으로부터 empNo가 아니라 empId를 받아오기 때문에 empId를 변경한 경우 empNo를 찾아와서 SALES_ORDER테이블에서 변경(SALES_ORDER 테이블에 empNo가 있음)
+		if(soEditDto.getColumnName().equals("empId")) {
+			
+			//empId에 해당하는 empNo를 가져오기 - JPA이용
+			Long empNo = salesOrderRepository.findEmpNoByEmpId(soEditDto.getValue());
+			
+			System.out.println("empNo:" + empNo+" ,soNO:" + soEditDto.getSoNo());
+			//sono를 통해 empno를 업데이트한다
+			
+			salesOrderRepository.updateEmpNo(empNo, soEditDto.getSoNo());
+			
+		}else {
+			int updateResult = salesOrderService.soMainUpdate(soEditDto);
+			System.out.println("updateResult:" + updateResult);
+		}
+
 		return "success";
 	}
 	
@@ -269,16 +287,18 @@ public class saleController {
 	@GetMapping("/searchForm")
 	@ResponseBody
 	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
-	public String searchForm(@ModelAttribute SalesOrderSearchDTO searchDto) {
+	public List<SalesOrderMainDTO> searchForm(@ModelAttribute SalesOrderSearchDTO searchDto) {
 		
 		//SalesOrderSearchDTO로 받아서 검색을 한 후 결과를 SalseOrderMainDTO로 넘겨준다
 		//List<SalesOrderMainDTO> mainDtoList = "";
 		
-		//System.out.println(searchDto);
+		System.out.println("searchDto:"+ searchDto);
+		//(soCode=SO-20250331-001, soNo=null, pdtCode=PDT001, soStatus=SO_CONFIRMED, dateType=, startDate=2025-04-09, endDate=2025-04-25)
 		
-//		salesOrderService.soma
+		List<SalesOrderMainDTO> mainDtoList = salesOrderService.soMainSearch(searchDto);
+		System.out.println("mainDtoList:"+ mainDtoList);
 		
-		return "mainDtoList";
+		return mainDtoList;
 	}
 	
 	@GetMapping("/poform")

@@ -1,6 +1,8 @@
 package com.example.cmtProject.controller.erp.salaries;
 
+
 import java.time.LocalDate;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,7 +18,9 @@ import org.apache.commons.jexl3.MapContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,10 +49,9 @@ public class SalaryController {
 
 	// 급여 지급 내역 조회
 	@GetMapping("/payList")
-	public String getPayList(Model model) {
-		
-		model.addAttribute("paySearchDTO", new PaySearchDTO());
-		
+	public String getPayList(Model model ){
+
+    model.addAttribute("paySearchDTO", new PaySearchDTO());
 		commonCodeName(model,commonService);
 		
 		List<PaymentDTO> payList = salaryService.getPayList();
@@ -274,6 +277,30 @@ public class SalaryController {
 		List<PaymentDTO> payrolls = salaryService.getPayrolls();
 		model.addAttribute("payrolls", payrolls);
 		return "erp/salaries/payroll";
+	}
+	
+	
+	
+	
+	
+	//==========================================
+	
+	@GetMapping("insertPayForm/{empId}")
+	public String insertPayForm(@PathVariable("empId") String empId,PaymentDTO paymentDTO,Model model) {
+		PaymentDTO payList = salaryService.getEmpPayment(empId);
+		model.addAttribute("pay",payList);
+		System.out.println("개인 지급내역>>>"+payList);
+		
+		return"erp/salaries/insertPayForm";
+	}
+	
+	
+	
+	@PostMapping("/insertPay")
+	@ResponseBody
+	public String insertPay(Model model) {
+		
+		return"이체가 완료 되었습니다.";
 	}
 	
 	

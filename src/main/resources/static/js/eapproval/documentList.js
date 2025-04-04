@@ -7,9 +7,10 @@
  * - 그리드 기반 문서 목록 제공
  * - 문서 관련 이벤트 처리
  *
- * @version 1.1.0
- * @since 2025-04-04
- * @update 2025-04-04 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @version 1.2.0
+ * @since 2025-04-03
+ * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @update 2025-04-03 - 탭 전환 시 데이터 로드 문제 해결 및 대문자 키 처리 개선
  */
 const DocumentList = (function() {
     //===========================================================================
@@ -65,6 +66,14 @@ const DocumentList = (function() {
             // 성공 메시지 확인 (있는 경우)
             checkSuccessMessage();
             
+            // 초기 활성 탭 데이터 로드
+            const activeTab = document.querySelector('#documentTab button.active');
+            if (activeTab) {
+                const targetId = activeTab.getAttribute('data-bs-target').substring(1);
+                activeTabId = targetId;
+                await refreshGridData(targetId);
+            }
+            
             console.log('DocumentList 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('초기화 중 오류 발생:', error);
@@ -94,13 +103,8 @@ const DocumentList = (function() {
                     // 활성 탭 ID 업데이트
                     activeTabId = targetId;
                     
-                    // 해당 탭의 그리드 새로고침 또는 초기화
-                    const gridId = getGridIdByTabId(targetId);
-                    if (gridInstances[gridId]) {
-                        refreshGridData(targetId);
-                    } else {
-                        initializeGrid(gridId, getDataByTabId(targetId));
-                    }
+                    // 해당 탭의 그리드를 무조건 새로고침
+                    refreshGridData(targetId);
                 });
             });
             
@@ -226,10 +230,10 @@ const DocumentList = (function() {
                 activeTabId = targetId;
                 
                 const gridId = getGridIdByTabId(targetId);
-                await initializeGrid(gridId, getDataByTabId(targetId));
+                await initializeGrid(gridId, []);
             } else {
                 // 기본적으로 내 기안문서 탭 초기화
-                await initializeGrid('myDraftGrid', window.documentData?.myDrafts || []);
+                await initializeGrid('myDraftGrid', []);
             }
             
             console.log('그리드 초기화가 완료되었습니다.');
@@ -249,7 +253,7 @@ const DocumentList = (function() {
      */
     async function initializeGrid(gridId, data) {
         try {
-            console.log(`그리드 초기화 시작: ${gridId}`);
+            console.log(`그리드 초기화 시작: ${gridId}, 초기 데이터:`, data);
             
             // 그리드 요소 확인
             const gridElement = document.getElementById(gridId);
@@ -260,46 +264,46 @@ const DocumentList = (function() {
             
             // 그리드 이미 초기화되었는지 확인
             if (gridInstances[gridId]) {
+                console.log(`기존 그리드 재사용: ${gridId}`);
                 gridInstances[gridId].resetData(data || []);
-                console.log(`기존 그리드 데이터 업데이트: ${gridId}`);
                 return;
             }
-            
+			
             // TOAST UI Grid 열 정의
             const columns = [
                 {
                     header: '문서번호',
-                    name: 'docNumber',
+                    name: 'DOC_NUMBER', // 대문자 키로 수정
                     width: 150,
                     align: 'center'
                 },
                 {
                     header: '양식',
-                    name: 'formId',
+                    name: 'FORM_ID', // 대문자 키로 수정
                     width: 120,
                     align: 'center'
                 },
                 {
                     header: '제목',
-                    name: 'title',
-                    width: 'auto', // 나머지 공간 자동 채움
+                    name: 'TITLE', // 대문자 키로 수정
+                    width: 'auto',
                     minWidth: 200
                 },
                 {
                     header: '기안자',
-                    name: 'drafterId',
+                    name: 'DRAFTER_NAME', // 대문자 키로 수정 (이름 표시)
                     width: 100,
                     align: 'center'
                 },
                 {
                     header: '기안부서',
-                    name: 'draftDept',
+                    name: 'DRAFT_DEPT_NAME', // 대문자 키로 수정 (부서명 표시)
                     width: 120,
                     align: 'center'
                 },
                 {
                     header: '기안일자',
-                    name: 'draftDate',
+                    name: 'DRAFT_DATE', // 대문자 키로 수정
                     width: 120,
                     align: 'center',
                     formatter: function(obj) {
@@ -310,7 +314,7 @@ const DocumentList = (function() {
                 },
                 {
                     header: '문서상태',
-                    name: 'docStatus',
+                    name: 'DOC_STATUS', // 대문자 키로 수정
                     width: 100,
                     align: 'center',
                     formatter: function(obj) {
@@ -352,6 +356,9 @@ const DocumentList = (function() {
                 pageOptions: {
                     useClient: true,
                     perPage: 15
+                },
+                onGridMounted: function() {
+                    console.log(`${gridId} 그리드가 마운트되었습니다.`);
                 }
             };
             
@@ -364,8 +371,8 @@ const DocumentList = (function() {
                 if (ev.rowKey === undefined || ev.rowKey === null) return;
                 
                 const rowData = gridInstance.getRow(ev.rowKey);
-                if (rowData && rowData.docId) {
-                    window.location.href = `/eapproval/document/view/${rowData.docId}`;
+                if (rowData && rowData.DOC_ID) { // 대문자 키로 수정
+                    window.location.href = `/eapproval/document/view/${rowData.DOC_ID}`;
                 }
             });
             
@@ -378,7 +385,7 @@ const DocumentList = (function() {
             throw error;
         }
     }
-    
+
     /**
      * 그리드 데이터 새로고침 함수
      * 지정된 탭에 해당하는 그리드 데이터를 새로고침합니다.
@@ -391,11 +398,17 @@ const DocumentList = (function() {
             console.log(`그리드 데이터 새로고침 시작: ${tabId}`);
             
             const gridId = getGridIdByTabId(tabId);
-            const grid = gridInstances[gridId];
+            let grid = gridInstances[gridId];
             
+            // 그리드가 없는 경우 초기화
             if (!grid) {
-                console.warn(`그리드 인스턴스 없음: ${gridId}`);
-                return;
+                console.log(`그리드 초기화 필요: ${gridId}`);
+                await initializeGrid(gridId, []);
+                grid = gridInstances[gridId];
+                if (!grid) {
+                    console.warn(`그리드 인스턴스 없음: ${gridId}`);
+                    return;
+                }
             }
             
             // 로딩 표시
@@ -448,9 +461,24 @@ const DocumentList = (function() {
                     throw new Error(response.message || '문서 조회 중 오류가 발생했습니다.');
                 }
                 
-                // 그리드 데이터 갱신
-                grid.resetData(response.data || []);
-                console.log(`${tabId} 탭 데이터 새로고침 완료: ${response.data?.length || 0}건`);
+                console.log('API 응답 데이터:', response);
+                
+                // 데이터 추출 - 대문자 키 사용에 주의!
+                let gridData = [];
+                if (response.data) {
+                    // 배열 형태인지 확인
+                    if (Array.isArray(response.data)) {
+                        gridData = response.data;
+                    }
+                    // 여기서 중요! data가 대문자 속성으로 들어오는 케이스 처리
+                    else if (response.DATA && Array.isArray(response.DATA)) {
+                        gridData = response.DATA;
+                    }
+                }
+                
+                // 데이터가 없어도 빈 배열로 그리드 업데이트
+                grid.resetData(gridData || []);
+                console.log(`${tabId} 탭 데이터 새로고침 완료: ${gridData.length}건 로드됨`);
             } catch (apiError) {
                 // 로딩 종료
                 await UIUtil.toggleLoading(false);
@@ -459,12 +487,8 @@ const DocumentList = (function() {
                 console.error('문서 목록 조회 오류:', apiError);
                 await AlertUtil.showError('조회 실패', apiError.message || '문서 목록을 불러오는 중 오류가 발생했습니다.');
                 
-                // 캐시된 데이터 사용 (있는 경우)
-                const cachedData = getDataByTabId(tabId);
-                if (cachedData && cachedData.length > 0) {
-                    grid.resetData(cachedData);
-                    console.log(`캐시된 데이터로 대체: ${cachedData.length}건`);
-                }
+                // 빈 데이터로 그리드 업데이트
+                grid.resetData([]);
             }
         } catch (error) {
             console.error('그리드 데이터 새로고침 중 오류:', error);

@@ -8,17 +8,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PaymentDTO {
+@ToString
+public class PaymentDTO {  
 
     private Long payNo;              // 지급 번호
-    private Long empNo;              // 사원 번호
+    private Long empNo;              // 사원 NO
     private String empName;			 // 사원명
+    private String empId;			 // 사원번호
     private String deptName;		 // 부서명
     private String position;     	 // 직급
     private String empType;          // 고용유형
