@@ -66,7 +66,7 @@
 			</div>
 			<div>
 				<button type="button" class="calculate" data-bs-toggle="modal" data-bs-target="#payCalcModal">📃 급여 계산기</button>
-				<button type="button" class="print">✏️ 명세서 출력</button>
+				<button type="button" class="print" onclick="payPrint()">✏️ 명세서 출력</button>
 				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
 				<button type="button" class="delete">삭제</button>
 			</div>
@@ -437,7 +437,35 @@
 	
 	</script>
 		
-	</div><!-- <div layout:fragment="content"> -->
+
+      	  function payPrint(){
+      		const checkedRows = grid.getCheckedRows();
+      		const empId = checkedRows[0].empId;
+      		
+      		console.log("payPrint()!! 클릭된 아이디>>" + empId);
+      		
+      		$.ajax({
+      			url : '/salaries/payPrint/' + empId ,
+      			method : 'get',
+       			data : {empId : empId},
+      			success : function(response){
+      				alert("PDF저장성공!");
+      				window.open('/pdfs/payslip.pdf', '_blank', 'width=800,height=1000');
+      			},
+				error : function(error){
+      				console.log("오류발생");
+				}
+      			
+      			});
+		      	  
+      	  }
+      	  
+      	  
+      	  
+		</script>
+</div>	
+
+
 
 	<th:block layout:fragment="script">
 	</th:block><!-- <th:block layout:fragment="script"> -->

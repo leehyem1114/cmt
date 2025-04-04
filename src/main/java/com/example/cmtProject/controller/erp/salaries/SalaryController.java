@@ -3,6 +3,7 @@ package com.example.cmtProject.controller.erp.salaries;
 
 import java.time.LocalDate;
 import java.security.PublicKey;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
@@ -35,6 +38,7 @@ import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.salaries.SalaryService;
+import com.example.cmtProject.util.PdfGenerator;
 
 
 @Controller
@@ -46,6 +50,17 @@ public class SalaryController {
 	private EmployeesService employeesService;
 	@Autowired
 	private CommonService commonService;
+	@Autowired
+	private SpringTemplateEngine templateEngine;
+	
+	public String parseThymeleafToHtml(Map<String, Object> data) {
+	    Context context = new Context();
+	    context.setVariables(data);
+	    
+	    String html = templateEngine.process("pdf/paySlip", context);
+	    
+	    return html;  // html 파일 경로
+	}
 
 	// 급여 지급 내역 조회
 	@GetMapping("/payList")
@@ -299,10 +314,26 @@ public class SalaryController {
 	@PostMapping("/insertPay")
 	@ResponseBody
 	public String insertPay(Model model) {
-		
 		return"이체가 완료 되었습니다.";
 	}
 	
+	
+	//pdf
+	@GetMapping("/payPrint/{empId}")
+	public String patPrint(@PathVariable("empId") String empId,PaymentDTO paymentDTO,Model model) throws Exception {
+		PaymentDTO payList = salaryService.getEmpPayment(empId);
+		
+		Map<String, Object> data = new HashMap<>();
+		data.put("pay", payList);
+		data.put("today", LocalDate.now());
+
+		String html = parseThymeleafToHtml(data); // 위에서 만든 메서드
+		new PdfGenerator().generatePdf(html, "D:/pdfs/payslip.pdf");
+		model.addAttribute("pay", payList); 
+		System.out.println(">>>>>>>>>>>뿌려질 내용" + payList);
+		
+		return "pdf/paySlip";
+	}
 	
 	//=====================================================
 	//공통코드 DetailName 불러오는 메서드
