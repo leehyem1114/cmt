@@ -42,7 +42,7 @@ public class EapprovalRestController {
      * 문서 양식 조회 API
      */
     @GetMapping(PathConstants.API_FORM + "/{formId}")
-    public ApiResponse<DocFormDTO> getFormContent(@PathVariable String formId) {
+    public ApiResponse<DocFormDTO> getFormContent(@PathVariable("formId") String formId) {
         log.debug("문서 양식 조회 요청: {}", formId);
         try {
             DocFormDTO form = docFormService.getDocFormById(formId);
@@ -59,7 +59,7 @@ public class EapprovalRestController {
      * 문서 상세 조회 API
      */
     @GetMapping(PathConstants.API_DOCUMENT + "/{docId}")
-    public ApiResponse<DocumentDTO> getDocumentDetail(@PathVariable String docId) {
+    public ApiResponse<DocumentDTO> getDocumentDetail(@PathVariable("docId") String docId) {
         log.debug("문서 상세 조회 요청: {}", docId);
         try {
             DocumentDTO document = documentService.getDocumentDetail(docId);
@@ -106,7 +106,7 @@ public class EapprovalRestController {
      */
     @PostMapping(PathConstants.API_DOCUMENT + "/{docId}/process")
     public ApiResponse<Map<String, Object>> processApproval(
-            @PathVariable String docId,
+            @PathVariable("docId") String docId,
             @RequestBody ApprovalRequestDTO requestDTO) {
         
         log.debug("결재 처리 요청: 문서={}, 결재자={}, 의사결정={}", 
@@ -178,7 +178,7 @@ public class EapprovalRestController {
      * 상태별 문서 목록 조회 API
      */
     @GetMapping(PathConstants.API_DOCUMENTS + "/status/{status}")
-    public ApiResponse<List<DocumentDTO>> getDocumentsByStatus(@PathVariable String status) {
+    public ApiResponse<List<DocumentDTO>> getDocumentsByStatus(@PathVariable("status") String status) {
         log.debug("상태별 문서 목록 조회 요청: 상태={}", status);
         try {
             List<DocumentDTO> documents = documentService.getDocumentsByStatus(status);
@@ -208,7 +208,7 @@ public class EapprovalRestController {
      * 문서 삭제 API (임시저장 문서만 삭제 가능)
      */
     @DeleteMapping(PathConstants.API_DOCUMENT + "/{docId}")
-    public ApiResponse<Boolean> deleteDocument(@PathVariable String docId) {
+    public ApiResponse<Boolean> deleteDocument(@PathVariable("docId") String docId) {
         log.debug("문서 삭제 요청: {}", docId);
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();

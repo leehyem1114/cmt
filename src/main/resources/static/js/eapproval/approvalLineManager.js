@@ -7,14 +7,13 @@
  * - 결재자 정보 조회 및 설정
  * - 결재자 순서 자동 관리
  * 
- * @version 1.2.0
- * @since 2025-04-03
- * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
- * @update 2025-04-03 - 결재선 순서 표시 및 업데이트 로직 수정
+ * @version 1.3.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - API 응답 처리 리팩토링 및 대문자 키 일관성 개선
  */
 const ApprovalLineManager = (function() {
     //===========================================================================
-    // 모듈 내부 변수 - 필요에 맞게 수정하세요
+    // 모듈 내부 변수
     //===========================================================================
     
     /**
@@ -435,7 +434,8 @@ const ApprovalLineManager = (function() {
                 
                 // 결재자 옵션 추가
                 approvers.forEach(approver => {
-                    const approverValue =  approver.EMP_ID;
+                    // 가이드라인에 따라 대문자 키로 접근
+                    const approverValue = approver.EMP_ID;
                     const selected = approverValue == currentValue ? 'selected' : '';
                     
                     optionsHtml += `<option value="${approverValue}" 
@@ -482,14 +482,12 @@ const ApprovalLineManager = (function() {
         try {
             console.log('결재자 목록 로드 시작');
             
-            // 로딩 표시
-            const loading = AlertUtil.showLoading('결재자 목록 로드 중...');
-            
-            // API 호출 - ApiUtil 사용으로 통일
-            const response = await ApiUtil.get(API_URLS.APPROVERS);
-            
-            // 로딩 종료
-            loading.close();
+            // 리팩토링된 ApiUtil 사용하여 API 호출
+            const response = await ApiUtil.getWithLoading(
+                API_URLS.APPROVERS,
+                null,
+                '결재자 목록 로드 중...'
+            );
             
             // 응답 확인
             if (!response.success || !response.data) {
@@ -503,7 +501,7 @@ const ApprovalLineManager = (function() {
             return approvers;
         } catch (error) {
             console.error('결재자 목록 로드 오류:', error);
-            await AlertUtil.showWarning('결재자 조회 실패', error.message || '결재자 목록을 불러올 수 없습니다.');
+            await ApiUtil.handleApiError(error, '결재자 조회 실패');
             return null;
         }
     }

@@ -6,13 +6,13 @@
  * - 에디터 초기화 및 관리
  * - 양식 변경 이벤트 처리
  * 
- * @version 1.1.0
- * @since 2025-04-03
- * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
+ * @version 1.2.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - API 응답 처리 리팩토링 및 대문자 키 일관성 개선
  */
 const FormContentLoader = (function() {
     //===========================================================================
-    // 모듈 내부 변수 - 필요에 맞게 수정하세요
+    // 모듈 내부 변수
     //===========================================================================
     
     /**
@@ -209,8 +209,8 @@ const FormContentLoader = (function() {
                 editorContainer.appendChild(overlay);
             }
             
+            // 리팩토링된 ApiUtil 사용하여 API 호출
             try {
-                // API 호출 - ApiUtil 사용
                 const response = await ApiUtil.getWithLoading(
                     API_URLS.FORM(formId),
                     null,
@@ -230,7 +230,7 @@ const FormContentLoader = (function() {
                     throw new Error(response.message || '양식을 불러올 수 없습니다.');
                 }
                 
-                // 양식 내용 추출
+                // 양식 내용 추출 - 가이드라인에 따라 대문자 키 사용
                 const formData = response.data;
                 const formContent = formData.FORM_CONTENT || '';
                 
@@ -259,7 +259,9 @@ const FormContentLoader = (function() {
                     }
                 }
                 
-                throw apiError;
+                // API 오류 처리
+                await ApiUtil.handleApiError(apiError, '양식 로드 실패');
+                return false;
             }
         } catch (error) {
             console.error('양식 로드 중 오류:', error);

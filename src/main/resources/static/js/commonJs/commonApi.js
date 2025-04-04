@@ -1,156 +1,286 @@
 /**
- * 리팩토링된 ApiUtil - 비동기 API 통신 공통 라이브러리 (async/await 기반)
+ * commonApi.js - API 응답 처리 유틸리티
  * 
- * 모든 API 호출 함수를 async/await 패턴으로 통일하여 비동기 코드의 가독성과 유지보수성을 높입니다.
- * 오류 처리를 try-catch 블록으로 일관되게 구현하고, 로딩 표시와 결과 처리를 자동화합니다.
+ * 서버 API 응답을 일관되게 처리하기 위한 유틸리티 함수를 제공합니다.
+ * 표준 API 응답 구조:
+ * {
+ *   success: true,                  // 성공 여부 (소문자)
+ *   message: "Success",             // 메시지 (소문자)
+ *   data: {                         // 데이터 객체 (소문자)
+ *     FIELD_NAME: "값",             // 내부 필드는 대문자_언더스코어
+ *     ANOTHER_FIELD: 123            // 내부 필드는 대문자_언더스코어
+ *   },
+ *   code: "CM200"                   // 코드 (소문자)
+ * }
  * 
  * @version 1.0.0
- * @since 2025-03-24
+ * @since 2025-04-04
  */
 
-const ApiUtil = (function() {
+const ApiUtils = (function() {
     // =============================
-    // 기본 HTTP 요청 함수
+    // API 호출 기본 함수
     // =============================
-
+    
     /**
-     * 기본 API 호출 내부 함수 (모든 API 요청의 기반)
-     * 
-     * @param {Object} options - API 호출 옵션
-     * @param {string} options.url - API URL
-     * @param {string} options.method - HTTP 메서드 (GET, POST, PUT, DELETE)
-     * @param {Object} [options.data] - 요청 데이터
-     * @param {boolean} [options.isJson=true] - JSON 요청 여부
-     * @param {Function} [options.beforeSend] - 요청 전 실행할 함수
-     * @returns {Promise<any>} API 응답을 담은 Promise
-     * @private
-     */
-    async function _callApi(options) {
-        // 요청 시작 로깅
-        console.log(`API 호출: ${options.method} ${options.url}`, options.data || '');
-
-        // AJAX 요청 옵션 구성
-        const ajaxOptions = {
-            url: options.url,
-            type: options.method,
-            beforeSend: options.beforeSend
-        };
-
-        // JSON 요청인 경우 Content-Type 설정 및 데이터 직렬화
-        if (options.isJson !== false && options.data) {
-            ajaxOptions.contentType = "application/json";
-            ajaxOptions.data = JSON.stringify(options.data);
-        } else if (options.data) {
-            ajaxOptions.data = options.data;
-        }
-
-        try {
-            // jQuery의 ajax 메서드를 Promise로 감싸서 사용
-            return await new Promise((resolve, reject) => {
-                $.ajax({
-                    ...ajaxOptions,
-                    success: function(response) {
-                        console.log(`API 응답(${options.url}):`, response);
-                        resolve(response);
-                    },
-                    error: function(error) {
-                        console.error(`API 오류(${options.url}):`, error);
-                        reject(error);
-                    }
-                });
-            });
-        } catch (error) {
-            // 오류 로깅 및 재 throw
-            console.error(`API 호출 중 오류 발생(${options.url}):`, error);
-            throw error; // 상위 호출자가 try/catch로 처리할 수 있도록 오류 전파
-        }
-    }
-
-    /**
-     * GET 요청 함수
+     * API 호출 함수 - GET 메소드
      * 
      * @param {string} url - API URL
-     * @param {Object} [params] - 쿼리 파라미터
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
+     * @param {Object} params - 요청 파라미터 (선택적)
+     * @param {Object} options - 옵션 (선택적)
+     * @returns {Promise<Object>} API 응답 객체
      */
-    async function get(url, params, options = {}) {
-        return await _callApi({
-            url: url,
-            method: 'GET',
-            data: params,
-            isJson: false,
-            ...options
-        });
+    async function get(url, params = null, options = {}) {
+        try {
+            // 파라미터가 있는 경우 URL에 쿼리스트링 추가
+            if (params) {
+                const queryString = new URLSearchParams(params).toString();
+                url = `${url}${url.includes('?') ? '&' : '?'}${queryString}`;
+            }
+            
+            // 기본 옵션과 사용자 옵션 병합
+            const fetchOptions = {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            };
+            
+            // API 호출
+            const response = await fetch(url, fetchOptions);
+            
+            // JSON 응답 파싱
+            const result = await response.json();
+            
+            // 표준 API 응답 형식 검증 및 반환
+            return validateApiResponse(result);
+        } catch (error) {
+            console.error('API GET 호출 오류:', error);
+            // 표준 오류 응답 형식으로 변환하여 반환
+            return {
+                success: false,
+                message: error.message || '서버 연결 오류가 발생했습니다.',
+                data: null,
+                code: 'ERR500'
+            };
+        }
     }
-
+    
     /**
-     * POST 요청 함수
+     * API 호출 함수 - POST 메소드
      * 
      * @param {string} url - API URL
      * @param {Object} data - 요청 데이터
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
+     * @param {Object} options - 옵션 (선택적)
+     * @returns {Promise<Object>} API 응답 객체
      */
     async function post(url, data, options = {}) {
-        return await _callApi({
-            url: url,
-            method: 'POST',
-            data: data,
-            ...options
-        });
+        try {
+            // Content-Type 설정 (기본은 JSON)
+            const isFormData = data instanceof FormData;
+            
+            // 기본 옵션과 사용자 옵션 병합
+            const fetchOptions = {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(!isFormData && {'Content-Type': 'application/json'}),
+                    ...options.headers
+                },
+                body: isFormData ? data : JSON.stringify(data),
+                ...options
+            };
+            
+            // API 호출
+            const response = await fetch(url, fetchOptions);
+            
+            // JSON 응답 파싱
+            const result = await response.json();
+            
+            // 표준 API 응답 형식 검증 및 반환
+            return validateApiResponse(result);
+        } catch (error) {
+            console.error('API POST 호출 오류:', error);
+            // 표준 오류 응답 형식으로 변환하여 반환
+            return {
+                success: false,
+                message: error.message || '서버 연결 오류가 발생했습니다.',
+                data: null,
+                code: 'ERR500'
+            };
+        }
     }
-
+    
     /**
-     * PUT 요청 함수
+     * API 호출 함수 - PUT 메소드
      * 
      * @param {string} url - API URL
      * @param {Object} data - 요청 데이터
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
+     * @param {Object} options - 옵션 (선택적)
+     * @returns {Promise<Object>} API 응답 객체
      */
     async function put(url, data, options = {}) {
-        return await _callApi({
-            url: url,
-            method: 'PUT',
-            data: data,
-            ...options
-        });
+        try {
+            // Content-Type 설정 (기본은 JSON)
+            const isFormData = data instanceof FormData;
+            
+            // 기본 옵션과 사용자 옵션 병합
+            const fetchOptions = {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(!isFormData && {'Content-Type': 'application/json'}),
+                    ...options.headers
+                },
+                body: isFormData ? data : JSON.stringify(data),
+                ...options
+            };
+            
+            // API 호출
+            const response = await fetch(url, fetchOptions);
+            
+            // JSON 응답 파싱
+            const result = await response.json();
+            
+            // 표준 API 응답 형식 검증 및 반환
+            return validateApiResponse(result);
+        } catch (error) {
+            console.error('API PUT 호출 오류:', error);
+            // 표준 오류 응답 형식으로 변환하여 반환
+            return {
+                success: false,
+                message: error.message || '서버 연결 오류가 발생했습니다.',
+                data: null,
+                code: 'ERR500'
+            };
+        }
     }
-
+    
     /**
-     * DELETE 요청 함수
+     * API 호출 함수 - DELETE 메소드
      * 
      * @param {string} url - API URL
-     * @param {Object} [params] - 요청 파라미터
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
+     * @param {Object} params - 요청 파라미터 (선택적)
+     * @param {Object} options - 옵션 (선택적)
+     * @returns {Promise<Object>} API 응답 객체
      */
-    async function del(url, params, options = {}) {
-        return await _callApi({
-            url: url,
-            method: 'DELETE',
-            data: params,
-            isJson: !!params && typeof params === 'object', // 객체인 경우만 JSON으로 처리
-            ...options
-        });
+    async function del(url, params = null, options = {}) {
+        try {
+            // 파라미터가 있는 경우 URL에 쿼리스트링 추가
+            if (params) {
+                const queryString = new URLSearchParams(params).toString();
+                url = `${url}${url.includes('?') ? '&' : '?'}${queryString}`;
+            }
+            
+            // 기본 옵션과 사용자 옵션 병합
+            const fetchOptions = {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            };
+            
+            // API 호출
+            const response = await fetch(url, fetchOptions);
+            
+            // JSON 응답 파싱
+            const result = await response.json();
+            
+            // 표준 API 응답 형식 검증 및 반환
+            return validateApiResponse(result);
+        } catch (error) {
+            console.error('API DELETE 호출 오류:', error);
+            // 표준 오류 응답 형식으로 변환하여 반환
+            return {
+                success: false,
+                message: error.message || '서버 연결 오류가 발생했습니다.',
+                data: null,
+                code: 'ERR500'
+            };
+        }
     }
-
+    
     // =============================
     // 로딩 표시 관련 함수
     // =============================
-
+    
+    /**
+     * GET 요청 (로딩 표시 포함)
+     * 
+     * @param {string} url - API URL
+     * @param {Object} [params] - 쿼리 파라미터
+     * @param {string} [loadingMessage='불러오는 중...'] - 로딩 메시지
+     * @param {Object} [options] - 추가 옵션
+     * @returns {Promise<Object>} API 응답 객체
+     */
+    async function getWithLoading(url, params, loadingMessage = '불러오는 중...', options) {
+        return await withLoading(() => get(url, params, options), loadingMessage);
+    }
+    
+    /**
+     * POST 요청 (로딩 표시 포함)
+     * 
+     * @param {string} url - API URL
+     * @param {Object} data - 요청 데이터
+     * @param {string} [loadingMessage='저장 중...'] - 로딩 메시지
+     * @param {Object} [options] - 추가 옵션
+     * @returns {Promise<Object>} API 응답 객체
+     */
+    async function postWithLoading(url, data, loadingMessage = '저장 중...', options) {
+        return await withLoading(() => post(url, data, options), loadingMessage);
+    }
+    
+    /**
+     * PUT 요청 (로딩 표시 포함)
+     * 
+     * @param {string} url - API URL
+     * @param {Object} data - 요청 데이터
+     * @param {string} [loadingMessage='수정 중...'] - 로딩 메시지
+     * @param {Object} [options] - 추가 옵션
+     * @returns {Promise<Object>} API 응답 객체
+     */
+    async function putWithLoading(url, data, loadingMessage = '수정 중...', options) {
+        return await withLoading(() => put(url, data, options), loadingMessage);
+    }
+    
+    /**
+     * DELETE 요청 (로딩 표시 포함)
+     * 
+     * @param {string} url - API URL
+     * @param {Object} [params] - 요청 파라미터
+     * @param {string} [loadingMessage='삭제 중...'] - 로딩 메시지
+     * @param {Object} [options] - 추가 옵션
+     * @returns {Promise<Object>} API 응답 객체
+     */
+    async function delWithLoading(url, params, loadingMessage = '삭제 중...', options) {
+        return await withLoading(() => del(url, params, options), loadingMessage);
+    }
+    
     /**
      * 로딩 표시와 함께 API 호출을 수행하는 함수
      * 
      * @param {Function} apiCall - API 호출 함수 (Promise 반환)
      * @param {string} [loadingMessage='처리 중...'] - 로딩 메시지
-     * @returns {Promise<any>} API 응답을 담은 Promise
+     * @returns {Promise<Object>} API 응답 객체
      */
     async function withLoading(apiCall, loadingMessage = '처리 중...') {
         try {
             if (window.UIUtil) {
                 await UIUtil.toggleLoading(true, loadingMessage);
+            } else if (window.AlertUtil && typeof AlertUtil.showLoading === 'function') {
+                const loading = AlertUtil.showLoading(loadingMessage);
+                try {
+                    const result = await apiCall();
+                    loading.close();
+                    return result;
+                } catch (error) {
+                    loading.close();
+                    throw error;
+                }
             }
 
             return await apiCall();
@@ -160,63 +290,63 @@ const ApiUtil = (function() {
             }
         }
     }
-
-    /**
-     * GET 요청 (로딩 표시 포함)
-     * 
-     * @param {string} url - API URL
-     * @param {Object} [params] - 쿼리 파라미터
-     * @param {string} [loadingMessage='불러오는 중...'] - 로딩 메시지
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
-     */
-    async function getWithLoading(url, params, loadingMessage = '불러오는 중...', options) {
-        return await withLoading(() => get(url, params, options), loadingMessage);
-    }
-
-    /**
-     * POST 요청 (로딩 표시 포함)
-     * 
-     * @param {string} url - API URL
-     * @param {Object} data - 요청 데이터
-     * @param {string} [loadingMessage='저장 중...'] - 로딩 메시지
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
-     */
-    async function postWithLoading(url, data, loadingMessage = '저장 중...', options) {
-        return await withLoading(() => post(url, data, options), loadingMessage);
-    }
-
-    /**
-     * PUT 요청 (로딩 표시 포함)
-     * 
-     * @param {string} url - API URL
-     * @param {Object} data - 요청 데이터
-     * @param {string} [loadingMessage='수정 중...'] - 로딩 메시지
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
-     */
-    async function putWithLoading(url, data, loadingMessage = '수정 중...', options) {
-        return await withLoading(() => put(url, data, options), loadingMessage);
-    }
-
-    /**
-     * DELETE 요청 (로딩 표시 포함)
-     * 
-     * @param {string} url - API URL
-     * @param {Object} [params] - 요청 파라미터
-     * @param {string} [loadingMessage='삭제 중...'] - 로딩 메시지
-     * @param {Object} [options] - 추가 옵션
-     * @returns {Promise<any>} API 응답을 담은 Promise
-     */
-    async function delWithLoading(url, params, loadingMessage = '삭제 중...', options) {
-        return await withLoading(() => del(url, params, options), loadingMessage);
-    }
-
+    
     // =============================
-    // 오류 처리 및 결과 처리 함수
+    // 응답 처리 및 검증 함수
     // =============================
-
+    
+    /**
+     * API 응답 검증 및 표준화 함수
+     * 다양한 응답 형식을 표준 형식으로 변환합니다.
+     * 
+     * @param {Object} response - API 응답 객체
+     * @returns {Object} 표준화된 API 응답 객체
+     */
+    function validateApiResponse(response) {
+        // 이미 표준 형식인 경우 그대로 반환
+        if (response !== null && typeof response === 'object' && 'success' in response) {
+            return response;
+        }
+        
+        // 없거나 유효하지 않은 응답인 경우 오류 응답 생성
+        if (!response) {
+            return {
+                success: false,
+                message: '응답 데이터가 없습니다.',
+                data: null,
+                code: 'ERR400'
+            };
+        }
+        
+        // 객체가 아닌 경우 응답을 data로 감싸기
+        if (typeof response !== 'object') {
+            return {
+                success: true,
+                message: 'Success',
+                data: response,
+                code: '200'
+            };
+        }
+        
+        // 특정 형식의 응답 변환 (예: { result: true, items: [...] })
+        if ('result' in response && typeof response.result === 'boolean') {
+            return {
+                success: response.result,
+                message: response.message || (response.result ? 'Success' : 'Error'),
+                data: response.items || response.data || null,
+                code: response.code || (response.result ? '200' : '500')
+            };
+        }
+        
+        // 기타 응답은 성공으로 간주하고 data로 감싸기
+        return {
+            success: true,
+            message: 'Success',
+            data: response,
+            code: '200'
+        };
+    }
+    
     /**
      * API 에러 처리 함수
      * 
@@ -234,10 +364,24 @@ const ApiUtil = (function() {
             console.error('에러 텍스트:', error.responseText);
         }
 
-        // 알림창으로 오류 표시
-        await AlertUtil.notifySaveError(title, error.message || null, callback);
+        // AlertUtil 사용 가능 여부 확인
+        if (window.AlertUtil) {
+            // 오류 메시지 추출
+            const errorMessage = error.message || '알 수 없는 오류가 발생했습니다.';
+            
+            // 알림창으로 오류 표시
+            await AlertUtil.showError(title, errorMessage, callback);
+        } else {
+            // AlertUtil이 없는 경우 기본 alert 사용
+            alert(`${title}\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+            
+            // 콜백 호출 (있는 경우)
+            if (typeof callback === 'function') {
+                callback(error);
+            }
+        }
     }
-
+    
     /**
      * 완전한 API 요청 처리 함수 (로딩, 결과 알림, 오류 처리 포함)
      * 
@@ -248,7 +392,7 @@ const ApiUtil = (function() {
      * @param {string} [options.errorMessage='오류가 발생했습니다'] - 오류 메시지
      * @param {Function} [options.successCallback] - 성공 시 콜백
      * @param {Function} [options.errorCallback] - 오류 시 콜백
-     * @returns {Promise<any>} 처리 결과 데이터
+     * @returns {Promise<Object>} 처리 결과 데이터
      */
     async function processRequest(apiCall, options = {}) {
         const {
@@ -264,16 +408,27 @@ const ApiUtil = (function() {
 
         try {
             // 로딩 표시 시작
-            loadingRef = AlertUtil.showLoading(loadingMessage);
+            if (window.AlertUtil && typeof AlertUtil.showLoading === 'function') {
+                loadingRef = AlertUtil.showLoading(loadingMessage);
+            } else if (window.UIUtil) {
+                await UIUtil.toggleLoading(true, loadingMessage);
+            }
 
             // API 호출 실행
             const response = await apiCall();
 
+            // 로딩 표시 종료
+            if (loadingRef) {
+                loadingRef.close();
+            } else if (window.UIUtil) {
+                await UIUtil.toggleLoading(false);
+            }
+
             // 비즈니스 로직 성공 여부 확인 (response.success 필드 사용)
             if (response.success) {
                 // 성공 메시지가 지정된 경우 알림창 표시
-                if (successMessage) {
-                    await AlertUtil.notifySaveSuccess('저장 성공', successMessage, successCallback);
+                if (successMessage && window.AlertUtil) {
+                    await AlertUtil.showSuccess('성공', successMessage, successCallback);
                 } else if (successCallback) {
                     // 알림창 없이 콜백만 실행
                     successCallback(response);
@@ -281,268 +436,51 @@ const ApiUtil = (function() {
             } else {
                 // API는 성공했지만 비즈니스 로직 실패
                 const message = response.message || errorMessage;
-                await AlertUtil.showWarning("처리 실패", message, errorCallback);
+                
+                if (window.AlertUtil) {
+                    await AlertUtil.showWarning("처리 실패", message, errorCallback);
+                } else {
+                    alert(`처리 실패: ${message}`);
+                    if (errorCallback) errorCallback(response);
+                }
             }
 
             return response;
         } catch (error) {
-            // API 호출 자체가 실패한 경우
-            await handleApiError(error, errorMessage, errorCallback);
-            throw error; // 추가 처리를 위해 오류 다시 throw
-        } finally {
             // 로딩 표시 종료
             if (loadingRef) {
                 loadingRef.close();
-            }
-        }
-    }
-
-    // =============================
-    // 일괄 처리 관련 함수
-    // =============================
-
-    /**
-     * API 요청을 순차적으로 실행하는 일괄 처리 함수
-     * 
-     * @param {Array<Function>} requests - API 요청 함수 배열 (각 함수는 Promise 반환)
-     * @param {Object} [options] - 옵션
-     * @param {boolean} [options.stopOnError=true] - 오류 발생 시 중단 여부
-     * @param {string} [options.loadingMessage='일괄 처리 중...'] - 로딩 메시지
-     * @returns {Promise<Array>} 각 요청의 결과 배열
-     */
-    async function batch(requests, options = {}) {
-        const {
-            stopOnError = true,
-            loadingMessage = '일괄 처리 중...'
-        } = options;
-
-        if (!Array.isArray(requests) || requests.length === 0) {
-            return [];
-        }
-
-        try {
-            // 로딩 표시 시작
-            if (window.UIUtil) {
-                await UIUtil.toggleLoading(true, loadingMessage);
-            }
-
-            const results = [];
-
-            // 요청을 순차적으로 처리
-            for (const request of requests) {
-                try {
-                    const result = await request();
-                    results.push({
-                        success: true,
-                        data: result
-                    });
-                } catch (error) {
-                    results.push({
-                        success: false,
-                        error
-                    });
-
-                    // 오류 발생 시 중단 옵션에 따라 처리
-                    if (stopOnError) {
-                        throw {
-                            partialResults: results,
-                            error
-                        };
-                    }
-                    // stopOnError가 false면 계속 진행
-                }
-            }
-
-            return results;
-        } finally {
-            // 로딩 표시 종료
-            if (window.UIUtil) {
+            } else if (window.UIUtil) {
                 await UIUtil.toggleLoading(false);
             }
+
+            // API 호출 자체가 실패한 경우
+            await handleApiError(error, errorMessage, errorCallback);
+            throw error; // 추가 처리를 위해 오류 다시 throw
         }
     }
-
-    /**
-     * API 요청을 병렬로 실행하는 함수
-     * 
-     * @param {Array<Function>} requests - API 요청 함수 배열 (각 함수는 Promise 반환)
-     * @param {string} [loadingMessage='데이터 처리 중...'] - 로딩 메시지
-     * @returns {Promise<Array>} 각 요청의 결과 배열
-     */
-    async function parallel(requests, loadingMessage = '데이터 처리 중...') {
-        if (!Array.isArray(requests) || requests.length === 0) {
-            return [];
-        }
-
-        try {
-            // 로딩 표시 시작
-            if (window.UIUtil) {
-                await UIUtil.toggleLoading(true, loadingMessage);
-            }
-
-            // 모든 요청을 Promise.all로 병렬 처리
-            // 개별 요청 실패 시에도 전체가 실패하지 않도록 에러 처리
-            const promises = requests.map(request =>
-                request().catch(error => ({
-                    error
-                }))
-            );
-
-            return await Promise.all(promises);
-        } finally {
-            // 로딩 표시 종료
-            if (window.UIUtil) {
-                await UIUtil.toggleLoading(false);
-            }
-        }
-    }
-
-    // =============================
-    // 전자결재 특수 처리 함수
-    // =============================
-
-    /**
-     * 결재 처리 API 호출 함수
-     * 첨부파일 유무에 따라 다른 호출 방식 사용
-     * 
-     * @param {string} docId - 문서 ID
-     * @param {Object} data - 결재 데이터
-     * @param {Array} files - 첨부파일 배열 (선택적)
-     * @returns {Promise} API 응답
-     */
-    async function processApproval(docId, data, files = null) {
-        try {
-            // API URL 선택 (첨부파일 유무에 따라 다른 엔드포인트 사용)
-            const url = files && files.length > 0 
-                ? `/api/eapproval/document/${docId}/process-with-file` 
-                : `/api/eapproval/document/${docId}/process`;
-            
-            console.log(`결재 처리 API 호출: ${url}`);
-            console.log('결재 데이터:', data);
-            
-            // 첨부파일이 있는 경우 FormData 사용
-            if (files && files.length > 0) {
-                console.log('첨부파일 있음, FormData 사용');
-                const formData = new FormData();
-                
-                // 기본 데이터 추가
-                Object.keys(data).forEach(key => {
-                    formData.append(key, data[key]);
-                });
-                
-                // 파일 추가
-                files.forEach((file, index) => {
-                    formData.append(`files[${index}]`, file);
-                });
-                
-                // FormData는 Content-Type 헤더를 자동 설정하므로 isJson을 false로
-                return await post(url, formData, { isJson: false });
-            } else {
-                // 첨부파일이 없는 경우 JSON으로 전송
-                console.log('첨부파일 없음, JSON 형식 사용');
-                return await post(url, data);
-            }
-        } catch (error) {
-            console.error(`결재 처리 API 호출 중 오류(${docId}):`, error);
-            throw error;
-        }
-    }
-
-    /**
-     * 결재 처리 함수 (로딩 표시 및 결과 처리 포함)
-     * 
-     * @param {string} docId - 문서 ID
-     * @param {Object} data - 결재 데이터
-     * @param {string} [loadingMessage='결재 처리 중...'] - 로딩 메시지
-     * @param {Object} [options] - 추가 옵션
-     * @param {Array} [options.files] - 첨부파일 목록 (선택적)
-     * @param {Function} [options.successCallback] - 성공 시 콜백
-     * @param {Function} [options.errorCallback] - 오류 시 콜백
-     * @returns {Promise<any>} API 응답을 담은 Promise
-     */
-    async function processApprovalWithLoading(docId, data, loadingMessage = '결재 처리 중...', options = {}) {
-        const { files, successCallback, errorCallback } = options;
-        
-        try {
-            // 로딩 표시 시작
-            const loading = AlertUtil.showLoading(loadingMessage);
-            
-            try {
-                // API 호출
-                const response = await processApproval(docId, data, files);
-                
-                // 로딩 종료
-                loading.close();
-                
-                console.log('결재 처리 응답:', response);
-                
-                // 응답 확인
-                if (response.success) {
-                    // 성공 메시지 표시
-                    const isApprove = data.decision === '승인';
-                    const successMessage = isApprove ? '결재가 승인되었습니다.' : '결재가 반려되었습니다.';
-                    
-                    await AlertUtil.showSuccess('결재 처리 완료', successMessage);
-                    
-                    // 성공 콜백 실행
-                    if (typeof successCallback === 'function') {
-                        successCallback(response);
-                    }
-                } else {
-                    // 실패 메시지 표시
-                    await AlertUtil.showWarning('결재 처리 실패', response.message || '결재 처리 중 오류가 발생했습니다.');
-                    
-                    // 오류 콜백 실행
-                    if (typeof errorCallback === 'function') {
-                        errorCallback(response);
-                    }
-                }
-                
-                return response;
-            } catch (apiError) {
-                // 로딩 종료
-                loading.close();
-                
-                // 오류 처리
-                await handleApiError(
-                    apiError, 
-                    '결재 처리 실패', 
-                    errorCallback
-                );
-                
-                throw apiError;
-            }
-        } catch (error) {
-            console.error('결재 처리 중 오류:', error);
-            throw error;
-        }
-    }
-
-    // 공개 API - 모듈의 공개 인터페이스
+    
+    // 공개 API
     return {
         // 기본 HTTP 요청 함수
-        get,                   // HTTP GET 요청
-        post,                  // HTTP POST 요청
-        put,                   // HTTP PUT 요청
-        del,                   // HTTP DELETE 요청
-
+        get,
+        post,
+        put,
+        del,
+        
         // 로딩 표시 함수
-        withLoading,           // 커스텀 API 호출 + 로딩 표시
-        getWithLoading,        // GET + 로딩 표시
-        postWithLoading,       // POST + 로딩 표시
-        putWithLoading,        // PUT + 로딩 표시
-        delWithLoading,        // DELETE + 로딩 표시
-
-        // 통합 API 처리 함수
-        processRequest,        // 완전한 API 요청 처리 (로딩+결과알림+오류처리)
-        batch,                 // 여러 API 요청 순차 처리
-        parallel,              // 여러 API 요청 병렬 처리
-
-        // 전자결재 특수 처리 함수
-        processApproval,       // 결재 처리 API 호출 (첨부파일 처리 지원)
-        processApprovalWithLoading, // 결재 처리 + 로딩 표시 및 결과 처리
-
-        // 유틸리티 함수
-        handleApiError         // API 오류 처리
+        getWithLoading,
+        postWithLoading,
+        putWithLoading,
+        delWithLoading,
+        withLoading,
+        
+        // 응답 처리 함수
+        validateApiResponse,
+        handleApiError,
+        processRequest
     };
 })();
+
+// 이전 ApiUtil과의 호환성을 위해 전역 변수로 노출
+window.ApiUtil = ApiUtils;
