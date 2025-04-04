@@ -48,5 +48,4 @@ public class PaymentDTO {
     
     private String salBankName;	     // 은행명
     private String salBankAccount;	 // 계좌번호
-    
 }

@@ -1,0 +1,428 @@
+ 
+ 
+ 파일 내용 수정<!DOCTYPE html>
+<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layouts/layout}">
+<head>
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+<!-- 기본 메타 정보 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMT</title>
+<style>
+
+	.container {
+		display: grid;
+		grid-template-columns:  120px 180px 120px 180px 120px 180px 50px 180px 150px 1fr;
+	    gap: 3px;
+	    background: #f5f5f5;
+	    padding: 4px;
+	    border-radius: 5px;
+		border : 1px solid black;
+		text-align: center;
+		max-width: 100vw;
+	}
+	
+	.container input, .container select {
+		padding: 5px;
+		border: 1px solid #ccc;
+		border-radius: 3px;
+	}
+	 
+	.button-container {
+		display: flex;
+		gap: 5px;
+		margin: 10px;
+		justify-content: space-between;
+	}
+		
+	button {
+		padding: 5px 10px;
+	    border: none;
+	    cursor: pointer;
+	    border-radius: 3px;
+	}
+	
+	.btnSearch { background:dodgerblue; color: white; }
+	.calculate { background:dodgerblue; color: white; }
+	.print { background: purple; color: white; }
+	.transfer { background: green; color: white; }
+	.delete { background: red; color: white; }
+
+</style>
+</head>
+<body>
+
+	<div layout:fragment="content">
+
+		<div class="button-container">
+			<div>
+				<h2>급여 조회</h2>
+			</div>
+			<div>
+				<button type="button" class="calculate" data-bs-toggle="modal" data-bs-target="#payCalcModal">📃 급여 계산기</button>
+				<button type="button" class="print">✏️ 명세서 출력</button>
+				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
+				<button type="button" class="delete">삭제</button>
+			</div>
+		</div>
+
+		<form action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
+			<div class="container">
+				<label class="deptLabel">부서</label>
+				<select class="form-select" id="dept" name="dept">
+					<option th:each="dept : ${deptList}"
+						th:value="${dept.cmnDetailCode}" th:text="${dept.cmnDetailName}"></option>
+				</select>
+				<label class="emp-Label">이름</label>
+					<input type="text" class="" id="empName" maxlength="9" th:field="*{empName}">
+				<label class="payLabel">지급일</label>
+					<input type="date" id="minDate" th:field="*{minDate}">~ 
+					<input type="date" id="maxDate" th:field="*{maxDate}">
+				<button type="submit" class="btnSearch">🔍 검색</button>
+				<span></span>
+			</div>
+		</form>
+
+		<br>
+
+		<!-- 그리드 top 시작 -->
+		<div id="gridTop"></div>
+
+		
+		<script th:inline="javascript">
+	    
+	    const grid = new tui.Grid({
+	        el: document.getElementById('gridTop'), 
+			data : /*[[${payList}]]*/ [],
+	        rowHeaders: ['checkbox'], 
+	        columns: [
+				{
+	                header: '지급일',
+	                name: 'payDate',
+	            	sortable: true,
+					align: "center"
+	            },
+	            {
+	                header: '사원번호',
+	                name: 'empNo',
+	                sortable: true,
+	                align: "center"
+	            },
+	            {
+	                header: '사원명',
+	                name: 'empName',
+					align: "center"
+	            },
+	            {
+	                header: '부서',
+	                name: 'deptName',
+		            sortable: true,
+		            align: "center"
+	            },
+	            {
+	                header: '직급',
+	                name: 'position',
+	            	sortable: true,
+					align: "center"
+	            },
+	            {
+	                header: '고용유형',
+	                name: 'empType',
+					align: "center"
+	            },
+	            {
+	                header: '기본급',
+	                name: 'payBasic',
+					align: "center"
+	            },
+	            {
+	                header: '야근수당',
+	                name: 'payBonusOvertime',
+					align: "center"
+	            },
+	            {
+	                header: '명절수당',
+	                name: 'payBonusHoliday',
+					align: "center"
+	            },
+	            {
+	                header: '총수당금액',
+	                name: 'payBonusTotal',
+					align: "center"
+	            },
+	            {
+	                header: '국민연금',
+	                name: 'payTaxPension',
+					align: "center"
+	            },
+	            {
+	                header: '건강보험',
+	                name: 'payTaxHealth',
+					align: "center"
+	            },
+	            {
+	                header: '장기요양보험',
+	                name: 'payTaxCare',
+					align: "center"
+	            },
+	            {
+	                header: '고용보험',
+	                name: 'payTaxEmployment',
+					align: "center"
+	            },
+	            {
+	                header: '소득세',
+	                name: 'payTaxIncome',
+					align: "center"
+	            },
+	            {
+	                header: '주민세',
+	                name: 'payTaxResidence',
+					align: "center"
+	            },
+	            {
+	                header: '총공제금액',
+	                name: 'payTaxTotal',
+					align: "center"
+	            },
+	            {
+	                header: '실수령액',
+	                name: 'payTotal',
+					align: "center"
+	            },
+	            {
+	                header: '지급상태',
+	                name: 'payStatus',
+	                sortable: true,
+					align: "center"
+	            }
+	        ] // 열 설정
+	    });
+	    
+	 	// 체크박스 클릭 시 이벤트 추가
+	    grid.on('check', (checkItem) => {
+	        console.log("체크 확인");
+	    });
+
+	    // 체크 해제 시 이벤트 추가
+	    grid.on('uncheck', (checkItem) => {
+	    	console.log("체크 해제 확인");
+	    });
+
+	    </script>
+		<!-- 그리드 끝 -->
+
+
+		<!-- 급여 계산기 모달 -->
+		<div class="modal fade" id="payCalcModal" tabindex="-1"
+			aria-labelledby="payCalcModal" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="payCalcModal">급여 계산기</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<label for="pay">급여</label>
+						<div class="input-group mb-2">
+							<input type="text" id="pay" class="form-control"
+								placeholder="급여 입력"> <span class="input-group-text">원</span>
+							<button type="button" class="btn btn-secondary ms-2"
+								onclick="simulatePay()">계산하기</button>
+						</div>
+						<label for="payList"></label>
+						<h6 class="text-primary mb-3">지급항목</h6>
+						<div class="row mb-2">
+							<div class="col-6">급여</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<h6 class="text-primary mb-3">공제항목</h6>
+						<div class="row mb-2">
+							<div class="col-6">국민연금</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">건강보험</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">장기요양보험</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">고용보험</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">소득세</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">주민세</div>
+							<div class="col-6 text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">총 공제액</div>
+							<div class="col-6 text-danger text-end">원</div>
+						</div>
+						<label for="salItemCalc"></label>
+						<div class="row mb-2">
+							<div class="col-6">예상 실 수령액</div>
+							<div class="col-6 text-danger text-end">원</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">닫기</button>
+					</div>
+				</div>
+			</div>
+		</div><!-- 급여 계산기 모달 -->
+
+		<!-- 급여 이체 모달 -->
+		<div class="modal fade" id="payTransferModal" tabindex="-1"
+			aria-labelledby="payTransferModal" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="payCalcModal">급여 이체</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="input-group mb-2">
+							<input type="date" id="payDate" class="form-control">
+						</div>
+						<div class="input-group mb-2">
+							<select class="form-select" id="dept" name="dept">
+								<option th:each="dept : ${deptList}"
+									th:value="${dept.cmnDetailCode}"
+									th:text="${dept.cmnDetailName}"></option>
+							</select>
+  						<div class="input-group mb-2">
+							<select class="form-select" id="position" name="position">
+								<option th:each="code : ${commonCodeMap['POSITION']}"
+									th:value="${code.cmnDetailCode}"
+									th:text="${code.cmnDetailName}"></option>
+							</select>
+						<div class="input-group mb-2">
+							<input type="text" id="payBasic" class="form-control" >
+						</div>
+							<button type="submit" class="btn btn-secondary ms-2">조회</button>
+						</div>
+						<!-- 그리드 top 시작 -->
+						<div id="gridTop2" style="width: 100%"></div>
+						<!-- 그리드 끝 -->
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+							<button type="button" id="payTransferBtn" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!-- 급여 이체 모달 -->
+	</div>
+
+	<!-- 
+        페이지별 JavaScript 추가 영역.
+        여기에 페이지에서 사용할 스크립트를 작성하세요.
+        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
+    -->
+
+		<script th:inline="javascript">
+		let grid2 = null;
+		
+		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
+      	  // 모달 완전히 열린 후에 grid 생성
+			// $('#payTransferModal').on('shown.bs.modal', function () {
+			if (!grid2) {
+				grid2 = new tui.Grid({
+					el: document.getElementById('gridTop2'), 
+					data : /*[[${empList}]]*/ [],
+					rowHeaders: ['checkbox'], 
+					columns: [
+						{
+							header: '사원번호',
+							name: 'empId',
+							align: "center"
+						},
+						{
+							header: '사원명',
+							name: 'empName',
+							align: "center"
+						},
+						{
+							header: '부서',
+							name: 'deptName', 
+							sortable: true,
+							align: "center"
+						},
+						{
+							header: '직급',
+							name: 'deptPosition', 
+							sortable: true,
+							align: "center"
+						}	
+					] // 열 설정
+				});
+					
+				console.log("empList:", /*[[${empList}]]*/ []);
+	    
+				// 체크박스 클릭 시 이벤트 추가
+				grid2.on('check', (checkItem) => {
+					console.log("체크 확인");
+				});
+
+				// 체크 해제 시 이벤트 추가
+				grid2.on('uncheck', (checkItem) => {
+					console.log("체크 해제 확인");
+				});
+			} else {
+				// 이미 Grid 있으면 데이터 리셋
+				grid2.resetData(/*[[${empList}]]*/ []);
+			}	
+		});
+		</script>
+</div>	
+
+		
+	<th:block layout:fragment="script">
+		<script>
+		$('#payTransferBtn').on('click', function () {
+			const checkedRows = grid.getCheckedRows();
+			const empNoList = checkedRows.map(row => row.empNo);
+			const position = $('#position').val();
+
+    		$.ajax({
+        		type: 'POST',
+        		url: 'erp/salaries/payTransfer',
+        		data: { position: position,
+        				empNoList: empNoList
+        		},
+        		success: function (res) {
+            		alert('급여이체 완료!');
+            		location.reload(); // or 특정 그리드/뷰 갱신
+        		},
+        		error: function () {
+            		alert('급여이체 실패!');
+        		}
+    		});
+		});
+		</script>
+	
+	</th:block>
+</body>
+</html>
+ 

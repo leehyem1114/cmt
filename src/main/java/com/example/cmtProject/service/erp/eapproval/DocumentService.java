@@ -3,8 +3,8 @@ package com.example.cmtProject.service.erp.eapproval;
 import com.example.cmtProject.constants.ApprovalStatus;
 import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
+import com.example.cmtProject.dto.erp.eapproval.DocumentSaveRequestDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
-import com.example.cmtProject.dto.erp.eapproval.AttachmentDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
 import com.example.cmtProject.comm.exception.DocumentAccessDeniedException;
@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,7 +30,53 @@ public class DocumentService {
     private final DocumentMapper documentMapper;
     private final ApprovalLineMapper approvalLineMapper;
     private final ApprovalProcessService approvalProcessService;
-    private final AttachmentService attachmentService;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * DTO를 이용한 문서 저장
+     * 
+     * @param requestDTO 저장 요청 DTO
+     * @return 저장된 문서 정보
+     */
+    @Transactional
+    public DocumentDTO saveDocumentWithDTO(DocumentSaveRequestDTO requestDTO) throws Exception {
+        log.info("문서 저장 시작: 임시저장={}, 제목={}", requestDTO.isTempSave(), requestDTO.getTitle());
+        
+        // 문서 DTO 생성
+        DocumentDTO documentDTO = new DocumentDTO();
+        
+        // 문서 ID가 없으면 새로 생성
+        if (requestDTO.getDocId() == null || requestDTO.getDocId().isEmpty()) {
+            requestDTO.setDocId(UUID.randomUUID().toString());
+        }
+        
+        // 요청 DTO에서 값 복사
+        documentDTO.setDocId(requestDTO.getDocId());
+        documentDTO.setDocNumber(requestDTO.getDocNumber());
+        documentDTO.setFormId(requestDTO.getFormId());
+        documentDTO.setTitle(requestDTO.getTitle());
+        documentDTO.setContent(requestDTO.getContent());
+        documentDTO.setDrafterId(requestDTO.getDrafterId());
+        
+        // 부서 정보 설정
+        String draftDeptCode = getEmployeeDeptCodeByEmpId(requestDTO.getDrafterId());
+        documentDTO.setDraftDept(draftDeptCode);
+        
+        // 결재선 정보 설정
+        if (requestDTO.getApprovalLinesJson() != null && !requestDTO.getApprovalLinesJson().isEmpty()) {
+            List<ApprovalLineDTO> approvalLines = objectMapper.readValue(
+                requestDTO.getApprovalLinesJson(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, ApprovalLineDTO.class)
+            );
+            documentDTO.setApprovalLines(approvalLines);
+        }
+        
+        // 문서 저장
+        DocumentDTO savedDocument = saveDocument(documentDTO, requestDTO.isTempSave());
+        
+        // 완료된 문서 반환
+        return getDocumentDetail(savedDocument.getDocId());
+    }
 
     /**
      * 문서 저장 (임시저장 또는 결재요청)
@@ -101,11 +149,6 @@ public class DocumentService {
         document.setApprovalLines(approvalLines);
         log.debug("결재선 조회: {}개", approvalLines.size());
         
-        // 첨부파일 조회
-        List<AttachmentDTO> attachments = attachmentService.getAttachmentsByDocId(docId);
-        document.setAttachments(attachments);
-        log.debug("첨부파일 조회: {}개", attachments.size());
-        
         return document;
     }
 
@@ -169,10 +212,6 @@ public class DocumentService {
         // 관련 데이터 삭제
         approvalLineMapper.deleteApprovalLinesByDocId(docId);
         log.debug("결재선 삭제 완료: {}", docId);
-        
-        // 첨부파일 삭제
-        attachmentService.deleteAttachmentsByDocId(docId);
-        log.debug("첨부파일 삭제 완료: {}", docId);
         
         // 문서 삭제
         int result = documentMapper.deleteDocument(docId);

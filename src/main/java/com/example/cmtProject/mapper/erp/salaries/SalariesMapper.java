@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.cmtProject.dto.erp.salaries.PayPositionDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 
@@ -24,8 +25,11 @@ public interface SalariesMapper {
 	//개인 지급내역
 	PaymentDTO selectEmpPayment(String empId);
 
+	// 직급별 기본급
+	List<PayPositionDTO> getPayAndPosition();
 
-
+	// 급여 이체
+	void savePayment(PaymentDTO paymentDTO);
 
 
 }
