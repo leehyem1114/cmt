@@ -155,6 +155,7 @@ public class EapprovalController {
             
             model.addAttribute("document", document);
             model.addAttribute("isCurrentApprover", isCurrentApprover);
+            model.addAttribute("approverId", currentUserId);
             
             return PathConstants.VIEW_DOCUMENT_VIEW;
         } catch (DocumentNotFoundException e) {

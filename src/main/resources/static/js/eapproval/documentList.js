@@ -7,14 +7,13 @@
  * - 그리드 기반 문서 목록 제공
  * - 문서 관련 이벤트 처리
  *
- * @version 1.2.0
- * @since 2025-04-03
- * @update 2025-04-03 - SimpleGridManager 템플릿 스타일로 코드 리팩토링
- * @update 2025-04-03 - 탭 전환 시 데이터 로드 문제 해결 및 대문자 키 처리 개선
+ * @version 1.3.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - API 응답 처리 리팩토링 및 대문자 키 일관성 개선
  */
 const DocumentList = (function() {
     //===========================================================================
-    // 모듈 내부 변수 - 필요에 맞게 수정하세요
+    // 모듈 내부 변수
     //===========================================================================
     
     /**
@@ -273,37 +272,37 @@ const DocumentList = (function() {
             const columns = [
                 {
                     header: '문서번호',
-                    name: 'DOC_NUMBER', // 대문자 키로 수정
+                    name: 'DOC_NUMBER', 
                     width: 150,
                     align: 'center'
                 },
                 {
                     header: '양식',
-                    name: 'FORM_ID', // 대문자 키로 수정
+                    name: 'FORM_ID', 
                     width: 120,
                     align: 'center'
                 },
                 {
                     header: '제목',
-                    name: 'TITLE', // 대문자 키로 수정
+                    name: 'TITLE', 
                     width: 'auto',
                     minWidth: 200
                 },
                 {
                     header: '기안자',
-                    name: 'DRAFTER_NAME', // 대문자 키로 수정 (이름 표시)
+                    name: 'DRAFTER_NAME', 
                     width: 100,
                     align: 'center'
                 },
                 {
                     header: '기안부서',
-                    name: 'DRAFT_DEPT_NAME', // 대문자 키로 수정 (부서명 표시)
+                    name: 'DRAFT_DEPT_NAME', 
                     width: 120,
                     align: 'center'
                 },
                 {
                     header: '기안일자',
-                    name: 'DRAFT_DATE', // 대문자 키로 수정
+                    name: 'DRAFT_DATE', 
                     width: 120,
                     align: 'center',
                     formatter: function(obj) {
@@ -314,7 +313,7 @@ const DocumentList = (function() {
                 },
                 {
                     header: '문서상태',
-                    name: 'DOC_STATUS', // 대문자 키로 수정
+                    name: 'DOC_STATUS', 
                     width: 100,
                     align: 'center',
                     formatter: function(obj) {
@@ -371,7 +370,7 @@ const DocumentList = (function() {
                 if (ev.rowKey === undefined || ev.rowKey === null) return;
                 
                 const rowData = gridInstance.getRow(ev.rowKey);
-                if (rowData && rowData.DOC_ID) { // 대문자 키로 수정
+                if (rowData && rowData.DOC_ID) { 
                     window.location.href = `/eapproval/document/view/${rowData.DOC_ID}`;
                 }
             });
@@ -411,9 +410,6 @@ const DocumentList = (function() {
                 }
             }
             
-            // 로딩 표시
-            await UIUtil.toggleLoading(true, '문서 목록 로딩 중...');
-            
             try {
                 // 검색 파라미터 구성
                 const searchParams = new URLSearchParams();
@@ -450,42 +446,35 @@ const DocumentList = (function() {
                         apiUrl = API_URLS.DRAFTS;
                 }
                 
-                // API 호출 - ApiUtil 사용
-                const response = await ApiUtil.get(`${apiUrl}?${searchParams.toString()}`);
+                // API 호출 - 리팩토링된 ApiUtil 사용
+                const response = await ApiUtil.getWithLoading(
+                    `${apiUrl}?${searchParams.toString()}`,
+                    null,
+                    '문서 목록 로딩 중...'
+                );
                 
-                // 로딩 종료
-                await UIUtil.toggleLoading(false);
-                
-                // 응답 처리
+                // 응답 처리 개선
                 if (!response.success) {
                     throw new Error(response.message || '문서 조회 중 오류가 발생했습니다.');
                 }
                 
                 console.log('API 응답 데이터:', response);
                 
-                // 데이터 추출 - 대문자 키 사용에 주의!
+                // 데이터 추출 - 가이드라인에 따라 대문자 키 사용
                 let gridData = [];
                 if (response.data) {
                     // 배열 형태인지 확인
                     if (Array.isArray(response.data)) {
                         gridData = response.data;
                     }
-                    // 여기서 중요! data가 대문자 속성으로 들어오는 케이스 처리
-                    else if (response.DATA && Array.isArray(response.DATA)) {
-                        gridData = response.DATA;
-                    }
                 }
                 
                 // 데이터가 없어도 빈 배열로 그리드 업데이트
                 grid.resetData(gridData || []);
                 console.log(`${tabId} 탭 데이터 새로고침 완료: ${gridData.length}건 로드됨`);
-            } catch (apiError) {
-                // 로딩 종료
-                await UIUtil.toggleLoading(false);
-                
-                // 오류 알림
-                console.error('문서 목록 조회 오류:', apiError);
-                await AlertUtil.showError('조회 실패', apiError.message || '문서 목록을 불러오는 중 오류가 발생했습니다.');
+            } catch (error) {
+                console.error('문서 목록 조회 오류:', error);
+                await ApiUtil.handleApiError(error, '문서 목록 조회 실패');
                 
                 // 빈 데이터로 그리드 업데이트
                 grid.resetData([]);
@@ -581,24 +570,6 @@ const DocumentList = (function() {
             case 'completed': return 'completedGrid';
             case 'rejected': return 'rejectedGrid';
             default: return 'myDraftGrid';
-        }
-    }
-    
-    /**
-     * 탭 ID에 해당하는 데이터 반환 함수
-     * 
-     * @param {string} tabId - 탭 ID
-     * @returns {Array} 문서 데이터
-     */
-    function getDataByTabId(tabId) {
-        if (!window.documentData) return [];
-        
-        switch (tabId) {
-            case 'mydraft': return window.documentData.myDrafts || [];
-            case 'pending': return window.documentData.pendingDocs || [];
-            case 'completed': return window.documentData.completedDocs || [];
-            case 'rejected': return window.documentData.rejectedDocs || [];
-            default: return [];
         }
     }
     

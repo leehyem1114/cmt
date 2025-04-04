@@ -14,7 +14,7 @@
         <input type="hidden" id="docId" th:value="${document.docId}" />
         <input type="hidden" id="isCurrentApprover" th:value="${isCurrentApprover}" />
         <!-- 결재자 ID 추가 -->
-        <input type="hidden" id="approverId" th:value="${approverId}" />
+        <input type="hidden" id="approverId" th:value="${approverId ?: #authentication.principal.username}" />
         
         <!-- 버튼 영역 -->
         <div class="d-flex justify-content-between mb-3">
@@ -181,7 +181,7 @@
             window.documentData = {
                 docId: /*[[${document.docId}]]*/ '',
                 isCurrentApprover: /*[[${isCurrentApprover}]]*/ false,
-                approverId: /*[[${approverId}]]*/ ''  // 서버에서 전달받은 결재자 ID 추가
+                approverId: /*[[${approverId ?: #authentication.principal.username}]]*/ ''  // 서버에서 전달받은 결재자 ID 추가
             };
         </script>
         <script src="/js/eapproval/documentView.js"></script>

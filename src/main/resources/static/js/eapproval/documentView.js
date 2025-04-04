@@ -6,9 +6,9 @@
  * - 결재/반려 처리
  * - 결재 의견 관리
  * 
- * @version 1.4.0
- * @since 2025-04-03
- * @update 2025-04-05 - ApiUtil 기능 연동 및 코드 개선
+ * @version 1.5.0
+ * @since 2025-04-04
+ * @update 2025-04-04 - API 응답 처리 리팩토링 및 대문자 키 일관성 개선
  */
 const DocumentView = (function() {
     //===========================================================================
@@ -115,17 +115,18 @@ const DocumentView = (function() {
         if (window.documentData) {
             console.log('window.documentData 존재함:', window.documentData);
             
-            if (window.documentData.docId) {
-                documentData.docId = window.documentData.docId;
+            // 가이드라인에 따라 대문자 키 사용
+            if (window.documentData.DOC_ID) {
+                documentData.docId = window.documentData.DOC_ID;
                 console.log('Thymeleaf에서 문서 ID 로드:', documentData.docId);
             }
             
-            documentData.isCurrentApprover = window.documentData.isCurrentApprover === true;
+            documentData.isCurrentApprover = window.documentData.IS_CURRENT_APPROVER === true;
             console.log('Thymeleaf에서 결재자 여부 로드:', documentData.isCurrentApprover);
             
             // 결재자 ID 로드
-            if (window.documentData.approverId) {
-                documentData.approverId = window.documentData.approverId;
+            if (window.documentData.APPROVER_ID) {
+                documentData.approverId = window.documentData.APPROVER_ID;
                 console.log('Thymeleaf에서 결재자 ID 로드:', documentData.approverId);
             }
         }
@@ -372,25 +373,49 @@ const DocumentView = (function() {
                 comment: comment || ''
             };
             
-            // ApiUtil을 사용하여 결재 처리 (로딩 및 결과 처리 포함)
-            await ApiUtil.processApprovalWithLoading(
-                documentData.docId, 
-                approvalData,
-                decision === '승인' ? '결재 승인 중...' : '결재 반려 중...',
-                {
-                    successCallback: () => {
-                        // 모달 닫기
-                        if (approvalModal) {
-                            approvalModal.hide();
-                        }
-                        
-                        // 문서 목록으로 이동
-                        setTimeout(() => {
-                            goToDocumentList();
-                        }, 500);
-                    }
-                }
+            // 리팩토링된 ApiUtil 사용하여 결재 처리
+            // 로딩 표시 시작
+            const loading = AlertUtil.showLoading(
+                decision === '승인' ? '결재 승인 중...' : '결재 반려 중...'
             );
+            
+            try {
+                // API 호출
+                const apiUrl = API_URLS.PROCESS(documentData.docId);
+                const response = await ApiUtil.post(apiUrl, approvalData);
+                
+                // 로딩 표시 종료
+                loading.close();
+                
+                // 응답 처리
+                if (response.success) {
+                    // 성공 메시지 표시
+                    const successMessage = decision === '승인' ? '결재가 승인되었습니다.' : '결재가 반려되었습니다.';
+                    await AlertUtil.showSuccess('결재 처리 완료', successMessage);
+                    
+                    // 모달 닫기
+                    if (approvalModal) {
+                        approvalModal.hide();
+                    }
+                    
+                    // 문서 목록으로 이동
+                    setTimeout(() => {
+                        goToDocumentList();
+                    }, 500);
+                } else {
+                    // 실패 메시지 표시
+                    await AlertUtil.showWarning(
+                        '결재 처리 실패', 
+                        response.message || '결재 처리 중 오류가 발생했습니다.'
+                    );
+                }
+            } catch (error) {
+                // 로딩 표시 종료
+                loading.close();
+                
+                // 오류 처리
+                await ApiUtil.handleApiError(error, '결재 처리 실패');
+            }
         } catch (error) {
             console.error('결재 처리 중 오류:', error);
             await AlertUtil.showError('결재 처리 오류', error.message || '결재 처리 중 오류가 발생했습니다.');

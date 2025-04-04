@@ -43,6 +43,8 @@ public class ApprovalProcessService {
         ApprovalLineDTO approvalLine = approvalLineMapper.selectApprovalLineByDocIdAndApproverId(
                 requestDTO.getDocId(), requestDTO.getApproverId());
         
+        log.debug(" 결재라인 정보 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + approvalLine);
+        
         if (approvalLine == null) {
             throw new ApprovalProcessException("결재 권한이 없습니다");
         }
