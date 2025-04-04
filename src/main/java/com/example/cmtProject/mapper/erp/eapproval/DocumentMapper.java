@@ -17,20 +17,20 @@ public interface DocumentMapper {
      * 문서 저장
      * @param document 저장할 문서 정보
      */
-    void insertDocument(DocumentDTO document);
+	public void insertDocument(DocumentDTO document);
     
     /**
      * 문서 정보 수정
      * @param document 수정할 문서 정보
      */
-    void updateDocument(DocumentDTO document);
+	public void updateDocument(DocumentDTO document);
     
     /**
      * 문서 상태 변경
      * @param docId 문서 ID
      * @param docStatus 변경할 문서 상태
      */
-    void updateDocumentStatus(@Param("docId") String docId, 
+	public void updateDocumentStatus(@Param("docId") String docId, 
                               @Param("docStatus") String docStatus);
     
     /**
@@ -38,7 +38,7 @@ public interface DocumentMapper {
      * @param docId 문서 ID
      * @param approvalDate 결재일자
      */
-    void updateApprovalDate(@Param("docId") String docId, 
+	public void updateApprovalDate(@Param("docId") String docId, 
                            @Param("approvalDate") LocalDateTime approvalDate);
     
     /**
@@ -46,14 +46,14 @@ public interface DocumentMapper {
      * @param docId 문서 ID
      * @return 문서 정보
      */
-    DocumentDTO selectDocumentById(String docId);
+	public DocumentDTO selectDocumentById(String docId);
     
     /**
      * 기안자별 문서 목록 조회
      * @param drafterId 기안자 ID(사번)
      * @return 문서 목록
      */
-    List<DocumentDTO> selectDocumentsByDrafterId(String drafterId);
+	public List<DocumentDTO> selectDocumentsByDrafterId(String drafterId);
     
     /**
      * 기안자 및 상태별 문서 목록 조회
@@ -61,7 +61,7 @@ public interface DocumentMapper {
      * @param status 문서 상태
      * @return 문서 목록
      */
-    List<DocumentDTO> selectDocumentsByDrafterAndStatus(
+	public List<DocumentDTO> selectDocumentsByDrafterAndStatus(
             @Param("drafterId") String drafterId, 
             @Param("status") String status);
     
@@ -70,32 +70,43 @@ public interface DocumentMapper {
      * @param docStatus 문서 상태
      * @return 문서 목록
      */
-    List<DocumentDTO> selectDocumentsByStatus(String docStatus);
+	public List<DocumentDTO> selectDocumentsByStatus(String docStatus);
     
     /**
      * 결재자별 대기 문서 목록 조회
      * @param approverId 결재자 ID(사번)
      * @return 문서 목록
      */
-    List<DocumentDTO> selectPendingDocumentsByApproverId(String approverId);
+	public List<DocumentDTO> selectPendingDocumentsByApproverId(String approverId);
     
     /**
      * 문서 번호 자동 생성을 위한 시퀀스 조회
      * @return 다음 시퀀스 값
      */
-    int selectDocumentSequence();
+	public int selectDocumentSequence();
     
     /**
      * 문서 삭제 (임시저장 문서만)
      * @param docId 문서 ID
      * @return 삭제된 행 수
      */
-    int deleteDocument(String docId);
+	public int deleteDocument(String docId);
     
     /**
      * 직원 ID(사번)의 부서 코드 조회
      * @param empId 직원 ID(사번)
      * @return 부서 코드
      */
-    String selectEmployeeDeptCodeByEmpId(String empId);
+	public String selectEmployeeDeptCodeByEmpId(String empId);
+	
+    /**
+     * 결재 가능한 문서 목록 조회 (결재 순서 고려)
+     * 첫 번째 결재자이거나 이전 결재자가 모두 승인한 문서만 조회
+     * 
+     * @param approverId 결재자 ID(사번)
+     * @return 결재 가능한 문서 목록
+     */
+    List<DocumentDTO> selectProcessableDocumentsByApproverId(String approverId);
+	
+	
 }

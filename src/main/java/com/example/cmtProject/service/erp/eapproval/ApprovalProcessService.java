@@ -103,12 +103,48 @@ public class ApprovalProcessService {
     }
     
     /**
-     * 결재 대기 여부 확인
+     * 현재 결재자 여부 확인
      * 특정 결재자가 해당 문서의 현재 결재자인지 확인
+     * 이전 결재자가 모두 승인한 경우에만 현재 결재자로 간주
      */
     public boolean isCurrentApprover(String docId, String approverId) {
-        ApprovalLineDTO approvalLine = approvalLineMapper.selectApprovalLineByDocIdAndApproverId(docId, approverId);
-        return approvalLine != null && ApprovalStatus.PENDING.equals(approvalLine.getApprovalStatus());
+        // 1. 해당 문서의 결재선 조회
+        List<ApprovalLineDTO> approvalLines = approvalLineMapper.selectApprovalLinesByDocId(docId);
+        
+        // 2. 해당 결재자의 결재선 정보 확인
+        ApprovalLineDTO currentApproval = null;
+        int currentApproverIndex = -1;
+        
+        for (int i = 0; i < approvalLines.size(); i++) {
+            ApprovalLineDTO line = approvalLines.get(i);
+            if (line.getApproverId().equals(approverId)) {
+                currentApproval = line;
+                currentApproverIndex = i;
+                break;
+            }
+        }
+        
+        // 결재선에 해당 결재자가 없는 경우
+        if (currentApproval == null || !ApprovalStatus.PENDING.equals(currentApproval.getApprovalStatus())) {
+            return false;
+        }
+        
+        // 첫 번째 결재자인 경우 바로 처리 가능
+        if (currentApproverIndex == 0) {
+            return true;
+        }
+        
+        // 이전 결재자들이 모두 승인한 경우에만 현재 결재자로 간주
+        for (int i = 0; i < currentApproverIndex; i++) {
+            ApprovalLineDTO prevLine = approvalLines.get(i);
+            // 이전 결재자 중 대기 상태가 있으면 현재 결재자가 아님
+            if (!ApprovalStatus.APPROVED.equals(prevLine.getApprovalStatus())) {
+                return false;
+            }
+        }
+        
+        // 이전 결재자가 모두 승인했으면 현재 결재자임
+        return true;
     }
     
     /**

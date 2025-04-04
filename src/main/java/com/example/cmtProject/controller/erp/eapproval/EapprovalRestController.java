@@ -166,7 +166,8 @@ public class EapprovalRestController {
         
         log.debug("결재 대기 문서 목록 조회 요청: 결재자={}", currentUserId);
         try {
-            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(currentUserId);
+            List<DocumentDTO> documents = documentService.getProcessableDocumentsByEmpId(currentUserId);
+//            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(currentUserId); 삭제처리
             return ApiResponse.success(documents);
         } catch (Exception e) {
             log.error("대기 문서 목록 조회 중 오류 발생: {}", e.getMessage(), e);

@@ -95,7 +95,7 @@ public class DocumentService {
         documentDTO.setIsTempSaved(isTempSave ? "Y" : "N");
         
         // 문서 상태 설정
-        documentDTO.setDocStatus(isTempSave ? DocumentStatus.TEMP_SAVED : DocumentStatus.IN_PROGRESS);
+        documentDTO.setDocStatus(isTempSave ? DocumentStatus.TEMP_SAVED : DocumentStatus.PROCESSING);
         
         // 문서 번호 생성 (신규 문서인 경우)
         if (documentDTO.getDocNumber() == null || documentDTO.getDocNumber().isEmpty()) {
@@ -238,5 +238,14 @@ public class DocumentService {
             log.error("부서 코드 조회 중 오류 발생: {}", e.getMessage(), e);
             return "DEPT001"; // 오류 시 기본값 반환
         }
+    }
+    
+    /**
+     * 결재 가능한 문서 목록 조회 (결재 순서 고려)
+     * 첫 번째 결재자이거나 이전 결재자가 모두 승인한 문서만 조회
+     */
+    public List<DocumentDTO> getProcessableDocumentsByEmpId(String empId) {
+        log.debug("결재 가능한 문서 목록 조회: {}", empId);
+        return documentMapper.selectProcessableDocumentsByApproverId(empId);
     }
 }
