@@ -61,6 +61,9 @@ dependencies {
     
     // 문자열 수식 그대로 연산하기
 	implementation 'org.apache.commons:commons-jexl3:3.4.0'
+	// PDF변환 라이브러리
+	implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.1.22'
+
 }
 
 // ---------- QueryDSL 관련 디렉토리 지정  -------------
