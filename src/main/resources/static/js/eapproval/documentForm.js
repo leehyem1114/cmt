@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // 모든 모듈을 전역 스코프에 명시적으로 노출
         window.FormContentLoader = FormContentLoader;
         window.ApprovalLineManager = ApprovalLineManager;
-        window.AttachmentManager = AttachmentManager;
+//        window.AttachmentManager = AttachmentManager;
         window.DocumentFormManager = DocumentFormManager;
         
         console.log('모듈 전역 노출 완료');
@@ -47,22 +47,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         await ApprovalLineManager.initialize(initialApprovalLines);
         
-        // 5. 첨부파일 관리자 초기화
-        if (window.AttachmentManager && typeof AttachmentManager.initialize === 'function') {
-            await AttachmentManager.initialize();
-        } else {
-            console.warn('AttachmentManager 모듈을 찾을 수 없거나 초기화 함수가 없습니다.');
-        }
+//        // 5. 첨부파일 관리자 초기화
+//        if (window.AttachmentManager && typeof AttachmentManager.initialize === 'function') {
+//            await AttachmentManager.initialize();
+//        } else {
+//            console.warn('AttachmentManager 모듈을 찾을 수 없거나 초기화 함수가 없습니다.');
+//        }
         
         // 모듈 함수 접근 가능성 확인
         console.log('모듈 함수 접근 가능성 확인:');
         console.log('- ApprovalLineManager.getApprovalLines:', !!ApprovalLineManager.getApprovalLines);
         
-        if (window.AttachmentManager) {
-            console.log('- AttachmentManager.appendFilesToFormData:', !!AttachmentManager.appendFilesToFormData);
-        } else {
-            console.log('- AttachmentManager: 모듈 없음');
-        }
+//        if (window.AttachmentManager) {
+//            console.log('- AttachmentManager.appendFilesToFormData:', !!AttachmentManager.appendFilesToFormData);
+//        } else {
+//            console.log('- AttachmentManager: 모듈 없음');
+//        }
         
         console.log('- FormContentLoader.getEditorContent:', !!FormContentLoader.getEditorContent);
         

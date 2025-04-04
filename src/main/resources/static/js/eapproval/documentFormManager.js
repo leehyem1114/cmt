@@ -402,15 +402,16 @@ const DocumentFormManager = (function() {
             
             const approvalLinesJson = JSON.stringify(approvalLines);
 
-            // 기본 데이터 준비
-            const formData = new FormData();
-            formData.append('docId', docId);
-            formData.append('docNumber', docNumber);
-            formData.append('formId', formId);
-            formData.append('title', title);
-            formData.append('content', content);
-            formData.append('isTempSave', isTempSave);
-            formData.append('approvalLinesJson', approvalLinesJson);
+            // 기본 데이터 준비 - JSON 객체로 변경
+            const requestData = {
+                docId: docId,
+                docNumber: docNumber,
+                formId: formId,
+                title: title,
+                content: content,
+                isTempSave: isTempSave,
+                approvalLinesJson: approvalLinesJson
+            };
             
             // FormData 주요 필드 로깅
             console.log('API 요청 데이터 준비 완료:');
@@ -419,16 +420,15 @@ const DocumentFormManager = (function() {
             console.log('- title:', title);
             console.log('- content 길이:', content.length);
             console.log('- approvalLinesJson:', approvalLinesJson);
-            
+
             // 리팩토링된 ApiUtil 사용하여 API 호출
             const response = await ApiUtil.postWithLoading(
                 API_URLS.SAVE,
-                formData,
-                isTempSave ? '임시저장 중...' : '결재요청 중...',
-                { isJson: false } // FormData는 Content-Type 자동 설정
+                requestData,
+                isTempSave ? '임시저장 중...' : '결재요청 중...'
             );
-            
-            // 응답 처리
+
+            // 응답 처리 (가이드라인에 맞게 수정)
             if (response.success) {
                 // 성공 알림
                 await AlertUtil.showSuccess(
@@ -443,6 +443,7 @@ const DocumentFormManager = (function() {
                         location.href = '/eapproval/documents';
                     } else {
                         // 결재요청 완료 시 상세 보기 페이지로 이동
+                        // 대문자 키(DOC_ID)로 접근하도록 수정
                         const docId = response.data?.DOC_ID || documentData.docId;
                         if (docId) {
                             location.href = `/eapproval/document/view/${docId}`;
