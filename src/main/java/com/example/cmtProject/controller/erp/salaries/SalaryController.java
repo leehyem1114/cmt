@@ -1,5 +1,7 @@
 package com.example.cmtProject.controller.erp.salaries;
 
+
+import java.time.LocalDate;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.dto.erp.salaries.PayPositionDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 import com.example.cmtProject.service.comm.CommonService;
@@ -47,11 +50,15 @@ public class SalaryController {
 	// 급여 지급 내역 조회
 	@GetMapping("/payList")
 	public String getPayList(Model model ){
+
+    model.addAttribute("paySearchDTO", new PaySearchDTO());
 		commonCodeName(model,commonService);
 		
 		List<PaymentDTO> payList = salaryService.getPayList();
 		model.addAttribute("payList", payList);
-		model.addAttribute("paySearchDTO", new PaySearchDTO());
+		
+		
+		System.out.println("payList:"+payList);
 		
 		// 공통 코드에서 가져오기
 		List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
@@ -96,12 +103,18 @@ public class SalaryController {
 	// 급여 이체
 	@PostMapping("/payTransfer")
 	@ResponseBody
-	public String payTransfer(@RequestParam("position") String position, Model model) {
+	public String payTransfer(@RequestParam("position") String position, @RequestParam("empNoList[]") List<String> empNoList, Model model) {	
 		// 사원 목록 모달창 출력 
 		List<EmpListPreviewDTO> empList = employeesService.getEmplist();
 		model.addAttribute("empList", empList);
 		
-		// 공통 코드에서 가져오기
+		// 급여 지급일 조회
+		CommonCodeDetailDTO payTransferDay = commonService.getCommonCodeDetail("PAYDAY", null);
+	    int dayOfMonth = Integer.parseInt(payTransferDay.getCmnDetailValue());
+	    LocalDate today = LocalDate.now();
+	    LocalDate payDate = LocalDate.of(today.getYear(), today.getMonth(), dayOfMonth);
+	    
+	    // 공통 코드에서 가져오기
 		List<CommonCodeDetailDTO> positionList = commonService.getCommonCodeDetails("POSITION", null);
 		model.addAttribute("positionList", positionList);
 		model.addAttribute("payBasic", positionList);
@@ -111,26 +124,38 @@ public class SalaryController {
 		System.out.println("공통코드 확인 : " + bonusList);
 		System.out.println("공통코드 확인 : " + taxList);
 		
-		// 결과 저장 리스트 선언
-		List<Map<String, Double>> bonusResultList = new ArrayList<>();
-		List<Map<String, Double>> taxResultList = new ArrayList<>();
-		
+		// 직급별 기본급 가져오기
+		List<PayPositionDTO> payPositionList = salaryService.getPayAndPosition();
+
 		// 기본급 맵 구성
-		Map<String, Integer> payBasicList = positionList.stream()
+		Map<String, Integer> payBasicMap = payPositionList.stream()
 		    .collect(Collectors.toMap(
-		        positionCode -> positionCode.getCmnDetailName(), // "대리", "과장"
-		        positionCode -> Integer.parseInt(positionCode.getCmnDetailValue()) // 2000000 등
+		    	payPosition -> payPosition.getCmnDetailName(), // 직급
+		    	payPosition -> Integer.parseInt(payPosition.getCmnDetailValue()) // 문자 -> 숫자
 		    ));
 
 		// 선택한 직급의 기본급
-		Integer payBasic = payBasicList.getOrDefault(position, 0);
+		Integer payBasic = payBasicMap.getOrDefault(position, 0);
 
-		// context에 기본급 저장
-		Map<String, Object> operandContextMap = new HashMap<>();
-		operandContextMap.put("PAY_BASIC", payBasic.doubleValue()); // 기본급은 PAY_BASIC 변수명으로 등록
-	
+		Map<String, Object> operandMap = new HashMap<>();
 		
+		// 공통코드 값들 넣기
+		for (CommonCodeDetailDTO pos : positionList) {
+			operandMap.put(pos.getCmnDetailCode(), Double.parseDouble(pos.getCmnDetailValue()));
+		}
+		
+		operandMap.put("PAY_BASIC", payBasic.doubleValue());
+	
+		// 결과 저장 리스트 선언
+		List<Map<String, Double>> payTransferList = new ArrayList<>();
+		
+		// 기본급 결과 저장
+		Map<String, Double> basicResult = new HashMap<>();
+		basicResult.put("PAY_BASIC", payBasic.doubleValue());
+		payTransferList.add(basicResult);
+
 		// 수식 평가 반복 => 수당 계산
+		Map<String, Double> bonusResult = new HashMap<>();
 		for(CommonCodeDetailDTO bonus : bonusList) {
 			String expression = bonus.getCmnDetailValue2(); // 계산식
 			
@@ -139,8 +164,8 @@ public class SalaryController {
 			
 			// List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
 			// List<Object> values = List.of(50.0, 20, 30.0);
-			List<CommonCodeDetailDTO> values = commonService.getCommonCodeDetails("POSITION", null);
-			System.out.println("조회한 피연산자 데이터 목록 : " + values);
+		//	List<CommonCodeDetailDTO> values = commonService.getCommonCodeDetails("POSITION", null);
+			// System.out.println("조회한 피연산자 데이터 목록 : " + values);
 			
 			// 수식 평가 수행할 JexlEngine 객체 생성
 			JexlEngine jexl = new JexlBuilder().create();
@@ -150,38 +175,28 @@ public class SalaryController {
 			
 			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
 			JexlContext context = new MapContext();
-			
-			// 피연산자 갯수만큼 반복하면서 JexlExpression 객체의 set() 메서드로 피연산자 대입
-			for(int i = 0; i < operandNames.length; i++) {
-				// 이 때, 피연산자명 앞뒤 공백 제거 위해 trim() 메서드 사용(ex. "a + b = c" 일 때 "a " 처럼 공백 포함됨)
-				//context.set(operandNames[i].trim(), values.get(i));
-				context.set(operandNames[i].trim(), values.get(i));
-			}
-			
-//		    // operandContextMap에 등록된 값들 모두 context에 넣기
-//		    for (Map.Entry<String, Object> entry : operandContext.entrySet()) {
-//		        context.set(entry.getKey(), entry.getValue());
-//		    }
 
-//		    // 수식에 필요한 나머지 피연산자들 체크
-//		    for (String operand : operandNames) {
-//		        String key = operand.trim();
-//		        if (!context.has(key)) {
-//		            context.set(key, 0.0); // 기본값 처리
-//		        }
-//		    }
-			
+			// 선택된 직급의 기본급 포함한 모든 피연산자 값 context에 주입
+		    for (String operand : operandNames) {
+		        String key = operand.trim();
+		        Object value = operandMap.getOrDefault(key, 0.0); // 기본값 처리
+		        context.set(key, value);
+		    }
 
 			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
 			Object result = jexlExpression.evaluate(context);
 			
-			// 결과 Map에 저장
-	        Map<String, Double> resultMap = new HashMap<>();
-	        resultMap.put(bonus.getCmnDetailCode(), Double.parseDouble(result.toString()));
-	        bonusResultList.add(resultMap);
+			// 결과값 Double 로 변환
+			double val = Double.parseDouble(result.toString());
+			
+			// 계산된 수당 항목 payTransferList에 추가
+	        payTransferList.add(Map.of(bonus.getCmnDetailCode(), val));
+	        
+	        bonusResult.put(bonus.getCmnDetailCode(), val);
 		}	
 		
 		// 수식 평가 반복 => 공제 계산
+		Map<String, Double> taxResult = new HashMap<>();
 		for (CommonCodeDetailDTO tax : taxList) {
 			String expression = tax.getCmnDetailValue2(); // 계산식
 
@@ -201,37 +216,59 @@ public class SalaryController {
 			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
 			JexlContext context = new MapContext();
 
-//			// 피연산자 갯수만큼 반복하면서 JexlExpression 객체의 set() 메서드로 피연산자 대입
-//			for (int i = 0; i < operandNames.length; i++) {
-//				// 이 때, 피연산자명 앞뒤 공백 제거 위해 trim() 메서드 사용(ex. "a + b = c" 일 때 "a " 처럼 공백 포함됨)
-//				context.set(operandNames[i].trim(), values.get(i));
-//			}
-
-
-		    // 수식에 필요한 나머지 피연산자들 체크
+		    // operandMap에서 피연산자 값을 context에 주입
 		    for (String operand : operandNames) {
 		        String key = operand.trim();
-		        if (!context.has(key)) {
-		            context.set(key, 0.0); // 기본값 처리
-		        }
+		        Object value = operandMap.getOrDefault(key, 0.0); // 기본값 처리
+		        context.set(key, value);
 		    }
 			
-
 			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
 			Object result = jexlExpression.evaluate(context);
-
-			// 결과 Map에 저장
-			Map<String, Double> resultMap = new HashMap<>();
-			resultMap.put(tax.getCmnDetailCode(), Double.parseDouble(result.toString()));
-			taxResultList.add(resultMap);
+			
+			// 결과값 Double 로 변환
+			double val = Double.parseDouble(result.toString());
+			
+			// 계산된 수당 항목 payTransferList에 추가
+	        payTransferList.add(Map.of(tax.getCmnDetailCode(), val));
+	        
+	        taxResult.put(tax.getCmnDetailCode(), val);
 		}
 	
-	        // 전체 결과 출력
-	        System.out.println("수당 결과 리스트: " + bonusResultList);
-	        System.out.println("공제 결과 리스트: " + taxResultList);
+		double bonusTotal = bonusResult.values().stream().mapToDouble(doubleValue -> doubleValue.doubleValue()).sum(); // 총 수당액
+		double taxTotal = taxResult.values().stream().mapToDouble(doubleValue -> doubleValue.doubleValue()).sum(); // 총 공제액
+		long payTotal = Math.round(payBasic + bonusTotal - taxTotal); // 실 수령액
+	    
+	    // 전체 결과 출력
+		System.out.println("실 지급액 : " + payTotal);
 		
-		
-		return "erp/salaries/payList";
+	    // 지급상태 값 공통코드에서 가져오기
+		List<CommonCodeDetailDTO> payStatusList = commonService.getCommonCodeDetails("PAY_STATUS", null);
+
+		CommonCodeDetailDTO payStatusCode = payStatusList.stream()
+			    .filter(status -> "PYS001".equals(status.getCmnDetailCode()))  // "지급완료" 상태 값
+			    .findFirst()
+			    .orElse(null);  // 상태 값이 없으면 null 반환
+
+		// "PYS001" 상태 코드명 없으면 기본값 "미지급" 사용
+		String payStatus = (payStatusCode != null) ? payStatusCode.getCmnDetailCode() : "PYS001";  // 기본값
+
+	    
+		// 각 사원에 대한 PaymentDTO 생성 및 저장
+/*	    for (String empNo : empNoList) {
+	        PaymentDTO paymentDTO = PaymentDTO.builder()
+	            .empNo(Long.parseLong(empNo))               // 사원 번호
+	            .payDate(payDate)                           // 지급일
+	            .payBasic(payBasic.longValue())             // 기본급	// 수당/공제별 값은 없는 상태임;
+	            .payBonusTotal(Math.round(bonusTotal))      // 총 수당액
+	            .payTaxTotal(Math.round(taxTotal))          // 총 공제액
+	            .payTotal(payTotal)                         // 실지급액
+	            .payStatus(payStatus)                     // 지급 상태
+	            .build();*/
+
+	        //salaryService.savePayment(paymentDTO); // 급여 정보 저장
+	    //}
+		return "success";
 	}
 	
 	// 급여 대장 조회
@@ -269,19 +306,19 @@ public class SalaryController {
 	
 	//=====================================================
 	//공통코드 DetailName 불러오는 메서드
-		public static void commonCodeName(Model model , CommonService commonService) {
-			
-			List<String> groupCodes = commonService.getAllGroupCodes();
-			System.out.println("그룹코드 리스트 :::::"+groupCodes);
+	public static void commonCodeName(Model model , CommonService commonService) {
+		
+		List<String> groupCodes = commonService.getAllGroupCodes();
+		System.out.println("그룹코드 리스트 :::::"+groupCodes);
 //			String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
-			//공통코드 추가시 "NEW_CODE" 추가
-			
-			Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
-			
-			for(String groupCode : groupCodes) {
-				commonCodeMap.put(groupCode, commonService.getCodeListByGroup(groupCode));
-			}
-			model.addAttribute("commonCodeMap",commonCodeMap);
+		//공통코드 추가시 "NEW_CODE" 추가
+		
+		Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
+		
+		for(String groupCode : groupCodes) {
+			commonCodeMap.put(groupCode, commonService.getCodeListByGroup(groupCode));
 		}
+		model.addAttribute("commonCodeMap",commonCodeMap);
+	}
 	
 }

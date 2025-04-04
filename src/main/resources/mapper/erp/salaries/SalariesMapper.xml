@@ -13,6 +13,21 @@
 		ORDER BY CMN_CODE
     </select> -->
   
+  	<!-- 직급별 기본급 내역 -->
+  	<select id="getPayAndPosition" resultType="com.example.cmtProject.dto.erp.salaries.PayPositionDTO">
+	  	SELECT
+	    	P.PAY_NO,
+	    	P.EMP_NO,
+	    	E.EMP_NAME,
+	    	E.POSITION_NO,
+	    	CD.CMN_DETAIL_VALUE AS payBasic,
+	    	CD.CMN_DETAIL_NAME AS position
+		FROM PAYMENTS P
+		JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+		JOIN COMMONCODE_DETAIL CD ON TO_CHAR(E.POSITION_NO) = CD.CMN_DETAIL_CODE
+		WHERE CD.CMN_CODE = 'POSITION';
+  	</select>
+
     <!-- 급여 지급 내역 -->
     <select id="getPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
     	SELECT
@@ -120,6 +135,12 @@
         </where>
         ORDER BY P.PAY_DATE DESC
     </select>
+    
+    <!-- 급여 이체 -->
+    <insert id="savePayment" parameterType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+     	<!-- INSERT INTO PAYMENTS (EMP_NO, PAY_DATE, PAY_BASIC, PAY_BONUS_TOTAL, PAY_TAX_TOTAL, PAY_TOTAL, PAY_STATUS)
+        VALUES (#{empNo}, #{payDate}, #{payBasic}, #{payBonusTotal}, #{payTaxTotal}, #{payTotal}, #{payStatus}) -->
+    </insert>
     
     <!-- 급여 이체 검색 필터링 -->
 	<select id="searchPayTransferList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
