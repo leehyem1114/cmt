@@ -224,19 +224,19 @@ const ApiUtil = (function() {
      * @param {string} [title='오류가 발생했습니다'] - 알림창 제목
      * @param {Function} [callback] - 에러 처리 후 콜백
      */
-	async function handleApiError(error, title = '오류가 발생했습니다', callback) {
-	    console.error('API 에러:', error);
+    async function handleApiError(error, title = '오류가 발생했습니다', callback) {
+        console.error('API 에러:', error);
 
-	    // 응답 상세 정보 로깅
-	    if (error.responseJSON) {
-	        console.error('에러 응답:', error.responseJSON);
-	    } else if (error.responseText) {
-	        console.error('에러 텍스트:', error.responseText);
-	    }
+        // 응답 상세 정보 로깅
+        if (error.responseJSON) {
+            console.error('에러 응답:', error.responseJSON);
+        } else if (error.responseText) {
+            console.error('에러 텍스트:', error.responseText);
+        }
 
-	    // 알림창으로 오류 표시
-	    await AlertUtil.notifySaveError(title, error.message || null, callback);
-	}
+        // 알림창으로 오류 표시
+        await AlertUtil.notifySaveError(title, error.message || null, callback);
+    }
 
     /**
      * 완전한 API 요청 처리 함수 (로딩, 결과 알림, 오류 처리 포함)
@@ -250,52 +250,52 @@ const ApiUtil = (function() {
      * @param {Function} [options.errorCallback] - 오류 시 콜백
      * @returns {Promise<any>} 처리 결과 데이터
      */
-	async function processRequest(apiCall, options = {}) {
-	    const {
-	        loadingMessage = '처리 중...',
-	        successMessage,
-	        errorMessage = '오류가 발생했습니다',
-	        successCallback,
-	        errorCallback
-	    } = options;
+    async function processRequest(apiCall, options = {}) {
+        const {
+            loadingMessage = '처리 중...',
+            successMessage,
+            errorMessage = '오류가 발생했습니다',
+            successCallback,
+            errorCallback
+        } = options;
 
-	    // 로딩 객체 참조 저장
-	    let loadingRef = null;
+        // 로딩 객체 참조 저장
+        let loadingRef = null;
 
-	    try {
-	        // 로딩 표시 시작
-	        loadingRef = AlertUtil.showLoading(loadingMessage);
+        try {
+            // 로딩 표시 시작
+            loadingRef = AlertUtil.showLoading(loadingMessage);
 
-	        // API 호출 실행
-	        const response = await apiCall();
+            // API 호출 실행
+            const response = await apiCall();
 
-	        // 비즈니스 로직 성공 여부 확인 (response.success 필드 사용)
-	        if (response.success) {
-	            // 성공 메시지가 지정된 경우 알림창 표시
-	            if (successMessage) {
-	                await AlertUtil.notifySaveSuccess('저장 성공', successMessage, successCallback);
-	            } else if (successCallback) {
-	                // 알림창 없이 콜백만 실행
-	                successCallback(response);
-	            }
-	        } else {
-	            // API는 성공했지만 비즈니스 로직 실패
-	            const message = response.message || errorMessage;
-	            await AlertUtil.showWarning("처리 실패", message, errorCallback);
-	        }
+            // 비즈니스 로직 성공 여부 확인 (response.success 필드 사용)
+            if (response.success) {
+                // 성공 메시지가 지정된 경우 알림창 표시
+                if (successMessage) {
+                    await AlertUtil.notifySaveSuccess('저장 성공', successMessage, successCallback);
+                } else if (successCallback) {
+                    // 알림창 없이 콜백만 실행
+                    successCallback(response);
+                }
+            } else {
+                // API는 성공했지만 비즈니스 로직 실패
+                const message = response.message || errorMessage;
+                await AlertUtil.showWarning("처리 실패", message, errorCallback);
+            }
 
-	        return response;
-	    } catch (error) {
-	        // API 호출 자체가 실패한 경우
-	        await handleApiError(error, errorMessage, errorCallback);
-	        throw error; // 추가 처리를 위해 오류 다시 throw
-	    } finally {
-	        // 로딩 표시 종료
-	        if (loadingRef) {
-	            loadingRef.close();
-	        }
-	    }
-	}
+            return response;
+        } catch (error) {
+            // API 호출 자체가 실패한 경우
+            await handleApiError(error, errorMessage, errorCallback);
+            throw error; // 추가 처리를 위해 오류 다시 throw
+        } finally {
+            // 로딩 표시 종료
+            if (loadingRef) {
+                loadingRef.close();
+            }
+        }
+    }
 
     // =============================
     // 일괄 처리 관련 함수
@@ -397,27 +397,152 @@ const ApiUtil = (function() {
         }
     }
 
+    // =============================
+    // 전자결재 특수 처리 함수
+    // =============================
+
+    /**
+     * 결재 처리 API 호출 함수
+     * 첨부파일 유무에 따라 다른 호출 방식 사용
+     * 
+     * @param {string} docId - 문서 ID
+     * @param {Object} data - 결재 데이터
+     * @param {Array} files - 첨부파일 배열 (선택적)
+     * @returns {Promise} API 응답
+     */
+    async function processApproval(docId, data, files = null) {
+        try {
+            // API URL 선택 (첨부파일 유무에 따라 다른 엔드포인트 사용)
+            const url = files && files.length > 0 
+                ? `/api/eapproval/document/${docId}/process-with-file` 
+                : `/api/eapproval/document/${docId}/process`;
+            
+            console.log(`결재 처리 API 호출: ${url}`);
+            console.log('결재 데이터:', data);
+            
+            // 첨부파일이 있는 경우 FormData 사용
+            if (files && files.length > 0) {
+                console.log('첨부파일 있음, FormData 사용');
+                const formData = new FormData();
+                
+                // 기본 데이터 추가
+                Object.keys(data).forEach(key => {
+                    formData.append(key, data[key]);
+                });
+                
+                // 파일 추가
+                files.forEach((file, index) => {
+                    formData.append(`files[${index}]`, file);
+                });
+                
+                // FormData는 Content-Type 헤더를 자동 설정하므로 isJson을 false로
+                return await post(url, formData, { isJson: false });
+            } else {
+                // 첨부파일이 없는 경우 JSON으로 전송
+                console.log('첨부파일 없음, JSON 형식 사용');
+                return await post(url, data);
+            }
+        } catch (error) {
+            console.error(`결재 처리 API 호출 중 오류(${docId}):`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * 결재 처리 함수 (로딩 표시 및 결과 처리 포함)
+     * 
+     * @param {string} docId - 문서 ID
+     * @param {Object} data - 결재 데이터
+     * @param {string} [loadingMessage='결재 처리 중...'] - 로딩 메시지
+     * @param {Object} [options] - 추가 옵션
+     * @param {Array} [options.files] - 첨부파일 목록 (선택적)
+     * @param {Function} [options.successCallback] - 성공 시 콜백
+     * @param {Function} [options.errorCallback] - 오류 시 콜백
+     * @returns {Promise<any>} API 응답을 담은 Promise
+     */
+    async function processApprovalWithLoading(docId, data, loadingMessage = '결재 처리 중...', options = {}) {
+        const { files, successCallback, errorCallback } = options;
+        
+        try {
+            // 로딩 표시 시작
+            const loading = AlertUtil.showLoading(loadingMessage);
+            
+            try {
+                // API 호출
+                const response = await processApproval(docId, data, files);
+                
+                // 로딩 종료
+                loading.close();
+                
+                console.log('결재 처리 응답:', response);
+                
+                // 응답 확인
+                if (response.success) {
+                    // 성공 메시지 표시
+                    const isApprove = data.decision === '승인';
+                    const successMessage = isApprove ? '결재가 승인되었습니다.' : '결재가 반려되었습니다.';
+                    
+                    await AlertUtil.showSuccess('결재 처리 완료', successMessage);
+                    
+                    // 성공 콜백 실행
+                    if (typeof successCallback === 'function') {
+                        successCallback(response);
+                    }
+                } else {
+                    // 실패 메시지 표시
+                    await AlertUtil.showWarning('결재 처리 실패', response.message || '결재 처리 중 오류가 발생했습니다.');
+                    
+                    // 오류 콜백 실행
+                    if (typeof errorCallback === 'function') {
+                        errorCallback(response);
+                    }
+                }
+                
+                return response;
+            } catch (apiError) {
+                // 로딩 종료
+                loading.close();
+                
+                // 오류 처리
+                await handleApiError(
+                    apiError, 
+                    '결재 처리 실패', 
+                    errorCallback
+                );
+                
+                throw apiError;
+            }
+        } catch (error) {
+            console.error('결재 처리 중 오류:', error);
+            throw error;
+        }
+    }
+
     // 공개 API - 모듈의 공개 인터페이스
     return {
         // 기본 HTTP 요청 함수
-        get,                // HTTP GET 요청
-        post,               // HTTP POST 요청
-        put,                // HTTP PUT 요청
-        del,                // HTTP DELETE 요청
+        get,                   // HTTP GET 요청
+        post,                  // HTTP POST 요청
+        put,                   // HTTP PUT 요청
+        del,                   // HTTP DELETE 요청
 
         // 로딩 표시 함수
-        withLoading,        // 커스텀 API 호출 + 로딩 표시
-        getWithLoading,     // GET + 로딩 표시
-        postWithLoading,    // POST + 로딩 표시
-        putWithLoading,     // PUT + 로딩 표시
-        delWithLoading,     // DELETE + 로딩 표시
+        withLoading,           // 커스텀 API 호출 + 로딩 표시
+        getWithLoading,        // GET + 로딩 표시
+        postWithLoading,       // POST + 로딩 표시
+        putWithLoading,        // PUT + 로딩 표시
+        delWithLoading,        // DELETE + 로딩 표시
 
         // 통합 API 처리 함수
-        processRequest,     // 완전한 API 요청 처리 (로딩+결과알림+오류처리)
-        batch,              // 여러 API 요청 순차 처리
-        parallel,           // 여러 API 요청 병렬 처리
+        processRequest,        // 완전한 API 요청 처리 (로딩+결과알림+오류처리)
+        batch,                 // 여러 API 요청 순차 처리
+        parallel,              // 여러 API 요청 병렬 처리
+
+        // 전자결재 특수 처리 함수
+        processApproval,       // 결재 처리 API 호출 (첨부파일 처리 지원)
+        processApprovalWithLoading, // 결재 처리 + 로딩 표시 및 결과 처리
 
         // 유틸리티 함수
-        handleApiError      // API 오류 처리
+        handleApiError         // API 오류 처리
     };
 })();
