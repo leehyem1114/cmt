@@ -1,555 +1,178 @@
-
-<!DOCTYPE html>
-<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
-<html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-	layout:decorate="~{layouts/layout}">
-<head>
-
-	<!-- 그리드 -->
-	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-	
-	<!-- 기본 메타 정보 -->
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>CMT</title>
-	
-	<style>
-	.container {
-		display: grid;
-		grid-template-columns:  120px 180px 120px 180px 120px 180px 50px 180px 150px 1fr;
-	    gap: 3px;
-	    background: #f5f5f5;
-	    padding: 4px;
-	    border-radius: 5px;
-		border : 1px solid black;
-		text-align: center;
-		max-width: 100vw;
-	}
-	
-	.container input, .container select {
-		padding: 5px;
-		border: 1px solid #ccc;
-		border-radius: 3px;
-	}
-	 
-	.button-container {
-		display: flex;
-		gap: 5px;
-		margin: 10px;
-		justify-content: space-between;
-	}
+@PostMapping("/payTransfer")
+	@ResponseBody
+	public String payTransfer(@RequestParam("position") String position, @RequestParam("empNoList[]") List<String> empNoList, Model model) {	
+		// 사원 목록 모달창 출력 
+		List<EmpListPreviewDTO> empList = employeesService.getEmplist();
+		model.addAttribute("empList", empList);
 		
-	button {
-		padding: 5px 10px;
-	    border: none;
-	    cursor: pointer;
-	    border-radius: 3px;
-	}
-	
-	.btnSearch { background:dodgerblue; color: white; }
-	.calculate { background:dodgerblue; color: white; }
-	.print { background: purple; color: white; }
-	.transfer { background: green; color: white; }
-	.delete { background: red; color: white; }
-	</style>
-</head>
-
-
-<body>
-	<div layout:fragment="content">
-
-		<div class="button-container">
-			<div>
-				<h2>급여 조회</h2>
-			</div>
-			<div>
-				<button type="button" class="calculate" data-bs-toggle="modal" data-bs-target="#payCalcModal">📃 급여 계산기</button>
-				<button type="button" class="print">✏️ 명세서 출력</button>
-				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
-				<button type="button" class="delete">삭제</button>
-			</div>
-		</div><!-- <div class="button-container"> -->
-
-		<form action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
-			<div class="container">
-				<label class="deptLabel">부서</label>
-				<select class="form-select" id="dept" name="dept">
-					<option th:each="dept : ${deptList}"
-						th:value="${dept.cmnDetailCode}" th:text="${dept.cmnDetailName}"></option>
-				</select>
-				<label class="emp-Label">이름</label>
-					<input type="text" class="" id="empName" maxlength="9" th:field="*{empName}">
-				<label class="payLabel">지급일</label>
-					<input type="date" id="minDate" th:field="*{minDate}">~ 
-					<input type="date" id="maxDate" th:field="*{maxDate}">
-				<button type="submit" class="btnSearch">🔍 검색</button>
-				<span></span>
-			</div>
-		</form>
-		
-		<!-- 그리드 top 시작 -->
-		<div id="gridTop"></div>
-	
-		<!-- 급여 계산기 모달 -->
-		<div class="modal fade" id="payCalcModal" tabindex="-1">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="payCalcModal">급여 계산기</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"
-						aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<label for="pay">급여</label>
-					<div class="input-group mb-2">
-						<input type="text" id="pay" class="form-control"
-							placeholder="급여 입력"> <span class="input-group-text">원</span>
-						<button type="button" class="btn btn-secondary ms-2"
-							onclick="simulatePay()">계산하기</button>
-					</div>
-					<label for="payList"></label>
-					<h6 class="text-primary mb-3">지급항목</h6>
-					<div class="row mb-2">
-						<div class="col-6">급여</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<h6 class="text-primary mb-3">공제항목</h6>
-					<div class="row mb-2">
-						<div class="col-6">국민연금</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">건강보험</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">장기요양보험</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">고용보험</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">소득세</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">주민세</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">총 공제액</div>
-						<div class="col-6 text-danger text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">예상 실 수령액</div>
-						<div class="col-6 text-danger text-end">원</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-				</div>
-			</div>
-		</div>
-	</div><!-- 급여 계산기 모달 -->
-		
-	<!-- 급여 이체 모달 -->
-	<div class="modal fade" id="payTransferModal" tabindex="-1">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="payCalcModal">급여 이체</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"
-						aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<div class="input-group mb-2">
-						<input type="date" id="payDate" class="form-control">
-					</div>
-					<div class="input-group mb-2">
-						<select class="form-select" id="dept" name="dept">
-							<option th:each="dept : ${deptList}"
-								th:value="${dept.cmnDetailCode}"
-								th:text="${dept.cmnDetailName}"></option>
-						</select>
-					<div class="input-group mb-2">
-						<select class="form-select" id="position" name="position">
-							<option th:each="code : ${commonCodeMap['POSITION']}"
-								th:value="${code.cmnDetailCode}"
-								th:text="${code.cmnDetailName}"></option>
-						</select>
-					<div class="input-group mb-2">
-						<input type="text" id="payBasic" class="form-control" >
-					</div>
-						<button type="submit" class="btn btn-secondary ms-2">조회</button>
-					</div>
-					<!-- 그리드 top 시작 -->
-					<div id="gridTop2" style="width: 100%"></div>
-					<!-- 그리드 끝 -->
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-						<button type="button" id="payTransferBtn" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div><!-- 급여 이체 모달 -->
-	
-	<script src="/js/jquery-3.7.1.js"></script>
-	<script th:inline="javascript">
-		//그리드 gridTop 시작 --------------------------------------
-		console.log(/*[[${payList}]]*/ []);
-		
-		const grid = new tui.Grid({
-	        el: document.getElementById('gridTop'), 
-			data : /*[[${payList}]]*/ [],
-	        rowHeaders: ['checkbox'], 
-	        columns: [
-				{
-	                header: '지급일',
-	                name: 'payDate',
-	            	sortable: true,
-					align: "center"
-	            },
-	            {
-	                header: '사원번호',
-	                name: 'empNo',
-	                sortable: true,
-	                align: "center"
-	            },
-	            {
-	                header: '사원명',
-	                name: 'empName',
-					align: "center"
-	            },
-	            {
-	                header: '부서',
-	                name: 'deptName',
-		            sortable: true,
-		            align: "center"
-	            },
-	            {
-	                header: '직급',
-	                name: 'position',
-	            	sortable: true,
-					align: "center"
-	            },
-	            {
-	                header: '고용유형',
-	                name: 'empType',
-					align: "center"
-	            },
-	            {
-	                header: '기본급',
-	                name: 'payBasic',
-					align: "center"
-	            },
-	            {
-	                header: '야근수당',
-	                name: 'payBonusOvertime',
-					align: "center"
-	            },
-	            {
-	                header: '명절수당',
-	                name: 'payBonusHoliday',
-					align: "center"
-	            },
-	            {
-	                header: '총수당금액',
-	                name: 'payBonusTotal',
-					align: "center"
-	            },
-	            {
-	                header: '국민연금',
-	                name: 'payTaxPension',
-					align: "center"
-	            },
-	            {
-	                header: '건강보험',
-	                name: 'payTaxHealth',
-					align: "center"
-	            },
-	            {
-	                header: '장기요양보험',
-	                name: 'payTaxCare',
-					align: "center"
-	            },
-	            {
-	                header: '고용보험',
-	                name: 'payTaxEmployment',
-					align: "center"
-	            },
-	            {
-	                header: '소득세',
-	                name: 'payTaxIncome',
-					align: "center"
-	            },
-	            {
-	                header: '주민세',
-	                name: 'payTaxResidence',
-					align: "center"
-	            },
-	            {
-	                header: '총공제금액',
-	                name: 'payTaxTotal',
-					align: "center"
-	            },
-	            {
-	                header: '실수령액',
-	                name: 'payTotal',
-					align: "center"
-	            },
-	            {
-	                header: '지급상태',
-	                name: 'payStatus',
-	                sortable: true,
-					align: "center"
-	            }
-	        ] // 열 설정
-	    });
+		// 급여 지급일 조회
+		CommonCodeDetailDTO payTransferDay = commonService.getCommonCodeDetail("PAYDAY", null);
+	    int dayOfMonth = Integer.parseInt(payTransferDay.getCmnDetailValue());
+	    LocalDate today = LocalDate.now();
+	    LocalDate payDate = LocalDate.of(today.getYear(), today.getMonth(), dayOfMonth);
 	    
-	 	// 체크박스 클릭 시 이벤트 추가
-	    grid.on('check', (checkItem) => {
-	        console.log("체크 확인");
-	    });
-
-	    // 체크 해제 시 이벤트 추가
-	    grid.on('uncheck', (checkItem) => {
-	    	console.log("체크 해제 확인");
-	    });
-		//그리드 gridTop 끝 --------------------------------------
+	    // 공통 코드에서 가져오기
+		List<CommonCodeDetailDTO> positionList = commonService.getCommonCodeDetails("POSITION", null);
+		model.addAttribute("positionList", positionList);
+		model.addAttribute("payBasic", positionList);
+		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
+		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
+	
+		System.out.println("공통코드 확인 : " + bonusList);
+		System.out.println("공통코드 확인 : " + taxList);
 		
-		
-		//그리드 gridTop2 시작 --------------------------------------
-		let grid2 = null;
-				
-		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
-      	  // 모달 완전히 열린 후에 grid 생성
-		// $('#payTransferModal').on('shown.bs.modal', function () {
-		if (!grid2) {
-			grid2 = new tui.Grid({
-				el: document.getElementById('gridTop2'), 
-				data : /*[[${empList}]]*/ [],
-				rowHeaders: ['checkbox'], 
-				columns: [
-					{
-						header: '사원번호',
-						name: 'empId',
-						align: "center"
-					},
-					{
-						header: '사원명',
-						name: 'empName',
-						align: "center"
-					},
-					{
-						header: '부서',
-						name: 'deptName', 
-						sortable: true,
-						align: "center"
-					},
-					{
-						header: '직급',
-						name: 'deptPosition', 
-						sortable: true,
-						align: "center"
-					}	
-				] // 열 설정
-			});
-				
-			console.log("empList:", /*[[${empList}]]*/ []);
-    
-			// 체크박스 클릭 시 이벤트 추가
-			grid2.on('check', (checkItem) => {
-				console.log("체크 확인");
-			});
+		// 직급별 기본급 가져오기
+		List<PayPositionDTO> payPositionList = salaryService.getPayAndPosition();
 
-			// 체크 해제 시 이벤트 추가
-			grid2.on('uncheck', (checkItem) => {
-				console.log("체크 해제 확인");
-			});
-		} else {
-			// 이미 Grid 있으면 데이터 리셋
-			grid2.resetData(/*[[${empList}]]*/ []);
+		// 기본급 맵 구성
+		Map<String, Integer> payBasicMap = payPositionList.stream()
+		    .collect(Collectors.toMap(
+		    	payPosition -> payPosition.getCmnDetailName(), // 직급
+		    	payPosition -> Integer.parseInt(payPosition.getCmnDetailValue()) // 문자 -> 숫자
+		    ));
+
+		// 선택한 직급의 기본급
+		Integer payBasic = payBasicMap.getOrDefault(position, 0);
+
+		Map<String, Object> operandMap = new HashMap<>();
+		
+		// 공통코드 값들 넣기
+		for (CommonCodeDetailDTO pos : positionList) {
+			operandMap.put(pos.getCmnDetailCode(), Double.parseDouble(pos.getCmnDetailValue()));
+		}
+		
+		operandMap.put("PAY_BASIC", payBasic.doubleValue());
+	
+		// 결과 저장 리스트 선언
+		List<Map<String, Double>> payTransferList = new ArrayList<>();
+		
+		// 기본급 결과 저장
+		Map<String, Double> basicResult = new HashMap<>();
+		basicResult.put("PAY_BASIC", payBasic.doubleValue());
+		payTransferList.add(basicResult);
+
+		// 수식 평가 반복 => 수당 계산
+		Map<String, Double> bonusResult = new HashMap<>();
+		for(CommonCodeDetailDTO bonus : bonusList) {
+			String expression = bonus.getCmnDetailValue2(); // 계산식
+			
+			String[] operandNames = expression.split("[+\\-\\*/]");
+			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
+			
+			// List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
+			// List<Object> values = List.of(50.0, 20, 30.0);
+		//	List<CommonCodeDetailDTO> values = commonService.getCommonCodeDetails("POSITION", null);
+			// System.out.println("조회한 피연산자 데이터 목록 : " + values);
+			
+			// 수식 평가 수행할 JexlEngine 객체 생성
+			JexlEngine jexl = new JexlBuilder().create();
+
+			// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
+			JexlExpression jexlExpression = jexl.createExpression(expression); 
+			
+			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
+			JexlContext context = new MapContext();
+
+			// 선택된 직급의 기본급 포함한 모든 피연산자 값 context에 주입
+		    for (String operand : operandNames) {
+		        String key = operand.trim();
+		        Object value = operandMap.getOrDefault(key, 0.0); // 기본값 처리
+		        context.set(key, value);
+		    }
+
+			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
+			Object result = jexlExpression.evaluate(context);
+			
+			// 결과값 Double 로 변환
+			double val = Double.parseDouble(result.toString());
+			
+			// 계산된 수당 항목 payTransferList에 추가
+	        payTransferList.add(Map.of(bonus.getCmnDetailCode(), val));
+	        
+	        bonusResult.put(bonus.getCmnDetailCode(), val);
 		}	
-	});
-	//그리드 gridTop2 끝 --------------------------------------
-	
-	//급여 이체 시작 -------------------------------------------
-	$('#payTransferBtn').on('click', function () {
-		const checkedRows = grid.getCheckedRows();
-		const empNoList = checkedRows.map(row => row.empNo);
-		const position = $('#position').val();
-
-		$.ajax({
-    		type: 'POST',
-    		url: 'erp/salaries/payTransfer',
-    		data: { position: position,
-    				empNoList: empNoList
-    		},
-    		success: function (res) {
-        		alert('급여이체 완료!');
-        		location.reload(); // or 특정 그리드/뷰 갱신
-    		},
-    		error: function () {
-        		alert('급여이체 실패!');
-    		}
-		});
-	});
-	//급여 이체 끝---------------------------------------------------------	
-	
-	</script>
 		
-	</div><!-- <div layout:fragment="content"> -->
+		// 수식 평가 반복 => 공제 계산
+		Map<String, Double> taxResult = new HashMap<>();
+		for (CommonCodeDetailDTO tax : taxList) {
+			String expression = tax.getCmnDetailValue2(); // 계산식
 
-	<th:block layout:fragment="script">
-	</th:block><!-- <th:block layout:fragment="script"> -->
-</body>
-</html>
+			String[] operandNames = expression.split("[+\\-\\*/]");
+			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
 
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-    
-    파일 수정
+			//List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
+			// List<Object> values = List.of(50.0, 20, 30.0);
+			//System.out.println("조회한 피연산자 데이터 목록 : " + values);
 
-<mapper namespace="com.example.cmtProject.mapper.erp.saleMgt.SalesOrderMapper">
-    
-     <!-- 수주 메인 SELECT 쿼리 -->
-    <resultMap id="SalesOrderResultMap" type="com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO">
-        <!-- SalesOrder -->
-        <result property="soNo" column="SO_NO"/>
-        <result property="soCode" column="SO_CODE"/>
-        <result property="soDate" column="SO_DATE"/>
-        <result property="shipDate" column="SHIP_DATE"/>
-        <result property="soQuantity" column="SO_QUANTITY"/>
-        <result property="pdtShippingPrice" column="PDT_SHIPPING_PRICE"/>
-        <result property="soValue" column="SO_VALUE"/>
-        <result property="soStatus" column="SO_STATUS"/>
-        <result property="soComments" column="SO_COMMENTS"/>
+			// 수식 평가 수행할 JexlEngine 객체 생성
+			JexlEngine jexl = new JexlBuilder().create();
 
-        <!-- Clients -->
-        <result property="cltNo" column="CLT_NO"/>
-        <result property="cltCode" column="CLT_CODE"/>
-        <result property="cltName" column="CLT_NAME"/>
+			// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
+			JexlExpression jexlExpression = jexl.createExpression(expression);
 
-        <!-- Products -->
-        <result property="pdtNo" column="PDT_NO"/>
-        <result property="pdtCode" column="PDT_CODE"/>
-        <result property="pdtName" column="PDT_NAME"/>
+			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
+			JexlContext context = new MapContext();
 
-        <!-- Warehouses -->
-        <result property="whsNo" column="WHS_NO"/>
-        <result property="whsCode" column="WHS_CODE"/>
-        <result property="whsName" column="WHS_NAME"/>
-
-        <!-- Employees -->
-        <result property="empNo" column="EMP_NO"/>
-        <result property="empId" column="EMP_ID"/>
-        <result property="empName" column="EMP_NAME"/>
-        
-        <!-- STATUS -->
-        <result property="statusCode" column="STATUS_CODE"/>
-        <result property="statusName" column="STATUS_NAME"/>
-    </resultMap>
-    
-    <!-- 수주 메인 SELECT 쿼리 -->
-    <select id="soMainSelect" resultMap="SalesOrderResultMap">
-        SELECT 
-            SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QUANTITY,
-            SO.PDT_SHIPPING_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
-            C.CLT_NO, C.CLT_CODE, C.CLT_NAME,
-            P.PDT_NO, P.PDT_CODE, P.PDT_NAME,
-            W.WHS_NO, W.WHS_CODE, W.WHS_NAME,
-            E.EMP_NO, E.EMP_ID, E.EMP_NAME,
-            S.STATUS_CODE, S.STATUS_NAME  
-        FROM SALES_ORDER SO
-        LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
-        LEFT JOIN EMPLOYEES E ON SO.EMP_NO = E.EMP_NO
-        LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
-        LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
-        LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
-        ORDER BY SO.SO_NO DESC
-    </select>
-    
-    <!-- 수주 메인에서 수정 -->
-    <update id="soMainUpdate" parameterType="com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO">
-    UPDATE SALES_ORDER 
-    <set>
-        <if test="columnName == 'soDate'">
-                SO_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
-        </if>
-        <if test="columnName == 'shipDate'">
-            SHIP_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
-        </if>
-        <if test="columnName == 'whsCode'">
-            WHS_CODE = #{value}
-        </if>
-        <if test="columnName == 'pdtCode'">
-            PDT_CODE = #{value}
-        </if>
-        <if test="columnName == 'cltCode'">
-            CLT_CODE = #{value}
-        </if>
-        <if test="columnName == 'soQuantity'">
-            SO_QUANTITY = CAST(#{value} AS NUMBER)
-        </if>
-        <if test="columnName == 'pdtShippingPrice'">
-            PDT_SHIPPING_PRICE = CAST(#{value} AS NUMBER)
-        </if>
-        <if test="columnName == 'soStatus'">
-            SO_STATUS = #{value}
-        </if>
-    </set>
-    WHERE so_no = #{soNo}
-	</update>
+		    // operandMap에서 피연산자 값을 context에 주입
+		    for (String operand : operandNames) {
+		        String key = operand.trim();
+		        Object value = operandMap.getOrDefault(key, 0.0); // 기본값 처리
+		        context.set(key, value);
+		    }
+			
+			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
+			Object result = jexlExpression.evaluate(context);
+			
+			// 결과값 Double 로 변환
+			double val = Double.parseDouble(result.toString());
+			
+			// 계산된 수당 항목 payTransferList에 추가
+	        payTransferList.add(Map.of(tax.getCmnDetailCode(), val));
+	        
+	        taxResult.put(tax.getCmnDetailCode(), val);
+		}
 	
-	<!-- 수주 메인에서 검색-->
-	<select id="selectSalesOrderList" resultType="com.example.dto.SalesOrderDTO"
-        parameterType="com.example.dto.SearchDTO">
-    SELECT 
-        SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QUANTITY,
-        SO.PDT_SHIPPING_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
-        C.CLT_NAME, P.PDT_NAME, W.WHS_NAME, E.EMP_NAME, S.STATUS_NAME
-    FROM SALES_ORDER SO
-    LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
-    LEFT JOIN EMPLOYEES E ON SO.EMP_NO = E.EMP_NO
-    LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
-    LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
-    LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
+		double bonusTotal = bonusResult.values().stream().mapToDouble(doubleValue -> doubleValue.doubleValue()).sum(); // 총 수당액
+		double taxTotal = taxResult.values().stream().mapToDouble(doubleValue -> doubleValue.doubleValue()).sum(); // 총 공제액
+		long payTotal = Math.round(payBasic + bonusTotal - taxTotal); // 실 수령액
+	    
+	    // 전체 결과 출력
+		System.out.println("실 지급액 : " + payTotal);
+		
+	    // 지급상태 값 공통코드에서 가져오기
+		List<CommonCodeDetailDTO> payStatusList = commonService.getCommonCodeDetails("PAY_STATUS", null);
 
-    <where>
-        <if test="soCode != null and soCode != ''">
-            AND SO.SO_CODE = #{soCode}
-        </if>
-        <if test="cltName != null and cltName != ''">
-            AND C.CLT_NAME LIKE '%' || #{cltName} || '%'
-        </if>
-        <if test="soStatus != null and soStatus != ''">
-            AND SO.SO_STATUS = #{soStatus}
-        </if>
-        <if test="startDate != null and endDate != null and startDate != '' and endDate != ''">
-            AND SO.SO_DATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') 
-                               AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
-        </if>
-    </where>
+		CommonCodeDetailDTO payStatusCode = payStatusList.stream()
+			    .filter(status -> "PYS001".equals(status.getCmnDetailCode()))  // "지급완료" 상태 값
+			    .findFirst()
+			    .orElse(null);  // 상태 값이 없으면 null 반환
 
-    ORDER BY SO.SO_NO DESC
-</select>
+		// "PYS001" 상태 코드명 없으면 기본값 "미지급" 사용
+		String payStatus = (payStatusCode != null) ? payStatusCode.getCmnDetailCode() : "PYS001";  // 기본값
+
+	    
+		// 각 사원에 대한 PaymentDTO 생성 및 저장
+/*	    for (String empNo : empNoList) {
+	        PaymentDTO paymentDTO = PaymentDTO.builder()
+	            .empNo(Long.parseLong(empNo))               // 사원 번호
+	            .payDate(payDate)                           // 지급일
+	            .payBasic(payBasic.longValue())             // 기본급	// 수당/공제별 값은 없는 상태임;
+	            .payBonusTotal(Math.round(bonusTotal))      // 총 수당액
+	            .payTaxTotal(Math.round(taxTotal))          // 총 공제액
+	            .payTotal(payTotal)                         // 실지급액
+	            .payStatus(payStatus)                     // 지급 상태
+	            .build();*/
+
+	        //salaryService.savePayment(paymentDTO); // 급여 정보 저장
+	    //}
+		return "success";
+	}
 	
+	// 급여 대장 조회
+	@GetMapping("/payroll")
+	public String getPayroll(Model model) {
+		List<PaymentDTO> payrolls = salaryService.getPayrolls();
+		model.addAttribute("payrolls", payrolls);
+		return "erp/salaries/payroll";
+	}
 	
-</mapper>
-

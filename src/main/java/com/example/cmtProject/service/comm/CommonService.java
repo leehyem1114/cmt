@@ -88,7 +88,7 @@ public class CommonService {
      * 상세코드 목록 조회
      */
     public List<CommonCodeDetailDTO> getCommonCodeDetails(String commonCode, String keyword) {
-        log.info("상세코드 목록 조회. 공통코드: {}, 검색어: {}", commonCode, keyword);
+        log.info("상세코드 목록 조회 공통코드: {}, 검색어: {}", commonCode, keyword);
         return commonCodeMapper.selectCommonCodeDetails(commonCode, keyword);
     }
     
