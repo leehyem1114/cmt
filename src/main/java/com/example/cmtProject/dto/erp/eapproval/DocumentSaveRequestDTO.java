@@ -1,5 +1,7 @@
 package com.example.cmtProject.dto.erp.eapproval;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,6 +35,7 @@ public class DocumentSaveRequestDTO {
     private String drafterId;
     
     /** 임시저장 여부 */
+    @JsonProperty("isTempSave")
     private boolean isTempSave;
     
     /** 결재선 JSON 문자열 */

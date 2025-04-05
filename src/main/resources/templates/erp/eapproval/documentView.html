@@ -23,11 +23,17 @@
                     <i class="bi bi-arrow-left"></i> 뒤로가기
                 </button>
             </div>
-            <div th:if="${isCurrentApprover}">
-                <button type="button" id="approveBtn" class="btn btn-success me-1">
+			<!--임시저장 문서의 경우 수정버튼 표시-->
+			<div>
+				<button th:if="${document.isTempSaved == 'Y'}"
+						type="button" id="editBtn" class="btn btn-warning me-1">
+						<i class="bi bi-pencil"></i> 수정
+				</button>
+				<!--결재자인 경우에만 승인/반려 버튼 표시-->
+                <button th:if="${isCurrentApprover}" type="button" id="approveBtn" class="btn btn-success me-1">
                     <i class="bi bi-check-lg"></i> 승인
                 </button>
-                <button type="button" id="rejectBtn" class="btn btn-danger">
+                <button th:if="${isCurrentApprover}" type="button" id="rejectBtn" class="btn btn-danger">
                     <i class="bi bi-x-lg"></i> 반려
                 </button>
             </div>

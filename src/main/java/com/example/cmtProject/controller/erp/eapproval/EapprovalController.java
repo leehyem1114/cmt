@@ -96,7 +96,7 @@ public class EapprovalController {
      * 임시저장 문서 수정 폼 페이지
      */
     @GetMapping(PathConstants.DOCUMENT_EDIT + "/{docId}")
-    public String editDocumentForm(@PathVariable String docId, Model model, Principal principal) {
+    public String editDocumentForm(@PathVariable("docId") String docId, Model model, Principal principal) {
         log.info("임시저장 문서 수정: {}", docId);
         
         try {

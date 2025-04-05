@@ -177,6 +177,20 @@ const DocumentView = (function() {
     async function registerEvents() {
         try {
             console.log('이벤트 리스너 등록을 시작합니다.');
+			
+			// 수정 버튼 클릭 이벤트(임시저장 문서에서만)
+			const editBtn = document.getElementById('editBtn');
+			if (editBtn) {
+				editBtn.addEventListener('click',function(){
+					const docId = documentData.docId;
+					if (docId){
+						/*변수 사용 때문에 따옴표 말고 백틱사용*/
+						window.location.href =`/eapproval/document/edit/${docId}`;
+					}
+				});
+				console.log('수정 버튼 이벤트 등록 완료')
+			}
+			
             
             // 결재 버튼 클릭 이벤트
             const approveBtn = document.getElementById('approveBtn');
