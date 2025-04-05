@@ -91,8 +91,10 @@
 			<div><h2>수주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+			<button type="button" class="completeBtn" onclick="location.reload()">✏️ 수정</button>
 	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
+
 	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
 				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
 	        <button class="helpBtn">❓ HELP</button>
@@ -216,26 +218,27 @@
 	        columns: [
 				{
 					header: '수주번호',
-					name: 'SO_NO',
+					name: 'soNo',
+					width: 100,
 					sortable: true, 
 					filter: 'text',
-					width: 100,
 					align: "center" 
 	            },
 	            {
 	                header: '수주코드',
 	                name: 'soCode',
+					width: 200,
 					sortable: true, 
 					filter: 'text',
-					width: 200,
 					align: "center" 
 	            },
 				{
 	                header: '수주일자',
 	                name: 'soDate',
-					fontSize: '40',
-					filter: 'text',
 					width: 200,
+					fontSize: '40',
+					sortable: true, 
+					filter: 'text',
 					align: 'center',
 					editor: {
 			           type: 'datePicker',
@@ -246,11 +249,11 @@
 			         }
 	            },
 				{
-	                header: '발주일자',
+	                header: '출하일자',
 	                name: 'shipDate',
+					width: 200,
 					sortable: true, 
 					filter: 'text',
-					width: 200,
 					align: "center" ,
 					editor: {
 			           type: 'datePicker',
@@ -261,9 +264,11 @@
 			         }
 	            },
 	            {
-					header: '사원번호',
+					header: '사원명',
 	                name: 'empId',
 					width: 200,
+					sortable: true, 
+					filter: 'text',
 					align: 'center',
 					editor: {
 						type: 'select',
@@ -278,9 +283,11 @@
 				    }
 	            },
 				{
-	                header: '재품코드',
+	                header: '제품명',
 	                name: 'pdtCode', //SalseOrder의 entity에 있는 pdtCode
 					width: 200,
+					sortable: true, 
+					filter: 'text',
 					align: 'center',
 					editor: {
 						type: 'select',
@@ -294,9 +301,11 @@
 				    }
 	            },
 				{
-	                header: '거래처코드',
+	                header: '거래처명',
 	                name: 'cltCode',
 					width: 200,
+					sortable: true, 
+					filter: 'text',
 					align: 'center',
 					editor: {
 						type: 'select',
@@ -312,18 +321,18 @@
 	            {
 	                header: '수량',
 	                name: 'soQuantity',
+					width: 100,
 					sortable: true, 
 					filter: 'text',
-					width: 100,
 					align: "center",
 					editor: "text"
 	            },
 	            {
 	                header: '단가',
 	                name: 'pdtShippingPrice',
+					width: 150,
 					sortable: true, 
 					filter: 'text',
-					width: 150,
 					align: "center",
 					editor: "text"
 	            },
@@ -331,6 +340,8 @@
 					header: '진행상태',
 					name: 'soStatus', //salesOrder의 entity에 있는 soStatus
 					width: 200,
+					sortable: true,
+					filter: 'text',
 					align: 'center',
 					editor: {
 						type: 'select',
@@ -492,21 +503,103 @@
 					//data: JSON.stringify(data),
 					data: data,
 					success: function(response){
-						alert("df");
-						
-						console.log(response);
-						console.log(/*[[${response}]]*/ [])
-						//grid.resetData(/*[[${response}]]*/ []);
-						grid.resetData(response);
-						//callGrid();
-						
-						
+						//console.log(/*[[${response}]]*/ [])
 
-						// 그리드 업데이트 이벤트 (그리드가 업데이트 됐을 때)
+						grid.resetData(response);
+						console.log(response);
 						
+						grid.rowHeaders
+						grid.setColumns([
+						{
+							header: '수주번호',
+							name: 'SO_NO',
+							width: 100,
+							//fontSize: '40',
+							sortable: true, 
+							filter: 'text',
+							align: "center" 
+			            },
+			            {
+			                header: '수주코드',
+			                name: 'SO_CODE',
+							width: 200,
+							//fontSize: '50',
+							sortable: true, 
+							filter: 'text',
+							align: "center" 
+			            },
+						{
+			                header: '수주일자',
+			                name: 'SO_DATE',
+							width: 200,
+							//fontSize: '50',
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						{
+			                header: '출하일자',
+			                name: 'SHIP_DATE',
+							width: 200,
+							//fontSize: '50',
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+			            {
+							header: '사원명',
+			                name: 'EMP_NAME',
+							width: 200,
+							//fontSize: '80',
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						{
+			                header: '제품명',
+			                name: 'PDT_NAME', //SalseOrder의 entity에 있는 pdtCode
+							width: 200,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+							
+			            },
+						{
+			                header: '거래처명',
+			                name: 'CLT_NAME',
+							width: 200,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+			            {
+			                header: '수량',
+			                name: 'SO_QUANTITY',
+							width: 100,
+							sortable: true, 
+							filter: 'text',
+							align: "center",
+			            },
+			            {
+			                header: '단가',
+			                name: 'PDT_SHIPPING_PRICE',
+							width: 150,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						{
+							header: '진행상태',
+							name: 'SO_STATUS', //salesOrder의 entity에 있는 soStatus
+							width: 200,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						])//grid.setColumns
 					},
 					error: function(error){
-						alert(error)
+						alert("error msg:" + err)
 					}
 				});
 			});

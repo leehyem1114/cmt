@@ -127,14 +127,14 @@
         <if test="soStatus != null and soStatus != ''">
             AND SO.SO_STATUS = #{soStatus}
         </if>
-       	<if test="dateType == 'soDate' and startDate != null and endDate != null and startDate != '' and endDate != ''">
-            AND SO.SO_DATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') 
-                               AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
-        </if>
-        <if test="dateType == 'shipDate' and startDate != null and endDate != null and startDate != '' and endDate != ''">
-            AND SO.SHIP_DATE BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') 
-                               	 AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
-        </if>
+        <if test="dateType == 'soDate' and startDate != null and endDate != null">
+		  AND SO.SO_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+		</if>
+		<if test="dateType == 'shipDate' and startDate != null and endDate != null">
+		  AND SO.SHIP_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+		</if>
     </where>
     ORDER BY SO.SO_NO DESC
 </select>

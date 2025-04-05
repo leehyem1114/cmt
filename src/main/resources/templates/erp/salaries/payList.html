@@ -319,8 +319,23 @@
 	        ] // 열 설정
 	    });
 	    
-	 	// 체크박스 클릭 시 이벤트 추가
-	    grid.on('check', (checkItem) => {
+		grid.on('click', function(ev) {
+	         const rowKey = ev.rowKey;
+	         const rowData = grid.getRow(rowKey);
+	         const columnName = ev.columnName; 
+	        
+	     	 // 체크박스 클릭은 무시
+	         if(columnName === '_checked') return;
+	      
+	         if (rowData) {
+	             // 클릭한 사원번호를 바로 새 창으로 넘김
+	             window.open('/salaries/insertPayForm/' + rowData.empId, '_blank', 'width=800, height=600');
+	             console.log("넘긴데이터"+rowData.empId);
+	          }
+		});
+		
+		/*
+	    grid.on('click', (checkItem) => {
 	    	const rowKey = ev.rowKey;
 	        const columnName = ev.columnName; // 체크박스 클릭 방지용
 
@@ -333,7 +348,7 @@
 	            window.open('/salaries/insertPayForm/' + rowData.empId, '_blank', 'width=800, height=600');
 	            console.log("넘긴 데이터:", rowData.empId);
 	        }
-	    });
+	    });*/
 
 	    // 체크 해제 시 이벤트 추가
 	    grid.on('uncheck', (checkItem) => {

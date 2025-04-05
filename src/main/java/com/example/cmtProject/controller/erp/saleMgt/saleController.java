@@ -284,16 +284,11 @@ public class saleController {
 		return empList;
 	}
 	
+	//수주 메인 화면에서 검색 버튼 클릭시 비동기 처리부분
 	@GetMapping("/searchForm")
 	@ResponseBody
 	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
 	public List<SalesOrderMainDTO> searchForm(@ModelAttribute SalesOrderSearchDTO searchDto) {
-		
-		//SalesOrderSearchDTO로 받아서 검색을 한 후 결과를 SalseOrderMainDTO로 넘겨준다
-		//List<SalesOrderMainDTO> mainDtoList = "";
-		
-		System.out.println("searchDto:"+ searchDto);
-		//(soCode=SO-20250331-001, soNo=null, pdtCode=PDT001, soStatus=SO_CONFIRMED, dateType=, startDate=2025-04-09, endDate=2025-04-25)
 		
 		List<SalesOrderMainDTO> mainDtoList = salesOrderService.soMainSearch(searchDto);
 		System.out.println("mainDtoList:"+ mainDtoList);
