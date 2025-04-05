@@ -413,12 +413,14 @@ const DocumentFormManager = (function() {
                 approvalLinesJson: approvalLinesJson
             };
             
-            // FormData 주요 필드 로깅
+            // FormData 주요 필드 
+			console.log('서버로 전송하는 데이터:', requestData);
             console.log('API 요청 데이터 준비 완료:');
             console.log('- docId:', docId);
             console.log('- formId:', formId);
             console.log('- title:', title);
             console.log('- content 길이:', content.length);
+            console.log('- isTempSave 형식:', requestData.isTempSave);
             console.log('- approvalLinesJson:', approvalLinesJson);
 
             // 리팩토링된 ApiUtil 사용하여 API 호출
