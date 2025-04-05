@@ -2,12 +2,19 @@ package com.example.cmtProject.controller.erp.salaries;
 
 
 import java.math.BigDecimal;
-import java.security.PublicKey;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +30,8 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
+import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 import com.example.cmtProject.service.comm.CommonService;
@@ -61,7 +70,6 @@ public class SalaryController {
 		
 		List<PaymentDTO> payList = salaryService.getPayList();
 		model.addAttribute("payList", payList);
-		
 		
 		//System.out.println("payList:"+payList);
 		
@@ -108,24 +116,112 @@ public class SalaryController {
 	// 급여 이체
 	@PostMapping("/payTransfer")
 	@ResponseBody
-	public String payTransfer(@RequestParam("position") String position, @RequestParam("empNoList[]") List<String> empNoList, Model model) {	
+	public String payTransfer(@RequestParam("position") String position, @RequestParam("empIdList") List<String> empIdList, Model model) {	
 		
-		System.out.println("position:"+position+" ,empNoList:"+empNoList);
+		//System.out.println("position:"+position+" ,empIdList:"+empIdList);
+		
+		//사원 정보
+		List<PayEmpListDTO> payEmpList = salaryService.getEmpInfo(empIdList);
 		
 		// 급여 지급일 조회		
-		CommonCodeDetailDTO payTransferDay = commonService.getCommonCodeDetail("PAYDAY", "PDY001");
+		String payday = salaryService.getPayDay();
 		
-		System.out.println("---------------------------------payTransferDay:" + payTransferDay);
-		
-	    //int dayOfMonth = Integer.parseInt(payTransferDay.getCmnDetailValue());
-	    //LocalDate today = LocalDate.now();
-	    //LocalDate payDate = LocalDate.of(today.getYear(), today.getMonth(), dayOfMonth);
+	    //int dayOfMonth = Integer.parseInt(payday.getCmnDetailValue());
+	    LocalDate today = LocalDate.now();
+	    System.out.println("today:"+today.getDayOfMonth());
+	    int todayInt = today.getDayOfMonth();
+	    String todayStr = String.valueOf(todayInt);
 	    
-	    //System.out.println("today:"+today+" ,payDate:"+payDate);
+	    int year = today.getYear();
+	    int month = today.getMonthValue();
+	    System.out.println("year:"+year+" ,month:"+month);
+	    
+	    LocalDate date = LocalDate.of(year, month, 20); // 그달의 20일
+	    
+	    //지급일이 아닌 경우 바로 return
+	    /*
+	    if(!(payday.equals(todayStr) && !isHoliday(date))) {
+	    	
+	    	return "fail";
+	    	
+	    }*/
+	    
+		 // 직급별 기본급 가져오기
+		 List<PayBasicDTO> payBasicList = salaryService.getPayBasic();
+		 for(PayBasicDTO p : payBasicList) {
+			 System.out.println(p.getEmpId());
+			 System.out.println(p.getEmpName());
+			 System.out.println(p.getPayBasic());
+			 System.out.println(p.getPositionNo());
+			 System.out.println(p.getPayNo());
+			 
+		 }
+		 
+		//보너스 
+		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
+		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
+		
+		System.out.println(bonusList.size());
+		System.out.println(taxList.size());
+		
+		List<Map<String, BigDecimal>> evaluatedResult = new ArrayList<>();
+		
+		// 수식 평가 반복 => 수당 계산
+		for(CommonCodeDetailDTO bonus : bonusList) {
+			String expression = bonus.getCmnDetailValue2(); // 계산식
+			
+			System.out.println("expression:"+expression);
+			
+			String[] operandNames = expression.split("[+\\-\\*/]");
+			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
+			
+			//List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
+			// List<Object> values = List.of(50.0, 20, 30.0);
+			
+			
+			List<CommonCodeDetailDTO> values = commonService.getCommonCodeDetails("POSITION", null);
+			
+//			for(CommonCodeDetailDTO c : values) {
+//				System.out.println(c.getCmnDetailValue());
+//			}
+			
+			//System.out.println(values);
+			
+			// 수식 평가 수행할 JexlEngine 객체 생성
+			JexlEngine jexl = new JexlBuilder().create();
+			
+			// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
+			JexlExpression jexlExpression = jexl.createExpression(expression); 
+			System.out.println(jexlExpression.getSourceText()); //PAY_BASIC * 0.5
+			
+			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
+			JexlContext context = new MapContext();
+			context.set("PAY_BASIC", 1000);
+			System.out.println(context.get("PAY_BASIC"));
+			
+			
+			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
+			Object result = jexlExpression.evaluate(context);
+			
+			Map<String, BigDecimal> map = new HashMap<>();
+			map.put("PAY_BONUS_HOLIDAY",(BigDecimal)result);
+			
+			evaluatedResult.add(map);
+		}
+	
+		
+	    	
 	    
 		return "success";
 	}
 	
+	//공휴일인지 아닌지 판별하는 함수
+	public boolean isHoliday(LocalDate date) {
+	    DayOfWeek day = date.getDayOfWeek();
+	    System.out.println("isHoliday day:" + day);
+	    return day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY;
+	}
+
 	// 급여 대장 조회
 	@GetMapping("/payroll")
 	public String getPayroll(Model model) {

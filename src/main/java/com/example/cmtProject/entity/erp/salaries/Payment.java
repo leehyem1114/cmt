@@ -30,10 +30,22 @@ public class Payment { // 급여 지급 이력 엔티티
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PAY_NO")
     private Long payNo; // 지급 번호
+    
+    @Column(name = "EMP_NAME", nullable = false)
+    private String empName;			 // 사원명
+    
+    @Column(name = "EMP_ID", nullable = false)
+    private String empId; // 사원 번호
 
-    @Column(name = "EMP_NO", nullable = false)
-    private Long empNo; // 사원 번호
-
+    @Column(name = "DEPT_NAME", nullable = false)
+    private String deptName;		 // 부서명
+    
+    @Column(name = "POSITION", nullable = false)
+    private String position;     	 // 직급
+    
+    @Column(name = "EMP_TYPE", nullable = false)
+    private String empType;          // 고용유형
+    
     @Column(name = "PAY_DATE", nullable = false)
     private LocalDate payDate; // 지급일
 
@@ -76,25 +88,37 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_STATUS", length = 50, nullable = false)
     private String payStatus;  // 지급 상태
     
+    @Column(name = "SAL_BANK_NAME", length = 50, nullable = false)
+    private String salBankName;  // 지급 상태
+    
+    @Column(name = "SAL_BANK_ACCOUNT", length = 50, nullable = false)
+    private String salBankAccount;  // 지급 상태
     
     public PaymentDTO toDto() {
-    	return PaymentDTO.builder()
-    			.payNo(payNo)
-				.empNo(empNo)
-				.payDate(payDate)
-				.payBasic(payBasic)
-				.payBonusOvertime(payBonusOvertime)
-				.payBonusHoliday(payBonusHoliday)
-				.payBonusTotal(payBonusTotal)
-				.payTaxPension(payTaxPension)
-				.payTaxCare(payTaxCare)
-				.payTaxHealth(payTaxHealth)
-				.payTaxEmployment(payTaxEmployment)
-				.payTaxIncome(payTaxIncome)
-				.payTaxResidence(payTaxResidence)
-				.payTaxTotal(payTaxTotal)
-				.payTotal(payTotal)
-				.payStatus(payStatus)
-				.build();
+        return PaymentDTO.builder()
+                .payNo(payNo)
+                .empName(empName)
+                .empId(empId)
+                .deptName(deptName)
+                .position(position)
+                .empType(empType)
+                .payDate(payDate)
+                .payBasic(payBasic)
+                .payBonusOvertime(payBonusOvertime)
+                .payBonusHoliday(payBonusHoliday)
+                .payBonusTotal(payBonusTotal)
+                .payTaxPension(payTaxPension)
+                .payTaxCare(payTaxCare)
+                .payTaxHealth(payTaxHealth)
+                .payTaxEmployment(payTaxEmployment)
+                .payTaxIncome(payTaxIncome)
+                .payTaxResidence(payTaxResidence)
+                .payTaxTotal(payTaxTotal)
+                .payTotal(payTotal)
+                .payStatus(payStatus)
+                .salBankName(salBankName)         // ✅ 누락된 필드
+                .salBankAccount(salBankAccount)   // ✅ 누락된 필드
+                .build();
     }
+
 }

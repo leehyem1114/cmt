@@ -19,7 +19,6 @@ import lombok.ToString;
 public class PaymentDTO {  
 
     private Long payNo;              // 지급 번호
-    private Long empNo;              // 사원 NO
     private String empName;			 // 사원명
     private String empId;			 // 사원번호
     private String deptName;		 // 부서명

@@ -3,8 +3,10 @@ package com.example.cmtProject.mapper.erp.salaries;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
-import com.example.cmtProject.dto.erp.salaries.PayPositionDTO;
+import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
+import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 
@@ -26,10 +28,13 @@ public interface SalariesMapper {
 	PaymentDTO selectEmpPayment(String empId);
 
 	// 직급별 기본급
-	List<PayPositionDTO> getPayAndPosition();
+	List<PayBasicDTO> getPayBasic();
 
 	// 급여 이체
 	void savePayment(PaymentDTO paymentDTO);
 
+	List<PayEmpListDTO> getEmpInfo(@Param("empNoList") List<String> empNoList);
 
+	String getPayDay();
+	
 }
