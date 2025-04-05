@@ -290,6 +290,8 @@ public class saleController {
 	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
 	public List<SalesOrderMainDTO> searchForm(@ModelAttribute SalesOrderSearchDTO searchDto) {
 		
+		System.out.println("searchDto:"+searchDto);
+		
 		List<SalesOrderMainDTO> mainDtoList = salesOrderService.soMainSearch(searchDto);
 		System.out.println("mainDtoList:"+ mainDtoList);
 		
