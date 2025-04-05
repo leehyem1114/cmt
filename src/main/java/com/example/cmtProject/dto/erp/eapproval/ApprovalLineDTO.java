@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApprovalLineDTO {
-	/** 결재선 번호 */
+    /** 결재선 번호 */
     private Integer approvalNo;
     
     /** 문서 ID */
     private String docId;
     
-    /** 결재자 번호 */
-    private Integer approverNo;
+    /** 결재자 ID (사번) */
+    private String approverId;  // Integer approverNo -> String approverId로 변경
     
     /** 결재자 이름 (조회용) */
     private String approverName;
@@ -43,5 +43,5 @@ public class ApprovalLineDTO {
     
     /** 행 타입 (조회:select, 등록:insert, 수정:update, 삭제:delete) */
     private String rowType;
-
+    
 } //ApprovalLineDTO

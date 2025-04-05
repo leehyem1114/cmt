@@ -3,8 +3,8 @@ package com.example.cmtProject.service.erp.eapproval;
 import com.example.cmtProject.constants.ApprovalStatus;
 import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
+import com.example.cmtProject.dto.erp.eapproval.DocumentSaveRequestDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
-import com.example.cmtProject.dto.erp.eapproval.AttachmentDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
 import com.example.cmtProject.comm.exception.DocumentAccessDeniedException;
@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,7 +30,53 @@ public class DocumentService {
     private final DocumentMapper documentMapper;
     private final ApprovalLineMapper approvalLineMapper;
     private final ApprovalProcessService approvalProcessService;
-    private final AttachmentService attachmentService;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * DTO를 이용한 문서 저장
+     * 
+     * @param requestDTO 저장 요청 DTO
+     * @return 저장된 문서 정보
+     */
+    @Transactional
+    public DocumentDTO saveDocumentWithDTO(DocumentSaveRequestDTO requestDTO) throws Exception {
+        log.info("문서 저장 시작: 임시저장={}, 제목={}", requestDTO.isTempSave(), requestDTO.getTitle());
+        
+        // 문서 DTO 생성
+        DocumentDTO documentDTO = new DocumentDTO();
+        
+        // 문서 ID가 없으면 새로 생성
+        if (requestDTO.getDocId() == null || requestDTO.getDocId().isEmpty()) {
+            requestDTO.setDocId(UUID.randomUUID().toString());
+        }
+        
+        // 요청 DTO에서 값 복사
+        documentDTO.setDocId(requestDTO.getDocId());
+        documentDTO.setDocNumber(requestDTO.getDocNumber());
+        documentDTO.setFormId(requestDTO.getFormId());
+        documentDTO.setTitle(requestDTO.getTitle());
+        documentDTO.setContent(requestDTO.getContent());
+        documentDTO.setDrafterId(requestDTO.getDrafterId());
+        
+        // 부서 정보 설정
+        String draftDeptCode = getEmployeeDeptCodeByEmpId(requestDTO.getDrafterId());
+        documentDTO.setDraftDept(draftDeptCode);
+        
+        // 결재선 정보 설정
+        if (requestDTO.getApprovalLinesJson() != null && !requestDTO.getApprovalLinesJson().isEmpty()) {
+            List<ApprovalLineDTO> approvalLines = objectMapper.readValue(
+                requestDTO.getApprovalLinesJson(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, ApprovalLineDTO.class)
+            );
+            documentDTO.setApprovalLines(approvalLines);
+        }
+        
+        // 문서 저장
+        DocumentDTO savedDocument = saveDocument(documentDTO, requestDTO.isTempSave());
+        
+        // 완료된 문서 반환
+        return getDocumentDetail(savedDocument.getDocId());
+    }
 
     /**
      * 문서 저장 (임시저장 또는 결재요청)
@@ -47,7 +95,7 @@ public class DocumentService {
         documentDTO.setIsTempSaved(isTempSave ? "Y" : "N");
         
         // 문서 상태 설정
-        documentDTO.setDocStatus(isTempSave ? DocumentStatus.TEMP_SAVED : DocumentStatus.IN_PROGRESS);
+        documentDTO.setDocStatus(isTempSave ? DocumentStatus.TEMP_SAVED : DocumentStatus.PROCESSING);
         
         // 문서 번호 생성 (신규 문서인 경우)
         if (documentDTO.getDocNumber() == null || documentDTO.getDocNumber().isEmpty()) {
@@ -101,11 +149,6 @@ public class DocumentService {
         document.setApprovalLines(approvalLines);
         log.debug("결재선 조회: {}개", approvalLines.size());
         
-        // 첨부파일 조회
-        List<AttachmentDTO> attachments = attachmentService.getAttachmentsByDocId(docId);
-        document.setAttachments(attachments);
-        log.debug("첨부파일 조회: {}개", attachments.size());
-        
         return document;
     }
 
@@ -114,18 +157,13 @@ public class DocumentService {
      */
     public List<DocumentDTO> getDrafterDocumentsByEmpId(String empId) {
         log.debug("기안자별 문서 목록 조회: {}", empId);
-        
-        // empId를 사용하여 사원 번호(empNo) 조회
-        Integer drafterId = getEmployeeNoByEmpId(empId);
-        
-        // 사원 번호로 문서 목록 조회
-        return documentMapper.selectDocumentsByDrafterId(drafterId);
+        return documentMapper.selectDocumentsByDrafterId(empId);
     }
     
     /**
      * 기안자 및 상태별 문서 목록 조회
      */
-    public List<DocumentDTO> getDocumentsByDrafterAndStatus(Integer drafterId, String status) {
+    public List<DocumentDTO> getDocumentsByDrafterAndStatus(String drafterId, String status) {
         log.debug("기안자 및 상태별 문서 조회: 기안자={}, 상태={}", drafterId, status);
         return documentMapper.selectDocumentsByDrafterAndStatus(drafterId, status);
     }
@@ -135,12 +173,7 @@ public class DocumentService {
      */
     public List<DocumentDTO> getPendingDocumentsByEmpId(String empId) {
         log.debug("결재 대기 문서 목록 조회: {}", empId);
-        
-        // empId를 사용하여 사원 번호(empNo) 조회
-        Integer approverId = getEmployeeNoByEmpId(empId);
-        
-        // 사원 번호로 대기 문서 목록 조회
-        return documentMapper.selectPendingDocumentsByApproverId(approverId);
+        return documentMapper.selectPendingDocumentsByApproverId(empId);
     }
 
     /**
@@ -180,10 +213,6 @@ public class DocumentService {
         approvalLineMapper.deleteApprovalLinesByDocId(docId);
         log.debug("결재선 삭제 완료: {}", docId);
         
-        // 첨부파일 삭제
-        attachmentService.deleteAttachmentsByDocId(docId);
-        log.debug("첨부파일 삭제 완료: {}", docId);
-        
         // 문서 삭제
         int result = documentMapper.deleteDocument(docId);
         log.info("문서 삭제 완료: {}", docId);
@@ -192,18 +221,31 @@ public class DocumentService {
     }
     
     /**
-     * 직원 ID로 직원 번호 조회 (Helper 메서드)
+     * 직원 ID의 부서 코드 조회
      */
-    public Integer getEmployeeNoByEmpId(String empId) {
+    public String getEmployeeDeptCodeByEmpId(String empId) {
+        log.debug("부서 코드 조회: 직원ID={}", empId);
         try {
-            Integer empNo = documentMapper.selectEmployeeNoByEmpId(empId);
-            if (empNo == null) {
-                throw new RuntimeException("직원 정보를 찾을 수 없습니다: " + empId);
+            String deptCode = documentMapper.selectEmployeeDeptCodeByEmpId(empId);
+            
+            if (deptCode == null || deptCode.isEmpty()) {
+                log.warn("직원({})의 부서 정보를 찾을 수 없습니다. 기본값 사용", empId);
+                return "DEPT001";
             }
-            return empNo;
+            
+            return deptCode;
         } catch (Exception e) {
-            log.error("직원 번호 조회 중 오류: {}", empId, e);
-            throw new RuntimeException("직원 정보를 조회할 수 없습니다.", e);
+            log.error("부서 코드 조회 중 오류 발생: {}", e.getMessage(), e);
+            return "DEPT001"; // 오류 시 기본값 반환
         }
+    }
+    
+    /**
+     * 결재 가능한 문서 목록 조회 (결재 순서 고려)
+     * 첫 번째 결재자이거나 이전 결재자가 모두 승인한 문서만 조회
+     */
+    public List<DocumentDTO> getProcessableDocumentsByEmpId(String empId) {
+        log.debug("결재 가능한 문서 목록 조회: {}", empId);
+        return documentMapper.selectProcessableDocumentsByApproverId(empId);
     }
 }

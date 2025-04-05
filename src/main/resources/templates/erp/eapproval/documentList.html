@@ -26,6 +26,10 @@
                                 type="button" role="tab" aria-controls="pending" aria-selected="false">결재대기</button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="processing-tab" data-bs-toggle="tab" data-bs-target="#processing" 
+                                type="button" role="tab" aria-controls="processing" aria-selected="false">결재 진행중</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" 
                                 type="button" role="tab" aria-controls="completed" aria-selected="false">완료문서</button>
                     </li>
@@ -87,7 +91,11 @@
                         <h5 class="card-title mb-3">결재 대기 문서</h5>
                         <div id="pendingGrid" style="width: 100%; height: 500px;"></div>
                     </div>
-                    
+                    <!-- 결재진행 탭 -->
+                    <div class="tab-pane fade" id="processing" role="tabpanel" aria-labelledby="processing-tab">
+                        <h5 class="card-title mb-3">결재 진행 문서</h5>
+                        <div id="processingGrid" style="width: 100%; height: 500px;"></div>
+                    </div>
                     <!-- 완료문서 탭 -->
                     <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
                         <h5 class="card-title mb-3">완료 문서</h5>
@@ -111,6 +119,7 @@
             window.documentData = {
                 myDrafts: /*[[${myDrafts}]]*/ [],
                 pendingDocs: /*[[${pendingDocs}]]*/ [],
+				processingDocs: /*[[${processingDocs}]]*/ [],
                 completedDocs: /*[[${completedDocs}]]*/ [],
                 rejectedDocs: /*[[${rejectedDocs}]]*/ []
             };

@@ -52,12 +52,14 @@ public class EapprovalController {
      */
     @GetMapping(PathConstants.DOCUMENT_LIST)
     public String documentList(Model model, Principal principal) {
+    	
         String currentUserId = principal.getName();
         log.info("전자결재 문서함 접속: {}", currentUserId);
         
         try {
             model.addAttribute("myDrafts", documentService.getDrafterDocumentsByEmpId(currentUserId));
             model.addAttribute("pendingDocs", documentService.getPendingDocumentsByEmpId(currentUserId));
+            model.addAttribute("processingDocs", documentService.getDocumentsByStatus(DocumentStatus.PROCESSING));
             model.addAttribute("completedDocs", documentService.getDocumentsByStatus(DocumentStatus.COMPLETED));
             model.addAttribute("rejectedDocs", documentService.getDocumentsByStatus(DocumentStatus.REJECTED));
             
@@ -94,7 +96,7 @@ public class EapprovalController {
      * 임시저장 문서 수정 폼 페이지
      */
     @GetMapping(PathConstants.DOCUMENT_EDIT + "/{docId}")
-    public String editDocumentForm(@PathVariable String docId, Model model, Principal principal) {
+    public String editDocumentForm(@PathVariable("docId") String docId, Model model, Principal principal) {
         log.info("임시저장 문서 수정: {}", docId);
         
         try {
@@ -142,21 +144,19 @@ public class EapprovalController {
      * 문서 조회 페이지
      */
     @GetMapping(PathConstants.DOCUMENT_VIEW + "/{docId}")
-    public String viewDocument(@PathVariable String docId, Model model, Principal principal) {
+    public String viewDocument(@PathVariable("docId") String docId, Model model, Principal principal) {
         log.info("문서 상세 조회: {}", docId);
         
         try {
             DocumentDTO document = documentService.getDocumentDetail(docId);
             String currentUserId = principal.getName();
-            
-            // 현재 사용자의 empNo 조회
-            Integer currentUserNo = documentService.getEmployeeNoByEmpId(currentUserId);
-            
+
             // 현재 사용자가 결재 대기 중인 결재자인지 확인
-            boolean isCurrentApprover = approvalProcessService.isCurrentApprover(docId, currentUserNo);
+            boolean isCurrentApprover = approvalProcessService.isCurrentApprover(docId, currentUserId);
             
             model.addAttribute("document", document);
             model.addAttribute("isCurrentApprover", isCurrentApprover);
+            model.addAttribute("approverId", currentUserId);
             
             return PathConstants.VIEW_DOCUMENT_VIEW;
         } catch (DocumentNotFoundException e) {
@@ -188,8 +188,8 @@ public class EapprovalController {
         log.info("결재 대기 문서함 접속: {}", principal.getName());
         
         try {
-            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(principal.getName());
-            
+            List<DocumentDTO> documents = documentService.getProcessableDocumentsByEmpId(principal.getName());
+//            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(principal.getName()); 삭제처리
             model.addAttribute("documents", documents);
             model.addAttribute("approvalType", approvalType);
             model.addAttribute("keyword", keyword);
