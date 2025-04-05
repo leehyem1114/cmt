@@ -95,6 +95,7 @@
             CMN_DETAIL_CONTENT as cmnDetailContent,
             CMN_DETAIL_VALUE as cmnDetailValue,
             CMN_DETAIL_CODE_IS_ACTIVE as cmnDetailCodeIsActive,
+            CMN_DETAIL_VALUE2,
             'select' as rowType
         FROM 
             COMMONCODE_DETAIL
@@ -121,6 +122,7 @@
             CMN_DETAIL_CONTENT as cmnDetailContent,
             CMN_DETAIL_VALUE as cmnDetailValue,
             CMN_DETAIL_CODE_IS_ACTIVE as cmnDetailCodeIsActive,
+            CMN_DETAIL_VALUE2,
             'select' as rowType
         FROM 
             COMMONCODE_DETAIL

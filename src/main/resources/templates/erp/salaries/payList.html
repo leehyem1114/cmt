@@ -10,6 +10,9 @@
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 	
+	<!-- SweetAlert2 CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	
 	<!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -224,7 +227,7 @@
 	            },
 	            {
 	                header: '사원번호',
-	                name: 'empNo',
+	                name: 'empId',
 	                sortable: true,
 	                align: "center"
 	            },
@@ -359,7 +362,9 @@
 		
 		//그리드 gridTop2 시작 --------------------------------------
 		let grid2 = null;
-				
+		
+		console.log(/*[[${empList}]]*/ []);	
+		
 		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
       	  // 모달 완전히 열린 후에 grid 생성
 		// $('#payTransferModal').on('shown.bs.modal', function () {
@@ -430,18 +435,29 @@
 	//급여 이체 시작 -------------------------------------------
 	$('#payTransferBtn').on('click', function () {
 		const checkedRows = grid2.getCheckedRows();
-		const empNoList = checkedRows.map(row => row.empNo);
+		const empIdList = checkedRows.map(row => row.empId);
 		const position = $('#position').val();
 
 		$.ajax({
     		type: 'POST',
     		url: '/salaries/payTransfer',
     		data: { position: position,
-    				empNoList: empNoList
+    				empIdList: empIdList
     		},
     		success: function (res) {
-        		alert('급여이체 완료!');
-        		location.reload(); // or 특정 그리드/뷰 갱신
+				
+				if(res === 'fail'){
+					Swal.fire({
+					  icon: "error",
+					  title: "지급일이 아닙니다.",
+					});
+				}
+				
+				if(res === 'success'){
+					alert('급여이체 완료!');
+					location.reload(); // or 특정 그리드/뷰 갱신
+				}
+        		
     		},
     		error: function () {
         		alert('급여이체 실패!');

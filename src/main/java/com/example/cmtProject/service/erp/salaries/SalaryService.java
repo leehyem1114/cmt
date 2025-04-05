@@ -8,7 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.cmtProject.dto.erp.salaries.PayPositionDTO;
+import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
+import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 import com.example.cmtProject.entity.erp.salaries.Payment;
@@ -51,8 +52,8 @@ public class SalaryService {
 	}
 
 	// 직급별 기본급 계산
-	public List<PayPositionDTO> getPayAndPosition() {
-		return salMapper.getPayAndPosition();
+	public List<PayBasicDTO> getPayBasic() {
+		return salMapper.getPayBasic();
 	}
 
 	// 급여 이체
@@ -89,4 +90,16 @@ public class SalaryService {
 	public PaymentDTO getEmpPayment(String empId) {
 		return salMapper.selectEmpPayment(empId);
 	}
+
+	public List<PayEmpListDTO> getEmpInfo(List<String> empNoList) {
+		System.out.println("=============== service empNoList:"+empNoList);
+		
+		return salMapper.getEmpInfo(empNoList);
+	}
+
+	public String getPayDay() {
+		
+		return salMapper.getPayDay();
+	}
+
 }
