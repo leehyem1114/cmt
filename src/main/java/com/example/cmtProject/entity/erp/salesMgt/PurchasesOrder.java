@@ -36,7 +36,7 @@ public class PurchasesOrder {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate poDate;
 	
-	@Column(name = "RECEIVING_DATE") //입고일자
+	@Column(name = "RCV_DATE") //입고일자
     @DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate rcvDate;  
 	
@@ -44,19 +44,19 @@ public class PurchasesOrder {
 	private Long empNo;  //사원번호
 	
 	@Column(name = "WHS_CODE")
-	private String whsCode; //창고코드
+	private String whsCode; //창고 코드
 	
 	@Column(name = "MTL_CODE")
-	private String mtlCode; //원자재코드
+	private String mtlCode; //원자재 코드
 	
 	@Column(name = "CLT_CODE")
-	private String CltCode;  //공급업체 코드
+	private String cltCode;  //공급업체 코드
 	
 	@Column(name = "PO_QUANTITY")
 	private int poQuantity;  //수량
 	
 	@Column(name = "MTL_RECEIVING_PRICE")
-	private int mtlShippingPrice;  //입고단가
+	private int mtlReceivingPrice;  //입고단가
 	
 	@Column(name = "PO_VALUE")
 	private int poValue;  //공급가액

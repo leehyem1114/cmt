@@ -1,178 +1,620 @@
-@PostMapping("/payTransfer")
-	@ResponseBody
-	public String payTransfer(@RequestParam("position") String position, @RequestParam("empNoList[]") List<String> empNoList, Model model) {	
-		// 사원 목록 모달창 출력 
-		List<EmpListPreviewDTO> empList = employeesService.getEmplist();
-		model.addAttribute("empList", empList);
+<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}"> 
+	<head>
 		
-		// 급여 지급일 조회
-		CommonCodeDetailDTO payTransferDay = commonService.getCommonCodeDetail("PAYDAY", null);
-	    int dayOfMonth = Integer.parseInt(payTransferDay.getCmnDetailValue());
-	    LocalDate today = LocalDate.now();
-	    LocalDate payDate = LocalDate.of(today.getYear(), today.getMonth(), dayOfMonth);
+	<!-- date-picker -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
+	<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+		
+	<!-- toast 부트스트랩 기본 -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
+
+	<title>CMT</title>
+	<style>
+		
+    .container1 {
+        display: grid;
+		grid-template-columns: 150px 170px 100px 200px 50px 200px 160px 150px 150px 100px 1fr; 
+        gap: 3px;
+        background: #f5f5f5;
+        padding: 4px;
+        border-radius: 5px;
+		border : 1px solid black;
+		text-align: center;
+		width: 1600px;
+    }
+	
+	.container2 {
+        display: grid;
+		grid-template-columns: 150px 200px 200px 150px 200px 200px 150px 200px 1fr; 
+        gap: 3px;
+        background: #f5f5f5;
+        padding: 4px;
+        border-radius: 5px;
+		border : 1px solid black;
+		text-align: center;
+		width: 1600px;
+    }
+		
+	
+    .container input, .container select {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+	
+    .button-container {
+        display: flex;
+        gap: 5px;
+        margin: 10px;
+		justify-content: space-between;
+		width: 1600px;
+    }
+	
+    button {
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    
+	/*
+    .tui-grid-container {
+     	width: 1700px !important; 
+    }
+	
+	.tui-grid-rside-area {
+		width: 1700px !important;
+	}*/
+	
+	.selecedRowClass {
+	    background-color:aliceblue !important;
+	    color: white;
+	 }
+	
+    .searchBtn { background:dodgerblue; color: white; }
+    .requestBtn { background: purple; color: white; }
+    .completeBtn { background: green; color: white; }
+    .cancelBtn { background: red; color: white; }
+    .excelBtn { background: darkblue; color: white; }
+    .helpBtn { background: orange; color: white; }
+	</style>
+</head>
+
+<body>
+    <div layout:fragment="content">
+		<div class="button-container">
+			<div><h2>발주조회</h2></div>
+			<div>
+	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
+	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
+	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
+
+	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
+				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
+	        <button class="helpBtn">❓ HELP</button>
+			</div>
+	    </div>
+		
+		<form action="/purchases/po" method="get" th:object="${PurchasesOrder}">	    
+		    <div class="container1">
+				<!-- 수주 코드 -->
+		        <label class="sell_company_label">발주 코드</label>
+				<select class="sell_select" id="poCode">
+					<option value="">--선택하세요--</option>
+		            <option th:each="code : ${poMainList}"
+						th:value="${code.poCode}"
+						th:text="${code.poCode}"
+					></option><!--selected="${SalesOrder.pdtCode == code}"-->
+		        </select>
+				
+				<!-- 날짜 기간 -->
+				<label class="sell_company_label">기간</label>
+		        <input type="date" class="sell_date1" id="startDate">
+		        <span class="sell_tilt">~</span>
+		        <input type="date" class="sell_date2" id="endDate">
+				<select class="sell_select" id="dateType">
+					<option value="">일자 유형</option>
+		            <option value="soDate">발주일자</option><!--selected="${SalesOrder.pdtCode == code}"-->
+					<option value="shipDate">입고일자</option>
+		        </select>
+					
+				<!-- 발주 번호 -->			
+				<label class="sell_sonum_label">발주번호</label>
+		        <input type="text" id="poNo" class="sell_sonum_text">
+		        <span></span>
+				
+				<!-- 검색 버튼 -->
+				<span></span>
+		    </div>
+	
+		    <div class="container2">
+				<!-- 원자재 코드 -->
+		        <label>원자재 코드</label>
+				<select class="sell_select" id="pdtCode">
+					<option value="">--선택하세요--</option>
+		            <option th:each="code : ${mtlCode}"
+						th:value="${code}"
+						th:text="${code}"
+					></option><!-- selected="${SalesOrder.pdtCode == code}" -->
+		        </select>
+		        <input type="text" id="pdtName" placeholder="NAME">
+		      
+				<!-- 공급업체 코드 -->
+		        <label>공급업체 코드</label>
+				<select class="sell_select" id="cltCode">
+					<option value="">--선택하세요--</option>
+		            <option th:each="code : ${cltCode}"
+						th:value="${code}"
+						th:text="${code}"
+					></option><!-- selected="${SalesOrder.cltCode == code}" -->
+		        </select>
+		        <input type="text" id="cltName" placeholder="NAME">
+		        
+				<!-- 진행 상태 -->
+				<label>진행상태</label>
+				<select class="sell_select" id="soStatus">
+					<option value="">--선택하세요--</option>
+		            <option th:each="status : ${poStatusList}"
+						th:value="${status.statusCode}"
+						th:text="${status.statusName}"
+					></option><!--selected="${SalesOrder.cltCode == code}"-->
+		        </select>
+		    </div><!--  <div class="container2"> -->
+		</form>
+		
+		<br>
+
+		<!-- grid 출력 태그 -->
+	   	<div id="gridTop" style="width:1600px"></div>
+		
+		<!-- 자바 스크립트 시작, jQuery 구문 포함 -->
+		<script src="/js/jquery-3.7.1.js"></script>
+	    <script th:inline="javascript">
+		
+		//===================================== Grid부분 시작 ===============================================
+		
+		//모든 컬럼 함깨 표시
+		let cltList = /*[[${cltList}]]*/ [];
+		let empList = /*[[${empList}]]*/ [];
+		let productList = /*[[${productList}]]*/ [];
+		let poStatusList = /*[[${poStatusList}]]*/ [];
+		
+		//2개의 컬럼으로 label과 value를 맞춘다
+// 		let cltListSelected = cltList.map(item => ({label: item.cltCode, value: item.cltName+'('+item.cltCode+')'}));
+// 		let empListSelected = empList.map(item => ({label: item.empNo, value: item.empName+'('+ item.empNo + ')'}));
+// 		let productListSelected = productList.map(item => ({label: item.pdtCode, value: item.pdtName+'('+item.pdtCode+')'}))
+// 		let soStatusListSelected = soStatusList.map(item => ({label: item.statusCode, value: item.statusName+'('+item.statusCode+')'}))
+		
+		let empListSelected = empList.map(item1 => ({text: item1.empName, label: item1.empName, value: item1.empId}));
+		let cltListSelected = cltList.map(item2 => ({text: item2.cltName, label: item2.cltName, value: item2.cltCode}));
+		let productListSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtCode}));
+		let poStatusListSelected = poStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
+		
+		console.log(cltList)
+		console.log(empList);
+		console.log(productList)
+		console.log(poStatusList);
+		
+	    console.log(/*[[${poMainList}]]*/ []);
+		
+		let gridData = /*[[${poMainList}]]*/ [];
 	    
-	    // 공통 코드에서 가져오기
-		List<CommonCodeDetailDTO> positionList = commonService.getCommonCodeDetails("POSITION", null);
-		model.addAttribute("positionList", positionList);
-		model.addAttribute("payBasic", positionList);
-		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
-		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
-	
-		System.out.println("공통코드 확인 : " + bonusList);
-		System.out.println("공통코드 확인 : " + taxList);
-		
-		// 직급별 기본급 가져오기
-		List<PayPositionDTO> payPositionList = salaryService.getPayAndPosition();
-
-		// 기본급 맵 구성
-		Map<String, Integer> payBasicMap = payPositionList.stream()
-		    .collect(Collectors.toMap(
-		    	payPosition -> payPosition.getCmnDetailName(), // 직급
-		    	payPosition -> Integer.parseInt(payPosition.getCmnDetailValue()) // 문자 -> 숫자
-		    ));
-
-		// 선택한 직급의 기본급
-		Integer payBasic = payBasicMap.getOrDefault(position, 0);
-
-		Map<String, Object> operandMap = new HashMap<>();
-		
-		// 공통코드 값들 넣기
-		for (CommonCodeDetailDTO pos : positionList) {
-			operandMap.put(pos.getCmnDetailCode(), Double.parseDouble(pos.getCmnDetailValue()));
-		}
-		
-		operandMap.put("PAY_BASIC", payBasic.doubleValue());
-	
-		// 결과 저장 리스트 선언
-		List<Map<String, Double>> payTransferList = new ArrayList<>();
-		
-		// 기본급 결과 저장
-		Map<String, Double> basicResult = new HashMap<>();
-		basicResult.put("PAY_BASIC", payBasic.doubleValue());
-		payTransferList.add(basicResult);
-
-		// 수식 평가 반복 => 수당 계산
-		Map<String, Double> bonusResult = new HashMap<>();
-		for(CommonCodeDetailDTO bonus : bonusList) {
-			String expression = bonus.getCmnDetailValue2(); // 계산식
-			
-			String[] operandNames = expression.split("[+\\-\\*/]");
-			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
-			
-			// List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
-			// List<Object> values = List.of(50.0, 20, 30.0);
-		//	List<CommonCodeDetailDTO> values = commonService.getCommonCodeDetails("POSITION", null);
-			// System.out.println("조회한 피연산자 데이터 목록 : " + values);
-			
-			// 수식 평가 수행할 JexlEngine 객체 생성
-			JexlEngine jexl = new JexlBuilder().create();
-
-			// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
-			JexlExpression jexlExpression = jexl.createExpression(expression); 
-			
-			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
-			JexlContext context = new MapContext();
-
-			// 선택된 직급의 기본급 포함한 모든 피연산자 값 context에 주입
-		    for (String operand : operandNames) {
-		        String key = operand.trim();
-		        Object value = operandMap.getOrDefault(key, 0.0); // 기본값 처리
-		        context.set(key, value);
-		    }
-
-			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
-			Object result = jexlExpression.evaluate(context);
-			
-			// 결과값 Double 로 변환
-			double val = Double.parseDouble(result.toString());
-			
-			// 계산된 수당 항목 payTransferList에 추가
-	        payTransferList.add(Map.of(bonus.getCmnDetailCode(), val));
-	        
-	        bonusResult.put(bonus.getCmnDetailCode(), val);
-		}	
-		
-		// 수식 평가 반복 => 공제 계산
-		Map<String, Double> taxResult = new HashMap<>();
-		for (CommonCodeDetailDTO tax : taxList) {
-			String expression = tax.getCmnDetailValue2(); // 계산식
-
-			String[] operandNames = expression.split("[+\\-\\*/]");
-			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
-
-			//List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
-			// List<Object> values = List.of(50.0, 20, 30.0);
-			//System.out.println("조회한 피연산자 데이터 목록 : " + values);
-
-			// 수식 평가 수행할 JexlEngine 객체 생성
-			JexlEngine jexl = new JexlBuilder().create();
-
-			// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
-			JexlExpression jexlExpression = jexl.createExpression(expression);
-
-			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
-			JexlContext context = new MapContext();
-
-		    // operandMap에서 피연산자 값을 context에 주입
-		    for (String operand : operandNames) {
-		        String key = operand.trim();
-		        Object value = operandMap.getOrDefault(key, 0.0); // 기본값 처리
-		        context.set(key, value);
-		    }
-			
-			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
-			Object result = jexlExpression.evaluate(context);
-			
-			// 결과값 Double 로 변환
-			double val = Double.parseDouble(result.toString());
-			
-			// 계산된 수당 항목 payTransferList에 추가
-	        payTransferList.add(Map.of(tax.getCmnDetailCode(), val));
-	        
-	        taxResult.put(tax.getCmnDetailCode(), val);
-		}
-	
-		double bonusTotal = bonusResult.values().stream().mapToDouble(doubleValue -> doubleValue.doubleValue()).sum(); // 총 수당액
-		double taxTotal = taxResult.values().stream().mapToDouble(doubleValue -> doubleValue.doubleValue()).sum(); // 총 공제액
-		long payTotal = Math.round(payBasic + bonusTotal - taxTotal); // 실 수령액
+	    let grid = new tui.Grid({
+	        el: document.getElementById('gridTop'), 
+			//data : /*[[${poMainList}]]*/ [],
+			data: gridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+            scrollY: true,
+			width: 1600,  // 전체 너비 지정
+			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
+	        columns: [
+				{
+					header: '수주번호',
+					name: 'poNo',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	            {
+	                header: '수주코드',
+	                name: 'soCode',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '수주일자',
+	                name: 'soDate',
+					width: 200,
+					fontSize: '40',
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: {
+			           type: 'datePicker',
+			           options: {
+			             format: 'yyyy-MM-dd',  
+			             language: 'ko'
+			           }
+			         }
+	            },
+				{
+	                header: '출하일자',
+	                name: 'shipDate',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" ,
+					editor: {
+			           type: 'datePicker',
+			           options: {
+			             format: 'yyyy-MM-dd',  
+			             language: 'ko'
+			           }
+			         }
+	            },
+	            {
+					header: '사원명',
+	                name: 'empId',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: empListSelected
+						}
+					},
+					formatter: ({ value }) => {
+				    	const emp = empListSelected.find(item => item.value === value);
+				    	return emp ?  emp.label : value;
+				    	//return emp.label;
+				    }
+	            },
+				{
+	                header: '제품명',
+	                name: 'pdtCode', //SalseOrder의 entity에 있는 pdtCode
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: productListSelected //Products의 entity에 있는 pdtCode와 pdtName
+						}
+					},
+					formatter: ({ value }) => {
+				    	const pdt = productListSelected.find(item => item.value === value);
+				    	return pdt ? pdt.label : value; 
+				    }
+	            },
+				{
+	                header: '거래처명',
+	                name: 'cltCode',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: cltListSelected
+						}
+					},
+					formatter: ({ value }) => {
+				    	const clt = cltListSelected.find(item => item.value === value);
+				    	return clt ? clt.label : value; 
+				    }
+	            },
+	            {
+	                header: '수량',
+	                name: 'soQuantity',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					editor: "text"
+	            },
+	            {
+	                header: '단가',
+	                name: 'pdtShippingPrice',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					editor: "text"
+	            },
+				{
+					header: '진행상태',
+					name: 'soStatus', //salesOrder의 entity에 있는 soStatus
+					width: 200,
+					sortable: true,
+					filter: 'text',
+					align: 'center',
+					editor: {
+						type: 'select',
+						options: {
+							listItems: soStatusListSelected //SalesOrderStatus의 배열 값 
+						}
+					},
+					formatter: ({ value }) => {
+				    	const stu = soStatusListSelected.find(item => item.value === value);
+				    	return stu ? stu.label : value; 
+				    }
+	            },
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
 	    
-	    // 전체 결과 출력
-		System.out.println("실 지급액 : " + payTotal);
+		let selectedEv = null;
 		
-	    // 지급상태 값 공통코드에서 가져오기
-		List<CommonCodeDetailDTO> payStatusList = commonService.getCommonCodeDetails("PAY_STATUS", null);
+		grid.on('click', ev => {
+			if(selectedEv !== null){
+				grid.removeRowClassName(selectedEv.rowKey, 'selecedRowClass');
 
-		CommonCodeDetailDTO payStatusCode = payStatusList.stream()
-			    .filter(status -> "PYS001".equals(status.getCmnDetailCode()))  // "지급완료" 상태 값
-			    .findFirst()
-			    .orElse(null);  // 상태 값이 없으면 null 반환
+			}
+			
+			selectedEv = ev;
+			grid.addRowClassName(selectedEv.rowKey, 'selecedRowClass');
+			
+		});
+		
+		grid.on('onGridUpdated', (ev) => {
+			// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
+		    grid.refreshLayout();
+			
+		
+		});
+		
+		 grid.on('afterChange', (ev) => {
+			 
+			let evValue = ev.changes[0];
+			let rk = evValue.rowKey;
+			let rowData = grid.getRow(rk);
+			let sono = rowData.soNo;
+			console.log("sono:"+sono);
+			
+			//console.log(ev.changes[0]); 
+			//{rowKey: 5, columnName: 'empId', value: '930216', prevValue: '921114'}
+			
+			let sendData = {
+				soNo : sono,
+				columnName : evValue.columnName,
+				value : evValue.value
+			};
+			
+			console.log(sendData);
+			//{soNo: 445, columnName: 'soStatus', value: 'SO_INPRODUCTION'}
+			
+			$.ajax({
+				url: "/sales/soeditexe",
+				type: "GET",
+				data: sendData,
+				success: function(result) {
+					console.log(result);
+				},
+				error: function(errorResult) {
+					grid.restore(); // 이전 상태로 롤백
+				}
+			});
+	    });
 
-		// "PYS001" 상태 코드명 없으면 기본값 "미지급" 사용
-		String payStatus = (payStatusCode != null) ? payStatusCode.getCmnDetailCode() : "PYS001";  // 기본값
 
-	    
-		// 각 사원에 대한 PaymentDTO 생성 및 저장
-/*	    for (String empNo : empNoList) {
-	        PaymentDTO paymentDTO = PaymentDTO.builder()
-	            .empNo(Long.parseLong(empNo))               // 사원 번호
-	            .payDate(payDate)                           // 지급일
-	            .payBasic(payBasic.longValue())             // 기본급	// 수당/공제별 값은 없는 상태임;
-	            .payBonusTotal(Math.round(bonusTotal))      // 총 수당액
-	            .payTaxTotal(Math.round(taxTotal))          // 총 공제액
-	            .payTotal(payTotal)                         // 실지급액
-	            .payStatus(payStatus)                     // 지급 상태
-	            .build();*/
+		//===================================== 일반 함수 부분 시작 ===============================================
+		
+		//그리드에서 선택한 값을 저장할 배열 선언
+		let gridCheck = [];
+		
+		//신규 버튼 클릭시 실행되는 입력 창
+    	function soRegisterOpenWindows(){
+			window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+    	}
+		
+		//수정 버튼 클릭시 실행되는 수정 창
+		function soEditOpenWindows(){
+			
+			if(gridCheck.length <= 0){
+				
+				Swal.fire({
+				  icon: "warning",
+				  title: "선택된 항목이 없습니다.",
+				});
+				
+				return;
+			}
+			
+			let gridCheckString = JSON.stringify(gridCheck);
+			window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+		};
+		
+		//===================================== jQuery 시작 ===============================================
+		$(document).ready(function(){
+			
+			//제품명 가져오기
+			$("#pdtCode").change(function(){
+				let pdtValue = $("#pdtCode").val();
 
-	        //salaryService.savePayment(paymentDTO); // 급여 정보 저장
-	    //}
-		return "success";
-	}
+				$.ajax({
+		           url: "/sales/getPdtName", 
+		           type: "GET",       
+		           //contentType: "application/json", // GET방식일 때 삭제
+		           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
+				   data: {pdtCode: pdtValue}, //GET방식 일 때 사용
+		           success: function(response) {
+		        	  	console.log(response.CLT_CODE);
+		        	  	console.log(response.SO_NO);
+						$("#pdtName").val(response);
+		           },
+		           error: function(error) {
+		               alert(error);
+		           }
+		       });
+			});
+			
+			//거래처명 가져오기
+			$("#cltCode").change(function(){
+				let cltValue = $("#cltCode").val();
+				
+				$.ajax({
+		           url: "/sales/getCltName", 
+		           type: "GET",       
+				   data: {cltCode: cltValue},
+		           success: function(response) {
+						$("#cltName").val(response);
+		           },
+		           error: function(error) {
+		               alert(error);
+		           }
+		       });
+			});
+			
+			//검색 버튼 클릭시
+			$("#searchBtn").on('click', function(){
+				
+				
+				let data = {
+					soCode: $("#soCode").val(),
+					soNo: $("#soNo").val(),
+					pdtCode: $("#pdtCode").val(),
+					cltCode: $("#cltCode").val(),
+					soStatus: $("#soStatus").val(),
+					dateType: $("#dateType").val(),
+					startDate: $("#startDate").val(),
+					endDate: $("#endDate").val(),
+				}
+				
+				var s = $("#soNo").val();
+				console.log("----------------soNo:"+ s);
+				
+				//서버로 검색할 데이터 전송
+				$.ajax({
+					url: "/sales/searchForm",
+					type: "GET",
+					//contentType: "application/json",
+					//data: JSON.stringify(data),
+					data: data,
+					success: function(response){
+						//console.log(/*[[${response}]]*/ [])
+
+						grid.resetData(response);
+						console.log(response);
+						
+						grid.rowHeaders
+						grid.setColumns([
+						{
+							header: '수주번호',
+							name: 'SO_NO',
+							width: 100,
+							//fontSize: '40',
+							sortable: true, 
+							filter: 'text',
+							align: "center" 
+			            },
+			            {
+			                header: '수주코드',
+			                name: 'SO_CODE',
+							width: 200,
+							//fontSize: '50',
+							sortable: true, 
+							filter: 'text',
+							align: "center" 
+			            },
+						{
+			                header: '수주일자',
+			                name: 'SO_DATE',
+							width: 200,
+							//fontSize: '50',
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						{
+			                header: '출하일자',
+			                name: 'SHIP_DATE',
+							width: 200,
+							//fontSize: '50',
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+			            {
+							header: '사원명',
+			                name: 'EMP_NAME',
+							width: 200,
+							//fontSize: '80',
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						{
+			                header: '제품명',
+			                name: 'PDT_NAME', //SalseOrder의 entity에 있는 pdtCode
+							width: 200,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+							
+			            },
+						{
+			                header: '거래처명',
+			                name: 'CLT_NAME',
+							width: 200,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+			            {
+			                header: '수량',
+			                name: 'SO_QUANTITY',
+							width: 100,
+							sortable: true, 
+							filter: 'text',
+							align: "center",
+			            },
+			            {
+			                header: '단가',
+			                name: 'PDT_SHIPPING_PRICE',
+							width: 150,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						{
+							header: '진행상태',
+							name: 'SO_STATUS', //salesOrder의 entity에 있는 soStatus
+							width: 200,
+							sortable: true, 
+							filter: 'text',
+							align: 'center',
+			            },
+						])//grid.setColumns
+					},
+					error: function(error){
+						alert("error msg:" + err)
+					}
+				});
+			});
+		})
+			
+	</script>
+	</div> <!-- 여기 안에 있어야 modal, grid, script, jQuery 전부 작동 한다. 이 div는  <div layout:fragment="content"> fragment="content"이다 -->
+
+	<th:block layout:fragment="script">
 	
-	// 급여 대장 조회
-	@GetMapping("/payroll")
-	public String getPayroll(Model model) {
-		List<PaymentDTO> payrolls = salaryService.getPayrolls();
-		model.addAttribute("payrolls", payrolls);
-		return "erp/salaries/payroll";
-	}
-	
+	</th:block>
+</body>
+
+</html>
