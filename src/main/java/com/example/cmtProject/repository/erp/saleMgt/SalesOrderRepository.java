@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {

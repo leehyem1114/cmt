@@ -1,4 +1,4 @@
-package com.example.cmtProject.controller;
+ package com.example.cmtProject.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;

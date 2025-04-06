@@ -23,6 +23,7 @@
         <result property="cltNo" column="CLT_NO"/>
         <result property="cltCode" column="CLT_CODE"/>
         <result property="cltName" column="CLT_NAME"/>
+        <result property="cltType" column="CLT_TYPE"/>
 
         <!-- Products -->
         <result property="pdtNo" column="PDT_NO"/>
@@ -60,6 +61,7 @@
         LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
+        WHERE C.CLT_TYPE = 'ORDER'
         ORDER BY SO.SO_NO DESC
     </select>
     
@@ -112,6 +114,7 @@
         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
     <where>
+	    C.CLT_TYPE = 'ORDER'
         <if test="soCode != null and soCode != ''">
             AND SO.SO_CODE = #{soCode}
         </if>

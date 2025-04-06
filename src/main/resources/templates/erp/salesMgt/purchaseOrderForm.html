@@ -104,7 +104,7 @@
 		<form action="/sales/so" method="get" th:object="${SalesOrder}">	    
 		    <div class="container1">
 				<!-- 수주 코드 -->
-		        <label class="sell_company_label">수주 코드</label>
+		        <label class="sell_company_label">발주 코드</label>
 				<select class="sell_select" id="soCode">
 					<option value="">--선택하세요--</option>
 		            <option th:each="code : ${soMainList}"
@@ -120,12 +120,12 @@
 		        <input type="date" class="sell_date2" id="endDate">
 				<select class="sell_select" id="dateType">
 					<option value="">일자 유형</option>
-		            <option value="soDate">수주일자</option><!--selected="${SalesOrder.pdtCode == code}"-->
-					<option value="shipDate">출하일자</option>
+		            <option value="soDate">발주일자</option><!--selected="${SalesOrder.pdtCode == code}"-->
+					<option value="shipDate">입고일자</option>
 		        </select>
 					
-				<!-- 수주 번호 -->			
-				<label class="sell_sonum_label">수주번호</label>
+				<!-- 발주 번호 -->			
+				<label class="sell_sonum_label">발주번호</label>
 		        <input type="text" id="soNo" class="sell_sonum_text">
 		        <span></span>
 				
@@ -134,8 +134,8 @@
 		    </div>
 	
 		    <div class="container2">
-				<!-- 제품 코드 -->
-		        <label>제품 코드</label>
+				<!-- 원자재 코드 -->
+		        <label>원자재 코드</label>
 				<select class="sell_select" id="pdtCode">
 					<option value="">--선택하세요--</option>
 		            <option th:each="code : ${pdtCode}"
@@ -146,7 +146,7 @@
 		        <input type="text" id="pdtName" placeholder="NAME">
 		      
 				<!-- 거래처 코드 -->
-		        <label>거래처 코드</label>
+		        <label>공급업체 코드</label>
 				<select class="sell_select" id="cltCode">
 					<option value="">--선택하세요--</option>
 		            <option th:each="code : ${cltCode}"
