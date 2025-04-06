@@ -49,8 +49,8 @@ public class PurchasesOrder {
 	@Column(name = "MTL_CODE")
 	private String mtlCode; //원자재코드
 	
-	@Column(name = "SUPP_CODE")
-	private String suppCode;  //공급업체 코드
+	@Column(name = "CLT_CODE")
+	private String CltCode;  //공급업체 코드
 	
 	@Column(name = "PO_QUANTITY")
 	private int poQuantity;  //수량
