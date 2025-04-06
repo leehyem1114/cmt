@@ -104,6 +104,10 @@ public class WorkTimeController {
         	// MANAGER은 같은 부서 정보 조회
         	List<EmpListPreviewDTO> empList = employeesService.getEmpListDept(loginUser.getDeptNo());
     		model.addAttribute("empList", empList);
+    		
+    		// 모달창, ADMIN과 MANAGER은 근무 일정 템플릿을 조회할 수 있어야한다
+    		List<WorkTemplateDTO> templateList = workTimeService.getAllWorkTemplate();
+    		model.addAttribute("templateList", templateList);
         	
     	} else {
     		// USER는 본인의 출결정보만 조회

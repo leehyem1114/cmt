@@ -1,103 +1,179 @@
 <!DOCTYPE html>
-<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
-<head>
-	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
-	
-    <!-- 기본 메타 정보 -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>휴가 관리</title>
-    
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}"> 
+	<head>
+		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+	     <link rel="stylesheet" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
+	    <!-- 기본 메타 정보 -->
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	   
+		<script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+	    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	    <title>휴가 관리</title>
+
+<style>
+  .tui-datepicker {
+    z-index: 99999 !important;
+    position: absolute !important;
+  }
+</style>
+
+
 </head>
+
+
 <body>
-    <!-- 
-        중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
-        이 부분 안에 페이지별 HTML 내용을 작성하세요.
-    -->
+
     <div layout:fragment="content">
-        <!-- 페이지 내용 작성 영역 시작 -->
-        
-        <h3>페이지 제목</h3>
-        
-        <!-- 
-            여기에 페이지별 HTML 코드를 작성하세요.
-            사이드바와 메뉴는 레이아웃에서 자동으로 포함됩니다.
-        -->
-        
-        <div class="card">
-            <div class="card-header">
-                <h4>카드 제목</h4>
-            </div>
-            <div class="card-body">
-                <p>이 영역에 페이지의 주요 내용을 작성하세요.</p>
-                
-                <!-- 표 예시 -->
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>항목 1</th>
-                                <th>항목 2</th>
-                                <th>항목 3</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>내용 1</td>
-                                <td>내용 2</td>
-                                <td>내용 3</td>
-                            </tr>
-                            <tr>
-                                <td>내용 4</td>
-                                <td>내용 5</td>
-                                <td>내용 6</td>
-                            </tr>
-                        </tbody>
-                    </table>
+		
+		<br>
+<!--		<th:block th:each="soModel : ${soModel}">-->
+<!--			<div th:text="${soModel}"></div>-->
+<!--		</th:block>-->
+<!-- 그리드 top 시작 -->
+	<h3>휴가 조회 관리</h3>
+	   	
+					<div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        
+                        
+                        
+                        <!-- 왼쪽: 검색창 + 날짜 -->
+						  <div style="display: flex; align-items: center; gap: 10px;">
+						    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
+						
+						    <button id="dateSearchBtn" class="btn btn-primary">검색</button>
+						  </div>
+                        
+                        
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false" tabindex="-1">Profile</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false" tabindex="-1">Contact</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                <p class="my-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ut nulla
+                                    neque. Ut hendrerit nulla a euismod pretium.
+                                    Fusce venenatis sagittis ex efficitur suscipit. In tempor mattis fringilla. Sed id
+                                    tincidunt orci, et volutpat ligula.
+                                    Aliquam sollicitudin sagittis ex, a rhoncus nisl feugiat quis. Lorem ipsum dolor sit
+                                    amet, consectetur adipiscing elit.
+                                    Nunc ultricies ligula a tempor vulputate. Suspendisse pretium mollis ultrices.</p>
+                            </div>
+                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                Integer interdum diam eleifend metus lacinia, quis gravida eros mollis. Fusce non sapien
+                                sit amet magna dapibus
+                                ultrices. Morbi tincidunt magna ex, eget faucibus sapien bibendum non. Duis a mauris ex.
+                                Ut finibus risus sed massa
+                                mattis porta. Aliquam sagittis massa et purus efficitur ultricies. Integer pretium dolor
+                                at sapien laoreet ultricies.
+                                Fusce congue et lorem id convallis. Nulla volutpat tellus nec molestie finibus. In nec
+                                odio tincidunt eros finibus
+                                ullamcorper. Ut sodales, dui nec posuere finibus, nisl sem aliquam metus, eu accumsan
+                                lacus felis at odio. Sed lacus
+                                quam, convallis quis condimentum ut, accumsan congue massa. Pellentesque et quam vel
+                                massa pretium ullamcorper vitae eu
+                                tortor.
+                            </div>
+                            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                                <p class="mt-2">Duis ultrices purus non eros fermentum hendrerit. Aenean ornare interdum
+                                    viverra. Sed ut odio velit. Aenean eu diam
+                                    dictum nibh rhoncus mattis quis ac risus. Vivamus eu congue ipsum. Maecenas id
+                                    sollicitudin ex. Cras in ex vestibulum,
+                                    posuere orci at, sollicitudin purus. Morbi mollis elementum enim, in cursus sem
+                                    placerat ut.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- 버튼 예시 -->
-                <div class="mt-4">
-                    <button class="btn btn-primary">기본 버튼</button>
-                    <button class="btn btn-secondary">보조 버튼</button>
-                </div>
             </div>
-        </div>
-        
-        <!-- 페이지 내용 작성 영역 끝 -->
+
+		
+	
+		
+		
+		
+		
     </div>
     
-    <!-- 
-        페이지별 JavaScript 추가 영역.
-        여기에 페이지에서 사용할 스크립트를 작성하세요.
-        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
-    -->
-    <th:block layout:fragment="script">
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-            // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('페이지가 로드되었습니다.');
-                
-                // 여기에 초기화 코드 작성
-            });
-            
-            // 함수 예시
-            function exampleFunction() {
-                alert('버튼이 클릭되었습니다!');
-            }
-        </script>
-    </th:block>
+    <script type="text/javascript">
+    
+	   // grid 데이터 원본 저장
+		const modalData = gridModalInstance.getData();
+	
+		document.getElementById('modalSearchInput').addEventListener('input', function (e) {
+		  const keyword = e.target.value.toLowerCase();
+	
+		  // 원본 데이터를 기준으로 필터링
+		  const filtered = modalData.filter(row => {
+		    return Object.values(row).some(val => {
+		      if (val == null) return false;
+		      return String(val).toLowerCase().includes(keyword);
+		    });
+		  });
+	
+		  // 필터링된 데이터로 그리드 업데이트
+		  gridModalInstance.resetData(filtered);
+		});
+		
+		
+		function modalApplyFilter() {
+			  const keyword = document.getElementById('modalSearchInput').value.toLowerCase();
+			  const start = document.getElementById('modalStartDate').value;
+			  const end = document.getElementById('modalEndDate').value;
+	
+			  let filtered = modalData;
+	
+			  if (start && end) {
+			    const startDate = new Date(start);
+			    const endDate = new Date(end);
+			    endDate.setHours(23, 59, 59, 999);
+	
+			    filtered = filtered.filter(row => {
+			      const atdDate = new Date(row.atdDate);
+			      return atdDate >= startDate && atdDate <= endDate;
+			    });
+			  }
+	
+			  if (keyword) {
+			    filtered = filtered.filter(row =>
+			      Object.values(row).some(val =>
+			        val != null && String(val).toLowerCase().includes(keyword)
+			      )
+			    );
+			  }
+	
+			  gridModalInstance.resetData(filtered);
+			}
+	
+			document.getElementById('modalDateSearchBtn').addEventListener('click', modalApplyFilter);
+			document.getElementById('modalSearchInput').addEventListener('input', modalApplyFilter);
+
+	
+	</script>
+    
+    
+    </script>
+   	
+	<th:block layout:fragment="script">
+	    
+	</th:block>
 </body>
+
 </html>
