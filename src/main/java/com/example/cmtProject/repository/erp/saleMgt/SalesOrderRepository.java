@@ -3,12 +3,15 @@ package com.example.cmtProject.repository.erp.saleMgt;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
@@ -67,6 +70,14 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
 	@Query(value = "SELECT * FROM SALES_ORDER WHERE SO_NO IN :gridCheckList", nativeQuery = true)
 	List<SalesOrder> findByEditorSelectedList(@Param("gridCheckList") List<Integer> gridCheckList);
+	
+	@Query(value = "SELECT EMP_NO FROM EMPLOYEES WHERE EMP_ID = :empid", nativeQuery = true)
+	Long findEmpNoByEmpId(@Param("empid") String empid);
+	
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE SALES_ORDER SET EMP_NO = :empNo WHERE SO_NO = :soNo", nativeQuery = true)
+	int updateEmpNo(@Param("empNo") Long empNo, @Param("soNo") Long soNo);
 }
 
 /*

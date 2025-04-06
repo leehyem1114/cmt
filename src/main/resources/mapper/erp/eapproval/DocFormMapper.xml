@@ -12,7 +12,7 @@
         ) VALUES (
             #{formId},
             #{formContent},
-            #{creatorId},
+            #{creatorId, jdbcType=VARCHAR},
             SYSDATE
         )
     </insert>
@@ -22,7 +22,7 @@
         UPDATE DOC_FORM_CONTENTS
         SET
             FORM_CONTENT = #{formContent},
-            UPDATER_ID = #{updaterId},
+            UPDATER_ID = #{updaterId, jdbcType=VARCHAR},
             UPDATE_DATE = SYSDATE
         WHERE FORM_ID = #{formId}
     </update>

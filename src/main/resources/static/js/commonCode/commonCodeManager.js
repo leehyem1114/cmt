@@ -602,8 +602,14 @@ const CommonCodeManager = (function() {
 	                successCallback: searchCommonCode
 	            }
 	        );
-
-	        return response.success;
+			
+			if(response.success){
+				await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+				return true;
+			} else {
+				return false;
+			}
+			
 	    } catch (error) {
 	        console.error('공통코드 저장 오류:', error);
 	        await AlertUtil.notifySaveError("저장 실패", "공통코드 저장 중 오류가 발생했습니다.");
@@ -753,8 +759,12 @@ const CommonCodeManager = (function() {
 	                successCallback: () => loadCommonCodeDetailGrid(selectedCommonCode)
 	            }
 	        );
-
-	        return response.success;
+			if(response.success){
+				await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+				return true;
+			}else{
+				return false;
+			}
 	    } catch (error) {
 	        console.error('상세코드 저장 오류:', error);
 	        await AlertUtil.notifySaveError("저장 실패", "상세코드 저장 중 오류가 발생했습니다.");

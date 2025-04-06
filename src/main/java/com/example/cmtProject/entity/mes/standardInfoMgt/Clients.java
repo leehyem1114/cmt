@@ -33,6 +33,9 @@ public class Clients {
 	@Column(name = "CLT_PHONE")
 	private String cltPhone; //전화번호
 	
+	@Column(name = "CLT_TYPE")
+	private String cltType; //비고
+	
 	@Column(name = "CLT_EMAIL")
 	private String cltEmail; //email
 	
