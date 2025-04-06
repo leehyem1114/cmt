@@ -129,13 +129,11 @@ public class SalaryController {
 		
 	    //int dayOfMonth = Integer.parseInt(payday.getCmnDetailValue());
 	    LocalDate today = LocalDate.now();
-	    System.out.println("today:"+today.getDayOfMonth());
 	    int todayInt = today.getDayOfMonth();
 	    String todayStr = String.valueOf(todayInt);
 	    
 	    int year = today.getYear();
 	    int month = today.getMonthValue();
-	    System.out.println("year:"+year+" ,month:"+month);
 	    
 	    LocalDate date = LocalDate.of(year, month, 20); // 그달의 20일
 	    
@@ -149,30 +147,27 @@ public class SalaryController {
 	    
 		// 직급별 기본급 가져오기
 		List<PayBasicDTO> payBasicList = salaryService.getPayBasic();
-		for(PayBasicDTO p : payBasicList) {
-			System.out.println(p.getEmpId());
-			System.out.println(p.getEmpName());
-			System.out.println(p.getPayBasic());
-			System.out.println(p.getPositionNo());
-			//System.out.println(p.getPayNo());
-			 
-		}
+		/*
+		E.EMP_ID,
+	   	E.EMP_NAME,
+	    E.POSITION_NO,
+	    CD.CMN_DETAIL_VALUE AS payBasic,
+	    CD.CMN_DETAIL_NAME AS position
+		*/
 		 
 		// 수당
 		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
 		// 공제
 		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
 		
-		System.out.println(bonusList.size());
-		System.out.println(taxList.size());
-		
 		List<Map<String, BigDecimal>> evaluatedResult = new ArrayList<>();
 		
 		// 수식 평가 반복 => 수당(BONUS) 계산
 		for(CommonCodeDetailDTO bonus : bonusList) {
 			String expression = bonus.getCmnDetailValue2(); // 계산식
+			String columnName = bonus.getCmnDetailValue();
 			
-			System.out.println("expression:"+expression);
+			System.out.println("columnName:"+columnName); //PAY_BONUS_OVERTIME, PAY_BONUS_HOLIDAY
 			
 			String[] operandNames = expression.split("[+\\-\\*/]");
 			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
@@ -199,27 +194,45 @@ public class SalaryController {
 			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
 			JexlContext context = new MapContext();
 			
-			List<Long> payValue = new ArrayList<>();
-			for(PayBasicDTO pay : payBasicList) {
-				payValue.add(pay.getPayBasic());
+//			List<Long> payValue = new ArrayList<>();
+//			for(PayBasicDTO pay : payBasicList) {
+//				payValue.add(pay.getPayBasic());
+//				
+//			}
+			for(PayBasicDTO p : payBasicList) {
 				
+				if(operandNames[0].equals("PAY_BASIC")) {
+					
+				}else if(operandNames[0].equals("PAY_TAX_INCOME")) {
+					
+				}else if(operandNames[0].equals("PAY_TAX_HEALTH")) {
+					
+				}else {
+					System.out.println("etc");
+				}
+				
+				
+				
+				System.out.println("expression:" + expression);
+				Long payBasicValue = p.getPayBasic();
+				
+				context.set("PAY_BASIC", payBasicValue);
+				//context.set("PAY_BASIC", payValue);
+				//System.out.println(context.get("PAY_BASIC"));
+				
+				
+				// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
+				Object result = jexlExpression.evaluate(context);
+				
+				
+				//System.out.println("-----확인 : " + result);
+				
+				
+				Map<String, BigDecimal> map = new HashMap<>();
+				//map.put(column,(BigDecimal)result);
+				
+				evaluatedResult.add(map);
 			}
-			//context.set("PAY_BASIC", 1000);
-			context.set("PAY_BASIC", payValue);
-			System.out.println(context.get("PAY_BASIC"));
-			
-			
-			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
-			Object result = jexlExpression.evaluate(context);
-			
-			
-			System.out.println("-----확인 : " + result);
-			
-			
-			Map<String, BigDecimal> map = new HashMap<>();
-			map.put("PAY_BONUS_HOLIDAY",(BigDecimal)result);
-			
-			evaluatedResult.add(map);
 		}
 
 		
