@@ -1,22 +1,74 @@
 package com.example.cmtProject.controller.erp.attendanceMgt;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
+import com.example.cmtProject.dto.erp.attendanceMgt.WorkTemplateDTO;
+import com.example.cmtProject.dto.erp.attendanceMgt.WorkTimeDTO;
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
+import com.example.cmtProject.service.comm.CommonService;
 
 @Controller
 @RequestMapping("/leaves")
 public class LeaveController {
-
-	private static final Logger logger = LoggerFactory.getLogger(LeaveController.class);
-
-
-	@GetMapping("/list")
-	public String main() {
-		return "erp/attendanceMgt/leaveList";
-	}
+	
+	private static final Logger logger = LoggerFactory.getLogger(WorkTimeController.class);
+	
+	@Autowired
+	private CommonService commonService;
 	
 	
+	
+	//공통코드 DetailName 불러오는 메서드
+		public static void commonCodeName(Model model , CommonService commonService) {
+			
+			List<String> groupCodes = commonService.getAllGroupCodes();
+			
+			Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
+			
+			for(String groupCode : groupCodes) {
+				commonCodeMap.put(groupCode, commonService.getCodeListByGroup(groupCode));
+			}
+			model.addAttribute("commonCodeMap",commonCodeMap);
+		}
+	
+	
+	
+
+	// 출결 정보 목록 페이지 (HTML 렌더링)
+    @GetMapping("/list")
+    public String showWorkTimePage(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        
+    	if (principalDetails == null) {
+            return "redirect:/login"; // 로그인 페이지로 리다이렉트
+        }
+    	// 유저정보
+    	Employees loginUser = principalDetails.getUser();
+    	
+    	commonCodeName(model, commonService);
+    	
+    	
+    	// 어드민은 모든정보 보기, 매니저는 자기 부서만, 사원은 자기거만 보기
+    	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
+    		
+    	}
+    	
+    	return "erp/attendanceMgt/leaveList";
+
+    	
+    }
+    
 }
