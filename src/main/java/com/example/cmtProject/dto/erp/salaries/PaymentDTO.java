@@ -12,10 +12,8 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @ToString
+@NoArgsConstructor
 public class PaymentDTO {  
 
     private Long payNo;              // 지급 번호
@@ -47,4 +45,33 @@ public class PaymentDTO {
     
     private String salBankName;	     // 은행명
     private String salBankAccount;	 // 계좌번호
+    
+    @Builder
+    public PaymentDTO(Long payNo, String empName, String empId, String deptName, String position, String empType,
+    		LocalDate payDate, Long payBasic, BigDecimal payBonusOvertime, BigDecimal payBonusHoliday, Long payBonusTotal,
+    		BigDecimal payTaxPension, BigDecimal payTaxCare, BigDecimal payTaxHealth, BigDecimal payTaxEmployment,
+    		BigDecimal payTaxIncome, BigDecimal payTaxResidence, Long payTaxTotal, Long payTotal, String payStatus, String salBankName, String salBankAccount) {
+    	this.payNo = payNo;
+    	this.empName = empName;
+    	this.empId = empId;
+    	this.deptName = deptName;
+    	this.position = position;
+    	this.empType = empType;
+    	this.payDate = payDate;
+    	this.payBasic = payBasic;
+    	this.payBonusOvertime = payBonusOvertime;
+    	this.payBonusHoliday = payBonusHoliday;
+    	this.payBonusTotal = payBonusTotal;
+    	this.payTaxPension = payTaxPension;
+    	this.payTaxCare = payTaxCare;
+    	this.payTaxHealth = payTaxHealth;
+    	this.payTaxEmployment = payTaxEmployment;
+    	this.payTaxIncome = payTaxIncome;
+    	this.payTaxResidence = payTaxResidence;
+    	this.payTaxTotal = payTaxTotal;
+    	this.payTotal = payTotal;
+    	this.payStatus = payStatus;
+    	this.salBankName = salBankName;
+    	this.salBankAccount = salBankAccount;
+    }
 }

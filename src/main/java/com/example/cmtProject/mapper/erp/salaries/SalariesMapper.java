@@ -33,8 +33,10 @@ public interface SalariesMapper {
 	// 급여 이체
 	void savePayment(PaymentDTO paymentDTO);
 
+	// 사원 정보
 	List<PayEmpListDTO> getEmpInfo(@Param("empNoList") List<String> empNoList);
 
+	// 급여 지급일
 	String getPayDay();
 	
 }

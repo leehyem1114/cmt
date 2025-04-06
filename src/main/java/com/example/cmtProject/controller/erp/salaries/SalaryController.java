@@ -146,19 +146,20 @@ public class SalaryController {
 	    	
 	    }*/
 	    
-		 // 직급별 기본급 가져오기
-		 List<PayBasicDTO> payBasicList = salaryService.getPayBasic();
-		 for(PayBasicDTO p : payBasicList) {
-			 System.out.println(p.getEmpId());
-			 System.out.println(p.getEmpName());
-			 System.out.println(p.getPayBasic());
-			 System.out.println(p.getPositionNo());
-			 System.out.println(p.getPayNo());
+		// 직급별 기본급 가져오기
+		List<PayBasicDTO> payBasicList = salaryService.getPayBasic();
+		for(PayBasicDTO p : payBasicList) {
+			System.out.println(p.getEmpId());
+			System.out.println(p.getEmpName());
+			System.out.println(p.getPayBasic());
+			System.out.println(p.getPositionNo());
+			//System.out.println(p.getPayNo());
 			 
-		 }
+		}
 		 
-		//보너스 
+		// 수당
 		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
+		// 공제
 		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
 		
 		System.out.println(bonusList.size());
@@ -166,7 +167,7 @@ public class SalaryController {
 		
 		List<Map<String, BigDecimal>> evaluatedResult = new ArrayList<>();
 		
-		// 수식 평가 반복 => 수당 계산
+		// 수식 평가 반복 => 수당(BONUS) 계산
 		for(CommonCodeDetailDTO bonus : bonusList) {
 			String expression = bonus.getCmnDetailValue2(); // 계산식
 			
@@ -196,19 +197,30 @@ public class SalaryController {
 			
 			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
 			JexlContext context = new MapContext();
-			context.set("PAY_BASIC", 1000);
+			
+			List<Long> payValue = new ArrayList<>();
+			for(PayBasicDTO pay : payBasicList) {
+				payValue.add(pay.getPayBasic());
+				
+			}
+			//context.set("PAY_BASIC", 1000);
+			context.set("PAY_BASIC", payValue);
 			System.out.println(context.get("PAY_BASIC"));
 			
 			
 			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
 			Object result = jexlExpression.evaluate(context);
 			
+			
+			System.out.println("-----확인 : " + result);
+			
+			
 			Map<String, BigDecimal> map = new HashMap<>();
 			map.put("PAY_BONUS_HOLIDAY",(BigDecimal)result);
 			
 			evaluatedResult.add(map);
 		}
-	
+
 		
 	    	
 	    
