@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+
+<mapper namespace="com.example.cmtProject.mapper.erp.saleMgt.PurchasesOrderMapper">
+    
+    <!-- 수주 메인 SELECT 쿼리 -->
+    <select id="poMainSelect" resultType="com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderMainDTO">
+      SELECT * 
+		FROM PURCHASES_ORDER P
+		JOIN CLIENTS C ON P.CLT_CODE = C.CLT_CODE
+		JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+		JOIN WAREHOUSES W ON P.WHS_CODE = W.WHS_CODE
+		JOIN MATERIALS M ON P.MTL_CODE = M.MTL_CODE
+		LEFT JOIN PURCHASES_ORDER_STATUS PS ON P.PO_STATUS = PS.STATUS_CODE
+	   ORDER BY P.PO_NO DESC
+    </select>
+    
+    <!-- 수주 메인에서 수정 -->
+    <update id="poMainUpdate" parameterType="com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderEditDTO">
+    UPDATE PURCHASES_ORDER 
+    <set>
+        <if test="columnName == 'poDate'">
+            PO_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
+        </if>
+        <if test="columnName == 'rcvDate'">
+            RCV_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
+        </if>
+        <if test="columnName == 'whsCode'">
+            WHS_CODE = #{value}
+        </if>
+        <if test="columnName == 'mtlCode'">
+            MTL_CODE = #{value}
+        </if>
+        <if test="columnName == 'cltCode'">
+            CLT_CODE = #{value}
+        </if>
+        <if test="columnName == 'poQuantity'">
+            PO_QUANTITY = CAST(#{value} AS NUMBER)
+        </if>	
+        <if test="columnName == 'mtlReceivingPrice'">
+            MTL_RECEIVING_PRICE = CAST(#{value} AS NUMBER)
+        </if>
+        <if test="columnName == 'poStatus'">
+            PO_STATUS = #{value}
+        </if>
+    </set>
+    WHERE PO_NO = #{poNo}
+	</update>
+	
+	<!-- 수주 메인에서 검색-->
+<!-- 	<select id="soMainSearch" resultMap="SalesOrderResultMap"> -->
+<!--     SELECT  -->
+<!--             SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QUANTITY, -->
+<!--             SO.PDT_SHIPPING_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS, -->
+<!--             C.CLT_NO, C.CLT_CODE, C.CLT_NAME, -->
+<!--             P.PDT_NO, P.PDT_CODE, P.PDT_NAME, -->
+<!--             W.WHS_NO, W.WHS_CODE, W.WHS_NAME, -->
+<!--             E.EMP_NO, E.EMP_ID, E.EMP_NAME, -->
+<!--             S.STATUS_CODE, S.STATUS_NAME   -->
+<!--         FROM SALES_ORDER SO -->
+<!--         LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE -->
+<!--         LEFT JOIN EMPLOYEES E ON SO.EMP_NO = E.EMP_NO -->
+<!--         LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE -->
+<!--         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE -->
+<!--         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE -->
+<!--     <where> -->
+<!-- 	    C.CLT_TYPE = 'ORDER' -->
+<!--         <if test="soCode != null and soCode != ''"> -->
+<!--             AND SO.SO_CODE = #{soCode} -->
+<!--         </if> -->
+<!--         <if test="soNo != null"> -->
+<!--             AND SO.SO_NO = #{soNo} -->
+<!--         </if> -->
+<!--         <if test="pdtCode != null and pdtCode != ''"> -->
+<!--             AND SO.PDT_CODE = #{pdtCode} -->
+<!--         </if> -->
+<!--         <if test="cltCode != null and cltCode != ''"> -->
+<!--             AND C.CLT_CODE LIKE '%' || #{cltCode} || '%' -->
+<!--         </if> -->
+<!--         <if test="soStatus != null and soStatus != ''"> -->
+<!--             AND SO.SO_STATUS = #{soStatus} -->
+<!--         </if> -->
+<!--         <if test="dateType == 'soDate' and startDate != null and endDate != null"> -->
+<!-- 		  AND SO.SO_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') -->
+<!-- 		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') -->
+<!-- 		</if> -->
+<!-- 		<if test="dateType == 'shipDate' and startDate != null and endDate != null"> -->
+<!-- 		  AND SO.SHIP_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') -->
+<!-- 		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') -->
+<!-- 		</if> -->
+<!--     </where> -->
+<!--     ORDER BY SO.SO_NO DESC -->
+<!-- </select> -->
+</mapper>
