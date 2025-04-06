@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.cmtProject.dto.erp.employees.EmpCountDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
@@ -120,5 +121,14 @@ public class EmployeesService {
 	public String getEmpId(Map<String, String> map) {
 		// TODO Auto-generated method stub
 		return empMapper.selectId(map);
+	}
+	
+	//사원 현황
+	public EmpCountDTO getEmpCount(EmpCountDTO countDTO) {
+		return empMapper.selectCount(countDTO);
+	}
+	public List<EmpCountDTO> getdeptCount(EmpCountDTO countDTO) {
+		// TODO Auto-generated method stub
+		return empMapper.selectDeptCount(countDTO);
 	}
 }

@@ -263,4 +263,24 @@
 	
 	</select>
 	
+	<!--사원 현황-->
+	<select id="selectCount" resultType="com.example.cmtProject.dto.erp.employees.EmpCountDTO">
+		SELECT 
+		    COUNT(*) AS total,
+		    COUNT(CASE WHEN E.emp_gender = 'M' THEN 1 END) AS male_count,
+		    COUNT(CASE WHEN E.emp_gender = 'F' THEN 1 END) AS female_count,
+		    COUNT(CASE WHEN E.EMP_STATUS = 'ACTIVE' THEN 1 END) AS active,
+		    COUNT(CASE WHEN E.EMP_STATUS = 'RETIRED' THEN 1 END) AS retired,
+		    COUNT(CASE WHEN E.EMP_STATUS = 'ON_LEAVE' THEN 1 END) AS on_leave
+		FROM employees E
+		LEFT JOIN COMMONCODE_DETAIL D ON E.EMP_STATUS = D.CMN_DETAIL_CODE
+	</select>
+	
+	<select id="selectDeptCount" resultType="com.example.cmtProject.dto.erp.employees.EmpCountDTO">
+		select d.cmn_detail_name AS dept_name,
+	        COUNT(*) AS emp_count
+		FROM employees e join commoncode_detail d on TO_CHAR(e.dept_no) = d.cmn_detail_code
+		group by d.cmn_detail_name
+	</select>
+	
 </mapper>

@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
+import com.example.cmtProject.dto.erp.employees.EmpCountDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
@@ -206,6 +207,16 @@ public class EmployeesController {
 		System.out.println("아이디 찾기@@"+result);
 		
 		return result;
+	}
+	
+	@GetMapping("/empStatus")
+	public String empStatus(EmpCountDTO countDTO , Model model) {
+		EmpCountDTO empStatus = empService.getEmpCount(countDTO); //사원수
+		List<EmpCountDTO> deptStatus = empService.getdeptCount(countDTO); //부서별 사원수
+		model.addAttribute("empStatus",empStatus);
+		model.addAttribute("deptStatus",deptStatus);
+		
+		return "erp/employees/empStatus";
 	}
 	
 	// 객체 -> JSON 변환 샘플

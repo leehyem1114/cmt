@@ -20,6 +20,7 @@ public class PaymentDTO {
 
     private Long payNo;              // 지급 번호
     private String empName;			 // 사원명
+    private String empNo;			 // 
     private String empId;			 // 사원번호
     private String deptName;		 // 부서명
     private String position;     	 // 직급
