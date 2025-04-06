@@ -1,6 +1,7 @@
 package com.example.cmtProject.dto.erp.attendanceMgt;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -30,7 +31,10 @@ public class WorkTimeDTO {
     private String deptName; // 부서명 공통코드
     private String wktTypeName; // 근무타입 공통코드
     private String empName; // 사원이름
-    
+    private String empId; // 사원번호
+    private String wtStartTime;
+    private String wtEndTime;
+
     
     public WorkTimeDTO toEntity() {
         return WorkTimeDTO.builder()

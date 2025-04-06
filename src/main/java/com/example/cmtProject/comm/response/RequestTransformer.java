@@ -1,5 +1,6 @@
 package com.example.cmtProject.comm.response;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -40,35 +41,29 @@ public class RequestTransformer extends RequestBodyAdviceAdapter {
     }
     
     @Override
-    public Object afterBodyRead(Object body, HttpInputMessage inputMessage, 
-                               MethodParameter parameter, Type targetType, 
-                               Class<? extends HttpMessageConverter<?>> converterType) {
+    public Object afterBodyRead(Object body, HttpInputMessage inputMessage,
+                                MethodParameter parameter, Type targetType,
+                                Class<? extends HttpMessageConverter<?>> converterType) {
         if (body == null) return null;
-        
+
         try {
             Object result;
-            
-            // DTO 객체 변환
-            if (!(body instanceof Map) && !(body instanceof List) && 
+
+            if (!(body instanceof Map) && !(body instanceof List) &&
                 !(body instanceof String) && !(body instanceof Number) && !(body instanceof Boolean)) {
                 result = transformDto(body, parameter);
-            }
-            // Map 타입 변환
-            else if (body instanceof Map) {
+            } else if (body instanceof Map) {
                 result = transformHelper.transformMapFromExternalToInternal((Map<String, Object>) body);
-            } 
-            // List 타입 변환
-            else if (body instanceof List) {
+            } else if (body instanceof List) {
                 List<?> list = (List<?>) body;
                 if (!list.isEmpty()) {
                     if (list.get(0) instanceof Map) {
+                        Class<?> elementType = getListElementType(parameter);
                         result = list.stream()
-                                .map(item -> transformHelper.transformMapFromExternalToInternal((Map<String, Object>) item))
-                                .collect(Collectors.toList());
-                    } else if (!(list.get(0) instanceof String) && !(list.get(0) instanceof Number) && !(list.get(0) instanceof Boolean)) {
-                        // DTO 리스트 변환
-                        result = list.stream()
-                                .map(dto -> transformDto(dto, parameter))
+                                .map(item -> {
+                                    Map<String, Object> transformed = transformHelper.transformMapFromExternalToInternal((Map<String, Object>) item);
+                                    return objectMapper.convertValue(transformed, elementType);
+                                })
                                 .collect(Collectors.toList());
                     } else {
                         result = body;
@@ -79,7 +74,7 @@ public class RequestTransformer extends RequestBodyAdviceAdapter {
             } else {
                 result = body;
             }
-            
+
             log.debug("요청 데이터 변환 완료: {}", parameter.getExecutable());
             return result;
         } catch (Exception e) {
@@ -87,7 +82,6 @@ public class RequestTransformer extends RequestBodyAdviceAdapter {
             return body;
         }
     }
-    
  // DTO 객체 변환
     private Object transformDto(Object dto, MethodParameter parameter) {
         try {
@@ -113,4 +107,21 @@ public class RequestTransformer extends RequestBodyAdviceAdapter {
         }
         return defaultClass;
     }
+    
+    private Class<?> getListElementType(MethodParameter parameter) {
+        try {
+            Type type = parameter.getGenericParameterType();
+            if (type instanceof ParameterizedType) {
+                Type actual = ((ParameterizedType) type).getActualTypeArguments()[0];
+                if (actual instanceof Class<?>) {
+                    return (Class<?>) actual;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("리스트 내부 타입 추출 실패: {}", e.getMessage());
+        }
+        return Object.class;
+    }
+    
+    
 }

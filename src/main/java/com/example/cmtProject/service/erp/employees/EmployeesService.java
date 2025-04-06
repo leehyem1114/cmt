@@ -29,10 +29,24 @@ public class EmployeesService {
 	@Value("${uploadBaseLocation}") private String uploadBaseLocation;
 	@Value("${ProfileImgLocation}") private String itemImgLocation;
 	
-	//사원리스트
-	public List<EmpListPreviewDTO> getEmplist() {
-		return empMapper.selectEmplist();
+	// ADMIN 전원 사원리스트 조회
+	public List<EmpListPreviewDTO> getEmpList() {
+		return empMapper.selectEmpList();
 	}
+	
+	// MANAGER 같은 부서 사원 리스트 조회
+	public List<EmpListPreviewDTO> getEmpListDept(Long deptNo) {
+		return empMapper.getEmpListDept(deptNo);
+	}
+	
+	// USER 본인 사원만 조회
+	public List<EmpListPreviewDTO> getEmpListUser(Long empNo) {
+		return empMapper.getEmpListUser(empNo);
+	}
+	
+	
+	
+	
 	//사원검색
 	public List<searchEmpDTO> getSearchDept(searchEmpDTO searchEmpDTO) {
 		return empMapper.selectDept(searchEmpDTO);
