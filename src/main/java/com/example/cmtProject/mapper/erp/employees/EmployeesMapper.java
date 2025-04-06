@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.cmtProject.dto.erp.employees.EmpCountDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
@@ -40,6 +41,10 @@ public interface EmployeesMapper {
 	int selectEmpId(String empId);
 	//아이디 찾기
 	String selectId(Map<String, String> map);
+	//사원 현황
+	EmpCountDTO selectCount(EmpCountDTO countDTO);
+	//부서별 현황
+	List<EmpCountDTO> selectDeptCount(EmpCountDTO countDTO);
 
 
 
