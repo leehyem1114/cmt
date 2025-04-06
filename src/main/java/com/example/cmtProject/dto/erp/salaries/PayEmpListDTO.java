@@ -14,13 +14,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class PayEmpListDTO {
-	 private String empId;
-	 private String empName;
+	 private String empId; // 사원번호
+	 private String empName; // 사원명
 	 private String empType;          // 고용유형
-	 private String deptNo;
-	 private String deptName;
-//	 private Long positionNo;
-	 private String position;
+	 private Long deptNo; // 부서번호
+	 private String deptName; // 부서명
+//	 private Long positionNo; // 직급번호
+	 private String position; // 직급명
 	 private String salBankName;	     // 은행명
 	 private String salBankAccount;	 // 계좌번호
 }

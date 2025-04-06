@@ -89,10 +89,10 @@ public class Payment { // 급여 지급 이력 엔티티
     private String payStatus;  // 지급 상태
     
     @Column(name = "SAL_BANK_NAME", length = 50, nullable = false)
-    private String salBankName;  // 지급 상태
+    private String salBankName;  // 은행명
     
     @Column(name = "SAL_BANK_ACCOUNT", length = 50, nullable = false)
-    private String salBankAccount;  // 지급 상태
+    private String salBankAccount;  // 계좌번호
     
     public PaymentDTO toDto() {
         return PaymentDTO.builder()
@@ -116,8 +116,8 @@ public class Payment { // 급여 지급 이력 엔티티
                 .payTaxTotal(payTaxTotal)
                 .payTotal(payTotal)
                 .payStatus(payStatus)
-                .salBankName(salBankName)         // ✅ 누락된 필드
-                .salBankAccount(salBankAccount)   // ✅ 누락된 필드
+                .salBankName(salBankName)        
+                .salBankAccount(salBankAccount)
                 .build();
     }
 

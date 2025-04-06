@@ -75,10 +75,11 @@
 			</div>
 		</div><!-- <div class="button-container"> -->
 
-		<form action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
+		<form th:action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
 			<div class="container">
 				<label class="deptLabel">부서</label>
 				<select class="form-select" id="dept" name="dept">
+					<option value="">전체</option>
 					<option th:each="dept : ${deptList}"
 						th:value="${dept.cmnDetailCode}" th:text="${dept.cmnDetailName}"></option>
 				</select>
@@ -214,112 +215,142 @@
 		//그리드 gridTop 시작 --------------------------------------
 		console.log(/*[[${payList}]]*/ []);
 		
+		const columns = [
+			{
+				header: '지급일',
+			    name: 'payDate',
+				sortable: true,
+				width: 100,
+				align: "center"
+			},
+			{
+				header: '사원번호',
+			    name: 'empId',
+				sortable: true,
+				width: 100,
+				align: "center"
+			},
+			{
+			 	header: '사원명',
+			   	name: 'empName',
+				width: 100,
+				align: "center"
+			},
+			{
+				header: '부서',
+			  	name: 'deptName',
+				sortable: true,
+				width: 100,
+				align: "center"
+			},
+			{
+			    header: '직급',
+			    name: 'position',
+			    sortable: true,
+				width: 100,
+				align: "center"
+			 },
+			 {
+			    header: '고용유형',
+			    name: 'empType',
+				width: 100,
+				align: "center"
+			 },
+			 {
+			    header: '기본급',
+			    name: 'payBasic',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '야근수당',
+			    name: 'payBonusOvertime',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '명절수당',
+			    name: 'payBonusHoliday',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '총수당금액',
+			    name: 'payBonusTotal',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '국민연금',
+			    name: 'payTaxPension',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '건강보험',
+			    name: 'payTaxHealth',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '장기요양보험',
+			    name: 'payTaxCare',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '고용보험',
+			    name: 'payTaxEmployment',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '소득세',
+			    name: 'payTaxIncome',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '주민세',
+			    name: 'payTaxResidence',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '총공제금액',
+			    name: 'payTaxTotal',
+				width: 100,
+				align: "right"
+			 },
+			 {
+			    header: '실수령액',
+			    name: 'payTotal',
+				width: 100,
+				align: "right"
+			 }
+		];
+		
+		const moneyColumns = [
+		  'payBasic', 'payBonusOvertime', 'payBonusHoliday', 'payBonusTotal',
+		  'payTaxPension', 'payTaxHealth', 'payTaxCare', 'payTaxEmployment',
+		  'payTaxIncome', 'payTaxResidence', 'payTaxTotal', 'payTotal'
+		];
+		
+		// 금액 컬럼에 자동으로 천 단위 콤마 구분
+		columns.forEach(column => {
+		    if (moneyColumns.includes(column.name)) {
+		        column.formatter = (value) => {
+		            if (!value.value && value.value !== 0) return '';
+		            return value.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+		        };
+		    }
+		});
+		
 		const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
 			data : /*[[${payList}]]*/ [],
 	        rowHeaders: ['checkbox'], 
-	        columns: [
-				{
-	                header: '지급일',
-	                name: 'payDate',
-	            	sortable: true,
-					align: "center"
-	            },
-	            {
-	                header: '사원번호',
-	                name: 'empId',
-	                sortable: true,
-	                align: "center"
-	            },
-	            {
-	                header: '사원명',
-	                name: 'empName',
-					align: "center"
-	            },
-	            {
-	                header: '부서',
-	                name: 'deptName',
-		            sortable: true,
-		            align: "center"
-	            },
-	            {
-	                header: '직급',
-	                name: 'position',
-	            	sortable: true,
-					align: "center"
-	            },
-	            {
-	                header: '고용유형',
-	                name: 'empType',
-					align: "center"
-	            },
-	            {
-	                header: '기본급',
-	                name: 'payBasic',
-					align: "center"
-	            },
-	            {
-	                header: '야근수당',
-	                name: 'payBonusOvertime',
-					align: "center"
-	            },
-	            {
-	                header: '명절수당',
-	                name: 'payBonusHoliday',
-					align: "center"
-	            },
-	            {
-	                header: '총수당금액',
-	                name: 'payBonusTotal',
-					align: "center"
-	            },
-	            {
-	                header: '국민연금',
-	                name: 'payTaxPension',
-					align: "center"
-	            },
-	            {
-	                header: '건강보험',
-	                name: 'payTaxHealth',
-					align: "center"
-	            },
-	            {
-	                header: '장기요양보험',
-	                name: 'payTaxCare',
-					align: "center"
-	            },
-	            {
-	                header: '고용보험',
-	                name: 'payTaxEmployment',
-					align: "center"
-	            },
-	            {
-	                header: '소득세',
-	                name: 'payTaxIncome',
-					align: "center"
-	            },
-	            {
-	                header: '주민세',
-	                name: 'payTaxResidence',
-					align: "center"
-	            },
-	            {
-	                header: '총공제금액',
-	                name: 'payTaxTotal',
-					align: "center"
-	            },
-	            {
-	                header: '실수령액',
-	                name: 'payTotal',
-					align: "center"
-	            },
-	            {
-	                header: '지급상태',
-	                name: 'payStatus',
-	                sortable: true,
-					align: "center"
-	            }
-	        ] // 열 설정
+	        columns: columns
 	    });
 	    
 		grid.on('click', function(ev) {
@@ -499,6 +530,6 @@
 
 
 	<th:block layout:fragment="script">
-	</th:block><!-- <th:block layout:fragment="script"> -->
+	</th:block>
 </body>
 </html>

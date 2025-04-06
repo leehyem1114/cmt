@@ -83,7 +83,7 @@ public class SalaryService {
 //		        .salBankAccount(paymentDTO.getSalBankAccount())
 //		        .build();
 		
-		//salMapper.savePayment(paymentDTO);
+		salMapper.savePayment(paymentDTO);
 	}	
 
 	//개인 지급내역

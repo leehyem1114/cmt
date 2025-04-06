@@ -16,58 +16,58 @@
   	<!-- 직급별 기본급 내역 -->
   	<select id="getPayBasic" resultType="com.example.cmtProject.dto.erp.salaries.PayBasicDTO">
 	  	SELECT
-	    	P.PAY_NO,
-	    	P.EMP_ID,
+	    	<!--P.PAY_NO,-->
+	    	E.EMP_ID,
 	    	E.EMP_NAME,
 	    	E.POSITION_NO,
 	    	CD.CMN_DETAIL_VALUE AS payBasic,
 	    	CD.CMN_DETAIL_NAME AS position
-		FROM PAYMENTS P
-		JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
+		<!--FROM PAYMENTS P-->
+		FROM EMPLOYEES E
+		<!--JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID-->
 		JOIN COMMONCODE_DETAIL CD ON TO_CHAR(E.POSITION_NO) = CD.CMN_DETAIL_CODE
 		WHERE CD.CMN_CODE = 'POSITION'
   	</select>
 
     <!-- 급여 지급 내역 -->
-    <select id="getPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
-    	
-	SELECT
-        P.PAY_NO                AS payNo,
-        P.PAY_DATE              AS payDate,
-        P.PAY_BASIC             AS payBasic,
-        P.PAY_BONUS_OVERTIME    AS payBonusOvertime,
-        P.PAY_BONUS_HOLIDAY     AS payBonusHoliday,
-        P.PAY_BONUS_TOTAL       AS payBonusTotal,
-        P.PAY_TAX_PENSION       AS payTaxPension,
-        P.PAY_TAX_CARE          AS payTaxCare,
-        P.PAY_TAX_HEALTH        AS payTaxHealth,
-        P.PAY_TAX_EMPLOYMENT    AS payTaxEmployment,
-        P.PAY_TAX_INCOME        AS payTaxIncome,
-        P.PAY_TAX_RESIDENCE     AS payTaxResidence,
-        P.PAY_TAX_TOTAL         AS payTaxTotal,
-        P.PAY_TOTAL             AS payTotal,
-        E.EMP_NAME              AS empName,
-        E.EMP_ID				AS empId,
-        E.SAL_BANK_NAME			AS salBankName,
-        E.SAL_BANK_ACCOUNT		AS salBankAccount,
-        DN.CMN_DETAIL_NAME      AS deptName,
-        PO.CMN_DETAIL_NAME      AS position,
-        ET.CMN_DETAIL_NAME      AS empType,
-        PS.CMN_DETAIL_NAME      AS payStatus
-    FROM PAYMENTS P
-    LEFT JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
-    
-    LEFT JOIN COMMONCODE_DETAIL DN 
-      ON TO_CHAR(E.DEPT_NO) = DN.CMN_DETAIL_CODE
-      
-    LEFT JOIN COMMONCODE_DETAIL PO 
-      ON TO_CHAR(E.POSITION_NO) = PO.CMN_DETAIL_CODE
-      
-    LEFT JOIN COMMONCODE_DETAIL ET 
-      ON E.EMP_TYPE = ET.CMN_DETAIL_CODE
-      
-    LEFT JOIN COMMONCODE_DETAIL PS 
-      ON P.PAY_STATUS = PS.CMN_DETAIL_CODE
+    <select id="getPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">    	
+		SELECT
+	        P.PAY_NO                AS payNo,
+	        P.PAY_DATE              AS payDate,
+	        P.PAY_BASIC             AS payBasic,
+	        P.PAY_BONUS_OVERTIME    AS payBonusOvertime,
+	        P.PAY_BONUS_HOLIDAY     AS payBonusHoliday,
+	        P.PAY_BONUS_TOTAL       AS payBonusTotal,
+	        P.PAY_TAX_PENSION       AS payTaxPension,
+	        P.PAY_TAX_CARE          AS payTaxCare,
+	        P.PAY_TAX_HEALTH        AS payTaxHealth,
+	        P.PAY_TAX_EMPLOYMENT    AS payTaxEmployment,
+	        P.PAY_TAX_INCOME        AS payTaxIncome,
+	        P.PAY_TAX_RESIDENCE     AS payTaxResidence,
+	        P.PAY_TAX_TOTAL         AS payTaxTotal,
+	        P.PAY_TOTAL             AS payTotal,
+	        E.EMP_NAME              AS empName,
+	        E.EMP_ID				AS empId,
+	        E.SAL_BANK_NAME			AS salBankName,
+	        E.SAL_BANK_ACCOUNT		AS salBankAccount,
+	        DN.CMN_DETAIL_NAME      AS deptName,
+	        PO.CMN_DETAIL_NAME      AS position,
+	        ET.CMN_DETAIL_NAME      AS empType,
+	        PS.CMN_DETAIL_NAME      AS payStatus
+	    FROM PAYMENTS P
+	    LEFT JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
+	    
+	    LEFT JOIN COMMONCODE_DETAIL DN 
+	      ON TO_CHAR(E.DEPT_NO) = DN.CMN_DETAIL_CODE
+	      
+	    LEFT JOIN COMMONCODE_DETAIL PO 
+	      ON TO_CHAR(E.POSITION_NO) = PO.CMN_DETAIL_CODE
+	      
+	    LEFT JOIN COMMONCODE_DETAIL ET 
+	      ON E.EMP_TYPE = ET.CMN_DETAIL_CODE
+	      
+	    LEFT JOIN COMMONCODE_DETAIL PS 
+	      ON P.PAY_STATUS = PS.CMN_DETAIL_CODE
 	</select>
 
 	<!-- 급여 지급 내역 검색 필터링 -->
@@ -116,13 +116,13 @@
 		 AND PS.CMN_CODE = 'PAY_STATUS'
         <where>
 		<if test="deptName != null and deptName != ''">
-			AND DN.CMN_DETAIL_CODE = #{deptName}
+			AND DN.CMN_DETAIL_NAME = #{deptName}
 		</if>
 		<if test="empName != null and empName != ''">
 			AND E.EMP_NAME LIKE '%' || #{empName} || '%'
 		</if>
-		<if test="startDate != null and endDate != null">
-			AND P.PAY_DATE BETWEEN #{startDate} AND #{endDate}
+		<if test="minDate != null and maxDate != null">
+			AND P.PAY_DATE BETWEEN TO_DATE(#{minDate, 'YYYY-MM-DD'} AND TO_DATE(#{maxDate}, 'YYYY-MM-DD')
 		</if>
         </where>
         ORDER BY P.PAY_DATE DESC
@@ -130,8 +130,53 @@
     
     <!-- 급여 이체 -->
     <insert id="savePayment" parameterType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
-     	<!-- INSERT INTO PAYMENTS (EMP_NO, PAY_DATE, PAY_BASIC, PAY_BONUS_TOTAL, PAY_TAX_TOTAL, PAY_TOTAL, PAY_STATUS)
-        VALUES (#{empNo}, #{payDate}, #{payBasic}, #{payBonusTotal}, #{payTaxTotal}, #{payTotal}, #{payStatus}) -->
+    	INSERT INTO PAYMENTS (
+			PAY_NO,
+			EMP_NAME,
+			EMP_ID,
+			DEPT_NAME,
+			POSITION,
+			EMP_TYPE,
+			PAY_DATE,
+			PAY_BASIC,
+			PAY_BONUS_OVERTIME,
+			PAY_BONUS_HOLIDAY,
+			PAY_BONUS_TOTAL,
+			PAY_TAX_PENSION,
+			PAY_TAX_CARE,
+			PAY_TAX_HEALTH,
+			PAY_TAX_EMPLOYMENT,
+			PAY_TAX_INCOME,
+			PAY_TAX_RESIDENCE,
+			PAY_TAX_TOTAL, 
+		    PAY_TOTAL,
+		    PAY_STATUS,
+		    SAL_BANK_NAME,
+		    SAL_BANK,ACCOUNT
+		) VALUES (
+			#{payNo},
+			#{empName},
+			#{empId},
+			#{deptName},
+			#{position},
+			#{empType},
+			#{payDate},
+			#{payBasic},
+			#{payBonusOvertime},
+			#{payBonusHoliday},
+			#{payBonusTotal},
+			#{payTaxPension},
+			#{payTaxCare},
+			#{payTaxHealth},
+			#{payTaxEmployment},
+			#{payTaxIncome},
+			#{payTaxResidence},
+			#{payTaxTotal},
+			#{payTotal},
+			#{payStatus},
+			#{salBankName},
+			#{salBankAcount}
+		)
     </insert>
     
     <!-- 급여 이체 검색 필터링 -->
@@ -153,7 +198,7 @@
           		AND P.CMN_DETAIL_VALUE BETWEEN #{startDate} AND #{endDate} 
           	</if>
         </where>
-        ORDER BY E.EMP_ID -->
+        ORDER BY E.EMP_ID-->
     </select>
  
     <!-- 18시 이후부터 야근수당 계산 -->
@@ -216,23 +261,25 @@
 		WHERE E.EMP_ID = #{empId}
 	</select>
 	
+	<!-- 사원 정보 가져오기 -->
 	<select id="getEmpInfo" resultType="com.example.cmtProject.dto.erp.salaries.PayEmpListDTO">
-	  		SELECT E.EMP_ID,
-			    E.EMP_NAME,
-			    E.DEPT_NO,
-			    CD.CMN_DETAIL_NAME AS DEPT_NAME,
-			    CD.CMN_DETAIL_NAME AS POSITION,
-			    E.EMP_TYPE,       
-			    E.SAL_BANK_NAME,	    
-			    E.SAL_BANK_ACCOUNT	 
-			FROM EMPLOYEES E
-			JOIN COMMONCODE_DETAIL CD ON TO_CHAR(E.DEPT_NO) = CD.CMN_DETAIL_CODE
-			WHERE EMP_ID IN 
+	  	SELECT E.EMP_ID,
+			E.EMP_NAME,
+			E.DEPT_NO,
+			CD.CMN_DETAIL_NAME AS DEPT_NAME,
+			CD.CMN_DETAIL_NAME AS POSITION,
+			E.EMP_TYPE,       
+			E.SAL_BANK_NAME,	    
+			E.SAL_BANK_ACCOUNT	 
+		FROM EMPLOYEES E
+		JOIN COMMONCODE_DETAIL CD ON TO_CHAR(E.DEPT_NO) = CD.CMN_DETAIL_CODE
+		WHERE EMP_ID IN 
 	    <foreach item="index" collection="empNoList" open="(" separator="," close=")">
 	        #{index}
 	    </foreach>
 	</select>
 	
+	<!-- 급여 지급일 가져오기 -->
 	<select id="getPayDay" resultType="String">
 		SELECT CMN_DETAIL_VALUE
 		FROM COMMONCODE_DETAIL
