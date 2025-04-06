@@ -77,7 +77,7 @@ public class SalaryController {
 		List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
 		model.addAttribute("deptList", deptList);
 		
-		List<EmpListPreviewDTO> empList = employeesService.getEmplist();
+		List<EmpListPreviewDTO> empList = employeesService.getEmpList();
 		model.addAttribute("empList", empList);
 		//System.out.println("사원 목록 확인 : " + empList);
 		
@@ -101,7 +101,7 @@ public class SalaryController {
 		List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
 		model.addAttribute("deptList", deptList);
 		
-		List<EmpListPreviewDTO> empList = employeesService.getEmplist();
+		List<EmpListPreviewDTO> empList = employeesService.getEmpList();
 		model.addAttribute("empList", empList);
 		
 		return "erp/salaries/payList";
@@ -116,6 +116,7 @@ public class SalaryController {
 	// 급여 이체
 	@PostMapping("/payTransfer")
 	@ResponseBody
+
 	public String payTransfer(@RequestParam("position") String position, @RequestParam("empIdList") List<String> empIdList, Model model) {	
 		
 		//System.out.println("position:"+position+" ,empIdList:"+empIdList);

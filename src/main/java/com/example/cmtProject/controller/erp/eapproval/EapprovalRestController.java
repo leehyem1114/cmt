@@ -197,7 +197,13 @@ public class EapprovalRestController {
     public ApiResponse<List<EmpListPreviewDTO>> getApprovers() {
         log.debug("결재자 목록 조회 요청");
         try {
-            List<EmpListPreviewDTO> employees = empService.getEmplist();
+
+            List<EmpListPreviewDTO> employees = empService.getEmpList();
+            
+            if (employees == null) {
+                return ApiResponse.error("결재자 목록을 가져올 수 없습니다", ResponseCode.SERVER_ERROR);
+            }
+
             return ApiResponse.success(employees);
         } catch (Exception e) {
             log.error("결재자 목록 조회 중 오류 발생: {}", e.getMessage(), e);

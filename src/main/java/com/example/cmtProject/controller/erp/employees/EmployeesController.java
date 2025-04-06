@@ -100,7 +100,7 @@ public class EmployeesController {
 	public String empList(HttpSession session,Model model) {
 		commonCodeName(model, commonService);
 		
-		List<EmpListPreviewDTO> empList = empService.getEmplist();
+		List<EmpListPreviewDTO> empList = empService.getEmpList();
 		model.addAttribute("emplist",empList);
 		System.out.println(empList);
 		

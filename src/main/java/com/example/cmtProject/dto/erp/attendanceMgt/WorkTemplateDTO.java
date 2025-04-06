@@ -1,6 +1,7 @@
 package com.example.cmtProject.dto.erp.attendanceMgt;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -14,11 +15,11 @@ import lombok.NoArgsConstructor;
 public class WorkTemplateDTO {
 	
     private Long wtNo; // 근무 템플릿 NO
-    private Long wtName; // 근무 템플릿 이름
+    private String wtName; // 근무 템플릿 이름
     @JsonFormat(pattern = "HH:mm")
-    private LocalDateTime wtStartTime; // 근무 시작 시간
+    private LocalTime wtStartTime; // 근무 시작 시간
     @JsonFormat(pattern = "HH:mm")
-    private LocalDateTime wtEndTime; // 근무 종료 시간
+    private LocalTime wtEndTime; // 근무 종료 시간
     private String wtType; // 기준 근무 유형
     private int wtWorkTime; // 근로 시간
     private int wtBreakTime; // 휴식 시간
@@ -39,7 +40,7 @@ public class WorkTemplateDTO {
     }
 
     @Builder
-	public WorkTemplateDTO(Long wtNo, Long wtName, LocalDateTime wtStartTime, LocalDateTime wtEndTime, String wtType,
+	public WorkTemplateDTO(Long wtNo, String wtName, LocalTime wtStartTime, LocalTime wtEndTime, String wtType,
 			int wtWorkTime, int wtBreakTime, String wtRemarks) {
 		super();
 		this.wtNo = wtNo;

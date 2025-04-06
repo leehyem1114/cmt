@@ -8,7 +8,7 @@ import com.example.cmtProject.entity.erp.attendanceMgt.WorkTemplate;
 import com.example.cmtProject.entity.erp.attendanceMgt.WorkTime;
 
 @Repository
-public interface WorkTimeRepository extends JpaRepository<WorkTime, Long> {
+public interface WorkTemplateRepository extends JpaRepository<WorkTemplate, Long> {
 
 }
 

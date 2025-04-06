@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
@@ -12,8 +13,15 @@ import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 
 @Mapper
 public interface EmployeesMapper {
+	
+	// ADMIN 전원 사원리스트 조회
+	List<EmpListPreviewDTO> selectEmpList();
+	
+	// MANAGER 같은 부서 사원 리스트 조회
+	List<EmpListPreviewDTO> getEmpListDept(@Param("deptNo") Long deptNo);
 
-	List<EmpListPreviewDTO> selectEmplist();
+	// USER 본인 사원만 조회
+	List<EmpListPreviewDTO> getEmpListUser(@Param("empNo") Long empNo);
 
 	List<searchEmpDTO> selectDept(searchEmpDTO searchEmpDTO);
 
@@ -32,5 +40,7 @@ public interface EmployeesMapper {
 	int selectEmpId(String empId);
 	//아이디 찾기
 	String selectId(Map<String, String> map);
+
+
 
 }
