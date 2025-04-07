@@ -34,7 +34,7 @@ const FormContentLoader = (function() {
      * Summernote 에디터 초기화에 사용되는 기본 옵션
      */
     const EDITOR_OPTIONS = {
-        height: 400,
+        height: 600,
         lang: 'ko-KR',
         placeholder: '내용을 입력하세요',
         toolbar: [
@@ -171,104 +171,115 @@ const FormContentLoader = (function() {
     // 양식 데이터 관리 함수
     //===========================================================================
     
-    /**
-     * 양식 내용 로드 함수
-     * 선택된 양식 ID에 해당하는 양식 내용을 API로 조회하여 에디터에 적용합니다.
-     * 
-     * @param {string} formId - 양식 ID
-     * @returns {Promise<boolean>} 로드 성공 여부
-     */
-    async function loadFormContent(formId) {
-        try {
-            if (!formId) {
-                console.warn('유효한 양식 ID가 제공되지 않았습니다.');
-                return false;
-            }
-            
-            console.log(`양식 ID ${formId} 내용 로드 시작`);
-            
-            // 에디터 컨테이너에 로딩 오버레이 추가
-            const editorElement = document.getElementById('contentEditor');
-            const editorContainer = editorElement ? editorElement.closest('.card') : null;
-            
-            if (editorContainer) {
-                // 기존 오버레이 제거
-                const existingOverlay = editorContainer.querySelector('.loading-overlay');
-                if (existingOverlay) {
-                    editorContainer.removeChild(existingOverlay);
-                }
-                
-                // 새 오버레이 추가
-                const overlay = document.createElement('div');
-                overlay.className = 'loading-overlay';
-                overlay.innerHTML = `
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">로딩 중...</span>
-                    </div>
-                `;
-                editorContainer.appendChild(overlay);
-            }
-            
-            // 리팩토링된 ApiUtil 사용하여 API 호출
-            try {
-                const response = await ApiUtil.getWithLoading(
-                    API_URLS.FORM(formId),
-                    null,
-                    '양식 로드 중...'
-                );
-                
-                // 오버레이 제거
-                if (editorContainer) {
-                    const overlay = editorContainer.querySelector('.loading-overlay');
-                    if (overlay) {
-                        editorContainer.removeChild(overlay);
-                    }
-                }
-                
-                // 응답 확인
-                if (!response.success || !response.data) {
-                    throw new Error(response.message || '양식을 불러올 수 없습니다.');
-                }
-                
-                // 양식 내용 추출 - 가이드라인에 따라 대문자 키 사용
-                const formData = response.data;
-                const formContent = formData.FORM_CONTENT || '';
-                
-                console.log('양식 내용을 성공적으로 로드했습니다.');
-                
-                // 에디터 존재 확인
-                if (!editorElement) {
-                    throw new Error('에디터 요소를 찾을 수 없습니다.');
-                }
-                
-                // 에디터에 내용 설정
-                if (typeof $.fn.summernote === 'function') {
-                    $(editorElement).summernote('code', formContent);
-                    console.log('양식 내용이 에디터에 적용되었습니다.');
-                } else {
-                    throw new Error('Summernote 에디터가 초기화되지 않았습니다.');
-                }
-                
-                return true;
-            } catch (apiError) {
-                // 오버레이 제거
-                if (editorContainer) {
-                    const overlay = editorContainer.querySelector('.loading-overlay');
-                    if (overlay) {
-                        editorContainer.removeChild(overlay);
-                    }
-                }
-                
-                // API 오류 처리
-                await ApiUtil.handleApiError(apiError, '양식 로드 실패');
-                return false;
-            }
-        } catch (error) {
-            console.error('양식 로드 중 오류:', error);
-            await AlertUtil.showWarning('양식 로드 실패', error.message || '양식을 불러올 수 없습니다.');
-            return false;
-        }
-    }
+	/**
+	 * 양식 내용 로드 함수
+	 * 선택된 양식 ID에 해당하는 양식 내용을 API로 조회하여 에디터에 적용합니다.
+	 * 
+	 * @param {string} formId - 양식 ID
+	 * @returns {Promise<boolean>} 로드 성공 여부
+	 */
+	async function loadFormContent(formId) {
+	    try {
+	        if (!formId) {
+	            console.warn('유효한 양식 ID가 제공되지 않았습니다.');
+	            return false;
+	        }
+	        
+	        console.log(`양식 ID ${formId} 내용 로드 시작`);
+	        
+	        // 에디터 컨테이너에 로딩 오버레이 추가
+	        const editorElement = document.getElementById('contentEditor');
+	        const editorContainer = editorElement ? editorElement.closest('.card') : null;
+	        
+	        if (editorContainer) {
+	            // 기존 오버레이 제거
+	            const existingOverlay = editorContainer.querySelector('.loading-overlay');
+	            if (existingOverlay) {
+	                editorContainer.removeChild(existingOverlay);
+	            }
+	            
+	            // 새 오버레이 추가
+	            const overlay = document.createElement('div');
+	            overlay.className = 'loading-overlay';
+	            overlay.innerHTML = `
+	                <div class="spinner-border text-primary" role="status">
+	                    <span class="visually-hidden">로딩 중...</span>
+	                </div>
+	            `;
+	            editorContainer.appendChild(overlay);
+	        }
+	        
+	        // 리팩토링된 ApiUtil 사용하여 API 호출
+	        try {
+	            const response = await ApiUtil.getWithLoading(
+	                API_URLS.FORM(formId),
+	                null,
+	                '양식 로드 중...'
+	            );
+	            
+	            // 오버레이 제거
+	            if (editorContainer) {
+	                const overlay = editorContainer.querySelector('.loading-overlay');
+	                if (overlay) {
+	                    editorContainer.removeChild(overlay);
+	                }
+	            }
+	            
+	            // 응답 확인
+	            if (!response.success || !response.data) {
+	                throw new Error(response.message || '양식을 불러올 수 없습니다.');
+	            }
+	            
+	            // 양식 내용 추출 - 가이드라인에 따라 대문자 키 사용
+	            const formData = response.data;
+	            let formContent = formData.FORM_CONTENT || '';
+	            
+	            console.log('양식 내용을 성공적으로 로드했습니다.');
+	            
+	            // 에디터 존재 확인
+	            if (!editorElement) {
+	                throw new Error('에디터 요소를 찾을 수 없습니다.');
+	            }
+	            
+	            // 플레이스홀더 처리 (TemplateProcessor 사용 가능한 경우)
+	            if (window.TemplateProcessor) {
+	                try {
+	                    formContent = await TemplateProcessor.processTemplateFromServer(formContent);
+	                    console.log('플레이스홀더가 사용자 정보로 치환되었습니다.');
+	                } catch (templateError) {
+	                    console.error('플레이스홀더 처리 중 오류:', templateError);
+	                    // 오류가 발생해도 원본 내용은 계속 표시
+	                }
+	            }
+	            
+	            // 에디터에 내용 설정
+	            if (typeof $.fn.summernote === 'function') {
+	                $(editorElement).summernote('code', formContent);
+	                console.log('양식 내용이 에디터에 적용되었습니다.');
+	            } else {
+	                throw new Error('Summernote 에디터가 초기화되지 않았습니다.');
+	            }
+	            
+	            return true;
+	        } catch (apiError) {
+	            // 오버레이 제거
+	            if (editorContainer) {
+	                const overlay = editorContainer.querySelector('.loading-overlay');
+	                if (overlay) {
+	                    editorContainer.removeChild(overlay);
+	                }
+	            }
+	            
+	            // API 오류 처리
+	            await ApiUtil.handleApiError(apiError, '양식 로드 실패');
+	            return false;
+	        }
+	    } catch (error) {
+	        console.error('양식 로드 중 오류:', error);
+	        await AlertUtil.showWarning('양식 로드 실패', error.message || '양식을 불러올 수 없습니다.');
+	        return false;
+	    }
+	}
     
     /**
      * 현재 에디터 내용 가져오기 함수
