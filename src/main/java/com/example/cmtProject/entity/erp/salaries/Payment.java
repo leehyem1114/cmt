@@ -2,6 +2,10 @@ package com.example.cmtProject.entity.erp.salaries;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 
@@ -10,6 +14,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +32,9 @@ import lombok.Setter;
 public class Payment { // 급여 지급 이력 엔티티
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PAYMENTS_PAY_NO" )
+	@SequenceGenerator(name = "SEQ_PAYMENTS_PAY_NO", sequenceName="SEQ_PAYMENTS_PAY_NO", allocationSize = 1)
     @Column(name = "PAY_NO")
     private Long payNo; // 지급 번호
     
@@ -85,8 +92,8 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_TOTAL", nullable = false)
     private Long payTotal; // 실수령액
 
-    @Column(name = "PAY_STATUS", length = 50, nullable = false)
-    private String payStatus;  // 지급 상태
+//    @Column(name = "PAY_STATUS", length = 50, nullable = false)
+//    private String payStatus;  // 지급 상태
     
     @Column(name = "SAL_BANK_NAME", length = 50, nullable = false)
     private String salBankName;  // 은행명
@@ -115,10 +122,28 @@ public class Payment { // 급여 지급 이력 엔티티
                 .payTaxResidence(payTaxResidence)
                 .payTaxTotal(payTaxTotal)
                 .payTotal(payTotal)
-                .payStatus(payStatus)
+                //.payStatus(payStatus)
                 .salBankName(salBankName)        
                 .salBankAccount(salBankAccount)
                 .build();
     }
 
-}
+}   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

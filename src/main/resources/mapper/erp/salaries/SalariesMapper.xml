@@ -16,15 +16,12 @@
   	<!-- 직급별 기본급 내역 -->
   	<select id="getPayBasic" resultType="com.example.cmtProject.dto.erp.salaries.PayBasicDTO">
 	  	SELECT
-	    	<!--P.PAY_NO,-->
 	    	E.EMP_ID,
 	    	E.EMP_NAME,
 	    	E.POSITION_NO,
 	    	CD.CMN_DETAIL_VALUE AS payBasic,
 	    	CD.CMN_DETAIL_NAME AS position
-		<!--FROM PAYMENTS P-->
 		FROM EMPLOYEES E
-		<!--JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID-->
 		JOIN COMMONCODE_DETAIL CD ON TO_CHAR(E.POSITION_NO) = CD.CMN_DETAIL_CODE
 		WHERE CD.CMN_CODE = 'POSITION'
   	</select>
@@ -52,8 +49,7 @@
 	        E.SAL_BANK_ACCOUNT		AS salBankAccount,
 	        DN.CMN_DETAIL_NAME      AS deptName,
 	        PO.CMN_DETAIL_NAME      AS position,
-	        ET.CMN_DETAIL_NAME      AS empType,
-	        PS.CMN_DETAIL_NAME      AS payStatus
+	        ET.CMN_DETAIL_NAME      AS empType
 	    FROM PAYMENTS P
 	    LEFT JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
 	    
@@ -65,9 +61,6 @@
 	      
 	    LEFT JOIN COMMONCODE_DETAIL ET 
 	      ON E.EMP_TYPE = ET.CMN_DETAIL_CODE
-	      
-	    LEFT JOIN COMMONCODE_DETAIL PS 
-	      ON P.PAY_STATUS = PS.CMN_DETAIL_CODE
 	</select>
 
 	<!-- 급여 지급 내역 검색 필터링 -->
@@ -95,7 +88,7 @@
 		    P.PAY_TAX_TOTAL         AS payTaxTotal,
 		
 		    P.PAY_TOTAL             AS payTotal,
-		    PS.CMN_DETAIL_NAME      AS payStatus
+<!--		    PS.CMN_DETAIL_NAME      AS payStatus-->
 		
 		FROM PAYMENTS P
 		LEFT JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
@@ -111,9 +104,9 @@
 		  ON E.EMP_TYPE = ET.CMN_DETAIL_CODE 
 		 AND ET.CMN_CODE = 'EMP_TYPE'
 		
-		LEFT JOIN COMMONCODE_DETAIL PS 
-		  ON P.PAY_STATUS = PS.CMN_DETAIL_CODE 
-		 AND PS.CMN_CODE = 'PAY_STATUS'
+<!--		LEFT JOIN COMMONCODE_DETAIL PS -->
+<!--		  ON P.PAY_STATUS = PS.CMN_DETAIL_CODE -->
+<!--		 AND PS.CMN_CODE = 'PAY_STATUS'-->
         <where>
 		<if test="deptName != null and deptName != ''">
 			AND DN.CMN_DETAIL_NAME = #{deptName}
@@ -150,7 +143,7 @@
 			PAY_TAX_RESIDENCE,
 			PAY_TAX_TOTAL, 
 		    PAY_TOTAL,
-		    PAY_STATUS,
+<!--		    PAY_STATUS,-->
 		    SAL_BANK_NAME,
 		    SAL_BANK,ACCOUNT
 		) VALUES (
@@ -173,7 +166,7 @@
 			#{payTaxResidence},
 			#{payTaxTotal},
 			#{payTotal},
-			#{payStatus},
+<!--			#{payStatus},-->
 			#{salBankName},
 			#{salBankAcount}
 		)
@@ -263,17 +256,27 @@
 	
 	<!-- 사원 정보 가져오기 -->
 	<select id="getEmpInfo" resultType="com.example.cmtProject.dto.erp.salaries.PayEmpListDTO">
-	  	SELECT E.EMP_ID,
-			E.EMP_NAME,
-			E.DEPT_NO,
-			CD.CMN_DETAIL_NAME AS DEPT_NAME,
-			CD.CMN_DETAIL_NAME AS POSITION,
-			E.EMP_TYPE,       
-			E.SAL_BANK_NAME,	    
-			E.SAL_BANK_ACCOUNT	 
+	  	SELECT 
+		    E.EMP_ID,
+		    E.EMP_NAME,
+		    E.DEPT_NO,
+		    DEPT_CD.CMN_DETAIL_NAME AS DEPT_NAME,
+		    POS_CD.CMN_DETAIL_NAME AS POSITION,
+		    POS_CD.CMN_DETAIL_VALUE AS PAYBASIC,
+		    E.EMP_TYPE,       
+		    E.SAL_BANK_NAME,	    
+		    E.SAL_BANK_ACCOUNT
 		FROM EMPLOYEES E
-		JOIN COMMONCODE_DETAIL CD ON TO_CHAR(E.DEPT_NO) = CD.CMN_DETAIL_CODE
-		WHERE EMP_ID IN 
+		
+		-- 부서명용 조인
+		LEFT JOIN COMMONCODE_DETAIL DEPT_CD 
+		    ON TO_CHAR(E.DEPT_NO) = DEPT_CD.CMN_DETAIL_CODE
+		
+		-- 직급명 + 기본급용 조인
+		LEFT JOIN COMMONCODE_DETAIL POS_CD 
+		    ON TO_CHAR(E.POSITION_NO) = POS_CD.CMN_DETAIL_CODE
+		
+		WHERE E.EMP_ID IN 
 	    <foreach item="index" collection="empNoList" open="(" separator="," close=")">
 	        #{index}
 	    </foreach>
@@ -284,6 +287,18 @@
 		SELECT CMN_DETAIL_VALUE
 		FROM COMMONCODE_DETAIL
 		WHERE CMN_DETAIL_CODE = 'PDY001'
+	</select>
+
+	<select id="getPayCommonCodeDetails" resultType="com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO">
+		SELECT CMN_DETAIL_CODE,
+			CMN_CODE,
+			CMN_DETAIL_VALUE,
+			CMN_DETAIL_VALUE2
+		FROM COMMONCODE_DETAIL 
+		WHERE CMN_DETAIL_CODE 
+		LIKE 'TAX%' 
+		OR CMN_DETAIL_CODE 
+		LIKE 'BNS%'
 	</select>
 
 </mapper>

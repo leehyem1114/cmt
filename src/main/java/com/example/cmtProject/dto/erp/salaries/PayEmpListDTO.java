@@ -21,6 +21,7 @@ public class PayEmpListDTO {
 	 private String deptName; // 부서명
 //	 private Long positionNo; // 직급번호
 	 private String position; // 직급명
+	 private String payBasic;
 	 private String salBankName;	     // 은행명
 	 private String salBankAccount;	 // 계좌번호
 }
