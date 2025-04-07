@@ -170,6 +170,23 @@
         FROM EMPLOYEES
         WHERE EMP_ID = #{empId, jdbcType=VARCHAR}
     </select>
+    
+    <!-- 부서 코드로 부서명 조회 -->
+	<select id="selectDeptNameByDeptCode" resultType="java.lang.String">
+	    SELECT CMN_DETAIL_NAME 
+	    FROM COMMONCODE_DETAIL
+	    WHERE CMN_CODE = 'DEPT' 
+	    AND CMN_DETAIL_CODE = #{deptCode}
+	</select>
+
+	<!-- 직위 번호로 직위명 조회 -->
+	<select id="selectPositionNameByPositionNo" resultType="java.lang.String">
+	    SELECT CMN_DETAIL_NAME 
+	    FROM COMMONCODE_DETAIL
+	    WHERE CMN_CODE = 'POSITION' 
+	    AND CMN_DETAIL_CODE = TO_CHAR(#{positionNo})
+	</select>
+    
 
     <!-- ResultMap -->
     <resultMap id="documentResultMap" type="com.example.cmtProject.dto.erp.eapproval.DocumentDTO">

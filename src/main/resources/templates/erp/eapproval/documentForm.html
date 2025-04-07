@@ -12,7 +12,7 @@
     <title>기안서 작성</title>
     
     <!-- 페이지별 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
 </head>
 <body>
     <div layout:fragment="content">
@@ -123,7 +123,7 @@
     <!-- 페이지별 JavaScript 추가 영역 -->
     <th:block layout:fragment="script">
         <!-- Summernote 에디터 스크립트 -->
-        <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
         
         <!-- Thymeleaf 인라인 스크립트로 초기 데이터 설정 -->
         <script th:inline="javascript">
@@ -137,6 +137,9 @@
                 approvalLines: /*[[${documentDTO.approvalLines}]]*/ []
             };
         </script>
+		
+		<!-- 템플릿 처리 스크립트 추가 -->
+		<script src="/js/eapproval/templateProcessor.js"></script>
         
         <!-- 모듈 JS 파일 - 수정 부분 -->
         <script src="/js/eapproval/formContentLoader.js"></script>
