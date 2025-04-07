@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
+import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
@@ -19,7 +20,7 @@ public interface SalariesMapper {
 	List<PaymentDTO> getPayList();
 	
 	// 급여 지급 내역 필터링 검색
-	List<PaySearchDTO> searchPayList(PaySearchDTO paySearchDTO);
+	List<PaymentDTO> searchPayList(PaySearchDTO paySearchDTO);
 	
 	// 야근 수당 계산
 	List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO);
@@ -38,5 +39,8 @@ public interface SalariesMapper {
 
 	// 급여 지급일
 	String getPayDay();
+
+	//공통 코드에서 수당, 공제 계산 하기위한 컬럼 가져오기
+	List<PayCmmCodeDetailDTO> getPayCommonCodeDetails();
 	
 }

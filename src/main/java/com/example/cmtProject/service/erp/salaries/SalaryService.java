@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
+import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
@@ -34,7 +35,7 @@ public class SalaryService {
 	}
 
 	// 급여 지급 내역 조회 - 검색 기능 추가 
-	public List<PaySearchDTO> getSearchPayList(PaySearchDTO paySearchDTO) {
+	public List<PaymentDTO> getSearchPayList(PaySearchDTO paySearchDTO) {
 		return salMapper.searchPayList(paySearchDTO);
 	}
 	
@@ -100,6 +101,10 @@ public class SalaryService {
 	public String getPayDay() {
 		
 		return salMapper.getPayDay();
+	}
+
+	public List<PayCmmCodeDetailDTO> getPayCommonCodeDetails() {
+		return salMapper.getPayCommonCodeDetails();
 	}
 
 }

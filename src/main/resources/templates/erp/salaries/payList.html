@@ -68,7 +68,6 @@
 				<h2>급여 조회</h2>
 			</div>
 			<div>
-				<button type="button" class="calculate" data-bs-toggle="modal" data-bs-target="#payCalcModal">📃 급여 계산기</button>
 				<button type="button" class="print" onclick="payPrint()">✏️ 명세서 출력</button>
 				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
 				<button type="button" class="delete">삭제</button>
@@ -95,78 +94,6 @@
 		
 		<!-- 그리드 top 시작 -->
 		<div id="gridTop"></div>
-	
-		<!-- 급여 계산기 모달 -->
-		<div class="modal fade" id="payCalcModal" tabindex="-1">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="payCalcModal">급여 계산기</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"
-						aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<label for="pay">급여</label>
-					<div class="input-group mb-2">
-						<input type="text" id="pay" class="form-control"
-							placeholder="급여 입력"> <span class="input-group-text">원</span>
-						<button type="button" class="btn btn-secondary ms-2"
-							onclick="simulatePay()">계산하기</button>
-					</div>
-					<label for="payList"></label>
-					<h6 class="text-primary mb-3">지급항목</h6>
-					<div class="row mb-2">
-						<div class="col-6">급여</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<h6 class="text-primary mb-3">공제항목</h6>
-					<div class="row mb-2">
-						<div class="col-6">국민연금</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">건강보험</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">장기요양보험</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">고용보험</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">소득세</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">주민세</div>
-						<div class="col-6 text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">총 공제액</div>
-						<div class="col-6 text-danger text-end">원</div>
-					</div>
-					<label for="salItemCalc"></label>
-					<div class="row mb-2">
-						<div class="col-6">예상 실 수령액</div>
-						<div class="col-6 text-danger text-end">원</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-				</div>
-			</div>
-		</div>
-	</div><!-- 급여 계산기 모달 -->
 		
 	<!-- 급여 이체 모달 -->
 	<div class="modal fade" id="payTransferModal" tabindex="-1">
@@ -174,8 +101,7 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="payCalcModal">급여 이체</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"
-						aria-label="Close"></button>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<div class="input-group mb-2">
@@ -183,32 +109,30 @@
 					</div>
 					<div class="input-group mb-2">
 						<select class="form-select" id="dept" name="dept">
-							<option th:each="dept : ${deptList}"
-								th:value="${dept.cmnDetailCode}"
+							<option th:each="dept : ${deptList}" th:value="${dept.cmnDetailCode}"
 								th:text="${dept.cmnDetailName}"></option>
 						</select>
-					<div class="input-group mb-2">
-						<select class="form-select" id="position" name="position">
-							<option th:each="code : ${commonCodeMap['POSITION']}"
-								th:value="${code.cmnDetailCode}"
-								th:text="${code.cmnDetailName}"></option>
-						</select>
-					<div class="input-group mb-2">
-						<input type="text" id="payBasic" class="form-control" >
-					</div>
-						<button type="submit" class="btn btn-secondary ms-2">조회</button>
-					</div>
-					<!-- 그리드 top 시작 -->
-					<div id="gridTop2" style="width: 100%"></div>
-					<!-- 그리드 끝 -->
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-						<button type="button" id="payTransferBtn" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
+						<div class="input-group mb-2">
+							<select class="form-select" id="position" name="position">
+								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"
+									th:text="${code.cmnDetailName}"></option>
+							</select>
+							<div class="input-group mb-2">
+								<input type="text" id="payBasic" class="form-control">
+							</div>
+							<button type="submit" class="btn btn-secondary ms-2">조회</button>
+						</div>
+						<!-- 그리드 top 시작 -->
+						<div id="gridTop2" style="width: 100%"></div>
+						<!-- 그리드 끝 -->
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+							<button type="button" id="payTransferBtn" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	</div><!-- 급여 이체 모달 -->
+		</div><!-- 급여 이체 모달 -->
 	
 	<script src="/js/jquery-3.7.1.js"></script>
 	<script th:inline="javascript">
@@ -525,6 +449,7 @@
       	  
       	  
 		</script>
+	</div>	
 </div>	
 
 
