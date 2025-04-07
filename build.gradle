@@ -63,6 +63,10 @@ dependencies {
 	implementation 'org.apache.commons:commons-jexl3:3.4.0'
 	// PDF변환 라이브러리
 	implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.1.22'
+	
+	// HTML 파싱관련
+	
+	implementation 'org.jsoup:jsoup:1.19.1'
 
 }
 
