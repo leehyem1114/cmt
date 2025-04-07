@@ -18,6 +18,10 @@ public class PathConstants {
     public static final String PENDING = "/pending";
     public static final String COMPLETED = "/completed";
     public static final String REJECTED = "/rejected";
+    public static final String FORM_BASE = "/forms";
+    public static final String FORM_NEW = "/new";
+    public static final String FORM_EDIT = "/edit";
+    public static final String FORM_VIEW = "/view";
     
     // API 경로
     public static final String API_BASE = "/api/eapproval";
@@ -25,6 +29,7 @@ public class PathConstants {
     public static final String API_DOCUMENTS = "/documents";
     public static final String API_FORM = "/form";
     public static final String API_APPROVERS = "/approvers";
+    public static final String API_FORMS = "/forms";
     
     // 뷰 경로 (카멜케이스로 변경)
     public static final String VIEW_DOCUMENT_LIST = "erp/eapproval/documentList";
@@ -33,7 +38,11 @@ public class PathConstants {
     public static final String VIEW_PENDING_LIST = "erp/eapproval/pendingList";
     public static final String VIEW_COMPLETED_LIST = "erp/eapproval/completedList";
     public static final String VIEW_REJECTED_LIST = "erp/eapproval/rejectedList";
+    public static final String VIEW_FORM_LIST = "erp/eapproval/docFormList";
+    public static final String VIEW_FORM_EDIT = "erp/eapproval/docFormEdit";
+    public static final String VIEW_FORM_VIEW = "erp/eapproval/docFormView";
     
     // 리다이렉트 경로
     public static final String REDIRECT_DOCUMENT_LIST = "redirect:" + APPROVAL_BASE + DOCUMENT_LIST;
+    public static final String REDIRECT_FORM_LIST = "redirect:" + APPROVAL_BASE + FORM_BASE;
 }
