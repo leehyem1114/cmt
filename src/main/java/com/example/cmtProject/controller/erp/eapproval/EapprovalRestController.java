@@ -13,6 +13,7 @@ import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.dto.erp.eapproval.*;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.service.erp.eapproval.*;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.util.SecurityUtil;
@@ -23,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 /**
@@ -39,6 +42,7 @@ public class EapprovalRestController {
     private final DocFormService docFormService;
     private final ApprovalProcessService approvalProcessService;
     private final EmployeesService empService;
+    private final DocumentMapper documentMapper;
     
     /**
      * 문서 양식 조회 API
@@ -266,7 +270,7 @@ public class EapprovalRestController {
             
             // 직위 정보 조회 - DB 조회
             Employees employee = SecurityUtil.getCurrentUser();
-            Integer positionNo = employee != null ? employee.getPositionNo() : null;
+            Long positionNo = employee != null ? employee.getPositionNo() : null;
             String positionName = "";
             if (positionNo != null) {
                 positionName = documentMapper.selectPositionNameByPositionNo(positionNo);
@@ -284,5 +288,4 @@ public class EapprovalRestController {
             return ApiResponse.error("템플릿 데이터 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-    
 }

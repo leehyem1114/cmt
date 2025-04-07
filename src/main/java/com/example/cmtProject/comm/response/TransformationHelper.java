@@ -116,6 +116,21 @@ public class TransformationHelper {
     public String internalToExternalKey(String key) {
         if (key == null || key.isEmpty()) return key;
         
+        // 이미 UPPER_SNAKE_CASE인지 확인
+        boolean isAlreadyUpperSnakeCase = true;
+        for (int i = 0; i < key.length(); i++) {
+            char c = key.charAt(i);
+            if (c != '_' && !Character.isUpperCase(c) && !Character.isDigit(c)) {
+                isAlreadyUpperSnakeCase = false;
+                break;
+            }
+        }
+        
+        // 이미 변환된 형식이면 그대로 반환
+        if (isAlreadyUpperSnakeCase) {
+            return key;
+        }
+        
         StringBuilder result = new StringBuilder();
         
         for (int i = 0; i < key.length(); i++) {
