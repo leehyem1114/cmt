@@ -121,41 +121,7 @@
     </div>
 
     <!-- 페이지별 JavaScript 추가 영역 -->
-	<script>
-	document.addEventListener('DOMContentLoaded', function() {
-	    // 양식 변경 이벤트에 디버그 로그 추가
-	    const formIdSelect = document.getElementById('formId');
-	    if (formIdSelect) {
-	        formIdSelect.addEventListener('change', function() {
-	            console.log('양식 변경 감지:', this.value);
-	        });
-	    }
-	    
-	    // TemplateProcessor 테스트
-	    if (window.TemplateProcessor) {
-	        console.log('TemplateProcessor 존재 확인');
-	        window.testTemplate = async function() {
-	            try {
-	                const data = await TemplateProcessor.loadTemplateData();
-	                console.log('템플릿 데이터 로드 결과:', data);
-	                
-	                // 테스트 템플릿 문자열
-	                const testStr = "테스트: {{DRAFTER_NAME}}, {{DRAFT_DEPT_NAME}}, {{POSITION_NAME}}";
-	                const result = TemplateProcessor.processTemplate(testStr, data);
-	                console.log('템플릿 처리 결과:', result);
-	                
-	                return result;
-	            } catch (e) {
-	                console.error('테스트 중 오류:', e);
-	            }
-	        };
-	        console.log('window.testTemplate 함수가 정의되었습니다. 콘솔에서 호출해보세요.');
-	    }
-	});
-	</script>
-	
-	
-	
+
     <th:block layout:fragment="script">
         <!-- Summernote 에디터 스크립트 -->
         <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
