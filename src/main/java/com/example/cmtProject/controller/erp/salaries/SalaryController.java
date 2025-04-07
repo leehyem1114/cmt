@@ -73,15 +73,17 @@ public class SalaryController {
 		List<PaymentDTO> payList = salaryService.getPayList();
 		model.addAttribute("payList", payList);
 		
-		//System.out.println("payList:"+payList);
+		System.out.println("payList:"+payList);
 		
 		// 공통 코드에서 가져오기
 		List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
 		model.addAttribute("deptList", deptList);
 		
-		List<EmpListPreviewDTO> empList = employeesService.getEmpList();
+		//List<EmpListPreviewDTO> empList = employeesService.getEmpList();
+		//model.addAttribute("empList", empList);
+		List<EmpListPreviewDTO> empList = salaryService.getEmpList();
 		model.addAttribute("empList", empList);
-		//System.out.println("사원 목록 확인 : " + empList);
+		System.out.println("사원 목록 확인 : " + empList);
 		
 		List<CommonCodeDetailDTO> payDay = commonService.getCommonCodeDetails("PAYDAY", null);
 		model.addAttribute("payDay", payDay);

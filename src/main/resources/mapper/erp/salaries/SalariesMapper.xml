@@ -301,4 +301,22 @@
 		LIKE 'BNS%'
 	</select>
 
+
+	<select id="getEmpList" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
+		SELECT 
+		    E.EMP_ID AS empId,
+		    E.EMP_NAME AS empName,
+		    C.CMN_DETAIL_NAME AS deptName,
+		    C2.CMN_DETAIL_NAME AS deptPosition
+		FROM EMPLOYEES E
+		LEFT JOIN COMMONCODE_DETAIL C 
+		    ON TO_CHAR(E.DEPT_NO) = C.CMN_DETAIL_CODE
+		LEFT JOIN COMMONCODE_DETAIL C2 
+		    ON TO_CHAR(E.POSITION_NO) = C2.CMN_DETAIL_CODE
+		WHERE NOT EXISTS 
+		(SELECT 1 
+		FROM PAYMENTS P
+		WHERE E.EMP_ID = P.EMP_ID)
+	</select>
+
 </mapper>
