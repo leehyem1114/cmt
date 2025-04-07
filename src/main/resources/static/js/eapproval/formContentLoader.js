@@ -242,15 +242,18 @@ const FormContentLoader = (function() {
 	            }
 	            
 	            // 플레이스홀더 처리 (TemplateProcessor 사용 가능한 경우)
-	            if (window.TemplateProcessor) {
-	                try {
-	                    formContent = await TemplateProcessor.processTemplateFromServer(formContent);
-	                    console.log('플레이스홀더가 사용자 정보로 치환되었습니다.');
-	                } catch (templateError) {
-	                    console.error('플레이스홀더 처리 중 오류:', templateError);
-	                    // 오류가 발생해도 원본 내용은 계속 표시
-	                }
-	            }
+				if (window.TemplateProcessor && typeof TemplateProcessor.processTemplateFromServer === 'function') {
+				            try {
+				                console.log('양식 내용 플레이스홀더 처리 시작');
+				                formContent = await TemplateProcessor.processTemplateFromServer(formContent);
+				                console.log('플레이스홀더가 사용자 정보로 치환되었습니다.');
+				            } catch (templateError) {
+				                console.error('플레이스홀더 처리 중 오류:', templateError);
+				                // 오류가 발생해도 원본 내용은 계속 표시
+				            }
+				        } else {
+				            console.warn('TemplateProcessor를 찾을 수 없거나 초기화되지 않았습니다.');
+				        }
 	            
 	            // 에디터에 내용 설정
 	            if (typeof $.fn.summernote === 'function') {

@@ -116,7 +116,7 @@ public interface DocumentMapper {
     /**
      * 직위 번호로 직위명 조회 
      */
-	public String selectPositionNameByPositionNo(Integer positionNo);
+	public String selectPositionNameByPositionNo(Long positionNo);
 	
 	
 }
