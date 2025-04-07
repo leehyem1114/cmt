@@ -7,19 +7,25 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
+import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
 import com.example.cmtProject.dto.erp.attendanceMgt.WorkTemplateDTO;
 import com.example.cmtProject.dto.erp.attendanceMgt.WorkTimeDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.service.comm.CommonService;
+import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 
 @Controller
 @RequestMapping("/leaves")
@@ -29,6 +35,9 @@ public class LeaveController {
 	
 	@Autowired
 	private CommonService commonService;
+	
+	@Autowired
+	private LeaveService leaveService;
 	
 	
 	
@@ -50,7 +59,7 @@ public class LeaveController {
 
 	// 출결 정보 목록 페이지 (HTML 렌더링)
     @GetMapping("/list")
-    public String showWorkTimePage(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+    public String showLeavePage(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
         
     	if (principalDetails == null) {
             return "redirect:/login"; // 로그인 페이지로 리다이렉트
@@ -63,12 +72,31 @@ public class LeaveController {
     	
     	// 어드민은 모든정보 보기, 매니저는 자기 부서만, 사원은 자기거만 보기
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
-    		
+    		// ADMIN은 모든 휴가정보 조회
+    		List<LeaveDTO> leaveList = leaveService.getAllLeaves();
+    		logger.info("@@@@@@@@@@@@@@@@@@@@@@" + leaveList);
+    		model.addAttribute("leaveList", leaveList);
     	}
     	
     	return "erp/attendanceMgt/leaveList";
 
     	
     }
+    
+    
+    // 휴가 일정 관리 저장
+    @PostMapping("/insert")
+    @ResponseBody
+    public ResponseEntity<Void> insertLeave(@RequestBody LeaveDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+    	// 로그인한 사용자의 아이디 가져오기
+    	Employees loginUser = principalDetails.getUser();
+    	
+        leaveService.insertLeave(dto, loginUser);
+        return ResponseEntity.ok().build();
+    }
+    
+    
+    
+    
     
 }

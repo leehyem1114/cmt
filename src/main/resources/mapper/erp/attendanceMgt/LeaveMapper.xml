@@ -6,7 +6,69 @@
 
 <mapper namespace="com.example.cmtProject.mapper.erp.attendanceMgt.LeaveMapper">
 
-
+	<!-- 어드민 모든 휴가 정보 조회 -->
+	<select id="getAllLeaves" resultType="com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO">
+		SELECT 
+		    L.LEV_NO, 
+		    L.EMP_ID, 
+		    E.EMP_NAME,
+		    C_DEPT.CMN_DETAIL_NAME AS DEPT_NAME,
+		    C_TYPE.CMN_DETAIL_NAME AS LEV_TYPE_NAME,
+		    L.LEV_START_DATE, 
+		    L.LEV_END_DATE, 
+		    L.LEV_DAYS, 
+		    L.LEV_LEFT_DAYS,
+		    L.LEV_REASON,
+		    L.LEV_REQ_DATE,
+		    L.LEV_APPROVAL_STATUS,
+		    L.LEV_APPROVER,
+		    L.LEV_APPROVAL_DATE,
+		    L.LEV_REMARKS
+		FROM LEAVES L
+		JOIN EMPLOYEES E ON L.EMP_ID = E.EMP_ID
+<!-- 	타입용 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_TYPE ON L.LEV_TYPE = C_TYPE.CMN_DETAIL_CODE
+		
+<!-- 	부서명 커먼코드 조인 -->
+		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
+		
+		ORDER BY L.LEV_NO DESC
+	</select>
+	
+	
+	
+	
+	<insert id="insertLeave" parameterType="map">
+		INSERT INTO LEAVES(
+			EMP_ID, 
+			LEV_TYPE, 
+			LEV_START_DATE, 
+			LEV_END_TYPE, 
+			LEV_DAYS,
+			LEV_LEFT_DAYS,
+			LEV_REASON,
+			LEV_REQ_DATE,
+			LEV_APPROVAL_STATUS,
+			LEV_APPROVER,
+			LEV_APPROVAL_DATE,
+			LEV_REMARKS
+			)
+		VALUES(
+			#{emp.empId},                <!-- Employees 객체의 empNo -->
+	        #{dto.levType},               <!-- LeaveDTO의 필드들 -->
+	        #{dto.levStartDate},
+	        #{dto.levEndDate},
+	        #{dto.levDays},
+	        #{dto.levLeftDays},
+	        #{dto.levReason},
+	        now(),
+	        #{dto.levApprovalStatus},
+	        #{dto.levApprover},
+	        #{dto.levApprovalDate},
+	        #{dto.levRemarks}
+			)
+	</insert>
+	
 	
 
 	

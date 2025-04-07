@@ -147,7 +147,6 @@ public class WorkTimeController {
     @PostMapping("/template/save")
     @ResponseBody
     public ResponseEntity<Void> saveWorkTemplates(@RequestBody List<WorkTemplateDTO> templates) {
-    	logger.info("templates" + templates);
         workTimeService.saveWorkTemplates(templates);
         return ResponseEntity.ok().build();
     }

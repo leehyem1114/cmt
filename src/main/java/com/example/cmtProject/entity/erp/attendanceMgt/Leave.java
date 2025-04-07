@@ -29,9 +29,9 @@ public class Leave {
     @Column(name = "LEV_NO")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long levNo; // 휴가NO
-
-    @Column(name = "EMP_NO", nullable = false)
-    private Long empNo; // 사원번호 (EMP_NO), 사원 테이블 참조
+    
+    @Column(name = "EMP_ID", nullable = false)
+    private String empId; // 사원번호 (EMP_NO), 사원 테이블 참조
 
     @Column(name = "LEV_TYPE", nullable = false)
     private String levType; // 휴가 유형
@@ -43,7 +43,10 @@ public class Leave {
     private LocalDateTime levEndDate; // 휴가 종료일
     
     @Column(name = "LEV_DAYS", nullable = false)
-    private int levDays; // 휴가 일수
+    private int levDays; // 휴가 신청 일수
+    
+    @Column(name = "LEV_LEFT_DAYS", nullable = false)
+    private int levLeftDays; // 휴가 남은 일수
     
     @Column(name = "LEV_REASON", nullable = false)
     private String levReason; // 휴가 사유
@@ -68,11 +71,12 @@ public class Leave {
     public Leave toDTO() {
     	return Leave.builder()
     			.levNo(levNo)
-    			.empNo(empNo)
+    			.empId(empId)
     			.levType(levType)
     			.levStartDate(levStartDate)
     			.levEndDate(levEndDate)
     			.levDays(levDays)
+    			.levLeftDays(levLeftDays)
     			.levReason(levReason)
     			.levReqDate(levReqDate)
     			.levApprovalStatus(levApprovalStatus)
@@ -85,15 +89,15 @@ public class Leave {
 
     
     @Builder
-	public Leave(Long levNo, Long empNo, String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			int levDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, Long levApprover,
+	public Leave(Long levNo, String empId,String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
+			int levDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, Long levApprover,
 			LocalDateTime levApprovalDate, String levRemarks) {
 		this.levNo = levNo;
-		this.empNo = empNo;
 		this.levType = levType;
 		this.levStartDate = levStartDate;
 		this.levEndDate = levEndDate;
 		this.levDays = levDays;
+		this.levLeftDays = levDays;
 		this.levReason = levReason;
 		this.levReqDate = levReqDate;
 		this.levApprovalStatus = levApprovalStatus;
