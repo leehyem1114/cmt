@@ -7,9 +7,9 @@
  * - 임시저장 및 결재요청 처리
  * - UI 관련 기능 제공
  * 
- * @version 1.2.0
- * @since 2025-04-04
- * @update 2025-04-04 - API 응답 처리 리팩토링 및 대문자 키 일관성 개선
+ * @version 1.3.0
+ * @since 2025-04-07
+ * @update 2025-04-07 - 에디터 내 폼 요소 값 저장 기능 추가
  */
 const DocumentFormManager = (function() {
     //===========================================================================
@@ -256,6 +256,72 @@ const DocumentFormManager = (function() {
     //===========================================================================
     
     /**
+     * 에디터 내 폼 요소의 값을 HTML에 반영
+     * 저장 전 에디터 내의 모든 폼 요소(select, input, textarea)의 
+     * 현재 값을 HTML 속성으로 업데이트합니다.
+     */
+    function updateFormValuesInEditor() {
+        try {
+            console.log('에디터 내 폼 요소 값 업데이트 시작');
+            
+            // 에디터 프레임 찾기 (Summernote의 편집 가능 영역)
+            const editorFrame = document.querySelector('.note-editable');
+            if (!editorFrame) {
+                console.warn('에디터 편집 영역을 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 셀렉트 박스 업데이트
+            const selects = editorFrame.querySelectorAll('select');
+            selects.forEach(select => {
+                console.log(`셀렉트 박스 처리: id=${select.id || 'unnamed'}, 현재 값=${select.value}`);
+                
+                // 모든 옵션에서 selected 속성 제거
+                Array.from(select.options).forEach(option => {
+                    option.removeAttribute('selected');
+                });
+                
+                // 현재 선택된 옵션에 selected 속성 추가
+                if (select.selectedIndex >= 0) {
+                    select.options[select.selectedIndex].setAttribute('selected', 'selected');
+                }
+            });
+            
+            // 입력 필드 업데이트
+            const inputs = editorFrame.querySelectorAll('input');
+            inputs.forEach(input => {
+                console.log(`입력 필드 처리: id=${input.id || 'unnamed'}, type=${input.type}, 현재 값=${input.value}`);
+                
+                if (input.type === 'text' || input.type === 'number' || input.type === 'date' || input.type === 'hidden') {
+                    // 텍스트, 숫자, 날짜 필드는 value 속성 업데이트
+                    input.setAttribute('value', input.value);
+                } else if (input.type === 'checkbox' || input.type === 'radio') {
+                    // 체크박스와 라디오 버튼은 checked 속성 업데이트
+                    if (input.checked) {
+                        input.setAttribute('checked', 'checked');
+                    } else {
+                        input.removeAttribute('checked');
+                    }
+                }
+            });
+            
+            // 텍스트 영역 업데이트
+            const textareas = editorFrame.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                console.log(`텍스트 영역 처리: id=${textarea.id || 'unnamed'}, 현재 값 길이=${textarea.value.length}`);
+                
+                // textarea의 내용을 현재 값으로 업데이트
+                textarea.textContent = textarea.value;
+            });
+            
+            console.log('에디터 내 폼 요소 값 업데이트 완료');
+        } catch (error) {
+            console.error('에디터 내 폼 요소 값 업데이트 중 오류:', error);
+            // 오류가 발생해도 저장 프로세스 계속 진행
+        }
+    }
+    
+    /**
      * 폼 유효성 검사 함수
      * 문서 폼의 필수 필드 및 결재선을 검증합니다.
      * 
@@ -367,6 +433,9 @@ const DocumentFormManager = (function() {
             const formId = document.getElementById('formId').value;
             const title = document.getElementById('title').value.trim();
             
+            // 중요: 저장 전 에디터 내 폼 요소 값 업데이트
+            updateFormValuesInEditor();
+            
             // 문서 내용 (에디터) - 다양한 방법으로 시도
             const editorElement = document.getElementById('contentEditor');
             let content = '';
@@ -414,7 +483,7 @@ const DocumentFormManager = (function() {
             };
             
             // FormData 주요 필드 
-			console.log('서버로 전송하는 데이터:', requestData);
+            console.log('서버로 전송하는 데이터:', requestData);
             console.log('API 요청 데이터 준비 완료:');
             console.log('- docId:', docId);
             console.log('- formId:', formId);
@@ -529,6 +598,7 @@ const DocumentFormManager = (function() {
         // 문서 처리 함수
         validateForm,        // 폼 유효성 검사
         saveDocument,        // 문서 저장/제출
+        updateFormValuesInEditor, // 에디터 내 폼 요소 값 업데이트
         
         // 유틸리티 및 접근자 함수
         getDocumentId,       // 문서 ID 조회
