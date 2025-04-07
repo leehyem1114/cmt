@@ -42,16 +42,16 @@ public class DocFormService {
     }
     
     /**
-     * 양식 저장
+     * 양식 저장/수정
      */
     @Transactional
     public DocFormDTO saveDocForm(DocFormDTO docFormDTO) {
         log.info("양식 저장: {}", docFormDTO.getFormId());
         
         try {
-            boolean isNewForm = docFormMapper.selectDocFormById(docFormDTO.getFormId()) == null;
+            boolean NewForm = docFormMapper.selectDocFormById(docFormDTO.getFormId()) == null;
             
-            if (isNewForm) {
+            if (NewForm) {
                 log.debug("신규 양식 저장");
                 // 생성 시간, 생성자 ID 설정
                 docFormDTO.setCreateDate(LocalDateTime.now());

@@ -56,7 +56,7 @@
             UPDATER_ID, 
             UPDATE_DATE 
         FROM DOC_FORM_CONTENTS 
-        WHERE FORM_ID = #{formId}
+        WHERE FORM_ID = #{formId, jdbcType=VARCHAR}
     </select>
     
     <!-- Result Map -->
