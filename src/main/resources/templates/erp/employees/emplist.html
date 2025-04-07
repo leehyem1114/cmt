@@ -119,6 +119,22 @@
                     }
                 });
             }
+            
+            
+          //주차 등록버튼 
+			$('#empParkingStatus').on('change', function(){
+				toggleEmpParkingStatus();
+			
+			function toggleEmpParkingStatus(){
+				const selected = $('#empParkingStatus option:selected').text();
+				if(selected.includes('미등록')){
+					$('#empCarNumber').hide();
+					$('#empCarNumber').val('');
+				} else {
+					$('#empCarNumber').show();
+				}
+			}
+			});
         </script>
 		
         <!-- 캘린더 -->
@@ -456,18 +472,20 @@
 						</div>
 						
 						<br>
-						
-	                   <div class="form-row">
+						 <div class="form-row">
 		                    <label for="empAddress1">주소</label>
 							<div class="form-item">
-								<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25">
+								<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="*{empAddress1}">
+								<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="*{empPostCode}" readonly><br>
 								<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
 							</div>
+						</div>
+		                   <div class="form-row">
+		                   <label for="empAddress2"></label>
 							<div class="form-item">
-								<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" placeholder="상세주소" >
-								<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" readonly><br>
+								<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="*{empAddress2}" placeholder="상세주소">
 							</div>
-	                    </div>
+						</div>
 	                    
 	                    <hr>
 	                    

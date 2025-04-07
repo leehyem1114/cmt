@@ -219,6 +219,15 @@ public class EmployeesController {
 		return "erp/employees/empStatus";
 	}
 	
+	//입,퇴사자 차트 
+	@GetMapping("/api/empStatus")
+	@ResponseBody
+	public Map<String, Object> getEmpStatus(){
+		
+		return empService.getMonthlyStatus();
+	}
+	
+	
 	// 객체 -> JSON 변환 샘플
 //	@Autowired
 //	private ObjectMapper objectMapper;

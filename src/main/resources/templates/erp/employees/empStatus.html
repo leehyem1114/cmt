@@ -14,12 +14,15 @@
     <title>CMT</title>
     
     <th:block layout:fragment="script">
+    	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 		<!-- toast 차트 : 5,6,7,8,9,10 -->
 		<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 		<!-- TOAST Grid CDN -->
 		<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css">
 		<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		
 		
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script type="text/javascript">
@@ -84,8 +87,82 @@
 		        ]
 		    });
 		</script>
-					퇴사자 통계 알아보려면 퇴사한 날짜도 컬럼에 추가해야됨  , , , . .~~~~
-				
+		<br>
+		<h4>입사자 / 퇴사자 통계</h4>    
+		<div style="width: 800px; height: 400px;">
+		  <canvas id="myChart2"></canvas>
+		</div>
+		<script>
+		$(document).ready(function () {
+		    $.ajax({
+		      url: '/emp/api/empStatus',
+		      method: 'GET',
+		      dataType: 'json',
+		      success: function (res) {
+		        console.log("받은 데이터:", res);
+
+		        const ctx2 = document.getElementById('myChart2').getContext('2d');
+
+		        new Chart(ctx2, {
+		          type: 'line',
+		          data: {
+		            labels: res.LABELS,
+		            datasets: [
+		              {
+		                label: '입사자',
+		                data: res.JOINERS,
+		                borderColor: 'rgba(54, 162, 235, 1)',
+		                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+		                fill: false,
+		                tension: 0.2,
+		                borderWidth: 2
+		              },
+		              {
+		                label: '퇴사자',
+		                data: res.LEAVERS,
+		                borderColor: 'rgba(255, 99, 132, 1)',
+		                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+		                fill: false,
+		                tension: 0.2,
+		                borderWidth: 2
+		              }
+		            ]
+		          },
+		          options: {
+		            responsive: true,
+		            maintainAspectRatio: false,
+		            plugins: {
+		              title: {
+		                display: true,
+		              }
+		            },
+		            scales: {
+		              x: {
+		                type: 'category',
+		                title: {
+		                  display: true,
+		                  text: '월'
+		                }
+		              },
+		              y: {
+		                beginAtZero: true,
+		                suggestedMax: 10,
+		                title: {
+		                  display: true,
+		                  text: '인원 수'
+		                }
+		              }
+		            }
+		          }
+		        });
+		      },
+		      error: function (err) {
+		        console.error('데이터 불러오기 실패:', err);
+		      }
+		    });
+		  });
+		
+		</script>
 				
 				
 		<!-- TOAST Grid 영역 -->
@@ -119,7 +196,7 @@
 		
         <!-- 표 예시 -->
         <div class="table-responsive"></div>
-		
+		<br>
 		<h4>성비 그래프</h4><br>
 		<div id="myChart8"></div>
 		<script th:inline="javascript">

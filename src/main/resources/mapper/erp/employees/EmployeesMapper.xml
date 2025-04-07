@@ -109,7 +109,6 @@
 	        #{empPassword},
 	        #{empName},
 	        #{empProfile,jdbcType=VARCHAR},
-<!-- 	        NULL, -->
 	        <choose>
 			    <when test="empBirthday != null">
 			        #{empBirthday}
@@ -151,6 +150,7 @@
 	    UPDATE EMPLOYEES
 	    SET 
 	        EMP_LEVEL = #{empLevel},
+	        EMP_ID = #{empId},
 	        EMP_NAME = #{empName},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
@@ -161,6 +161,7 @@
 	        EMP_ADDRESS1 = #{empAddress1},
 	        EMP_ADDRESS2 = #{empAddress2},
 	        EMP_START_DATE = #{empStartDate, jdbcType=DATE},
+	        EMP_END_DATE = #{empEndDate, jdbcType=DATE},
 	        EMP_MARITAL_STATUS = #{empMaritalStatus},
 	        EMP_STATUS = #{empStatus},
 	        EMP_TYPE = #{empType},
@@ -174,10 +175,12 @@
 	    WHERE EMP_ID = #{empId}
 	</update>
 	
+	<!-- 디테일창에서 사원정보 수정 -->
 	<update id="updateEmpDetail">
 		UPDATE EMPLOYEES
 	    SET 
 	        EMP_LEVEL = #{empLevel},
+	        EMP_ID = #{empId},
 	        EMP_NAME = #{empName},
 	        EMP_PHONE = #{empPhone},
 	        EMP_EMAIL = #{empEmail},
@@ -188,6 +191,7 @@
 	        EMP_ADDRESS1 = #{empAddress1},
 	        EMP_ADDRESS2 = #{empAddress2},
 	        EMP_START_DATE = #{empStartDate, jdbcType=DATE},
+	        EMP_END_DATE = #{empEndDate, jdbcType=DATE},
 	        EMP_MARITAL_STATUS = #{empMaritalStatus},
 	        EMP_STATUS = #{empStatus},
 	        EMP_TYPE = #{empType},
@@ -311,6 +315,27 @@
 	        COUNT(*) AS emp_count
 		FROM employees e join commoncode_detail d on TO_CHAR(e.dept_no) = d.cmn_detail_code
 		group by d.cmn_detail_name
+	</select>
+	
+	
+	<!-- 입/퇴사자 -->
+	
+	<select id="getJoinersPerMonth" resultType="map">
+	    SELECT TO_CHAR(EMP_START_DATE, 'MM') AS MONTH, COUNT(*) AS COUNT
+	    FROM EMPLOYEES
+	    WHERE EMP_START_DATE IS NOT NULL
+	      AND TO_CHAR(EMP_START_DATE, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')
+	    GROUP BY TO_CHAR(EMP_START_DATE, 'MM')
+	    ORDER BY MONTH
+	</select>
+	
+	<select id="getLeaversPerMonth" resultType="map">
+	    SELECT TO_CHAR(EMP_END_DATE, 'MM') AS MONTH, COUNT(*) AS COUNT
+	    FROM EMPLOYEES
+	    WHERE EMP_END_DATE IS NOT NULL
+	      AND TO_CHAR(EMP_END_DATE, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')
+	    GROUP BY TO_CHAR(EMP_END_DATE, 'MM')
+	    ORDER BY MONTH
 	</select>
 	
 </mapper>

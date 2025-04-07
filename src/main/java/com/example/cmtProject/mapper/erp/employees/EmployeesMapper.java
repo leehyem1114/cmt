@@ -45,6 +45,10 @@ public interface EmployeesMapper {
 	EmpCountDTO selectCount(EmpCountDTO countDTO);
 	//부서별 현황
 	List<EmpCountDTO> selectDeptCount(EmpCountDTO countDTO);
+	
+	//입퇴사자
+	List<Map<String, Object>> getJoinersPerMonth();
+	List<Map<String, Object>> getLeaversPerMonth();
 
 
 
