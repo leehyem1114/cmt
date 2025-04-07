@@ -1,5 +1,7 @@
 package com.example.cmtProject.controller.erp.eapproval;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.cmtProject.comm.response.ApiResponse;
@@ -12,8 +14,10 @@ import com.example.cmtProject.comm.exception.DocFormNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.Principal;
 import java.util.List;
+
+
+// 현재 인증관련하여 내 모든 컨트롤러 SecurityContextHolder 와 Principal객체 방식 혼용임 통일필요
 
 /**
  * 문서 양식 관리 REST API 컨트롤러
@@ -46,7 +50,7 @@ public class DocFormRestController {
      * 특정 문서 양식 조회
      */
     @GetMapping("/{formId}")
-    public ApiResponse<DocFormDTO> getFormById(@PathVariable String formId) {
+    public ApiResponse<DocFormDTO> getFormById(@PathVariable("formId") String formId) {
         log.debug("문서 양식 조회 요청: {}", formId);
         try {
             DocFormDTO form = docFormService.getDocFormById(formId);
@@ -64,11 +68,12 @@ public class DocFormRestController {
      * 문서 양식 저장 (등록/수정)
      */
     @PostMapping
-    public ApiResponse<DocFormDTO> saveForm(@RequestBody DocFormDTO formDTO, Principal principal) {
+    public ApiResponse<DocFormDTO> saveForm(@RequestBody DocFormDTO formDTO) {
         log.debug("문서 양식 저장 요청: {}", formDTO.getFormId());
         try {
             // 현재 사용자 ID 설정
-            String userId = principal.getName();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String userId = auth.getName();
             
             // 새 양식 등록인 경우 생성자 설정
             if (formDTO.getCreatorId() == null || formDTO.getCreatorId().isEmpty()) {
@@ -90,7 +95,7 @@ public class DocFormRestController {
      * 문서 양식 삭제
      */
     @DeleteMapping("/{formId}")
-    public ApiResponse<Boolean> deleteForm(@PathVariable String formId) {
+    public ApiResponse<Boolean> deleteForm(@PathVariable("formId") String formId) {
         log.debug("문서 양식 삭제 요청: {}", formId);
         try {
             boolean deleted = docFormService.deleteDocForm(formId);

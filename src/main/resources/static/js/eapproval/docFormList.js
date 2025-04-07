@@ -7,484 +7,360 @@
  * - 검색 기능
  * 
  * @version 1.0.0
- * @since 2025-04-07
  */
 
+// 문서 양식 목록 관리 모듈
 const DocFormList = (function() {
-    //===========================================================================
-    // 모듈 내부 변수
-    //===========================================================================
-
-    /**
-     * 그리드 인스턴스
-     */
+    // 그리드 인스턴스
     let grid = null;
 
-    /**
-     * API URL 상수 정의
-     */
-    const API_URLS = {
-        FORMS: '/api/eapproval/forms',
-        FORM: (id) => `/api/eapproval/forms/${id}`
-    };
+    // API URL 정의
+    const API_URL = '/api/eapproval/forms';
 
-    /**
-     * 페이지 URL 상수 정의
-     */
-    const PAGE_URLS = {
-        FORM_LIST: '/eapproval/forms',
-        FORM_NEW: '/eapproval/forms/new',
-        FORM_EDIT: (id) => `/eapproval/forms/edit/${id}`,
-        FORM_VIEW: (id) => `/eapproval/forms/view/${id}`
-    };
-
-    //===========================================================================
-    // 초기화 및 이벤트 처리 함수
-    //===========================================================================
-
-    /**
-     * 모듈 초기화 함수
-     * 모듈의 초기 상태 설정 및 이벤트 리스너 등록
-     * 
-     * @returns {Promise<void>}
-     */
-    async function initialize() {
-        try {
-            console.log('DocFormList 초기화를 시작합니다.');
-
-            // 그리드 초기화
-            await initializeGrid();
-
-            // 이벤트 리스너 등록
-            registerEventListeners();
-
-            // 알림 메시지 자동 숨김 설정
-            setupAlertAutoDismiss();
-
-            console.log('DocFormList 초기화가 완료되었습니다.');
-        } catch (error) {
-            console.error('초기화 중 오류 발생:', error);
-            await AlertUtil.showError('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
-        }
+    // 초기화 함수
+    function initialize() {
+        console.log('DocFormList 초기화');
+        
+        // 그리드 초기화
+        initGrid();
+        
+        // 이벤트 리스너 등록
+        setupEventListeners();
+        
+        // URL 메시지 확인
+        checkUrlMessages();
+        
+        // 초기 데이터 로드
+        loadFormList();
     }
 
-    /**
-     * 그리드 초기화 함수
-     * TOAST UI Grid 인스턴스 생성 및 설정
-     * 
-     * @returns {Promise<void>}
-     */
-    async function initializeGrid() {
-        try {
-            console.log('그리드 초기화를 시작합니다.');
-
-            // 그리드 요소 확인
-            const gridElement = document.getElementById('docFormGrid');
-            if (!gridElement) {
-                throw new Error('그리드 요소를 찾을 수 없습니다.');
+    // 이벤트 리스너 설정
+    function setupEventListeners() {
+        // 새로고침 버튼
+        $('#refreshBtn').on('click', function() {
+            loadFormList();
+        });
+        
+        // 양식 등록 버튼
+        $('#createBtn').on('click', function() {
+            location.href = '/eapproval/forms/new';
+        });
+        
+        // 검색 버튼
+        $('#searchBtn').on('click', function() {
+            performSearch();
+        });
+        
+        // 초기화 버튼
+        $('#resetBtn').on('click', function() {
+            resetSearch();
+        });
+        
+        // 검색어 입력 필드 엔터키 이벤트
+        $('#keyword').on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                performSearch();
             }
+        });
+    }
 
-            // 초기 데이터 확인
-            const initialData = window.docFormData?.forms || [];
-            console.log(`초기 데이터 로드: ${initialData.length}개 양식`);
-            console.log("양식 내용 ", docFormData);
-
-            // 그리드 컬럼 정의
-            const columns = [{
+    // 그리드 초기화
+    function initGrid() {
+        const gridContainer = document.getElementById('docFormGrid');
+        
+        grid = new tui.Grid({
+            el: gridContainer,
+            scrollX: false,
+            scrollY: true,
+            rowHeaders: ['rowNum'],
+            pageOptions: {
+                useClient: true,
+                perPage: 10
+            },
+            columns: [
+                {
                     header: '양식 ID',
-                    name: 'formId',
+                    name: 'FORM_ID',
                     sortable: true,
                     width: 150
                 },
                 {
                     header: '생성자',
-                    name: 'creatorId',
+                    name: 'CREATOR_ID',
                     sortable: true,
                     width: 120
                 },
                 {
-                    header: '생성일',
-                    name: 'createDate',
+                    header: '생성일자',
+                    name: 'CREATE_DATE',
                     sortable: true,
-                    width: 120,
-                    formatter: function(obj) {
-                        if (!obj.value) return '-';
-                        const date = new Date(obj.value);
-                        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    width: 150,
+                    formatter: function(value) {
+                        if (!value.value) return '-';
+                        return formatDate(value.value);
                     }
                 },
                 {
-                    header: '최종 수정자',
-                    name: 'updaterId',
+                    header: '최종 수정일자',
+                    name: 'UPDATE_DATE',
                     sortable: true,
-                    width: 120
-                },
-                {
-                    header: '최종 수정일',
-                    name: 'updateDate',
-                    sortable: true,
-                    width: 120,
-                    formatter: function(obj) {
-                        if (!obj.value) return '-';
-                        const date = new Date(obj.value);
-                        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    width: 150,
+                    formatter: function(value) {
+                        if (!value.value) return '-';
+                        return formatDate(value.value);
                     }
                 },
                 {
                     header: '관리',
                     name: 'actions',
-                    width: 120,
-                    formatter: function() {
+                    width: 150,
+                    formatter: function(value) {
                         return `
                             <div class="d-flex justify-content-center">
-                                <button type="button" class="btn btn-sm btn-primary me-1 btn-view">
+                                <button type="button" class="btn btn-sm btn-outline-primary me-1 btn-view" data-form-id="${value.row.FORM_ID}">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-warning me-1 btn-edit">
-								<i class="bi bi-pencil"></i>
-								                                </button>
-								                                <button type="button" class="btn btn-sm btn-danger btn-delete">
-								                                    <i class="bi bi-trash"></i>
-								                                </button>
-								                            </div>
-								                        `;
+                                <button type="button" class="btn btn-sm btn-outline-warning me-1 btn-edit" data-form-id="${value.row.FORM_ID}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-form-id="${value.row.FORM_ID}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        `;
                     }
                 }
-            ];
-
-            // 그리드 옵션 설정
-            const gridOptions = {
-                el: gridElement,
-                data: initialData,
-                columns: columns,
-                rowHeaders: ['rowNum'],
-                bodyHeight: 500,
-                minBodyHeight: 300,
-                scrollX: true,
-                scrollY: true,
-                pageOptions: {
-                    useClient: true,
-                    perPage: 15
+            ]
+        });
+        
+        // 그리드 클릭 이벤트
+        grid.on('click', function(ev) {
+            const { columnName } = ev;
+            
+            if (columnName === 'actions') {
+                const target = ev.nativeEvent.target.closest('button');
+                if (!target) return;
+                
+                const formId = target.getAttribute('data-form-id');
+                
+                if (target.classList.contains('btn-view')) {
+                    viewForm(formId);
+                } else if (target.classList.contains('btn-edit')) {
+                    editForm(formId);
+                } else if (target.classList.contains('btn-delete')) {
+                    deleteForm(formId);
                 }
-            };
+            } else if (columnName === 'FORM_ID') {
+                const formId = grid.getValue(ev.rowKey, 'FORM_ID');
+                viewForm(formId);
+            }
+        });
+        
+        // 그리드 더블클릭 이벤트
+        grid.on('dblclick', function(ev) {
+            if (ev.columnName !== 'actions') {
+                const formId = grid.getValue(ev.rowKey, 'FORM_ID');
+                viewForm(formId);
+            }
+        });
+    }
 
-            // 그리드 인스턴스 생성
-            grid = new tui.Grid(gridOptions);
-
-            // 행 더블클릭 이벤트 처리
-            grid.on('dblclick', (ev) => {
-                if (ev.rowKey === undefined || ev.rowKey === null) return;
-
-                const rowData = grid.getRow(ev.rowKey);
-                if (rowData && rowData.FORM_ID) {
-                    window.location.href = PAGE_URLS.FORM_VIEW(rowData.FORM_ID);
-                }
-            });
-
-            // 버튼 클릭 이벤트 처리
-            grid.on('click', (ev) => {
-                if (ev.rowKey === undefined || ev.rowKey === null) return;
-
-                const rowData = grid.getRow(ev.rowKey);
-                if (!rowData || !rowData.FORM_ID) return;
-
-                const formId = rowData.FORM_ID;
-
-                // 액션 버튼 클릭 처리
-                if (ev.columnName === 'actions') {
-                    const target = ev.nativeEvent.target.closest('button');
-                    if (!target) return;
-
-                    if (target.classList.contains('btn-view')) {
-                        window.location.href = PAGE_URLS.FORM_VIEW(formId);
-                    } else if (target.classList.contains('btn-edit')) {
-                        window.location.href = PAGE_URLS.FORM_EDIT(formId);
-                    } else if (target.classList.contains('btn-delete')) {
-                        deleteForm(formId);
+    // 양식 목록 로드
+    function loadFormList() {
+        // 로딩 표시
+        showLoading(true);
+        
+        $.ajax({
+            url: API_URL,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                // 로딩 숨김
+                showLoading(false);
+                
+                if (response.success && response.data) {
+                    // 그리드 데이터 설정
+                    grid.resetData(response.data);
+                    
+                    if (response.data.length === 0) {
+                        showMessage('info', '등록된 양식이 없습니다.');
                     }
+                } else {
+                    showMessage('error', response.message || '양식 목록을 불러오는데 실패했습니다.');
                 }
-            });
-
-            console.log('그리드 초기화가 완료되었습니다.');
-        } catch (error) {
-            console.error('그리드 초기화 중 오류:', error);
-            throw error;
-        }
+            },
+            error: function(xhr, status, error) {
+                // 로딩 숨김
+                showLoading(false);
+                
+                // 오류 처리
+                console.error('API Error:', error);
+                showMessage('error', '서버 통신 오류가 발생했습니다.');
+            }
+        });
     }
 
-    /**
-     * 이벤트 리스너 등록 함수
-     * 버튼 클릭 등의 이벤트 핸들러 등록
-     */
-    function registerEventListeners() {
-        console.log('이벤트 리스너 등록을 시작합니다.');
-
-        // 양식 등록 버튼
-        const createBtn = document.getElementById('createBtn');
-        if (createBtn) {
-            createBtn.addEventListener('click', () => {
-                window.location.href = PAGE_URLS.FORM_NEW;
-            });
+    // 검색 실행
+    function performSearch() {
+        const searchType = $('#searchType').val();
+        const keyword = $('#keyword').val().trim();
+        
+        if (!keyword) {
+            showMessage('warning', '검색어를 입력하세요.');
+            $('#keyword').focus();
+            return;
         }
-
-        // 새로고침 버튼
-        const refreshBtn = document.getElementById('refreshBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                refreshData();
-            });
-        }
-
-        // 검색 버튼
-        const searchBtn = document.getElementById('searchBtn');
-        if (searchBtn) {
-            searchBtn.addEventListener('click', () => {
-                searchForms();
-            });
-        }
-
-        // 초기화 버튼
-        const resetBtn = document.getElementById('resetBtn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                resetSearch();
-            });
-        }
-
-        // 검색어 입력 필드 엔터키 이벤트
-        const keywordInput = document.getElementById('keyword');
-        if (keywordInput) {
-            keywordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    searchForms();
+        
+        // 검색 요청
+        showLoading(true);
+        
+        $.ajax({
+            url: API_URL,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                showLoading(false);
+                
+                if (response.success && response.data) {
+                    // 클라이언트 측 필터링 (서버에서 필터링 API가 제공되지 않을 경우)
+                    const filteredData = response.data.filter(item => {
+                        const fieldValue = String(item[searchType] || '').toLowerCase();
+                        return fieldValue.includes(keyword.toLowerCase());
+                    });
+                    
+                    grid.resetData(filteredData);
+                    
+                    if (filteredData.length === 0) {
+                        showMessage('info', '검색 결과가 없습니다.');
+                    }
+                } else {
+                    showMessage('error', response.message || '검색에 실패했습니다.');
                 }
-            });
-        }
-
-        console.log('이벤트 리스너 등록이 완료되었습니다.');
+            },
+            error: function(xhr, status, error) {
+                showLoading(false);
+                console.error('API Error:', error);
+                showMessage('error', '서버 통신 오류가 발생했습니다.');
+            }
+        });
     }
 
-    /**
-     * 알림 메시지 자동 숨김 설정 함수
-     * 성공/실패 알림 메시지를 일정 시간 후 자동으로 숨김 처리
-     */
-    function setupAlertAutoDismiss() {
-        // 성공 알림 자동 숨김
-        const successAlert = document.getElementById('successAlert');
-        if (successAlert) {
-            setTimeout(() => {
-                successAlert.style.display = 'none';
-            }, 5000); // 5초 후 숨김
-        }
-
-        // 오류 알림 자동 숨김
-        const errorAlert = document.getElementById('errorAlert');
-        if (errorAlert) {
-            setTimeout(() => {
-                errorAlert.style.display = 'none';
-            }, 8000); // 8초 후 숨김
-        }
-    }
-
-    //===========================================================================
-    // 데이터 관리 함수
-    //===========================================================================
-
-    /**
-     * 데이터 새로고침 함수
-     * 서버에서 최신 데이터를 다시 로드
-     * 
-     * @returns {Promise<void>}
-     */
-    async function refreshData() {
-        try {
-            console.log('데이터 새로고침을 시작합니다.');
-
-            // 그리드가 초기화되지 않은 경우
-            if (!grid) {
-                console.warn('그리드가 초기화되지 않았습니다.');
-                return;
-            }
-
-            // 검색 필드 초기화
-            resetSearch();
-
-            // ApiUtil을 사용하여 데이터 로드
-            const response = await ApiUtil.getWithLoading(
-                API_URLS.FORMS,
-                null,
-                '양식 목록 로드 중...'
-            );
-
-            // 응답 확인
-            if (!response.success) {
-                throw new Error(response.message || '양식 목록을 불러올 수 없습니다.');
-            }
-
-            // 그리드 데이터 업데이트
-            const formsList = response.data || [];
-            grid.resetData(formsList);
-
-            console.log(`데이터 새로고침 완료: ${formsList.length}개 양식`);
-        } catch (error) {
-            console.error('데이터 새로고침 중 오류:', error);
-            await ApiUtil.handleApiError(error, '데이터 로드 실패');
-        }
-    }
-
-    /**
-     * 양식 삭제 함수
-     * 
-     * @param {string} formId - 삭제할 양식 ID
-     * @returns {Promise<void>}
-     */
-    async function deleteForm(formId) {
-        try {
-            console.log(`양식 삭제 시작: ${formId}`);
-
-            if (!formId) {
-                throw new Error('삭제할 양식 ID가 지정되지 않았습니다.');
-            }
-
-            // 삭제 확인 대화상자
-            const confirmed = await AlertUtil.showConfirm({
-                title: '양식 삭제',
-                text: `양식 ID "${formId}"를 삭제하시겠습니까?\n삭제된 양식은 복구할 수 없습니다.`,
-                icon: 'warning',
-                confirmButtonText: '삭제',
-                cancelButtonText: '취소'
-            });
-
-            if (!confirmed) {
-                console.log('사용자가 삭제를 취소했습니다.');
-                return;
-            }
-
-            // API 호출
-            const response = await ApiUtil.getWithLoading(
-                API_URLS.FORM(formId),
-                null,
-                '양식 정보 확인 중...'
-            );
-
-            // 양식 정보 확인
-            if (!response.success) {
-                throw new Error('양식 정보를 확인할 수 없습니다.');
-            }
-
-            // 삭제 API 호출
-            const deleteResponse = await ApiUtil.delWithLoading(
-                API_URLS.FORM(formId),
-                null,
-                '양식 삭제 중...'
-            );
-
-            // 응답 확인
-            if (!deleteResponse.success) {
-                throw new Error(deleteResponse.message || '양식 삭제에 실패했습니다.');
-            }
-
-            // 성공 메시지 표시
-            await AlertUtil.showSuccess('삭제 완료', '양식이 성공적으로 삭제되었습니다.');
-
-            // 데이터 새로고침
-            await refreshData();
-
-            console.log(`양식 삭제 완료: ${formId}`);
-        } catch (error) {
-            console.error('양식 삭제 중 오류:', error);
-            await ApiUtil.handleApiError(error, '양식 삭제 실패');
-        }
-    }
-
-    /**
-     * 양식 검색 함수
-     * 
-     * @returns {Promise<void>}
-     */
-    async function searchForms() {
-        try {
-            console.log('양식 검색을 시작합니다.');
-
-            const searchType = document.getElementById('searchType').value;
-            const keyword = document.getElementById('keyword').value.trim();
-
-            // 검색어가 없으면 전체 조회
-            if (!keyword) {
-                await refreshData();
-                return;
-            }
-
-            console.log(`검색 조건: ${searchType}=${keyword}`);
-
-            // ApiUtil을 사용하여 데이터 로드
-            const response = await ApiUtil.getWithLoading(
-                API_URLS.FORMS,
-                null,
-                '양식 검색 중...'
-            );
-
-            // 응답 확인
-            if (!response.success) {
-                throw new Error(response.message || '양식 목록을 불러올 수 없습니다.');
-            }
-
-            // 그리드 데이터 업데이트 (클라이언트 사이드 필터링)
-            const allForms = response.data || [];
-
-            // 검색 조건에 맞는 항목 필터링
-            const filteredForms = allForms.filter(form => {
-                const fieldValue = String(form[searchType.toUpperCase()] || '').toLowerCase();
-                return fieldValue.includes(keyword.toLowerCase());
-            });
-
-            // 그리드 업데이트
-            grid.resetData(filteredForms);
-
-            console.log(`검색 결과: ${filteredForms.length}개 항목`);
-        } catch (error) {
-            console.error('양식 검색 중 오류:', error);
-            await ApiUtil.handleApiError(error, '검색 실패');
-        }
-    }
-
-    /**
-     * 검색 초기화 함수
-     */
+    // 검색 초기화
     function resetSearch() {
-        console.log('검색 초기화를 시작합니다.');
-
-        // 검색 필드 초기화
-        const searchType = document.getElementById('searchType');
-        if (searchType) searchType.selectedIndex = 0;
-
-        const keyword = document.getElementById('keyword');
-        if (keyword) keyword.value = '';
-
-        // 모든 데이터 다시 로드
-        refreshData();
-
-        console.log('검색 초기화가 완료되었습니다.');
+        $('#searchType').val('FORM_ID');
+        $('#keyword').val('');
+        loadFormList();
     }
 
-    //===========================================================================
-    // 공개 API
-    //===========================================================================
+    // 양식 상세 보기
+    function viewForm(formId) {
+        location.href = `/eapproval/forms/view/${formId}`;
+    }
 
+    // 양식 수정
+    function editForm(formId) {
+        location.href = `/eapproval/forms/edit/${formId}`;
+    }
+
+    // 양식 삭제
+    function deleteForm(formId) {
+        if (!confirm(`양식 ID '${formId}'을(를) 삭제하시겠습니까?\n삭제된 양식은 복구할 수 없습니다.`)) {
+            return;
+        }
+        
+        showLoading(true);
+        
+        $.ajax({
+            url: `${API_URL}/${formId}`,
+            type: 'DELETE',
+            dataType: 'json',
+            success: function(response) {
+                showLoading(false);
+                
+                if (response.success) {
+                    showMessage('success', '양식이 삭제되었습니다.');
+                    loadFormList();
+                } else {
+                    showMessage('error', response.message || '양식 삭제에 실패했습니다.');
+                }
+            },
+            error: function(xhr, status, error) {
+                showLoading(false);
+                console.error('API Error:', error);
+                showMessage('error', '서버 통신 오류가 발생했습니다.');
+            }
+        });
+    }
+
+    // 메시지 표시
+    function showMessage(type, message) {
+        if (type === 'success' || type === 'info') {
+            $('#successMessage').text(message);
+            $('#successAlert').removeClass('d-none').show();
+            setTimeout(() => $('#successAlert').fadeOut(), 3000);
+        } else {
+            $('#errorMessage').text(message);
+            $('#errorAlert').removeClass('d-none').show();
+            setTimeout(() => $('#errorAlert').fadeOut(), 5000);
+        }
+    }
+
+    // 로딩 표시
+    function showLoading(show) {
+        if (window.AlertUtil && typeof AlertUtil.showLoading === 'function') {
+            if (show) {
+                window.loadingInstance = AlertUtil.showLoading('데이터 로딩 중...');
+            } else if (window.loadingInstance) {
+                window.loadingInstance.close();
+            }
+        }
+    }
+
+    // URL 메시지 확인
+    function checkUrlMessages() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMsg = urlParams.get('successMsg');
+        const errorMsg = urlParams.get('errorMsg');
+        
+        if (successMsg) {
+            showMessage('success', decodeURIComponent(successMsg));
+        }
+        
+        if (errorMsg) {
+            showMessage('error', decodeURIComponent(errorMsg));
+        }
+        
+        // 메시지 파라미터 제거 (URL 정리)
+        if (successMsg || errorMsg) {
+            const newUrl = window.location.pathname;
+            history.replaceState(null, '', newUrl);
+        }
+    }
+
+    // 날짜 포맷팅
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+
+    // 모듈 공개 API
     return {
-        // 초기화 함수
-        initialize,
-
-        // 데이터 관리 함수
-        refreshData,
-        deleteForm,
-        searchForms,
-        resetSearch
+        initialize: initialize
     };
 })();
 
-// DOM 로드 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
+// 문서 로드 완료 시 초기화
+$(document).ready(function() {
     DocFormList.initialize();
 });

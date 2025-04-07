@@ -14,13 +14,13 @@
         <p class="text-subtitle text-muted">기안서에 사용할 문서 양식을 관리합니다</p>
 
         <!-- 알림 메시지 표시 영역 -->
-        <div class="alert alert-success" th:if="${successMessage}" id="successAlert">
+        <div class="alert alert-success d-none" id="successAlert">
             <i class="bi bi-check-circle"></i>
-            <span th:text="${successMessage}">Success message</span>
+            <span id="successMessage">Success message</span>
         </div>
-        <div class="alert alert-danger" th:if="${errorMessage}" id="errorAlert">
+        <div class="alert alert-danger d-none" id="errorAlert">
             <i class="bi bi-exclamation-triangle"></i>
-            <span th:text="${errorMessage}">Error message</span>
+            <span id="errorMessage">Error message</span>
         </div>
 
         <!-- 버튼 영역 -->
@@ -48,8 +48,8 @@
                     <div class="col-md-3">
                         <label for="searchType" class="form-label">검색 유형</label>
                         <select id="searchType" name="searchType" class="form-select">
-                            <option value="formId">양식 ID</option>
-                            <option value="creatorId">생성자</option>
+                            <option value="FORM_ID">양식 ID</option>
+                            <option value="CREATOR_ID">생성자</option>
                         </select>
                     </div>
                     <div class="col-md-7">
@@ -70,12 +70,6 @@
 
     <!-- 페이지별 JavaScript -->
     <th:block layout:fragment="script">
-        <script th:inline="javascript">
-            // Thymeleaf로부터 전달받은 데이터
-            window.docFormData = {
-                forms: /*[[${forms}]]*/ []
-            };
-        </script>
         <script src="/js/eapproval/docFormList.js"></script>
     </th:block>
 </body>

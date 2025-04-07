@@ -7,315 +7,257 @@
  * - 양식 저장 기능
  * 
  * @version 1.0.0
- * @since 2025-04-07
  */
 
+// 문서 양식 편집 모듈
 const DocFormEdit = (function() {
-    //===========================================================================
-    // 모듈 내부 변수
-    //===========================================================================
+    // 양식 ID
+    let formId = '';
     
-    /**
-     * 에디터 인스턴스
-     */
+    // 수정 모드 여부
+    let isEditMode = false;
+    
+    // 에디터 인스턴스
     let editor = null;
     
-    /**
-     * 초기 폼 데이터
-     */
-    let initialFormData = {};
+    // API URL 정의
+    const API_URL = '/api/eapproval/forms';
     
-    /**
-     * API URL 상수 정의
-     */
-    const API_URLS = {
-        FORMS: '/api/eapproval/forms',
-        FORM: (id) => `/api/eapproval/forms/${id}`
-    };
-    
-    /**
-     * 페이지 URL 상수 정의
-     */
-    const PAGE_URLS = {
-        FORM_LIST: '/eapproval/forms'
-    };
-    
-    //===========================================================================
-    // 초기화 및 이벤트 처리 함수
-    //===========================================================================
-    
-    /**
-     * 모듈 초기화 함수
-     * 
-     * @returns {Promise<void>}
-     */
-    async function initialize() {
-        try {
-            console.log('DocFormEdit 초기화를 시작합니다.');
-            
-            // 초기 데이터 로드
-            loadInitialData();
-            
-            // 에디터 초기화
-            await initializeEditor();
-            
-            // 이벤트 리스너 등록
-            registerEventListeners();
-            
-            console.log('DocFormEdit 초기화가 완료되었습니다.');
-        } catch (error) {
-            console.error('초기화 중 오류 발생:', error);
-            await AlertUtil.showError('초기화 오류', '페이지 초기화 중 오류가 발생했습니다.');
+    // 초기화 함수
+    function initialize() {
+        console.log('DocFormEdit 초기화');
+        
+        // 양식 ID 가져오기
+        formId = $('#formId').val();
+        isEditMode = formId && formId.length > 0;
+        
+        // 페이지 제목 설정
+        $('#pageTitle').text(isEditMode ? '문서 양식 수정' : '문서 양식 등록');
+        
+        // 수정 모드에 따른 UI 조정
+        if (isEditMode) {
+            $('#formIdInput').prop('readonly', true);
+            $('#formIdHelp').hide();
+        }
+        
+        // 이벤트 리스너 등록
+        setupEventListeners();
+        
+        // 에디터 초기화
+        initEditor();
+        
+        // 수정 모드면 데이터 로드
+        if (isEditMode) {
+            loadFormData();
         }
     }
     
-    /**
-     * 초기 데이터 로드 함수
-     */
-    function loadInitialData() {
-        console.log('초기 데이터를 로드합니다.');
-        
-        // window.docFormData에서 초기 데이터 가져오기
-        const isNew = window.docFormData?.isNew === true;
-        const docForm = window.docFormData?.docForm || {};
-        
-        // 초기 데이터 저장
-        initialFormData = {
-            isNew: isNew,
-            formId: docForm.FORM_ID || docForm.formId || '',
-            formContent: docForm.FORM_CONTENT || docForm.formContent || '',
-            creatorId: docForm.CREATOR_ID || docForm.creatorId || '',
-            createDate: docForm.CREATE_DATE || docForm.createDate || null,
-            updaterId: docForm.UPDATER_ID || docForm.updaterId || '',
-            updateDate: docForm.UPDATE_DATE || docForm.updateDate || null
-        };
-        
-        console.log('초기 데이터 로드 완료:', initialFormData);
-    }
-    
-    /**
-     * 에디터 초기화 함수
-     * 
-     * @returns {Promise<void>}
-     */
-    async function initializeEditor() {
-        try {
-            console.log('에디터 초기화를 시작합니다.');
-            
-            // 에디터 요소 확인
-            const editorElement = document.getElementById('formContentEditor');
-            if (!editorElement) {
-                throw new Error('에디터 요소를 찾을 수 없습니다.');
-            }
-            
-            // jQuery 확인
-            if (typeof $ !== 'function') {
-                throw new Error('jQuery를 찾을 수 없습니다.');
-            }
-            
-            // Summernote 에디터 옵션
-            const editorOptions = {
-                height: 500,
-                lang: 'ko-KR',
-                placeholder: '양식 내용을 입력하세요',
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ],
-                callbacks: {
-                    onInit: function() {
-                        console.log('에디터가 초기화되었습니다.');
-                        editor = this;
-                    }
-                }
-            };
-            
-            // Summernote 에디터 초기화
-            $(editorElement).summernote(editorOptions);
-            
-            // 초기 내용 설정
-            if (initialFormData.formContent) {
-                $(editorElement).summernote('code', initialFormData.formContent);
-                console.log('초기 에디터 내용 설정 완료');
-            }
-            
-            console.log('에디터 초기화가 완료되었습니다.');
-        } catch (error) {
-            console.error('에디터 초기화 중 오류:', error);
-            throw error;
-        }
-    }
-    
-    /**
-     * 이벤트 리스너 등록 함수
-     */
-    function registerEventListeners() {
-        console.log('이벤트 리스너 등록을 시작합니다.');
+    // 이벤트 리스너 설정
+    function setupEventListeners() {
+        // 취소 버튼
+        $('#cancelBtn').on('click', function() {
+            confirmCancel();
+        });
         
         // 저장 버튼
-        const saveBtn = document.getElementById('saveBtn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                saveForm();
-            });
-        }
-        
-        // 취소 버튼
-        const cancelBtn = document.getElementById('cancelBtn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                confirmCancel();
-            });
-        }
-        
-        console.log('이벤트 리스너 등록이 완료되었습니다.');
+        $('#saveBtn').on('click', function() {
+            saveForm();
+        });
     }
     
-    //===========================================================================
-    // 폼 처리 함수
-    //===========================================================================
+    // 에디터 초기화
+    function initEditor() {
+        $('#formContentEditor').summernote({
+            height: 500,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            placeholder: '양식 내용을 작성하세요...',
+            callbacks: {
+                onInit: function() {
+                    editor = this;
+                }
+            }
+        });
+    }
     
-    /**
-     * 폼 유효성 검사 함수
-     * 
-     * @returns {boolean} 유효성 검사 결과
-     */
-    async function validateForm() {
-        console.log('폼 유효성 검사를 시작합니다.');
+    // 양식 데이터 로드 (수정 모드)
+    function loadFormData() {
+        showLoading(true);
         
-        // 양식 ID 검사
-        const formId = document.getElementById('formId').value.trim();
-        if (!formId) {
-            await AlertUtil.showWarning('필수 항목 누락', '양식 ID를 입력해주세요.');
-            document.getElementById('formId').focus();
-            return false;
+        $.ajax({
+            url: `${API_URL}/${formId}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                showLoading(false);
+                
+                if (response.success && response.data) {
+                    displayFormData(response.data);
+                } else {
+                    showMessage('error', response.message || '양식 정보를 불러오는데 실패했습니다.');
+                    setTimeout(() => {
+                        location.href = '/eapproval/forms';
+                    }, 2000);
+                }
+            },
+            error: function(xhr, status, error) {
+                showLoading(false);
+                console.error('API Error:', error);
+                showMessage('error', '서버 통신 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // 양식 데이터 표시 (수정 모드)
+    function displayFormData(data) {
+        // 기본 정보 표시
+        $('#formIdInput').val(data.FORM_ID || '');
+        
+        // 생성 정보 표시
+        if (data.CREATOR_ID) {
+            $('#creatorId').val(data.CREATOR_ID);
+            $('#createDate').val(formatDate(data.CREATE_DATE));
+            $('#creatorInfoSection').show();
         }
         
-        // 양식 내용 검사
-        const formContent = $('#formContentEditor').summernote('code');
-        if (!formContent || formContent === '<p><br></p>' || formContent.trim() === '') {
-            await AlertUtil.showWarning('필수 항목 누락', '양식 내용을 입력해주세요.');
-            $('#formContentEditor').summernote('focus');
-            return false;
+        // 에디터에 내용 설정
+        if (data.FORM_CONTENT) {
+            $('#formContentEditor').summernote('code', data.FORM_CONTENT);
+        }
+    }
+    
+    // 양식 저장
+    function saveForm() {
+        // 유효성 검사
+        if (!validateForm()) {
+            return;
         }
         
-        console.log('폼 유효성 검사 통과');
+        // 저장할 데이터 수집
+        const formData = {
+            formId: $('#formIdInput').val(),
+            formContent: $('#formContentEditor').summernote('code'),
+            creatorId: $('#creatorId').val() || null // 기존 생성자 정보 유지 (수정 모드)
+        };
+        
+        showLoading(true);
+        
+        $.ajax({
+            url: API_URL,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            dataType: 'json',
+            success: function(response) {
+                showLoading(false);
+                
+                if (response.success) {
+                    showMessage('success', isEditMode ? '양식이 수정되었습니다.' : '새 양식이 등록되었습니다.');
+                    
+                    // 성공 후 상세 페이지로 이동
+                    setTimeout(() => {
+                        location.href = `/eapproval/forms/view/${formData.formId}?successMsg=${encodeURIComponent('양식이 저장되었습니다.')}`;
+                    }, 1500);
+                } else {
+                    showMessage('error', response.message || '양식 저장에 실패했습니다.');
+                }
+            },
+            error: function(xhr, status, error) {
+                showLoading(false);
+                console.error('API Error:', error);
+                showMessage('error', '서버 통신 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // 폼 유효성 검사
+    function validateForm() {
+        const formId = $('#formIdInput').val().trim();
+        const formContent = $('#formContentEditor').summernote('code').trim();
+        
+//        // 양식 ID 검사
+//        if (!formId) {
+//            showMessage('error', '양식 ID를 입력해주세요.');
+//            $('#formIdInput').focus();
+//            return false;
+//        }
+//        
+//        // 양식 ID 형식 검사 (영문, 숫자만 허용)
+//        if (!/^[a-zA-Z0-9_]+$/.test(formId)) {
+//            showMessage('error', '양식 ID는 영문, 숫자, 언더스코어(_)만 사용할 수 있습니다.');
+//            $('#formIdInput').focus();
+//            return false;
+//        }
+//        
+//        // 양식 내용 검사
+//        if (!formContent || formContent === '<p><br></p>') {
+//            showMessage('error', '양식 내용을 입력해주세요.');
+//            $('#formContentEditor').summernote('focus');
+//            return false;
+//        }
+        
         return true;
     }
     
-    /**
-     * 폼 데이터 수집 함수
-     * 
-     * @returns {Object} 수집된 폼 데이터
-     */
-    function collectFormData() {
-        console.log('폼 데이터 수집을 시작합니다.');
-        
-        const formData = {
-            formId: document.getElementById('formId').value.trim(),
-            formContent: $('#formContentEditor').summernote('code'),
-            creatorId: initialFormData.creatorId || null,
-            createDate: initialFormData.createDate || null,
-            updaterId: initialFormData.updaterId || null,
-            updateDate: initialFormData.updateDate || null
-        };
-        
-        console.log('폼 데이터 수집 완료:', formData);
-        return formData;
-    }
-    
-    /**
-     * 양식 저장 함수
-     * 
-     * @returns {Promise<void>}
-     */
-    async function saveForm() {
-        try {
-            console.log('양식 저장을 시작합니다.');
-            
-            // 유효성 검사
-            if (!(await validateForm())) {
-                return;
-            }
-            
-            // 폼 데이터 수집
-            const formData = collectFormData();
-            
-            // API 호출
-            const response = await ApiUtil.postWithLoading(
-                API_URLS.FORMS,
-                formData,
-                '양식 저장 중...'
-            );
-            
-            // 응답 확인
-            if (!response.success) {
-                throw new Error(response.message || '양식 저장에 실패했습니다.');
-            }
-            
-            // 성공 메시지 표시
-            await AlertUtil.showSuccess(
-                '저장 완료', 
-                initialFormData.isNew ? '새 양식이 등록되었습니다.' : '양식이 수정되었습니다.',
-                () => {
-                    // 성공 후 목록 페이지로 이동
-                    window.location.href = `${PAGE_URLS.FORM_LIST}?msg=${encodeURIComponent('양식이 성공적으로 저장되었습니다.')}`;
-                }
-            );
-            
-            console.log('양식 저장이 완료되었습니다.');
-        } catch (error) {
-            console.error('양식 저장 중 오류:', error);
-            await ApiUtil.handleApiError(error, '양식 저장 실패');
+    // 취소 확인
+    function confirmCancel() {
+        if (confirm('작성 중인 내용이 저장되지 않습니다. 취소하시겠습니까?')) {
+            location.href = '/eapproval/forms';
         }
     }
     
-    /**
-     * 취소 확인 함수
-     * 
-     * @returns {Promise<void>}
-     */
-    async function confirmCancel() {
-        try {
-            console.log('취소 확인 대화상자를 표시합니다.');
-            
-            const confirmed = await AlertUtil.showConfirm({
-                title: '작업 취소',
-                text: '변경 사항이 저장되지 않습니다. 계속하시겠습니까?',
-                icon: 'warning',
-                confirmButtonText: '예',
-                cancelButtonText: '아니오'
-            });
-            
-            if (confirmed) {
-                // 목록 페이지로 이동
-                window.location.href = PAGE_URLS.FORM_LIST;
-            }
-        } catch (error) {
-            console.error('취소 확인 중 오류:', error);
+    // 메시지 표시
+    function showMessage(type, message) {
+        if (type === 'success' || type === 'info') {
+            $('#successMessage').text(message);
+            $('#successAlert').removeClass('d-none').show();
+        } else {
+            $('#errorMessage').text(message);
+            $('#errorAlert').removeClass('d-none').show();
         }
     }
     
-    //===========================================================================
-    // 공개 API
-    //===========================================================================
+    // 로딩 표시
+    function showLoading(show) {
+        if (window.AlertUtil && typeof AlertUtil.showLoading === 'function') {
+            if (show) {
+                window.loadingInstance = AlertUtil.showLoading('데이터 ' + (isEditMode ? '수정' : '등록') + ' 중...');
+            } else if (window.loadingInstance) {
+                window.loadingInstance.close();
+            }
+        }
+    }
     
+    // 날짜 포맷팅
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+    
+    // 모듈 공개 API
     return {
-        // 초기화 함수
-        initialize,
-        
-        // 폼 처리 함수
-        saveForm,
-        validateForm
+        initialize: initialize
     };
 })();
 
-// DOM 로드 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
+// 문서 로드 완료 시 초기화
+$(document).ready(function() {
     DocFormEdit.initialize();
 });
