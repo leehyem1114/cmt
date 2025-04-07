@@ -8,8 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 
+import com.example.cmtProject.entity.comm.CommoncodeDetail;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.salesMgt.PurchasesOrder;
+import com.example.cmtProject.entity.erp.salesMgt.SalesOrderStatus;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 
 @Repository
 public interface PurchasesOrderRepository extends JpaRepository<PurchasesOrder, Long> {
@@ -45,6 +51,9 @@ public interface PurchasesOrderRepository extends JpaRepository<PurchasesOrder, 
 	       "FROM Clients c " +
 	       "WHERE c.cltCode = :cltCode")
      String findByCltName(@Param("cltCode") String cltCode);
-	
-		
+//	@Query(value = "SELECT PURCHASES_ORDER_PO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
+//	Long getNextPurchasesOrderNextSequences();
+	@Query(value = "SELECT NVL(COUNT(PO_DATE),0)+1 FROM PURCHASES_ORDER WHERE PO_DATE = TRUNC(SYSDATE)", nativeQuery = true)
+	Long getNextPuCode();
+
 }

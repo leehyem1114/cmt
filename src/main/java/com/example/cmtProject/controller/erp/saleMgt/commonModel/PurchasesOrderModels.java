@@ -70,4 +70,5 @@ public class PurchasesOrderModels {
         model.addAttribute("commListDetp", commListDetp);
         model.addAttribute("commListPosition", commListPosition);
 	}
+
 }

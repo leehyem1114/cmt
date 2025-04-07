@@ -1,5 +1,7 @@
 package com.example.cmtProject.controller.erp.employees;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
+import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 
@@ -34,6 +37,7 @@ import jakarta.servlet.http.HttpSession;
 public class EmployeesController {
 	@Autowired private EmployeesService empService;
 	@Autowired private CommonService commonService;
+	@Autowired private EmployeesRepository employeesRepository;
 
 	//공통코드 DetailName 불러오는 메서드
 	public static void commonCodeName(Model model , CommonService commonService) {
@@ -74,9 +78,13 @@ public class EmployeesController {
 		 //공통코드 가져오기
 		commonCodeName(model, commonService);
 		
+		
 		return "erp/employees/myEmplist";
 	}
 	
+	
+
+
 	/****나의 정보수정
 	 * @throws Exception ****/
 	@PostMapping("/myEmplist")
@@ -100,6 +108,12 @@ public class EmployeesController {
 	@GetMapping("/emplist")
 	public String empList(HttpSession session,Model model) {
 		commonCodeName(model, commonService);
+
+		//사원ID 자동생성
+		String empCode = makeEmpCode();
+		model.addAttribute("empCode",empCode);
+		System.out.println(">>>>>>>>>>>>사원번호" + empCode);
+
 		
 		List<EmpListPreviewDTO> empList = empService.getEmpList();
 		model.addAttribute("emplist",empList);
@@ -243,6 +257,13 @@ public class EmployeesController {
 //		}
 //		return result;
 //	}
-	
+	//====================================
+	private String makeEmpCode() {
+		String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+		 int count = employeesRepository.countTodayEmployees() + 1;
+		 String formatted = String.format("%03d", count);
+		 
+		return today + formatted;
+	}
 	
 }

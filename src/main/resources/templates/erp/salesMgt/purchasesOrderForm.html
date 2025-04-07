@@ -91,7 +91,7 @@
 			<div><h2>발주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+	        <button type="button" class="requestBtn" onclick="puRegisterOpenWindows()">📃 신규</button>
 			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
 	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
 
@@ -413,8 +413,8 @@
 		let gridCheck = [];
 		
 		//신규 버튼 클릭시 실행되는 입력 창
-    	function soRegisterOpenWindows(){
-			window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+    	function puRegisterOpenWindows(){
+			window.open("/purchases/puRegisterForm", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
     	}
 		
 		//수정 버튼 클릭시 실행되는 수정 창
