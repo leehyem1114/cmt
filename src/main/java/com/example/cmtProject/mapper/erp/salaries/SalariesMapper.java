@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
 import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
@@ -42,5 +43,7 @@ public interface SalariesMapper {
 
 	//공통 코드에서 수당, 공제 계산 하기위한 컬럼 가져오기
 	List<PayCmmCodeDetailDTO> getPayCommonCodeDetails();
+
+	List<EmpListPreviewDTO> getEmpList();
 	
 }

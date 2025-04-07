@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
 import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
@@ -105,6 +106,10 @@ public class SalaryService {
 
 	public List<PayCmmCodeDetailDTO> getPayCommonCodeDetails() {
 		return salMapper.getPayCommonCodeDetails();
+	}
+
+	public List<EmpListPreviewDTO> getEmpList() {
+		return salMapper.getEmpList();
 	}
 
 }
