@@ -135,6 +135,7 @@
 				}
 			}
 			});
+          
         </script>
 		
         <!-- 캘린더 -->
@@ -374,7 +375,7 @@
 		                    </div>
 		                    <label for="empId">사원번호</label>
 		                    <div class="form-item">
-		                        <input type="text" id="empId" class="form-control" name="empId" placeholder="사원 번호 입력" required>
+		                        <input type="text" id="empId" class="form-control" name="empId"  th:value="${empCode}" required>
 		                        <p id="idCheckMsg"></p>
 		                    </div>
 	                    </div>

@@ -1,5 +1,7 @@
 package com.example.cmtProject.controller.erp.saleMgt;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import com.example.cmtProject.controller.erp.saleMgt.commonModel.PurchasesOrderM
 import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderEditDTO;
 import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderMainDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
+import com.example.cmtProject.entity.erp.salesMgt.PurchasesOrder;
+import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.repository.erp.saleMgt.PurchasesOrderRepository;
 import com.example.cmtProject.service.erp.saleMgt.PurchasesOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -125,5 +129,51 @@ public class PurchaseController {
 		}
 
 		return "success";
+	}
+	
+	//발주 신규등록
+	//purchases
+	@GetMapping("/puRegisterForm")
+	public String puRegisterForm(Model model) {
+		purchasesModels.commonPurchasesOrderModels(model);
+		//시퀀스 가져오기
+//		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
+		
+		//발주코드 생성
+		String puCode = makePuCode();
+		
+//		model.addAttribute("nextSeq",nextSeq); //발주번호
+		model.addAttribute("poCode",puCode); //발주코드
+		
+		//th:object에서 사용할 객체 생성
+	 	model.addAttribute("purchasesOrder", new PurchasesOrder());
+		
+		return "erp/salesMgt/puRegisterForm";
+	}
+
+	@GetMapping("/puregister")
+	public String puregister() {
+		return"";
+	}
+
+	//=============================================================
+	private String makePuCode() {
+
+		//날짜 형태를 yyyyMMdd 헝태로 변경
+		LocalDate today = LocalDate.now();        
+        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String puToday = today.format(todayFormat);
+        
+		Long nextpuCodeNumber = purchasesOrderRepository.getNextPuCode();
+		String puCode = "";
+		if(nextpuCodeNumber > 100) {
+			puCode = "SO-" + puToday + "-" + nextpuCodeNumber; 
+		}else if(nextpuCodeNumber > 10) {
+			puCode = "SO-" + puToday + "-" + "0" +nextpuCodeNumber;		
+		}else if(nextpuCodeNumber > 0) {
+			puCode = "SO-" + puToday + "-" + "00" +nextpuCodeNumber;
+		}
+		
+		return puCode;
 	}
 }

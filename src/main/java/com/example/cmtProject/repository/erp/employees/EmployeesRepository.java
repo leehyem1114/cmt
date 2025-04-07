@@ -22,6 +22,10 @@ public interface EmployeesRepository extends JpaRepository<Employees, Long> {
 	 		""")
 	List<Employees> getEmpName(@Param("deptNo") Long deptNo,
 			 @Param("positionNo") Long positionNo);
+	
+	//오늘날짜 가입된 사원수 세기
+	@Query(value = "SELECT COUNT(*) FROM EMPLOYEES WHERE TO_CHAR(EMP_START_DATE, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')", nativeQuery = true)
+	int countTodayEmployees();
 	 
 	/*
 	SELECT e.empName FROM Employees e
