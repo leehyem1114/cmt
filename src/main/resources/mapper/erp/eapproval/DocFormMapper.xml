@@ -10,8 +10,8 @@
             CREATOR_ID,
             CREATE_DATE
         ) VALUES (
-            #{formId},
-            #{formContent},
+            #{formId, jdbcType=VARCHAR},
+            #{formContent, jdbcType=CLOB},
             #{creatorId, jdbcType=VARCHAR},
             SYSDATE
         )
@@ -21,16 +21,16 @@
     <update id="updateDocForm" parameterType="com.example.cmtProject.dto.erp.eapproval.DocFormDTO">
         UPDATE DOC_FORM_CONTENTS
         SET
-            FORM_CONTENT = #{formContent},
+            FORM_CONTENT = #{formContent, jdbcType=CLOB},
             UPDATER_ID = #{updaterId, jdbcType=VARCHAR},
             UPDATE_DATE = SYSDATE
-        WHERE FORM_ID = #{formId}
+        WHERE FORM_ID = #{formId, jdbcType=VARCHAR}
     </update>
     
     <!-- 양식 삭제 -->
     <delete id="deleteDocForm">
         DELETE FROM DOC_FORM_CONTENTS
-        WHERE FORM_ID = #{formId}
+        WHERE FORM_ID = #{formId, jdbcType=VARCHAR}
     </delete>
     
     <!-- 양식 목록 조회 -->
