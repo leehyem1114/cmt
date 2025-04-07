@@ -18,13 +18,14 @@ import lombok.NoArgsConstructor;
 public class LeaveDTO {
 	
 	private Long levNo; // 휴가NO
-	private Long empNo; // 사원번호
+	private String empId; // 사원번호
 	private String levType; // 휴가유형
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levStartDate; // 휴가 시작일
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levEndDate; // 휴가 종료일
 	private int levDays; // 휴가일수
+	private int levLeftDays; // 남은 휴가일수
 	private String levReason; // 사유
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levReqDate; // 신청일시
@@ -39,19 +40,19 @@ public class LeaveDTO {
     
     // join매핑을 위한 dto
     private String deptName; // 부서명 공통코드
-    private String wktTypeName; // 근무타입 공통코드
+    private String levTypeName; // 휴가 타입 공통코드
     private String empName; // 사원이름
-    private String empId; // 사원번호
 
 
     public LeaveDTO toEntity() {
     	return LeaveDTO.builder()
     			.levNo(levNo)
-    			.empNo(empNo)
+    			.empId(empId)
     			.levType(levType)
     			.levStartDate(levStartDate)
     			.levEndDate(levEndDate)
     			.levDays(levDays)
+    			.levLeftDays(levLeftDays)
     			.levReason(levReason)
     			.levReqDate(levReqDate)
     			.levApprovalStatus(levApprovalStatus)
@@ -62,15 +63,15 @@ public class LeaveDTO {
     }
 
     @Builder
-	public LeaveDTO(Long empNo, String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			int levDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, Long levApprover,
-			LocalDateTime levApprovalDate, String levRemarks, String deptName, String wktTypeName, String empName,
-			String empId) {
-		this.empNo = empNo;
+	public LeaveDTO(String empId, String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
+			int levDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, Long levApprover,
+			LocalDateTime levApprovalDate, String levRemarks, String deptName, String levTypeName, String empName) {
+    	this.empId = empId;
 		this.levType = levType;
 		this.levStartDate = levStartDate;
 		this.levEndDate = levEndDate;
 		this.levDays = levDays;
+		this.levLeftDays = levLeftDays;
 		this.levReason = levReason;
 		this.levReqDate = levReqDate;
 		this.levApprovalStatus = levApprovalStatus;
@@ -78,9 +79,9 @@ public class LeaveDTO {
 		this.levApprovalDate = levApprovalDate;
 		this.levRemarks = levRemarks;
 		this.deptName = deptName;
-		this.wktTypeName = wktTypeName;
+		this.levTypeName = levTypeName;
 		this.empName = empName;
-		this.empId = empId;
+		
 	}
     
     
