@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -142,7 +144,37 @@ public class EmployeesService {
 		return empMapper.selectCount(countDTO);
 	}
 	public List<EmpCountDTO> getdeptCount(EmpCountDTO countDTO) {
-		// TODO Auto-generated method stub
 		return empMapper.selectDeptCount(countDTO);
 	}
+
+	public Map<String, Object> getMonthlyStatus() {
+		List<Map<String, Object>> joiners = empMapper.getJoinersPerMonth();
+		List<Map<String, Object>> leavers = empMapper.getLeaversPerMonth();
+		
+		List<String> labels = new ArrayList<>(); //1월,2월
+		List<Integer> joinerData = new ArrayList<>(); //입사자 담는 리스트
+		List<Integer> leaverData = new ArrayList<>();
+		
+        for (int i = 1; i <= 12; i++) {
+            String month = String.format("%02d", i); // 01, 02, ...
+            labels.add(i + "월");
+            joinerData.add(getCountByMonth(joiners, month));
+            leaverData.add(getCountByMonth(leavers, month));
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("labels", labels);
+        map.put("joiners", joinerData);
+        map.put("leavers", leaverData);
+        return map;
+    }
+
+    private int getCountByMonth(List<Map<String, Object>> list, String month) {
+        for (Map<String, Object> row : list) {
+            if (row.get("MONTH").equals(month)) {
+                return ((Number) row.get("COUNT")).intValue();
+            }
+        }
+        return 0;
+    }
 }
