@@ -38,25 +38,25 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_NO")
     private Long payNo; // 지급 번호
     
-    @Column(name = "EMP_NAME", nullable = false)
+    @Column(name = "EMP_NAME")
     private String empName;			 // 사원명
     
-    @Column(name = "EMP_ID", nullable = false)
+    @Column(name = "EMP_ID")
     private String empId; // 사원 번호
 
-    @Column(name = "DEPT_NAME", nullable = false)
+    @Column(name = "DEPT_NAME")
     private String deptName;		 // 부서명
     
-    @Column(name = "POSITION", nullable = false)
+    @Column(name = "POSITION")
     private String position;     	 // 직급
     
-    @Column(name = "EMP_TYPE", nullable = false)
+    @Column(name = "EMP_TYPE")
     private String empType;          // 고용유형
     
-    @Column(name = "PAY_DATE", nullable = false)
+    @Column(name = "PAY_DATE")
     private LocalDate payDate; // 지급일
 
-    @Column(name = "PAY_BASIC", nullable = false)
+    @Column(name = "PAY_BASIC")
     private Long payBasic; // 기본급
 
     @Column(name = "PAY_BONUS_OVERTIME")
@@ -65,7 +65,7 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_BONUS_HOLIDAY")
     private BigDecimal payBonusHoliday; // 명절수당
 
-    @Column(name = "PAY_BONUS_TOTAL", nullable = false)
+    @Column(name = "PAY_BONUS_TOTAL")
     private Long payBonusTotal; // 총수당금액
 
     @Column(name = "PAY_TAX_PENSION")
@@ -86,19 +86,19 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_TAX_RESIDENCE")
     private BigDecimal payTaxResidence; // 주민세
 
-    @Column(name = "PAY_TAX_TOTAL", nullable = false)
+    @Column(name = "PAY_TAX_TOTAL")
     private Long payTaxTotal; // 총공제금액
 
-    @Column(name = "PAY_TOTAL", nullable = false)
+    @Column(name = "PAY_TOTAL")
     private Long payTotal; // 실수령액
 
 //    @Column(name = "PAY_STATUS", length = 50, nullable = false)
 //    private String payStatus;  // 지급 상태
     
-    @Column(name = "SAL_BANK_NAME", length = 50, nullable = false)
+    @Column(name = "SAL_BANK_NAME")
     private String salBankName;  // 은행명
     
-    @Column(name = "SAL_BANK_ACCOUNT", length = 50, nullable = false)
+    @Column(name = "SAL_BANK_ACCOUNT")
     private String salBankAccount;  // 계좌번호
     
     public PaymentDTO toDto() {

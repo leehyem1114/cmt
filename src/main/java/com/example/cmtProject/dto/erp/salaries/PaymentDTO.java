@@ -3,6 +3,8 @@ package com.example.cmtProject.dto.erp.salaries;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +16,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class PaymentDTO {  
 
     private Long payNo;              // 지급 번호
@@ -27,7 +30,9 @@ public class PaymentDTO {
 
     private Long payBasic;           // 기본급
     private BigDecimal payBonusOvertime;   // 야근수당
-    private BigDecimal payBonusHoliday;    // 명절수당
+    @JsonProperty("payBonusHoliday")
+    private String payBonusHoliday;    // 명절수당
+    
 
     private Long payBonusTotal;      // 총수당금액
 
@@ -49,7 +54,7 @@ public class PaymentDTO {
     
     @Builder
     public PaymentDTO(Long payNo, String empName, String empId, String deptName, String position, String empType,
-    		LocalDate payDate, Long payBasic, BigDecimal payBonusOvertime, BigDecimal payBonusHoliday, Long payBonusTotal,
+    		LocalDate payDate, Long payBasic, BigDecimal payBonusOvertime, String payBonusHoliday, Long payBonusTotal,
     		BigDecimal payTaxPension, BigDecimal payTaxCare, BigDecimal payTaxHealth, BigDecimal payTaxEmployment,
     		BigDecimal payTaxIncome, BigDecimal payTaxResidence, Long payTaxTotal, Long payTotal, String payStatus, String salBankName, String salBankAccount) {
     	this.payNo = payNo;
