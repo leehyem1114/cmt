@@ -185,4 +185,4 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         log.debug("휴가 신청 정보 추출 완료: {}", leaveDTO);
         return leaveDTO;
     }
-}
+

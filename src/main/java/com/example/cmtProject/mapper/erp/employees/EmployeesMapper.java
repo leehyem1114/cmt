@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.cmtProject.dto.erp.employees.EmpCountDTO;
+import com.example.cmtProject.dto.erp.employees.EmpDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
@@ -49,6 +50,8 @@ public interface EmployeesMapper {
 	//입퇴사자
 	List<Map<String, Object>> getJoinersPerMonth();
 	List<Map<String, Object>> getLeaversPerMonth();
+	//로그인한 유저의 정보
+	EmpDTO selectLoginUser(String empId);
 
 
 

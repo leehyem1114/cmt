@@ -20,6 +20,22 @@
 		ORDER BY EMP_NO ASC
     </select>
     
+    <!-- 로그인한 유저의 정보 -->
+    <select id="selectLoginUser" resultType="com.example.cmtProject.dto.erp.employees.EmpDTO">
+	    SELECT EMP.EMP_NO,
+		       EMP.EMP_ID,
+		       EMP.EMP_NAME,
+		       EMP.DEPT_NO,
+               EMP.POSITION_NO,
+		       D.CMN_DETAIL_NAME AS DEPT_NAME,
+			   P.CMN_DETAIL_NAME  AS DEPT_POSITION,
+		       EMP.EMP_START_DATE
+		FROM EMPLOYEES EMP
+		LEFT JOIN COMMONCODE_DETAIL D ON TO_CHAR(EMP.DEPT_NO) = D.CMN_DETAIL_CODE
+		LEFT JOIN COMMONCODE_DETAIL P ON TO_CHAR(EMP.POSITION_NO) = P.CMN_DETAIL_CODE
+		WHERE EMP.EMP_ID = #{empId}
+    </select>
+    
     <!-- 사원 리스트 같은 부서 조회(프리뷰) -->
     <select id="getEmpListDept" resultType="com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO">
 		SELECT EMP.EMP_NO,
