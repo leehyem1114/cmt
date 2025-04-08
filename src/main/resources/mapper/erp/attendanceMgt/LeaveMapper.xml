@@ -7,7 +7,7 @@
 <mapper namespace="com.example.cmtProject.mapper.erp.attendanceMgt.LeaveMapper">
 
 <select id="getAllLeaves" resultType="com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO">
-  SELECT 1 AS LEV_NO FROM DUAL
+  SELECT * FROM LEAVES
 </select>
 
 	<!-- 어드민 모든 휴가 정보 조회 -->
