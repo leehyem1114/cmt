@@ -154,6 +154,7 @@ public class PurchaseController {
 		purchasesOrderRepository.save(purchasesOrder);
 		purchasesOrderRepository.flush();
 
+		//submit처리
 		return "erp/salesMgt/submitSuccess";
 	}
 	
