@@ -23,89 +23,46 @@ import java.time.temporal.ChronoUnit;
 @RequiredArgsConstructor
 @Slf4j
 public class LeaveApprovalProcessor implements ApprovalPostProcessor {
-
     private final FormDataExtractor formDataExtractor;
     private final LeaveService leaveService;
     
-    // 휴가 신청서 양식 ID - 실제 양식 ID로 변경 필요
     private static final String LEAVE_FORM_ID = "FORM_LEAVE";
 
     @Override
     public boolean processApproved(DocumentDTO document) {
-        log.info("휴가 신청 결재 완료 처리 시작: 문서ID={}", document.getDocId());
-        
         try {
-            // 이미 처리된 휴가 있는지 확인
-            LeaveDTO existingLeave = leaveService.getLeaveByDocId(document.getDocId());
-            if (existingLeave != null) {
-                log.info("이미 처리된 휴가 신청: {}", document.getDocId());
-                return leaveService.updateLeaveStatus(existingLeave.getLevNo(), "승인", "결재 완료");
-            }
-            
-            // HTML 파싱
+            // HTML 파싱 및 데이터 추출
             Document htmlDoc = formDataExtractor.parseHtml(document);
-            
-            // 휴가 신청 정보 추출
             LeaveDTO leaveDTO = extractLeaveData(htmlDoc, document);
             
-            // 휴가 승인 상태로 설정
-            leaveDTO.setLevApprovalStatus("승인");
-            leaveDTO.setLevApprovalDate(LocalDateTime.now());
-            leaveDTO.setLevRemarks("결재 승인: " + document.getDocId());
-            
-            // 휴가 정보 저장
-            Employees currentUser = SecurityUtil.getCurrentUser();
-            if (currentUser == null) {
-                log.error("현재 사용자 정보를 가져올 수 없습니다");
-                return false;
-            }
-            
-            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
-            log.info("휴가 신청 정보 저장 완료: 문서ID={}", document.getDocId());
+            // 기존 LeaveService 메서드 호출 - 비즈니스 로직은 서비스에 위임
+//            leaveService.processApprovedLeave(leaveDTO, document.getDocId());
+//            leaveService.insertLeave(leaveDTO, );
+            log.debug("@@@@@@@@@@@@@@@@@@@@@" + leaveDTO);
             
             return true;
         } catch (Exception e) {
-            log.error("휴가 신청 처리 중 오류 발생: {}", e.getMessage(), e);
+            log.error("휴가 승인 처리 중 오류: {}", e.getMessage(), e);
             return false;
         }
     }
 
     @Override
     public boolean processRejected(DocumentDTO document) {
-        log.info("휴가 신청 결재 반려 처리 시작: 문서ID={}", document.getDocId());
-        
         try {
-            // 이미 처리된 휴가 있는지 확인
-            LeaveDTO existingLeave = leaveService.getLeaveByDocId(document.getDocId());
-            if (existingLeave != null) {
-                log.info("이미 처리된 휴가 신청 반려 처리: {}", document.getDocId());
-                return leaveService.updateLeaveStatus(existingLeave.getLevNo(), "반려", "결재 반려");
-            }
-            
-            // HTML 파싱
+            // HTML 파싱 및 데이터 추출
             Document htmlDoc = formDataExtractor.parseHtml(document);
-            
-            // 휴가 신청 정보 추출
             LeaveDTO leaveDTO = extractLeaveData(htmlDoc, document);
             
-            // 휴가 반려 상태로 설정
-            leaveDTO.setLevApprovalStatus("반려");
-            leaveDTO.setLevApprovalDate(LocalDateTime.now());
-            leaveDTO.setLevRemarks("결재 반려: " + document.getDocId());
+            // 반려 사유
+            String rejectReason = "결재 반려: " + document.getDocId();
             
-            // 휴가 정보 저장 (반려 이력 목적)
-            Employees currentUser = SecurityUtil.getCurrentUser();
-            if (currentUser == null) {
-                log.error("현재 사용자 정보를 가져올 수 없습니다");
-                return false;
-            }
-            
-            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
-            log.info("휴가 반려 정보 저장 완료: 문서ID={}", document.getDocId());
+            // 기존 LeaveService 메서드 호출
+//            leaveService.processRejectedLeave(leaveDTO, document.getDocId(), rejectReason);
             
             return true;
         } catch (Exception e) {
-            log.error("휴가 반려 처리 중 오류 발생: {}", e.getMessage(), e);
+            log.error("휴가 반려 처리 중 오류: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -115,12 +72,8 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         return LEAVE_FORM_ID.equals(formId);
     }
     
-    /**
-     * HTML 문서에서 휴가 신청 정보 추출
-     */
+    // 문서에서 휴가 신청 정보 추출 - 데이터 추출에만 집중
     private LeaveDTO extractLeaveData(Document htmlDoc, DocumentDTO document) {
-        log.debug("휴가 신청 정보 추출 시작");
-        
         LeaveDTO leaveDTO = new LeaveDTO();
         
         // 기안자 정보 설정
@@ -144,10 +97,6 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         if (startDate != null && endDate != null) {
             int days = (int) ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
             leaveDTO.setLevDays(days);
-            
-            // 잔여 휴가 일수는 현재 데이터베이스에서 조회해야 할 수 있음
-            // 임시로 설정
-            leaveDTO.setLevLeftDays(15 - days); // 가정: 연간 휴가 15일
         }
         
         // 휴가 사유
@@ -157,7 +106,6 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         // 신청일시 - 문서 기안일로 설정
         leaveDTO.setLevReqDate(document.getDraftDate());
         
-        log.debug("휴가 신청 정보 추출 완료: {}", leaveDTO);
         return leaveDTO;
     }
 }

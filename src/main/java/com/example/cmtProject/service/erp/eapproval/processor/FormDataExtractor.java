@@ -13,7 +13,7 @@ public interface FormDataExtractor {
      * @param document 결재 문서 DTO
      * @return 파싱된 HTML 문서 객체
      */
-    Document parseHtml(DocumentDTO document);
+	public Document parseHtml(DocumentDTO document);
     
     /**
      * 지정된 필드의 값 추출
@@ -21,7 +21,7 @@ public interface FormDataExtractor {
      * @param selector CSS 선택자
      * @return 추출된 필드 값
      */
-    String extractField(Document htmlDoc, String selector);
+	public String extractField(Document htmlDoc, String selector);
     
     /**
      * 지정된 필드의 날짜 값 추출
@@ -30,5 +30,5 @@ public interface FormDataExtractor {
      * @param pattern 날짜 형식
      * @return 추출된 날짜 값
      */
-    java.time.LocalDateTime extractDateField(Document htmlDoc, String selector, String pattern);
+	public java.time.LocalDateTime extractDateField(Document htmlDoc, String selector, String pattern);
 }
