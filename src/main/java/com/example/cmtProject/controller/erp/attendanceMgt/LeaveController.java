@@ -31,7 +31,7 @@ import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 @RequestMapping("/leaves")
 public class LeaveController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(WorkTimeController.class);
+	private static final Logger logger = LoggerFactory.getLogger(LeaveController.class);
 	
 	@Autowired
 	private CommonService commonService;
@@ -74,7 +74,6 @@ public class LeaveController {
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
     		// ADMIN은 모든 휴가정보 조회
     		List<LeaveDTO> leaveList = leaveService.getAllLeaves();
-    		logger.info("@@@@@@@@@@@@@@@@@@@@@@" + leaveList);
     		model.addAttribute("leaveList", leaveList);
     	}
     	

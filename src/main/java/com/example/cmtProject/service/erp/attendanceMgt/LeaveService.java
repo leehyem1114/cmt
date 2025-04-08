@@ -22,7 +22,6 @@ public class LeaveService {
 
 	// ADMIN은 모든 휴가정보 조회
 	public List<LeaveDTO> getAllLeaves() {
-		logger.info("@@@@@@@@@@@@@" + leaveMapper.getAllLeaves());
 		return leaveMapper.getAllLeaves();
 	}
 

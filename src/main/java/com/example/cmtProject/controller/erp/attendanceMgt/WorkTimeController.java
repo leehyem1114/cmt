@@ -131,8 +131,6 @@ public class WorkTimeController {
             for (WorkTimeDTO row : updatedRows) {
                 Long empNo = row.getEmpNo();
                 String wktType = row.getWktType();
-
-                logger.info("@@@@@@@@@@@@@@@" + empNo + "@@@@@@@@@@@@@@" + wktType);
                 
                 workTimeService.insertWktTypeByEmpNo(row);
                 workTimeService.updateWktTypeByEmpNo(empNo, wktType);
