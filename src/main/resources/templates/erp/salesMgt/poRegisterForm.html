@@ -100,29 +100,29 @@
 <body>
 	
     <div layout:fragment="content">
-   		<form id="soForm" method="post" th:action="@{/purchases/puregister}" th:object="${purchasesOrder}"><!-- onsubmit="return validateForm(event)">-->
+   		<form id="poForm" method="post" th:action="@{/purchases/poregister}" th:object="${purchasesOrder}"><!-- onsubmit="return validateForm(event)">-->
 		 <div class="container">
 	    	<h2>발주 정보 입력</h2>
 	        <div class="form-group">
-	            <label>거래처명 *</label>
+	            <label>공급업체명 *</label>
 				<input type="text" id="cltNameTxt" readonly="true" style="margin-right: 10px;" placeholder="거래처 검색">
 				<input type="hidden" th:field="*{cltCode}" id="cltNameHidden">
 				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cltModal">검색</button>
 	        </div>
 	         <div class="form-group">
-	            <label>제품 *</label>
+	            <label>원자재명 *</label>
 	            <select id="productSelected" th:field="*{mtlCode}">
-	                <option th:each="product : ${productList}"
+	                <option th:each="product : ${materialList}"
 						th:value="${product.mtlCode}"
-						th:text="${product.pdtName}">적용</option>
+						th:text="${product.mtlName}">적용</option>
 	            </select>
 	        </div>
 	        <div class="form-group">
-	            <label>발주번호 *</label><!-- 서버에서 바로 처리 -->
-<!-- 	            <input type="text" th:value="${nextSeq}" readonly="true"> -->
+	            <label>발주번호 *</label><!-- 서버에서 바로 처리 th:value="${nextSeq}"와  th:filed="*{poNo}"를 같이 사용 못 한다 -->
+ 	            <input type="text" th:value="${nextSeq}" readonly="true"> 
 	        </div>
 	        <div class="form-group">
-	            <label>발주코드 *</label><!-- 서버에서 바로 처리 -->
+	            <label>발주코드 *</label><!-- 서버에서 바로 처리 th:value="${poCode}"와 th:field="*{poCode}"를 같이 사용 못 한다 -->
 	            <input type="text" th:value="${poCode}" readonly="true">
 	        </div>
 	        <div class="form-group date-container">
@@ -144,29 +144,29 @@
 			<div class="form-group">
 				<label>진행 상태 *</label>
 				<select id="productSelected" th:field="*{poStatus}">
-	                <option th:each="poStatus : ${puStatusList}"
+	                <option th:each="poStatus : ${poStatusList}"
 						th:value="${poStatus.statusCode}"
 						th:text="${poStatus.statusName}">
 					</option>
 	            </select>
 	        </div>
-	      <div class="form-group">
-	        <label>담당자 *</label>
-	        <select id="deptSelected">
-			<option th:each="dept : ${commListDetp}"
-				th:value="${dept.cmnDetailCode}"
-				th:text="${dept.cmnDetailName}">
-			</option>
-			</select>
-			<select id="posSelected">
-				<option th:each="pos : ${commListPosition}"
-					th:value="${pos.cmnDetailCode}"
-					th:text="${pos.cmnDetailName}">
+			<div class="form-group">
+		        <label>담당자 *</label>
+		        <select id="deptSelected">
+				<option th:each="dept : ${commListDetp}"
+					th:value="${dept.cmnDetailCode}"
+					th:text="${dept.cmnDetailName}">
 				</option>
-			</select>
-				<select id="empSelected" th:field="*{empNo}">
-			</select>
-	       </div>
+				</select>
+				<select id="posSelected">
+					<option th:each="pos : ${commListPosition}"
+						th:value="${pos.cmnDetailCode}"
+						th:text="${pos.cmnDetailName}">
+					</option>
+				</select>
+					<select id="empSelected" th:field="*{empNo}">
+				</select>
+			</div>
     	</div><!-- <div class="container"> -->
 			
     	<div style="text-align: center;">
@@ -354,7 +354,7 @@
 				ajaxExe(code);
     		})
 			
-			
+			//부서와 직급이 변할 때 마다 회원 이름을 가져옴
 			function ajaxExe(code){
 				if(code){
 					$.ajax({
@@ -401,7 +401,7 @@
 			},1000);
 			
 			//서브밋 setTimeout 이후 실행
-			document.getElementById("soForm").submit();
+			document.getElementById("poForm").submit();
 		}
 	    </script>
 	</th:block>

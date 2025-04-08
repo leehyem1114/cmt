@@ -59,6 +59,9 @@ public class LeaveDTO {
     			.levApprover(levApprover)
     			.levApprovalDate(levApprovalDate)
     			.levRemarks(levRemarks)
+    			.deptName(deptName)
+    			.levTypeName(levTypeName)
+    			.empName(empName)
     			.build();
     }
 

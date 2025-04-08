@@ -6,9 +6,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,7 +18,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.cmtProject.controller.erp.saleMgt.commonModel.PurchasesOrderModels;
 import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderEditDTO;
 import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderMainDTO;
+import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderSearchDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderSearchDTO;
 import com.example.cmtProject.entity.erp.salesMgt.PurchasesOrder;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.repository.erp.saleMgt.PurchasesOrderRepository;
@@ -133,47 +138,84 @@ public class PurchaseController {
 	
 	//발주 신규등록
 	//purchases
-	@GetMapping("/puRegisterForm")
+	@GetMapping("/poRegisterForm")
 	public String puRegisterForm(Model model) {
+		
 		purchasesModels.commonPurchasesOrderModels(model);
-		//시퀀스 가져오기
-//		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
-		
+//		
+//		//시퀀스 가져오기
+		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
+		System.out.println("nextSeq:" + nextSeq); 
 		//발주코드 생성
-		String puCode = makePuCode();
+		String poCode = makePoCode();
 		
-//		model.addAttribute("nextSeq",nextSeq); //발주번호
-		model.addAttribute("poCode",puCode); //발주코드
+		model.addAttribute("nextSeq",nextSeq); //발주번호
+		model.addAttribute("poCode",poCode); //발주코드
+		System.out.println("pocode:" + poCode);
 		
-		//th:object에서 사용할 객체 생성
+//		//th:object에서 사용할 객체 생성
 	 	model.addAttribute("purchasesOrder", new PurchasesOrder());
 		
-		return "erp/salesMgt/puRegisterForm";
+		return "erp/salesMgt/poRegisterForm";
 	}
 
-	@GetMapping("/puregister")
-	public String puregister() {
-		return"";
+	//발주 등록 실행
+	@Transactional
+	@PostMapping("/poregister")
+	@ResponseBody
+	public String poRegister(@ModelAttribute PurchasesOrder purchasesOrder) {
+		
+		System.out.println("purchasesOrder:"+purchasesOrder);
+		//PurchasesOrder(poNo=null, poCode=null, poDate=2025-04-17, rcvDate=2025-04-25, empNo=46, whsCode=null, mtlCode=MTL001, cltCode=CLT008, poQuantity=122, mtlReceivingPrice=11111, poValue=0, poStatus=PO_CREATED, poComments=null)
+		
+		//수주번호 다음 시쿼스 가져오기
+		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
+		purchasesOrder.setPoNo(nextSeq);
+		
+		//수주코드 생성
+		String poCode = makePoCode();
+		purchasesOrder.setPoCode(poCode);
+		
+		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
+		purchasesOrder.setPoNo(null);
+		purchasesOrderRepository.save(purchasesOrder);
+		purchasesOrderRepository.flush();
+
+		return "SUCCESS";
 	}
 
 	//=============================================================
-	private String makePuCode() {
+	private String makePoCode() {
 
 		//날짜 형태를 yyyyMMdd 헝태로 변경
 		LocalDate today = LocalDate.now();        
         DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String puToday = today.format(todayFormat);
+        String poToday = today.format(todayFormat);
         
-		Long nextpuCodeNumber = purchasesOrderRepository.getNextPuCode();
-		String puCode = "";
-		if(nextpuCodeNumber > 100) {
-			puCode = "SO-" + puToday + "-" + nextpuCodeNumber; 
-		}else if(nextpuCodeNumber > 10) {
-			puCode = "SO-" + puToday + "-" + "0" +nextpuCodeNumber;		
-		}else if(nextpuCodeNumber > 0) {
-			puCode = "SO-" + puToday + "-" + "00" +nextpuCodeNumber;
+		Long nextpoCodeNumber = purchasesOrderRepository.getNextPoCode();
+		String poCode = "";
+		if(nextpoCodeNumber > 100) {
+			poCode = "PO-" + poToday + "-" + nextpoCodeNumber; 
+		}else if(nextpoCodeNumber > 10) {
+			poCode = "PO-" + poToday + "-" + "0" + nextpoCodeNumber;		
+		}else if(nextpoCodeNumber > 0) {
+			poCode = "PO-" + poToday + "-" + "00" + nextpoCodeNumber;
 		}
 		
-		return puCode;
+		return poCode;
+	}
+	
+	//발주 메인 화면에서 검색 버튼 클릭시 비동기 처리부분
+	@GetMapping("/searchForm")
+	@ResponseBody
+	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
+	public List<PurchasesOrderMainDTO> searchForm(@ModelAttribute PurchasesOrderSearchDTO searchDto) {
+		
+		System.out.println("searchDto:"+searchDto);
+		
+		List<PurchasesOrderMainDTO> mainDtoList = purchasesOrderService.poMainSearch(searchDto);
+		System.out.println("mainDtoList:"+ mainDtoList);
+		
+		return mainDtoList;
 	}
 }

@@ -74,16 +74,16 @@
 			</div>
 		</div><!-- <div class="button-container"> -->
 
-		<form th:action="@{/salaries/searchPayList}" method="get" th:object="${paySearchDTO}">
+		<form th:action="@{/salaries/searchPayList}" method="post" th:object="${paySearchDTO}">
 			<div class="container">
 				<label class="deptLabel">부서</label>
-				<select class="form-select" id="dept" name="dept">
+				<select class="form-select" id="deptName" name="dept">
 					<option value="">전체</option>
 					<option th:each="dept : ${deptList}"
 						th:value="${dept.cmnDetailCode}" th:text="${dept.cmnDetailName}"></option>
 				</select>
 				<label class="emp-Label">이름</label>
-					<input type="text" class="" id="empName" maxlength="9" th:field="*{empName}">
+					<input type="text" id="empName" maxlength="9" th:field="*{empName}">
 				<label class="payLabel">지급일</label>
 					<input type="date" id="minDate" th:field="*{minDate}">~ 
 					<input type="date" id="maxDate" th:field="*{maxDate}">
@@ -117,9 +117,6 @@
 								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"
 									th:text="${code.cmnDetailName}"></option>
 							</select>
-							<div class="input-group mb-2">
-								<input type="text" id="payBasic" class="form-control">
-							</div>
 							<button type="submit" class="btn btn-secondary ms-2">조회</button>
 						</div>
 						<!-- 그리드 top 시작 -->
@@ -157,6 +154,7 @@
 			{
 			 	header: '사원명',
 			   	name: 'empName',
+				sortable: true,
 				width: 100,
 				align: "center"
 			},
@@ -177,6 +175,7 @@
 			 {
 			    header: '고용유형',
 			    name: 'empType',
+				sortable: true,
 				width: 100,
 				align: "center"
 			 },
@@ -194,7 +193,7 @@
 			 },
 			 {
 			    header: '명절수당',
-			    name: 'payBonusHoliday',
+			    name: 'PAY_BONUS_HOLIDAY',
 				width: 100,
 				align: "right"
 			 },
@@ -251,6 +250,19 @@
 			    name: 'payTotal',
 				width: 100,
 				align: "right"
+			 },
+			 {
+			 	header: '은행명',
+			 	name: 'salBankName',
+				sortable: true,
+			 	width: 100,
+			 	align: "center"
+			 },
+			 {
+			 	header: '계좌번호',
+			 	name: 'salBankAccount',
+			 	width: 100,
+			 	align: "center"
 			 }
 		];
 		
@@ -273,7 +285,7 @@
 		const grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
 			data : /*[[${payList}]]*/ [],
-	        rowHeaders: ['checkbox'], 
+	        rowHeaders: ['checkbox'],
 	        columns: columns
 	    });
 	    
@@ -317,10 +329,14 @@
 		
 		//그리드 gridTop2 시작 --------------------------------------
 		let grid2 = null;
-		
-		console.log(/*[[${empList}]]*/ []);	
+			
 		
 		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
+			
+			
+			console.log("===============================================")
+			console.log(/*[[${empList}]]*/ []);
+			
       	  // 모달 완전히 열린 후에 grid 생성
 		// $('#payTransferModal').on('shown.bs.modal', function () {
 		if (!grid2) {
@@ -409,7 +425,11 @@
 				}
 				
 				if(res === 'success'){
-					alert('급여이체 완료!');
+					Swal.fire({
+					  icon: "success",
+					  title: "급여이체 완료!",
+					});
+					
 					location.reload(); // or 특정 그리드/뷰 갱신
 				}
         		
@@ -435,7 +455,11 @@
       			method : 'get',
        			data : {empId : empId},
       			success : function(response){
-      				alert("PDF저장성공!");
+      				//alert("PDF저장성공!");
+					Swal.fire({
+					  icon: "success",
+					  title: "PDF 저장 성공!",
+					});
       				window.open('/pdfs/payslip.pdf', '_blank', 'width=800,height=1000');
       			},
 				error : function(error){
@@ -445,8 +469,6 @@
       			});
 		      	  
       	  }
-      	  
-      	  
       	  
 		</script>
 	</div>	

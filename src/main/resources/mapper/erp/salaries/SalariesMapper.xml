@@ -64,10 +64,10 @@
 	</select>
 
 	<!-- 급여 지급 내역 검색 필터링 -->
-	<select id="searchPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
+	<select id="getSearchPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
     	SELECT
     		P.PAY_NO                AS payNo,
-		    E.EMP_NO                AS empNo,
+		    E.EMP_ID                AS empId,
 		    E.EMP_NAME              AS empName,
 		    DN.CMN_DETAIL_NAME      AS deptName,
 		    PO.CMN_DETAIL_NAME      AS position,
@@ -87,11 +87,11 @@
 		    P.PAY_TAX_RESIDENCE     AS payTaxResidence,
 		    P.PAY_TAX_TOTAL         AS payTaxTotal,
 		
-		    P.PAY_TOTAL             AS payTotal,
+		    P.PAY_TOTAL             AS payTotal
 <!--		    PS.CMN_DETAIL_NAME      AS payStatus-->
 		
 		FROM PAYMENTS P
-		LEFT JOIN EMPLOYEES E ON P.EMP_NO = E.EMP_NO
+		LEFT JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
 		LEFT JOIN COMMONCODE_DETAIL DN 
 		  ON TO_CHAR(E.DEPT_NO) = DN.CMN_DETAIL_CODE 
 		 AND DN.CMN_CODE = 'DEPT'
@@ -121,11 +121,11 @@
         ORDER BY P.PAY_DATE DESC
     </select>
     
-    <!-- 급여 이체 -->
-    <insert id="savePayment" parameterType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+<!--     급여 이체 -->
+    <insert id="savePayment" parameterType="java.util.List">
     	INSERT INTO PAYMENTS (
 			PAY_NO,
-			EMP_NAME,
+			EMP_NAME
 			EMP_ID,
 			DEPT_NAME,
 			POSITION,
@@ -143,35 +143,105 @@
 			PAY_TAX_RESIDENCE,
 			PAY_TAX_TOTAL, 
 		    PAY_TOTAL,
-<!--		    PAY_STATUS,-->
 		    SAL_BANK_NAME,
-		    SAL_BANK,ACCOUNT
-		) VALUES (
-			#{payNo},
-			#{empName},
-			#{empId},
-			#{deptName},
-			#{position},
-			#{empType},
-			#{payDate},
-			#{payBasic},
-			#{payBonusOvertime},
-			#{payBonusHoliday},
-			#{payBonusTotal},
-			#{payTaxPension},
-			#{payTaxCare},
-			#{payTaxHealth},
-			#{payTaxEmployment},
-			#{payTaxIncome},
-			#{payTaxResidence},
-			#{payTaxTotal},
-			#{payTotal},
-<!--			#{payStatus},-->
-			#{salBankName},
-			#{salBankAcount}
-		)
+		    SAL_BANK_ACCOUNT
+		) VALUES 
+		<foreach collection="list" item="item" separator=",">
+			(
+			SEQ_PAYMENTS_PAY_NO.NEXTVAL,
+			#{item.empName, jdbcType=VARCHAR}
+			#{item.empId, jdbcType=VARCHAR},
+			#{item.deptName, jdbcType=VARCHAR},
+			#{item.position, jdbcType=VARCHAR},
+			#{item.empType, jdbcType=VARCHAR},
+			#{item.payDate},
+			#{item.payBasic, jdbcType=NUMERIC},
+			#{item.payBonusOvertime, jdbcType=NUMERIC}, 
+			#{item.payBonusHoliday, jdbcType=NUMERIC},  
+			#{item.payBonusTotal},
+			#{item.payTaxPension, jdbcType=NUMERIC}, 
+			#{item.payTaxCare, jdbcType=NUMERIC},  
+			#{item.payTaxHealth, jdbcType=NUMERIC},
+			#{item.payTaxEmployment, jdbcType=NUMERIC}, 
+			#{item.payTaxIncome, jdbcType=NUMERIC},
+			#{item.payTaxResidence, jdbcType=NUMERIC},
+			#{item.payTaxTotal},
+			#{item.payTotal},
+			#{item.salBankName, jdbcType=VARCHAR}, 
+			#{item.salBankAccount, jdbcType=VARCHAR}
+			)
+	</foreach>
     </insert>
-    
+	
+<!--	<insert id="savePayment" parameterType="java.util.List">-->
+<!--	 	INSERT INTO PAYMENTS (PAY_NO, EMP_NAME)-->
+<!--	    <foreach collection="list" item="item" separator=";">-->
+<!--	      VALUES (#{item.payNo}, #{item.empName})-->
+<!--	    </foreach>-->
+<!--	</insert>-->
+	    
+<!--	<insert id="savePaymentMap" parameterType="java.util.Map">-->
+<!--	  INSERT INTO PAYMENTS (PAY_NO, EMP_NAME)-->
+<!--	  VALUES (SEQ_PAYMENTS_PAY_NO.NEXTVAL, #{empName})-->
+<!--	</insert>-->
+
+	<insert id="savePaymentMap" parameterType="java.util.Map">
+	  INSERT INTO PAYMENTS (
+			PAY_NO,
+			EMP_NAME, 
+			EMP_ID, 
+			DEPT_NAME, 
+			POSITION, 
+			EMP_TYPE, 
+			PAY_DATE,
+			PAY_BASIC, 
+			PAY_BONUS_OVERTIME, 
+			PAY_BONUS_HOLIDAY, 
+			PAY_BONUS_TOTAL,
+			PAY_TAX_PENSION, 
+			PAY_TAX_CARE, 
+			PAY_TAX_HEALTH, 
+			PAY_TAX_EMPLOYMENT, 
+			PAY_TAX_INCOME, 
+			PAY_TAX_RESIDENCE, 
+			PAY_TAX_TOTAL, 
+		    PAY_TOTAL,
+		    SAL_BANK_NAME, 
+		    SAL_BANK_ACCOUNT 
+		) VALUES 
+		(
+			SEQ_PAYMENTS_PAY_NO.NEXTVAL,
+			#{empName, jdbcType=VARCHAR},
+			#{empId, jdbcType=VARCHAR},
+			#{deptName, jdbcType=VARCHAR},
+			#{position, jdbcType=VARCHAR},
+			#{empType, jdbcType=VARCHAR},
+			SYSDATE,
+			#{payBasic, jdbcType=NUMERIC},
+			#{payBonusOvertime, jdbcType=NUMERIC}, 
+			#{payBonusHoliday, jdbcType=NUMERIC},  
+			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday},
+			#{payTaxPension, jdbcType=NUMERIC}, 
+			#{payTaxCare, jdbcType=NUMERIC},  
+			#{payTaxHealth, jdbcType=NUMERIC},
+			#{payTaxEmployment, jdbcType=NUMERIC}, 
+			#{payTaxIncome, jdbcType=NUMERIC},
+			#{payTaxResidence, jdbcType=NUMERIC},
+			#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + #{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence},
+			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday} - (#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + #{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence}),
+			#{salBankName, jdbcType=VARCHAR}, 
+			#{salBankAccount, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="savePaymentDto" parameterType="com.example.cmtProject.dto.erp.salaries.PaymentTempDTO">
+		 INSERT INTO PAYMENTS (PAY_NO, PAY_BONUS_HOLIDAY) VALUES (SEQ_PAYMENTS_PAY_NO.NEXTVAL,#{payBonusHoliday, jdbcType=NUMERIC})
+	</insert>
+	    
+	<select id="getNextPayNo" parameterType="String">
+		SELECT NVL(MAX(PAY_NO), 0)  FROM PAYMENTS
+	</select>
+	    
     <!-- 급여 이체 검색 필터링 -->
 	<select id="searchPayTransferList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">
 <!-- 		SELECT

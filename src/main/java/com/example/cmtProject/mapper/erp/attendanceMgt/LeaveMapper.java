@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
-import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
 public interface LeaveMapper {
@@ -16,6 +15,22 @@ public interface LeaveMapper {
 
 	// 휴가 일정 관리 저장
 	void insertLeave(@Param("dto") LeaveDTO dto, @Param("empId") String empId);
+	
+	
+	//////////////////////////////////////////////////////////////////////////////
+	
+    // 결재 문서ID로 휴가 정보 조회
+    LeaveDTO getLeaveByDocId(@Param("docId") String docId);
+    
+    // 휴가 상태 업데이트
+    int updateLeaveStatus(@Param("levNo") Long levNo, 
+                        @Param("status") String status, 
+                        @Param("remarks") String remarks);
+    
+    // 결재 문서ID와 함께 휴가 저장
+    void insertLeaveWithDocId(@Param("dto") LeaveDTO dto, 
+                           @Param("empId") String empId, 
+                           @Param("docId") String docId);
 	
 	
 	

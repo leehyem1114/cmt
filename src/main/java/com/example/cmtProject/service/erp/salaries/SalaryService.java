@@ -14,6 +14,7 @@ import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
+import com.example.cmtProject.dto.erp.salaries.PaymentTempDTO;
 import com.example.cmtProject.entity.erp.salaries.Payment;
 import com.example.cmtProject.mapper.erp.salaries.SalariesMapper;
 import com.example.cmtProject.repository.erp.salaries.SalaryRepository;
@@ -36,8 +37,8 @@ public class SalaryService {
 	}
 
 	// 급여 지급 내역 조회 - 검색 기능 추가 
-	public List<PaymentDTO> getSearchPayList(PaySearchDTO paySearchDTO) {
-		return salMapper.searchPayList(paySearchDTO);
+	public List<PaySearchDTO> getSearchPayList(PaySearchDTO paySearchDTO) {
+		return salMapper.getSearchPayList(paySearchDTO);
 	}
 	
 	// 야근 수당 계산
@@ -59,33 +60,9 @@ public class SalaryService {
 	}
 
 	// 급여 이체
-	public void savePayment(PaymentDTO paymentDTO) {
-
-//		PaymentDTO paymentTransferDTO = PaymentDTO.builder()
-//				.empNo(paymentDTO.getEmpNo())
-//		        .empName(paymentDTO.getEmpName())
-//		        .deptName(paymentDTO.getDeptName())
-//		        .position(paymentDTO.getPosition())
-//		        .empType(paymentDTO.getEmpType())
-//		        .payDate(paymentDTO.getPayDate())
-//		        .payBasic(paymentDTO.getPayBasic())
-//		        .payBonusOvertime(paymentDTO.getPayBonusOvertime())
-//		        .payBonusHoliday(paymentDTO.getPayBonusHoliday())
-//		        .payBonusTotal(paymentDTO.getPayBonusTotal())
-//		        .payTaxPension(paymentDTO.getPayTaxPension())
-//		        .payTaxCare(paymentDTO.getPayTaxCare())
-//		        .payTaxHealth(paymentDTO.getPayTaxHealth())
-//		        .payTaxEmployment(paymentDTO.getPayTaxEmployment())
-//		        .payTaxIncome(paymentDTO.getPayTaxIncome())
-//		        .payTaxResidence(paymentDTO.getPayTaxResidence())
-//		        .payTaxTotal(paymentDTO.getPayTaxTotal())
-//		        .payTotal(paymentDTO.getPayTotal())
-//		        .payStatus(paymentDTO.getPayStatus())
-//		        .salBankName(paymentDTO.getSalBankName())
-//		        .salBankAccount(paymentDTO.getSalBankAccount())
-//		        .build();
+	public int savePayment(List<Map<String, Object>> evaluatedResult) {
 		
-		salMapper.savePayment(paymentDTO);
+		return salMapper.savePayment(evaluatedResult);
 	}	
 
 	//개인 지급내역
@@ -111,5 +88,19 @@ public class SalaryService {
 	public List<EmpListPreviewDTO> getEmpList() {
 		return salMapper.getEmpList();
 	}
+	
+	public Long getNextPayNo() {
+		return salMapper.getNextPayNo();
+	}
+
+	public void savePaymentMap(Map<String, Object> m) {
+		salMapper.savePaymentMap(m);
+	}
+
+	public void savePaymentDto(PaymentTempDTO pdto) {
+		salMapper.savePaymentDto(pdto);
+	}
+
+
 
 }

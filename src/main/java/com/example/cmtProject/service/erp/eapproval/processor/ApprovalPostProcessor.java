@@ -12,19 +12,19 @@ public interface ApprovalPostProcessor {
      * @param document 완료된 결재 문서
      * @return 처리 성공 여부
      */
-    boolean processApproved(DocumentDTO document);
+	public boolean processApproved(DocumentDTO document);
     
     /**
      * 결재 반려 후 처리
      * @param document 반려된 결재 문서
      * @return 처리 성공 여부
      */
-    boolean processRejected(DocumentDTO document);
+	public boolean processRejected(DocumentDTO document);
     
     /**
      * 이 프로세서가 처리할 수 있는 양식인지 확인
      * @param formId 양식 ID
      * @return 처리 가능 여부
      */
-    boolean canProcess(String formId);
+	public boolean canProcess(String formId);
 }

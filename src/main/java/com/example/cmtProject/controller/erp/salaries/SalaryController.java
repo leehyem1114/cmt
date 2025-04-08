@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
+import com.example.cmtProject.dto.erp.salaries.PaymentTempDTO;
 import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.salaries.SalaryService;
@@ -92,8 +94,8 @@ public class SalaryController {
 	}
 	
 	// 급여 지급 내역 검색 요청
-	@GetMapping("/searchPayList")
-	public String getSearchPay(PaySearchDTO paySearchDTO, Model model) {
+	@PostMapping("/searchPayList")
+	public String getSearchPay(@ModelAttribute PaySearchDTO paySearchDTO, Model model) {
 		System.out.println("검색 대상 : " + paySearchDTO);
 		
 		//List<PaySearchDTO> paySearchList = salaryService.getSearchPayList(paySearchDTO);
@@ -108,7 +110,9 @@ public class SalaryController {
 		List<EmpListPreviewDTO> empList = employeesService.getEmpList();
 		model.addAttribute("empList", empList);
 		
-		List<PaymentDTO> payList = salaryService.getSearchPayList(paySearchDTO);
+		List<PaySearchDTO> paySearchList = salaryService.getSearchPayList(paySearchDTO);
+		
+		
 		
 		return "erp/salaries/payList";
 	}
@@ -116,12 +120,7 @@ public class SalaryController {
 	// 급여 이체
 	@PostMapping("/payTransfer")
 	@ResponseBody
-
 	public String payTransfer(@RequestParam("position") String position, @RequestParam("empIdList") List<String> empIdList, Model model) {	
-		
-		//System.out.println("position:"+position+" ,empIdList:"+empIdList);
-		
-		
 		
 		// 급여 지급일 조회		
 		String payday = salaryService.getPayDay();
@@ -134,118 +133,126 @@ public class SalaryController {
 	    int year = today.getYear();
 	    int month = today.getMonthValue();
 	    
-	    LocalDate date = LocalDate.of(year, month, 20); // 그달의 20일
+	    LocalDate date = LocalDate.of(year, month, 8); // 그달의 20일
+	    
+	    System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"+today);
 	    
 	    //지급일이 아닌 경우 바로 return
-	    /*
+	    
 	    if(!(payday.equals(todayStr) && !isHoliday(date))) {
 	    	
 	    	return "fail";
 	    	
-	    }*/
+	    }
 	    
 		// 직급별 기본급 가져오기
 		List<PayBasicDTO> payBasicList = salaryService.getPayBasic();
-		/*
-		E.EMP_ID,
-	   	E.EMP_NAME,
-	    E.POSITION_NO,
-	    CD.CMN_DETAIL_VALUE AS payBasic,
-	    CD.CMN_DETAIL_NAME AS position
-		*/
-		 
-//		// 수당
-//		List<CommonCodeDetailDTO> bonusList = commonService.getCommonCodeDetails("BONUS", null);
-//		// 공제
-//		List<CommonCodeDetailDTO> taxList = commonService.getCommonCodeDetails("TAX", null);
+		
 		
 		//공통 코드에서 수당, 공제 계산 하기위한 컬럼 가져오기
 		List<PayCmmCodeDetailDTO> payCommList = salaryService.getPayCommonCodeDetails();
-		//System.out.println("payCmmList:" + payCommList);
 		
 		//연산 결과를 입력할 List
-		List<Map<String, BigDecimal>> evaluatedResult = new ArrayList<>();
-		//System.out.println("evaluatedResult:" + evaluatedResult);
+		List<Map<String, Object>> evaluatedResult = new ArrayList<>();
 		
-		
+		//PAY_NO 중 가장 큰 PAY_NO 값 가져오기
+		//Long maxPayNo = salaryService.getNextPayNo();
+		//System.out.println("maxPayNo:"+maxPayNo);
 		//사원 정보
 		List<PayEmpListDTO> payEmpList = salaryService.getEmpInfo(empIdList);
 		for(PayEmpListDTO p : payEmpList) {
-			System.out.println("payEmpList p:" + p.getDeptName());
-			System.out.println("payEmpList p:" + p.getEmpId());
-			System.out.println("payEmpList p:" + p.getEmpName());
-			System.out.println("payEmpList p:" + p.getEmpType());
-			System.out.println("payEmpList p:" + p.getPayBasic());
-			System.out.println("payEmpList p:" + p.getSalBankName());
-			System.out.println("payEmpList p:" + p.getSalBankAccount());	
+			
+			
+			Map<String, Object> calcularatorMap = new HashMap<>();
+			
+			//PayNo 직접 입력 부분
+//			++maxPayNo;
+//			System.out.println("maxPayNo =====================:" + maxPayNo);
+//			calcularatorMap.put("payNo",(long)(maxPayNo));
+			
+			calcularatorMap.put("deptName",  p.getDeptName());
+			calcularatorMap.put("empId",  p.getEmpId());
+			calcularatorMap.put("empName",  p.getEmpName());
+			calcularatorMap.put("empType",  p.getEmpType());
+			calcularatorMap.put("payBasic",  p.getPayBasic());
+			calcularatorMap.put("salBankName",  p.getSalBankName());
+			calcularatorMap.put("salBankAccount",  p.getSalBankAccount());
+			calcularatorMap.put("position",  p.getPosition());
+			//calcularatorMap.put("payDate",  p.getPayDate());
+			
+			//지급에 따라서 달라지는 기본급
+			Long tempPayBasic = Long.valueOf(p.getPayBasic());
+			
+			//---------------------- 계산 시작 -----------------------------------------
+			
+			// 수식 평가 반복 => 수당, 공제 계산
+			for(PayCmmCodeDetailDTO payComm : payCommList) {
+				String expression = payComm.getCmnDetailValue2(); 
+				String columnName = payComm.getCmnDetailValue(); 
+				System.out.println("columnName:" + columnName);
+				
+				String[] operandNames =  expression.split("[+\\-\\*/\\(\\)]");
+				
+				// 수식 평가 수행할 JexlEngine 객체 생성
+				JexlEngine jexl = new JexlBuilder().create();
+				
+				// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
+				JexlExpression jexlExpression = jexl.createExpression(expression); 
+				
+				// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
+				JexlContext context = new MapContext();
+				
+				context.set("PAY_BASIC", tempPayBasic);
+				
+				// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
+				Object result = jexlExpression.evaluate(context);
+				
+				//calcularatorMap.put(columnName,BigDecimal.valueOf(result));
+				if (result instanceof Number) {
+				    // 2단계: Number로 캐스팅 후 double로 변환하여 BigDecimal로 래핑
+				    BigDecimal value = BigDecimal.valueOf(((Number) result).doubleValue());
+				    calcularatorMap.put(columnName, value);
+				} else {
+				    // 숫자가 아니면 null 처리하거나 예외 처리
+				    calcularatorMap.put(columnName, null);  // 또는 throw new IllegalArgumentException(...)
+				}
+				//System.out.println("----- calcularatorMap 확인 : " + calcularatorMap);
+			}
+			
+			evaluatedResult.add(calcularatorMap);
+			System.out.println("=============계산끝" + calcularatorMap);
+			
+			//---------------------- 계산 끝 -----------------------------------------
 		}
-		//PAY_STATUS 는 getPayDay MAPPER에서 받아온다
 		
 		
-		// 수식 평가 반복 => 수당, 공제 계산
-		for(PayCmmCodeDetailDTO payComm : payCommList) {
-			String expression = payComm.getCmnDetailValue2(); 
-			String columnName = payComm.getCmnDetailValue(); 
+		
+		for(Map<String, Object> m : evaluatedResult) {
+			//System.out.println(" m.get(\"payBonusOvertime\") 확인---------------" + m.get("PAY_BONUS_HOLIDAY"));
+			System.out.println(" m 확인---------------" + m);
 			
+			PaymentDTO pdto = new PaymentDTO();
+			//pdto.setPayBonusHoliday((BigDecimal) m.get("payBonusHoliday"));
+			//PaymentTempDTO pdto = new PaymentTempDTO();
+			//pdto.setPayBonusHoliday((BigDecimal) m.get("PAY_BONUS_HOLIDAY"));
 			
+			salaryService.savePaymentMap(m);
+			//System.out.println("pdto.getPayBonusHoliday():"+pdto.getPayBonusHoliday());
+			//salaryService.savePaymentDto(pdto);
 			
-			System.out.println("expression:" + expression); // 계산식
-			System.out.println("columnName:" + columnName); //PAY_BONUS_OVERTIME, PAY_BONUS_HOLIDAY
+
+			System.out.println("전달되는 map 값:");
+			for (Map.Entry<String, Object> entry : m.entrySet()) {
+			    System.out.println(entry.getKey() + " : " + entry.getValue());
+			}
 			
-			String[] operandNames =  expression.split("[+\\-\\*/\\(\\)]");
-			
-			
-			//(PAY_BASIC * 0.15 - 1080000) * 0.1 결과 배열에서 공백제거와 , 제거 하는 과정
-//			List<String> operands = Arrays.stream(operandNames)
-//			    .map(String::trim)        
-//			    .filter(s -> !s.isEmpty()) 
-//			    .collect(Collectors.toList());
-			
-			System.out.println("추출한 피연산자 이름 목록 : " + Arrays.toString(operandNames));
-			
-			//List<Double> values = List.of(50.0, 20.0, 30.0); // 샘플 피연산자
-			// List<Object> values = List.of(50.0, 20, 30.0);
-			
-			
-//			for(CommonCodeDetailDTO c : values) {
-//				System.out.println(c.getCmnDetailValue());
-//			}
-			
-			// 수식 평가 수행할 JexlEngine 객체 생성
-			JexlEngine jexl = new JexlBuilder().create();
-			
-			// 문자열 수식을 JexlExpression 객체를 통해 실제 식으로 변환
-			JexlExpression jexlExpression = jexl.createExpression(expression); 
-			System.out.println(jexlExpression.getSourceText()); //PAY_BASIC * 0.5
-			
-			// 수식에 사용될 피연산자를 관리하는 JexlContext 객체 생성
-			JexlContext context = new MapContext();
-			
-			//System.out.println("expression:" + expression);
-			//Long payBasicValue = p.getPayBasic();
-			
-			
-			
-			
-			
-			context.set("PAY_BASIC", 10000);
-			//context.set("PAY_BASIC", payValue);
-			//System.out.println(context.get("PAY_BASIC"));
-			
-			
-			// 연산식에 피연산자 대입하여 실제 연산 수행 후 Object 타입으로 결과값 리턴
-			Object result = jexlExpression.evaluate(context);
-			
-			
-			System.out.println("-----확인 : " + result);
-			
-			
-			Map<String, BigDecimal> map = new HashMap<>();
-			//map.put(column,(BigDecimal)result);
-			
-			evaluatedResult.add(map);
 		}
-	
+		
+		
+		
+		//System.out.println("evaluatedResult:"+evaluatedResult.toString());
+		
+		//int calculatorResult = salaryService.savePayment(evaluatedResult);
 		return "success";
 	}
 	
