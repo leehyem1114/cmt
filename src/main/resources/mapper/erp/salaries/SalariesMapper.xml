@@ -197,15 +197,15 @@
 			PAY_BASIC, 
 			PAY_BONUS_OVERTIME, 
 			PAY_BONUS_HOLIDAY, 
-<!--			PAY_BONUS_TOTAL,-->
+			PAY_BONUS_TOTAL,
 			PAY_TAX_PENSION, 
 			PAY_TAX_CARE, 
 			PAY_TAX_HEALTH, 
 			PAY_TAX_EMPLOYMENT, 
 			PAY_TAX_INCOME, 
 			PAY_TAX_RESIDENCE, 
-<!--			PAY_TAX_TOTAL, -->
-<!--		    PAY_TOTAL,-->
+			PAY_TAX_TOTAL, 
+		    PAY_TOTAL,
 		    SAL_BANK_NAME, 
 		    SAL_BANK_ACCOUNT 
 		) VALUES 
@@ -220,15 +220,15 @@
 			#{payBasic, jdbcType=NUMERIC},
 			#{payBonusOvertime, jdbcType=NUMERIC}, 
 			#{payBonusHoliday, jdbcType=NUMERIC},  
-<!--			#{payBonusTotal},-->
+			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday},
 			#{payTaxPension, jdbcType=NUMERIC}, 
 			#{payTaxCare, jdbcType=NUMERIC},  
 			#{payTaxHealth, jdbcType=NUMERIC},
 			#{payTaxEmployment, jdbcType=NUMERIC}, 
 			#{payTaxIncome, jdbcType=NUMERIC},
 			#{payTaxResidence, jdbcType=NUMERIC},
-<!--			#{payTaxTotal},-->
-<!--			#{payTotal},-->
+			#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + #{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence},
+			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday} - (#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + #{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence}),
 			#{salBankName, jdbcType=VARCHAR}, 
 			#{salBankAccount, jdbcType=VARCHAR}
 		)
