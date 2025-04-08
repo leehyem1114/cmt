@@ -11,9 +11,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+
 
 /**
  * 휴가 신청 결재 후처리기
@@ -27,14 +30,22 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     private final FormDataExtractor formDataExtractor;
     private final LeaveService leaveService;
     
-    // 휴가 신청서 양식 ID - 실제 양식 ID로 변경 필요
-    private static final String LEAVE_FORM_ID = "ㅅ교"; // 실제 양식 ID로 변경 필요
-
+    // 휴가 신청서 양식 ID - 실제 양식 ID로 변경
+    private static final String LEAVE_FORM_ID = "ㅅ교"; 
+    
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean processApproved(DocumentDTO document) {
         log.info("휴가 신청 결재 완료 처리 시작: 문서ID={}", document.getDocId());
         
         try {
+            // 이미 처리된 휴가가 있는지 확인
+            LeaveDTO existingLeave = leaveService.getLeaveByDocId(document.getDocId());
+            if (existingLeave != null) {
+                log.info("이미 처리된 휴가 신청: {}", document.getDocId());
+                return true;
+            }
+            
             // HTML 파싱
             Document htmlDoc = formDataExtractor.parseHtml(document);
             
@@ -48,7 +59,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             
             // 휴가 정보 저장
             Employees currentUser = SecurityUtil.getCurrentUser();
-            leaveService.insertLeave(leaveDTO, currentUser);
+            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
             log.info("휴가 신청 정보 저장 완료: 문서ID={}", document.getDocId());
             
             return true;
@@ -59,10 +70,18 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean processRejected(DocumentDTO document) {
         log.info("휴가 신청 결재 반려 처리 시작: 문서ID={}", document.getDocId());
         
         try {
+            // 이미 처리된 휴가가 있는지 확인
+            LeaveDTO existingLeave = leaveService.getLeaveByDocId(document.getDocId());
+            if (existingLeave != null) {
+                log.info("이미 처리된 휴가 반려: {}", document.getDocId());
+                return true;
+            }
+            
             // HTML 파싱
             Document htmlDoc = formDataExtractor.parseHtml(document);
             
@@ -76,7 +95,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             
             // 휴가 정보 저장 (반려 이력 목적)
             Employees currentUser = SecurityUtil.getCurrentUser();
-            leaveService.insertLeave(leaveDTO, currentUser);
+            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
             log.info("휴가 반려 정보 저장 완료: 문서ID={}", document.getDocId());
             
             return true;
@@ -88,7 +107,9 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
 
     @Override
     public boolean canProcess(String formId) {
-        return LEAVE_FORM_ID.equals(formId);
+        boolean result = LEAVE_FORM_ID.equals(formId);
+        log.debug("휴가 양식 처리 가능 여부: formId={}, 결과={}", formId, result);
+        return result;
     }
     
     /**
@@ -102,28 +123,60 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         // 기안자 정보 설정
         leaveDTO.setEmpId(document.getDrafterId());
         
-        // 휴가 유형 설정
+        // 휴가 유형 설정 - 선택자 이름이 다를 수 있으므로 로그 추가
         String leaveType = formDataExtractor.extractField(htmlDoc, "#leaveType");
+        log.debug("추출된 휴가 유형: {}", leaveType);
+        if (leaveType == null || leaveType.isEmpty()) {
+            // 대체 선택자 시도
+            leaveType = formDataExtractor.extractField(htmlDoc, "select[name='leaveType']");
+            log.debug("대체 선택자로 추출된 휴가 유형: {}", leaveType);
+            
+            // 여전히 비어있으면 기본값 설정
+            if (leaveType == null || leaveType.isEmpty()) {
+                leaveType = "연차";
+                log.debug("휴가 유형 기본값 사용: {}", leaveType);
+            }
+        }
         leaveDTO.setLevType(leaveType);
         
-        // 휴가 일자 설정
-        LocalDateTime startDate = formDataExtractor.extractDateField(
-            htmlDoc, "#leaveStartDate", "yyyy-MM-dd");
-        LocalDateTime endDate = formDataExtractor.extractDateField(
-            htmlDoc, "#leaveEndDate", "yyyy-MM-dd");
+        // 휴가 일자 설정 - 다양한 형식 시도
+        LocalDateTime startDate = formDataExtractor.extractDateField(htmlDoc, "#leaveStartDate", "yyyy-MM-dd");
+        if (startDate == null) {
+            startDate = formDataExtractor.extractDateField(htmlDoc, "input[name='leaveStartDate']", "yyyy-MM-dd");
+        }
+        
+        LocalDateTime endDate = formDataExtractor.extractDateField(htmlDoc, "#leaveEndDate", "yyyy-MM-dd");
+        if (endDate == null) {
+            endDate = formDataExtractor.extractDateField(htmlDoc, "input[name='leaveEndDate']", "yyyy-MM-dd");
+        }
+        
+        // 날짜가 추출되지 않으면 현재 날짜 사용
+        if (startDate == null) {
+            startDate = LocalDateTime.now();
+            log.debug("휴가 시작일 추출 실패, 현재 날짜 사용");
+        }
+        
+        if (endDate == null) {
+            endDate = startDate;
+            log.debug("휴가 종료일 추출 실패, 시작일과 동일하게 설정");
+        }
         
         leaveDTO.setLevStartDate(startDate);
         leaveDTO.setLevEndDate(endDate);
         
         // 휴가 일수 계산
-        if (startDate != null && endDate != null) {
-            int days = (int) ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
-            leaveDTO.setLevDays(days);
-            leaveDTO.setLevLeftDays(15 - days); // 가정: 연간 휴가 15일
-        }
+        int days = (int) ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
+        leaveDTO.setLevDays(days);
+        leaveDTO.setLevLeftDays(15 - days); // 가정: 연간 휴가 15일
         
         // 휴가 사유
         String reason = formDataExtractor.extractField(htmlDoc, "#leaveReason");
+        if (reason == null || reason.isEmpty()) {
+            reason = formDataExtractor.extractField(htmlDoc, "textarea[name='leaveReason']");
+            if (reason == null || reason.isEmpty()) {
+                reason = "휴가 신청";
+            }
+        }
         leaveDTO.setLevReason(reason);
         
         // 신청일시 - 문서 기안일로 설정

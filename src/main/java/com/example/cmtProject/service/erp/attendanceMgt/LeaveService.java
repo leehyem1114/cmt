@@ -33,32 +33,6 @@ public class LeaveService {
 		leaveMapper.insertLeave(dto, dto.getEmpId());	
 	}    
     
-    /**
-     * 결재 문서ID로 휴가 정보 조회
-     */
-    public LeaveDTO getLeaveByDocId(String docId) {
-        logger.info("결재 문서ID로 휴가 정보 조회: {}", docId);
-        return leaveMapper.getLeaveByDocId(docId);
-    }
-    
-    /**
-     * 휴가 상태 업데이트
-     */
-    @Transactional
-    public boolean updateLeaveStatus(Long levNo, String status, String remarks) {
-        logger.info("휴가 상태 업데이트: 휴가번호={}, 상태={}", levNo, status);
-        int result = leaveMapper.updateLeaveStatus(levNo, status, remarks);
-        return result > 0;
-    }
-    
-    /**
-     * 결재 문서ID와 함께 휴가 저장
-     */
-    @Transactional
-    public void insertLeaveWithDocId(LeaveDTO dto, Employees loginUser, String docId) {
-        logger.info("결재 문서ID와 함께 휴가 저장: 사번={}, 문서ID={}", loginUser.getEmpId(), docId);
-        leaveMapper.insertLeaveWithDocId(dto, loginUser.getEmpId(), docId);
-    }
 }
     
     

@@ -5,9 +5,10 @@ import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
 /**
  * 결재 후처리 관리자
  * 결재 완료/반려 시 적절한 후처리기를 찾아 실행
@@ -19,11 +20,7 @@ public class ApprovalPostProcessManager {
 
     private final List<ApprovalPostProcessor> processors;
     
-    /**
-     * 결재 완료 시 후처리 실행
-     * @param document 완료된 문서
-     * @return 처리 성공 여부
-     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean executePostProcessing(DocumentDTO document) {
         if (document == null) {
             log.warn("후처리 요청 문서가 null입니다.");
@@ -60,7 +57,6 @@ public class ApprovalPostProcessManager {
             return false;
         }
     }
-    
     /**
      * 양식에 맞는 후처리기 찾기
      */
