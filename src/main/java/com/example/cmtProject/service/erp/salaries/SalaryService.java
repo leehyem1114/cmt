@@ -3,6 +3,7 @@ package com.example.cmtProject.service.erp.salaries;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,18 @@ public class SalaryService {
 		return salMapper.getSearchPayList(paySearchDTO);
 	}
 	
+	// 급여 지급 내역 삭제
+	public void deletePayList(List<Long> payNos) throws Exception {
+		List<Payment> payList = salRepository.findAllById(payNos);
+
+	    if (payList.isEmpty()) {
+	    	throw new Exception("삭제할 내역이 존재하지 않습니다.");
+	    }
+	    
+	    salRepository.deleteAll(payList);
+	    
+	}
+	
 	// 야근 수당 계산
 	public List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO) {
 		return salMapper.getOverTimes(paymentDTO);
@@ -48,10 +61,11 @@ public class SalaryService {
 	
 	// 급여 대장 조회
 	public List<PaymentDTO> getPayrolls() {
-		List<Payment> payrolls = salRepository.findAll();
-		return payrolls.stream()
-				.map(payment -> payment.toDto())
-				.collect(Collectors.toList());
+//		List<Payment> payrolls = salRepository.findAll();
+//		return payrolls.stream()
+//				.map(payment -> payment.toDto())
+//				.collect(Collectors.toList());
+		return salMapper.getPayrolls();
 	}
 
 	// 직급별 기본급 계산
@@ -93,13 +107,17 @@ public class SalaryService {
 		return salMapper.getNextPayNo();
 	}
 
+	// 급여 이체
 	public void savePaymentMap(Map<String, Object> m) {
+		System.out.println("DFDSFSFSDFDSF");
+		
 		salMapper.savePaymentMap(m);
 	}
 
 	public void savePaymentDto(PaymentTempDTO pdto) {
 		salMapper.savePaymentDto(pdto);
 	}
+
 
 
 
