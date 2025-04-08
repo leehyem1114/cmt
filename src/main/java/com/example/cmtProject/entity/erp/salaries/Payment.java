@@ -55,6 +55,21 @@ public class Payment { // 급여 지급 이력 엔티티
     
     @Column(name = "PAY_DATE")
     private LocalDate payDate; // 지급일
+    
+    @Column(name = "PAY_MONTH")
+    private String payMonth; // 지급월 -- 급여 대장
+    
+    @Column(name = "EMP_COUNT")
+    private Long empCount; // 인원수 -- 급여 대장
+    
+    @Column(name = "TOTAL_PAY_AMOUNT")
+    private Long totalPayAmount; // 총지급액 -- 급여 대장
+    
+    @Column(name = "TOTAL_BONUS_AMOUNT")
+    private BigDecimal totalBonusAmount; // 총수당액 -- 급여 대장
+    
+    @Column(name = "TOTAL_TAX_AMOUNT")
+    private BigDecimal totalTaxAmount; // 총공제액 -- 급여 대장
 
     @Column(name = "PAY_BASIC")
     private Long payBasic; // 기본급
@@ -110,6 +125,11 @@ public class Payment { // 급여 지급 이력 엔티티
                 .position(position)
                 .empType(empType)
                 .payDate(payDate)
+                .payMonth(payMonth)
+                .empCount(empCount)
+                .totalPayAmount(totalPayAmount)
+                .totalBonusAmount(totalBonusAmount)
+                .totalTaxAmount(totalTaxAmount)
                 .payBasic(payBasic)
                 .payBonusOvertime(payBonusOvertime)
                 .payBonusHoliday(payBonusHoliday)

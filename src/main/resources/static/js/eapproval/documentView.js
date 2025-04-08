@@ -326,97 +326,94 @@ const DocumentView = (function() {
      * 양식 내 폼 요소 읽기 전용 설정 함수
      * 문서 내 모든 폼 요소(select, input, textarea)를 읽기 전용으로 변환합니다.
      */
-    function makeFormElementsReadOnly() {
-        try {
-            console.log('양식 내 폼 요소 읽기 전용 설정 시작');
+	function makeFormElementsReadOnly() {
+	    try {
+	        console.log('양식 내 폼 요소 읽기 전용 설정 시작');
 
-            // 문서 내용 영역 선택
-            // 여러 가지 가능한 선택자를 시도하여 문서 내용 영역 찾기
-            let contentDiv = document.querySelector('.document-content');
+	        // 문서 내용 영역 선택
+	        // 여러 가지 가능한 선택자를 시도하여 문서 내용 영역 찾기
+	        let contentDiv = document.querySelector('.document-content');
 
-            if (!contentDiv) {
-                contentDiv = document.querySelector('.border.p-3.rounded');
-            }
+	        if (!contentDiv) {
+	            contentDiv = document.querySelector('.border.p-3.rounded');
+	        }
 
-            if (!contentDiv) {
-                // 상세 페이지의 문서 내용이 있는 div를 찾습니다 (예: class가 없는 경우)
-                const contentCards = document.querySelectorAll('.card-body > div');
-                for (const div of contentCards) {
-                    if (div.innerHTML.includes('<table') || div.innerHTML.includes('<form')) {
-                        contentDiv = div;
-                        break;
-                    }
-                }
-            }
+	        if (!contentDiv) {
+	            // 상세 페이지의 문서 내용이 있는 div를 찾습니다 (예: class가 없는 경우)
+	            const contentCards = document.querySelectorAll('.card-body > div');
+	            for (const div of contentCards) {
+	                if (div.innerHTML.includes('<table') || div.innerHTML.includes('<form')) {
+	                    contentDiv = div;
+	                    break;
+	                }
+	            }
+	        }
 
-            if (!contentDiv) {
-                console.warn('문서 내용 영역을 찾을 수 없습니다.');
-                return;
-            }
+	        if (!contentDiv) {
+	            console.warn('문서 내용 영역을 찾을 수 없습니다.');
+	            return;
+	        }
 
-            console.log('문서 내용 영역 찾음:', contentDiv);
+	        console.log('문서 내용 영역 찾음:', contentDiv);
 
-            // 모든 select 요소 처리
-            const selects = contentDiv.querySelectorAll('select');
-            selects.forEach(select => {
-                // 선택된 값 텍스트 추출
-                const selectedText = select.options[select.selectedIndex]?.text || '';
+	        // 모든 select 요소 처리
+	        const selects = contentDiv.querySelectorAll('select');
+	        selects.forEach(select => {
+	            // 선택된 값을 유지하면서 비활성화만 함
+	            select.setAttribute('disabled', 'disabled');
+	            
+	            // 스타일 조정 (선택 사항)
+	            select.classList.add('form-select-plaintext');
+	            
+	            console.log(`비활성화 처리: select #${select.id || 'unnamed'}`);
+	        });
 
-                // 부모 요소에 읽기 전용 텍스트 추가
-                const readOnlySpan = document.createElement('span');
-                readOnlySpan.className = 'form-control-plaintext';
-                readOnlySpan.textContent = selectedText;
+	        // 모든 input 요소 처리
+	        const inputs = contentDiv.querySelectorAll('input');
+	        inputs.forEach(input => {
+	            if (input.type === 'text' || input.type === 'number' || input.type === 'date' || input.type === 'hidden') {
+	                // 읽기 전용 속성만 추가
+	                input.setAttribute('readonly', 'readonly');
+	                
+	                // 필요시 스타일 조정 (선택 사항)
+	                input.classList.add('form-control-plaintext');
+	                
+	                console.log(`읽기 전용 처리: input #${input.id || 'unnamed'}, 값: "${input.value}"`);
+	            } else if (input.type === 'checkbox' || input.type === 'radio') {
+	                // 체크박스/라디오버튼 비활성화만 함
+	                input.setAttribute('disabled', 'disabled');
+	                
+	                console.log(`비활성화: ${input.type} #${input.id || 'unnamed'}, 상태: ${input.checked ? '체크됨' : '체크안됨'}`);
+	            }
+	        });
 
-                // select 숨기고 span 표시
-                select.style.display = 'none';
-                select.parentNode.insertBefore(readOnlySpan, select.nextSibling);
+	        // 모든 textarea 요소 처리
+	        const textareas = contentDiv.querySelectorAll('textarea');
+	        textareas.forEach(textarea => {
+	            // 읽기 전용 속성만 추가
+	            textarea.setAttribute('readonly', 'readonly');
+	            
+	            // 필요시 스타일 조정 (선택 사항)
+	            textarea.classList.add('form-control-plaintext');
+	            
+	            console.log(`읽기 전용 처리: textarea #${textarea.id || 'unnamed'}`);
+	        });
 
-                console.log(`읽기 전용 처리: select #${select.id || 'unnamed'} → "${selectedText}"`);
-            });
+	        // 모든 버튼 비활성화 (양식 내 버튼이 있는 경우)
+	        const buttons = contentDiv.querySelectorAll('button:not(.btn-remove-line)');
+	        buttons.forEach(button => {
+	            // 비활성화만 함
+	            button.setAttribute('disabled', 'disabled');
+	            button.classList.add('disabled');
+	            
+	            console.log(`비활성화: button #${button.id || 'unnamed'}`);
+	        });
 
-            // 모든 input 요소 처리
-            const inputs = contentDiv.querySelectorAll('input');
-            inputs.forEach(input => {
-                if (input.type === 'text' || input.type === 'number' || input.type === 'date' || input.type === 'hidden') {
-                    // 기본 속성 변경
-                    input.setAttribute('readonly', 'readonly');
-                    input.classList.add('form-control-plaintext');
-                    input.classList.remove('form-control');
-
-                    console.log(`읽기 전용 처리: input #${input.id || 'unnamed'}, 값: "${input.value}"`);
-                } else if (input.type === 'checkbox' || input.type === 'radio') {
-                    // 체크박스/라디오버튼 비활성화
-                    input.setAttribute('disabled', 'disabled');
-
-                    console.log(`비활성화: ${input.type} #${input.id || 'unnamed'}, 상태: ${input.checked ? '체크됨' : '체크안됨'}`);
-                }
-            });
-
-            // 모든 textarea 요소 처리
-            const textareas = contentDiv.querySelectorAll('textarea');
-            textareas.forEach(textarea => {
-                // textarea 읽기 전용 처리
-                textarea.setAttribute('readonly', 'readonly');
-                textarea.classList.add('form-control-plaintext');
-                textarea.classList.remove('form-control');
-
-                console.log(`읽기 전용 처리: textarea #${textarea.id || 'unnamed'}`);
-            });
-
-            // 모든 버튼 비활성화 (양식 내 버튼이 있는 경우)
-            const buttons = contentDiv.querySelectorAll('button:not(.btn-remove-line)');
-            buttons.forEach(button => {
-                button.setAttribute('disabled', 'disabled');
-                button.classList.add('disabled');
-
-                console.log(`비활성화: button #${button.id || 'unnamed'}`);
-            });
-
-            console.log('양식 내 폼 요소 읽기 전용 설정 완료');
-        } catch (error) {
-            console.error('양식 내 폼 요소 읽기 전용 설정 중 오류:', error);
-        }
-    }
+	        console.log('양식 내 폼 요소 읽기 전용 설정 완료');
+	    } catch (error) {
+	        console.error('양식 내 폼 요소 읽기 전용 설정 중 오류:', error);
+	    }
+	}
 
     //===========================================================================
     // 결재 처리 함수

@@ -54,4 +54,7 @@ public interface SalariesMapper {
 
 	void savePaymentDto(PaymentTempDTO pdto);
 	
+	// 급여 대장
+	List<PaymentDTO> getPayrolls();
+	
 }
