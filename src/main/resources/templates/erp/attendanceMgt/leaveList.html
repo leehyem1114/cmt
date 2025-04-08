@@ -97,6 +97,9 @@
 									    </div>
 		
 								<button id="dateSearchBtn" class="btn btn-primary">검색</button>
+								<div class="btn-group-custom" style="margin-left: auto; display: flex; gap: 10px;">
+						    <a href="/eapproval/document/new" class="btn btn-lg btn-primary">휴가신청</a>
+						    </div>
 							</div>
 							<br>
 							
@@ -112,7 +115,38 @@
 
 						</div>
 						<div class="tab-pane fade" id="profile" role="tabpanel"
-							aria-labelledby="profile-tab">456</div>
+							aria-labelledby="profile-tab">
+						<br>
+						
+						
+							
+							
+							<!-- 왼쪽: 검색창 + 날짜 -->
+							<div style="display: flex; align-items: center; gap: 10px;">
+								<input type="text" id="searchInputUsed" placeholder="검색어를 입력하세요"
+									class="form-control" style="width: 200px;" />
+								<button id="dateSearchUsedBtn" class="btn btn-primary"
+							            sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">검색</button>
+							
+							
+							
+							<div class="btn-group-custom" style="margin-left: auto; display: flex; gap: 10px;">
+						    <a href="/eapproval/document/new" class="btn btn-lg btn-primary">휴가신청</a>
+						    </div>
+						    </div>
+
+							
+							<br>
+							
+
+							
+							<div id="gridUsedLeftLeave"></div>
+							
+						
+
+
+							
+							</div>
 					</div>
 				</div>
 			</div>
@@ -340,7 +374,7 @@
      name: 'levRemarks', 
      sortable: true, 
      align: "center" 
-     },
+     }
      
      
      ],
@@ -431,6 +465,168 @@
 	
 			document.getElementById('dateSearchBtn').addEventListener('click', ApplyFilter);
 			document.getElementById('searchInput').addEventListener('input', ApplyFilter);
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			document.querySelector('a[data-bs-toggle="tab"][href="#profile"]')
+			  .addEventListener('shown.bs.tab', function (event) {
+			    // 그리드 리사이즈 트리거
+			    grid2.refreshLayout();  // 또는 grid2.resize();
+			  });
+			
+			
+		  const data2 = /*[[${usedLeftList}]]*/ [];
+		  
+		  console.log(data2);
+		  
+		  const grid2 = new tui.Grid({
+		   el: document.getElementById('gridUsedLeftLeave'),
+		   data: data2,
+		   scrollX: false,
+		   scrollY: false,
+		   rowKey: 'empId',
+		   editingEvent: 'click',     // ✅ 클릭하면 바로 수정 모드
+		   autoEdit: true, 
+		   pageOptions: {
+		    useClient: true,  // 서버 사이드 페이징 활성화
+		    perPage: 20
+			},
+		   columns: [
+		   	{ 
+		      header: '사원번호', 
+		   	  name: 'empId', 
+		   	  sortable: true, 
+		   	  align: "center" 
+		   	},
+		   	{ 
+		     header: '사원이름', 
+		     name: 'empName', 
+		     sortable: true, 
+		     align: "center" 
+		     },
+		   	{ 
+		     header: '부서', 
+		     name: 'deptName', 
+		     sortable: true, 
+		     align: "center",
+		     formatter: function({ row }) {
+		    		  return row.deptName;
+		       }
+		   	},
+		   	{ 
+		     header: '사용한 연차', 
+		     name: 'levUsedDays', 
+		     sortable: true, 
+		     align: "center" 
+		     },
+		   	{ 
+		     header: '남은 연차', 
+		     name: 'levLeftDays', 
+		     sortable: true, 
+		     align: "center" 
+		     }
+		     ],
+		            
+			});
+		  
+		  
+		  
+		//행 아무곳이나 클릭하면 체크박스 활성화
+		  	grid2.on('click', ev => {
+		  	  const rowKey = ev.rowKey;
+		  	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
+		  	  if (!isChecked) {
+		  		  grid.check(rowKey);
+		  	  } else {
+		  		  grid.uncheck(rowKey);
+		  	  }
+		  	});
+		  
+		  /* 이벤트 리스너 추가 */
+		  grid2.on('check', ev => {
+		      console.log('체크됨!', ev);
+		  });
+
+		  grid2.on('uncheck', ev => {
+		      console.log('체크 해제됨!', ev);
+		  });
+
+		  grid2.on('focusChange', ev => {
+		      console.log('포커스 변경됨!', ev);
+		  });
+		  
+		               
+		 
+		  
+		  
+		  
+		  
+		  
+		    
+	   // grid 데이터 원본 저장
+		const Data2 = grid.getData();
+	
+		document.getElementById('searchInputUsed').addEventListener('input', function (e) {
+		  const keyword = e.target.value.toLowerCase();
+	
+		  // 원본 데이터를 기준으로 필터링
+		  const filtered = Data2.filter(row => {
+		    return Object.values(row).some(val => {
+		      if (val == null) return false;
+		      return String(val).toLowerCase().includes(keyword);
+		    });
+		  });
+	
+		  // 필터링된 데이터로 그리드 업데이트
+		  grid2.resetData(filtered);
+		});
+		
+		
+		function ApplyFilter() {
+			  const keyword = document.getElementById('searchInputUsed').value.toLowerCase();
+			  const start = document.getElementById('startDateUsed').value;
+			  const end = document.getElementById('endDateUsed').value;
+	
+			  let filtered = Data2;
+	
+			  if (start && end) {
+			    const startDate = new Date(start);
+			    const endDate = new Date(end);
+			    endDate.setHours(23, 59, 59, 999);
+	
+			    filtered = filtered.filter(row => {
+			      const atdDate = new Date(row.levStartDate);
+			      return atdDate >= startDate && atdDate <= endDate;
+			    });
+			  }
+	
+			  if (keyword) {
+			    filtered = filtered.filter(row =>
+			      Object.values(row).some(val =>
+			        val != null && String(val).toLowerCase().includes(keyword)
+			      )
+			    );
+			  }
+	
+			  grid.resetData(filtered);
+			}
+	
+			document.getElementById('dateSearchUsedBtn').addEventListener('click', ApplyFilter);
+			document.getElementById('searchInputUsed').addEventListener('input', ApplyFilter);
+
 
 	
 	</script> 
