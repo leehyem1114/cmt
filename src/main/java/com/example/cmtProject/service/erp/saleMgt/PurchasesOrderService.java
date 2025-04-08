@@ -1,4 +1,4 @@
-package com.example.cmtProject.service.erp.saleMgt;
+	package com.example.cmtProject.service.erp.saleMgt;
 
 import java.util.List;
 
@@ -33,6 +33,7 @@ public class PurchasesOrderService {
 		return purchasesOrderMapper.poMainSearch(searchDto);
 	}
 	
-	
-
+	public int getNextPoCode(String codeDate) {
+		return purchasesOrderMapper.getNextPoCode(codeDate);
+	}
 }

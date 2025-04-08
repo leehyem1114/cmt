@@ -19,4 +19,7 @@ public interface PurchasesOrderMapper {
 
 	// 발주 메인 SEARCH
 	List<PurchasesOrderMainDTO> poMainSearch(PurchasesOrderSearchDTO searchDto);
+	
+	// 발주 코드 생성하기 위한 날짜에 해당하는 갯수
+	int getNextPoCode(String codeDate);
 }

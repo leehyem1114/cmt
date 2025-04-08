@@ -100,7 +100,7 @@
 <body>
 	
     <div layout:fragment="content">
-   		<form id="poForm" method="post" th:action="@{/purchases/poregister}" th:object="${purchasesOrder}"><!-- onsubmit="return validateForm(event)">-->
+   		<form id="poForm" method="post" th:action="@{/purchases/poregister}" th:object="${purchasesOrder}">
 		 <div class="container">
 	    	<h2>발주 정보 입력</h2>
 	        <div class="form-group">
@@ -119,11 +119,13 @@
 	        </div>
 	        <div class="form-group">
 	            <label>발주번호 *</label><!-- 서버에서 바로 처리 th:value="${nextSeq}"와  th:filed="*{poNo}"를 같이 사용 못 한다 -->
- 	            <input type="text" th:value="${nextSeq}" readonly="true"> 
+ 	            <input type="text" th:value="${nextSeq}" id="ponoTxt" readonly="true"> 
+				<input type="hidden" id="ponoHid" th:field="*{poNo}">
 	        </div>
 	        <div class="form-group">
-	            <label>발주코드 *</label><!-- 서버에서 바로 처리 th:value="${poCode}"와 th:field="*{poCode}"를 같이 사용 못 한다 -->
-	            <input type="text" th:value="${poCode}" readonly="true">
+	            <label>발주코드 생성 *</label><!-- 서버에서 바로 처리 th:value="${poCode}"와 th:field="*{poCode}"를 같이 사용 못 한다 -->
+				<input type="date" id="poCodeMakeDate">
+	            <input type="text" id="poCodeTxt" readonly="true" th:field="*{poCode}">
 	        </div>
 	        <div class="form-group date-container">
 	            <label>발주일자 *</label>
@@ -135,7 +137,7 @@
 	        </div>
 			<div class="form-group">
 	            <label>수량 *</label>
-	            <input type="text" placeholder="숫자입력" th:field="*{poQuantity}">
+	            <input type="text" placeholder="숫자입력" value="" th:field="*{poQuantity}">
 	        </div>
 			<div class="form-group">
 				<label>출고단가 *</label>
@@ -170,8 +172,8 @@
     	</div><!-- <div class="container"> -->
 			
     	<div style="text-align: center;">
-			<button type="button" onclick="validateForm()">입력</button>
-    		<button type="button" onclick="window.close()">취소</button>
+			<button type="submit" class="requestBtn">입력</button>
+    		<button type="button" class="cancelBtn" onclick="window.close()">취소</button>
     	</div>
 		</form>	
     </div> <!-- layout:fragment="content" -->
@@ -316,6 +318,31 @@
 	    <script>
     	$(document).ready(function(){
     		
+			//poNo 텍스박스의 th:value와 th:field를 같이 사용할 수 없기 때문에 
+			//값을 hidden에 넣는다
+			var ponotxt = $("#ponoTxt").val();
+			$("#ponoHid").val(ponotxt);
+			
+			//달력을 클릭했을 때 서버로 데이터를 넘겨 발주코드를 생성
+			$("#poCodeMakeDate").on('change', function(){
+				
+				var v = $(this).val();
+				
+				$.ajax({
+					url: '/purchases/makePoCode',
+					type: 'GET',
+					data: {data: v},
+					success : function(response){
+						console.log(response)
+						$("#poCodeTxt").val(response);
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+					
+				});
+			})
+			
 			//부서와 직위가 변할 때 마다 다른 직원 목록 가져오기
     		let deptCode = $("#deptSelected").val();
     		let posCode = $("#posSelected").val();
@@ -390,6 +417,8 @@
 			여기 유요성 검사 
 			
 			*/
+			//서브밋 setTimeout 이후 실행
+			document.getElementById("poForm").submit();
 			
 			//setTimeout으로 창을 닫는다
 			setTimeout(function(){
@@ -399,9 +428,6 @@
 				window.close();
 				
 			},1000);
-			
-			//서브밋 setTimeout 이후 실행
-			document.getElementById("poForm").submit();
 		}
 	    </script>
 	</th:block>
