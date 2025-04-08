@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.cmtProject.dto.erp.employees.EmpCountDTO;
+import com.example.cmtProject.dto.erp.employees.EmpDTO;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
@@ -177,4 +178,8 @@ public class EmployeesService {
         }
         return 0;
     }
+    //로그인한 유저의 정보
+	public EmpDTO getEmpList(String empId) {
+		return empMapper.selectLoginUser(empId);
+	}
 }

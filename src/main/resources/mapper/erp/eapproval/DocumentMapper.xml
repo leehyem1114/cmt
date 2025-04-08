@@ -186,6 +186,36 @@
 	    WHERE CMN_CODE = 'POSITION' 
 	    AND CMN_DETAIL_CODE = TO_CHAR(#{positionNo})
 	</select>
+	
+	<select id="selectCount" resultType="int">
+		SELECT COUNT(*)
+	    FROM DOCUMENTS d
+	    JOIN APPROVAL_LINES a ON d.DOC_ID = a.DOC_ID
+	    WHERE a.APPROVER_ID = #{empId}
+	      AND a.APPROVAL_STATUS = '대기'
+	      AND d.DOC_STATUS = '진행중'
+	      AND (
+	           a.APPROVAL_ORDER = 1
+	           OR NOT EXISTS (
+	               SELECT 1
+	               FROM APPROVAL_LINES prev
+	               WHERE prev.DOC_ID = a.DOC_ID
+	                 AND prev.APPROVAL_ORDER &lt; a.APPROVAL_ORDER
+	                 AND prev.APPROVAL_STATUS != '승인'
+	           )
+	      )
+	
+	</select>
+	
+	<select id="myDraftCount">
+		SELECT
+			COUNT(d.TITLE)
+		FROM DOCUMENTS d
+		WHERE d.DRAFTER_ID = #{empId}
+		  AND d.DOC_STATUS = '진행중'
+		ORDER BY d.DRAFT_DATE DESC
+	
+	</select>
     
 
     <!-- ResultMap -->
