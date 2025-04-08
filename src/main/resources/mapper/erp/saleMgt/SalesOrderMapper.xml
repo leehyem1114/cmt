@@ -114,7 +114,7 @@
         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
     <where>
-	    C.CLT_TYPE = 'ORDER'
+	    C.CLT_TYPE = 'ORDER' 
         <if test="soCode != null and soCode != ''">
             AND SO.SO_CODE = #{soCode}
         </if>

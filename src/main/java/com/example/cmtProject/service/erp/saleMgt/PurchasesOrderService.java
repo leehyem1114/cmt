@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderEditDTO;
 import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderMainDTO;
+import com.example.cmtProject.dto.erp.saleMgt.PurchasesOrderSearchDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
 import com.example.cmtProject.mapper.erp.saleMgt.PurchasesOrderMapper;
 
@@ -25,6 +26,11 @@ public class PurchasesOrderService {
 	public int poMainUpdate(PurchasesOrderEditDTO poEditDto) {
 		// TODO Auto-generated method stub
 		return purchasesOrderMapper.poMainUpdate(poEditDto);
+	}
+
+	public List<PurchasesOrderMainDTO> poMainSearch(PurchasesOrderSearchDTO searchDto) {
+		// TODO Auto-generated method stub
+		return purchasesOrderMapper.poMainSearch(searchDto);
 	}
 	
 	
