@@ -35,7 +35,8 @@ public class LeaveDTO {
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levApprovalDate; // 승인일시
 	private String levRemarks; // 비고 
-	private String docId; // 문서 아이디
+	private String docId; // 문서 아이디(조인용)
+
 	
 
     
