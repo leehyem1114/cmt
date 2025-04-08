@@ -181,7 +181,7 @@ public class saleController {
 		salesOrderRepository.save(salesOrder);
 		salesOrderRepository.flush();
 		
-		return "success";
+		return "SUCCESS";
 	}
 	
 	//수주 수정 창으로 넘길 데이터들

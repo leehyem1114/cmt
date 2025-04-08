@@ -12,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,9 +24,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchasesOrder {
-
+	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PURCHASESORDER_PO_NO" )
+	@SequenceGenerator(name = "SEQ_PURCHASESORDER_PO_NO", sequenceName="SEQ_PURCHASESORDER_PO_NO", allocationSize = 1)
 	@Column(name = "PO_NO")
 	private Long poNo; //발주주문번호(pk)
 	
