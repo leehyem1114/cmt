@@ -21,12 +21,12 @@ import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 public interface PurchasesOrderRepository extends JpaRepository<PurchasesOrder, Long> {
 
 	@Query("""
-			SELECT DISTINCT(p.mtlCode) FROM PurchasesOrder p ORDER BY p.mtlCode
+			SELECT DISTINCT p.mtlCode FROM PurchasesOrder p ORDER BY p.mtlCode
 			""")
 	List<String> findDistinctMtlCode();
 
 	@Query("""
-			SELECT DISTINCT(p.cltCode) FROM PurchasesOrder p ORDER BY p.cltCode
+			SELECT DISTINCT p.cltCode  FROM PurchasesOrder p ORDER BY p.cltCode
 			""")
 	List<String> findDistinctCltCode();
 
@@ -51,12 +51,10 @@ public interface PurchasesOrderRepository extends JpaRepository<PurchasesOrder, 
 	       "FROM Clients c " +
 	       "WHERE c.cltCode = :cltCode")
      String findByCltName(@Param("cltCode") String cltCode);
-//	@Query(value = "SELECT PURCHASES_ORDER_PO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
-//	Long getNextPurchasesOrderNextSequences();
-	@Query(value = "SELECT NVL(COUNT(PO_DATE),0)+1 FROM PURCHASES_ORDER WHERE PO_DATE = TRUNC(SYSDATE)", nativeQuery = true)
-	Long getNextPoCode();
+	
+	@Query(value = "SELECT COUNT(PO_DATE) FROM PURCHASES_ORDER WHERE TRUNC(PO_DATE) = TO_DATE(:data, 'YYYY-MM-DD')", nativeQuery = true)
+	int getNextPoCode(@Param("data") String data);
 	
 	@Query(value = "SELECT SEQ_PURCHASESORDER_PO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
 	Long getNextPurchasesOrderNextSequences();
-
 }

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.hibernate.annotations.Comment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,18 +30,21 @@ import com.example.cmtProject.service.erp.saleMgt.PurchasesOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import lombok.RequiredArgsConstructor;
+
+
 @Controller
 @RequestMapping("/purchases")
 public class PurchaseController {
-
-	@Autowired
-	private PurchasesOrderRepository purchasesOrderRepository;
 	
 	@Autowired
 	private PurchasesOrderService purchasesOrderService;
 	
 	@Autowired
 	private PurchasesOrderModels purchasesModels;
+	
+	@Autowired
+	private PurchasesOrderRepository purchasesOrderRepository;
 	
 	//조회 페이지
 	@GetMapping("/poform")
@@ -91,6 +95,69 @@ public class PurchaseController {
 		 return cltName;
 	}
 		
+	//발주 신규등록
+	//purchases
+	@GetMapping("/poRegisterForm")
+	public String poRegisterForm(Model model) {
+		
+		purchasesModels.commonPurchasesOrderModels(model);
+
+		//시퀀스 가져오기
+		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
+		
+		model.addAttribute("nextSeq",nextSeq); //발주번호
+		
+//		//th:object에서 사용할 객체 생성
+	 	model.addAttribute("purchasesOrder", new PurchasesOrder());
+		
+		return "erp/salesMgt/poRegisterForm";
+	}
+
+	//발주코드 생성하는 부분
+	@ResponseBody
+	@GetMapping("/makePoCode")
+	public String makePoCode(@RequestParam("data") String data) {
+
+		//날짜 형태를 yyyyMMdd 헝태로 변경 - 오늘 날짜 가져오기
+		/*LocalDate today = LocalDate.now();        
+        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String poToday = today.format(todayFormat);*/
+        
+        int count = purchasesOrderRepository.getNextPoCode(data);
+        
+		String poCode = "";
+		data = data.replace("-", "");
+		
+		//생성되어야 할 갯수
+		count++;
+		
+		if(count > 100) {
+			poCode = "PO-" + data + "-" + count; 
+		}else if(count > 10) {
+			poCode = "PO-" + data + "-" + "0" + count;		
+		}else if(count >= 0) {
+			poCode = "PO-" + data + "-" + "00" + count;
+		}else {
+			poCode = "minus";
+		}
+		
+		return poCode;
+	}
+	
+	//발주 등록 실행
+	@Transactional
+	@PostMapping("/poregister")
+	public String poRegister(@ModelAttribute PurchasesOrder purchasesOrder) {
+		
+		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
+		purchasesOrder.setPoNo(null);
+		purchasesOrderRepository.save(purchasesOrder);
+		purchasesOrderRepository.flush();
+
+		//submit처리
+		return "erp/salesMgt/submitSuccess";
+	}
+	
 	//발주 수정 실행
 	@ResponseBody
 	@GetMapping("/poeditexe")
@@ -128,81 +195,12 @@ public class PurchaseController {
 			purchasesOrderRepository.updateEmpNo(empNo, poEditDto.getPoNo());
 			
 		}else {
-//			int updateResult = salesOrderService.soMainUpdate(soEditDto);
+//				int updateResult = salesOrderService.soMainUpdate(soEditDto);
 			int updateResult = purchasesOrderService.poMainUpdate(poEditDto);
 			System.out.println("updateResult:" + updateResult);
 		}
 
 		return "success";
-	}
-	
-	//발주 신규등록
-	//purchases
-	@GetMapping("/poRegisterForm")
-	public String puRegisterForm(Model model) {
-		
-		purchasesModels.commonPurchasesOrderModels(model);
-//		
-//		//시퀀스 가져오기
-		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
-		System.out.println("nextSeq:" + nextSeq); 
-		//발주코드 생성
-		String poCode = makePoCode();
-		
-		model.addAttribute("nextSeq",nextSeq); //발주번호
-		model.addAttribute("poCode",poCode); //발주코드
-		System.out.println("pocode:" + poCode);
-		
-//		//th:object에서 사용할 객체 생성
-	 	model.addAttribute("purchasesOrder", new PurchasesOrder());
-		
-		return "erp/salesMgt/poRegisterForm";
-	}
-
-	//발주 등록 실행
-	@Transactional
-	@PostMapping("/poregister")
-	@ResponseBody
-	public String poRegister(@ModelAttribute PurchasesOrder purchasesOrder) {
-		
-		System.out.println("purchasesOrder:"+purchasesOrder);
-		//PurchasesOrder(poNo=null, poCode=null, poDate=2025-04-17, rcvDate=2025-04-25, empNo=46, whsCode=null, mtlCode=MTL001, cltCode=CLT008, poQuantity=122, mtlReceivingPrice=11111, poValue=0, poStatus=PO_CREATED, poComments=null)
-		
-		//수주번호 다음 시쿼스 가져오기
-		Long nextSeq = purchasesOrderRepository.getNextPurchasesOrderNextSequences();
-		purchasesOrder.setPoNo(nextSeq);
-		
-		//수주코드 생성
-		String poCode = makePoCode();
-		purchasesOrder.setPoCode(poCode);
-		
-		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
-		purchasesOrder.setPoNo(null);
-		purchasesOrderRepository.save(purchasesOrder);
-		purchasesOrderRepository.flush();
-
-		return "SUCCESS";
-	}
-
-	//=============================================================
-	private String makePoCode() {
-
-		//날짜 형태를 yyyyMMdd 헝태로 변경
-		LocalDate today = LocalDate.now();        
-        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String poToday = today.format(todayFormat);
-        
-		Long nextpoCodeNumber = purchasesOrderRepository.getNextPoCode();
-		String poCode = "";
-		if(nextpoCodeNumber > 100) {
-			poCode = "PO-" + poToday + "-" + nextpoCodeNumber; 
-		}else if(nextpoCodeNumber > 10) {
-			poCode = "PO-" + poToday + "-" + "0" + nextpoCodeNumber;		
-		}else if(nextpoCodeNumber > 0) {
-			poCode = "PO-" + poToday + "-" + "00" + nextpoCodeNumber;
-		}
-		
-		return poCode;
 	}
 	
 	//발주 메인 화면에서 검색 버튼 클릭시 비동기 처리부분
