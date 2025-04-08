@@ -314,4 +314,5 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         // 기본값
         return 1;
     }
+
 }

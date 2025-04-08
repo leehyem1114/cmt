@@ -1,5 +1,7 @@
  package com.example.cmtProject.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,9 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
+import com.example.cmtProject.dto.erp.notice.NoticeDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
+import com.example.cmtProject.service.erp.eapproval.DocFormService;
+import com.example.cmtProject.service.erp.notice.NoticeService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -24,19 +30,34 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/")
 public class MainController {
 	
-	@Autowired
-	private EmployeesRepository empRepository;
+	@Autowired private EmployeesRepository empRepository;
+	@Autowired private DocFormService docFormService;
+	@Autowired private NoticeService noticeService;
 	
 	@Autowired
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
 	
 	@GetMapping({"","/"})
 
-	public String main(@AuthenticationPrincipal PrincipalDetails principalDetails, RedirectAttributes redirectAttributes) {
+	public String main(@AuthenticationPrincipal PrincipalDetails principal , Model model
+						, RedirectAttributes redirectAttributes
+						,DocumentDTO documentDTO , NoticeDTO noticeDTO) {
 		
-		if (principalDetails ==null) {
+		if (principal ==null) {
 			return "redirect:/login";
 		}
+		//결재대기중인 문서 갯수
+		String empId = principal.getUser().getEmpId();
+		int pendingApprovalCount = docFormService.countPendingDocumentsByEmpId(empId);
+		int myDraftCount = docFormService.myDraftCount(empId);
+		model.addAttribute("pendingApprovalCount",pendingApprovalCount);
+		model.addAttribute("myDraftCount",myDraftCount);
+		
+		//공지사항
+		List<NoticeDTO> noticeList = noticeService.getAllNoticesWithNames();
+		model.addAttribute("noticeList",noticeList);
+		System.out.println("공지사항 리스트!!!!!!!"+noticeList);
+		
 
 		return "home";
 	}

@@ -1,7 +1,9 @@
 package com.example.cmtProject.service.erp.eapproval;
 
 import com.example.cmtProject.dto.erp.eapproval.DocFormDTO;
+import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocFormMapper;
+import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.comm.exception.DocFormNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class DocFormService {
 
     private final DocFormMapper docFormMapper;
+    private final DocumentMapper documentMapper;
     
     /**
      * 전체 양식 목록 조회
@@ -114,4 +117,13 @@ public class DocFormService {
             throw new RuntimeException("양식 삭제 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }
+
+	public int countPendingDocumentsByEmpId(String empId) {
+		return documentMapper.selectCount(empId);
+	}
+	
+	public int myDraftCount(String empId) {
+		return documentMapper.myDraftCount(empId);
+	}
+
 }

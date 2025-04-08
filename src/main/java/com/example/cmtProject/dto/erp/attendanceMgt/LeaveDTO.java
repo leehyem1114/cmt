@@ -25,16 +25,18 @@ public class LeaveDTO {
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levEndDate; // 휴가 종료일
 	private int levDays; // 휴가일수
+	private int levUsedDays; // 사용한 휴가일수
 	private int levLeftDays; // 남은 휴가일수
 	private String levReason; // 사유
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levReqDate; // 신청일시
 	private String levApprovalStatus; // 승인상태
-	private Long levApprover; // 승인자 empNo
+	private String levApprover; // 승인자 empId
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levApprovalDate; // 승인일시
 	private String levRemarks; // 비고 
 	private String docId; // 문서 아이디(조인용)
+
 	
 
     
@@ -53,6 +55,7 @@ public class LeaveDTO {
     			.levStartDate(levStartDate)
     			.levEndDate(levEndDate)
     			.levDays(levDays)
+    			.levUsedDays(levUsedDays)
     			.levLeftDays(levLeftDays)
     			.levReason(levReason)
     			.levReqDate(levReqDate)
@@ -63,18 +66,20 @@ public class LeaveDTO {
     			.deptName(deptName)
     			.levTypeName(levTypeName)
     			.empName(empName)
+    			.docId(docId)
     			.build();
     }
 
     @Builder
 	public LeaveDTO(String empId, String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			int levDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, Long levApprover,
-			LocalDateTime levApprovalDate, String levRemarks, String deptName, String levTypeName, String empName) {
+			int levDays, int levUsedDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
+			LocalDateTime levApprovalDate, String levRemarks, String deptName, String levTypeName, String empName, String docId) {
     	this.empId = empId;
 		this.levType = levType;
 		this.levStartDate = levStartDate;
 		this.levEndDate = levEndDate;
 		this.levDays = levDays;
+		this.levUsedDays = levUsedDays;
 		this.levLeftDays = levLeftDays;
 		this.levReason = levReason;
 		this.levReqDate = levReqDate;
@@ -85,6 +90,7 @@ public class LeaveDTO {
 		this.deptName = deptName;
 		this.levTypeName = levTypeName;
 		this.empName = empName;
+		this.docId = docId;
 		
 	}
     

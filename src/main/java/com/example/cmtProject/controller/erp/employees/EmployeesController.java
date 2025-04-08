@@ -104,7 +104,7 @@ public class EmployeesController {
 	}
 	
 	
-	/***사원 인사카드 조회 SELECT***/
+	/***사원 인사카드 조회 SELECT 프리뷰***/
 	@GetMapping("/emplist")
 	public String empList(HttpSession session,Model model) {
 		commonCodeName(model, commonService);

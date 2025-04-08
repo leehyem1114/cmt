@@ -22,4 +22,5 @@ public interface DocFormMapper {
     
     // 특정 양식 조회
     DocFormDTO selectDocFormById(String formId);
+    
 }

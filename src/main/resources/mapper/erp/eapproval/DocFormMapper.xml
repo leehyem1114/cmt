@@ -59,6 +59,7 @@
         WHERE FORM_ID = #{formId, jdbcType=VARCHAR}
     </select>
     
+    
     <!-- Result Map -->
     <resultMap id="docFormResultMap" type="com.example.cmtProject.dto.erp.eapproval.DocFormDTO">
         <id property="formId" column="FORM_ID"/>
