@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
-import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
 public interface LeaveMapper {
