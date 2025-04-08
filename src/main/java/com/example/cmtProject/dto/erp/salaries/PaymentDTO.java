@@ -30,7 +30,6 @@ public class PaymentDTO {
 
     private Long payBasic;           // 기본급
     private BigDecimal payBonusOvertime;   // 야근수당
-    @JsonProperty("payBonusHoliday")
     private BigDecimal payBonusHoliday;    // 명절수당
     
 

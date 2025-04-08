@@ -54,6 +54,9 @@ public interface PurchasesOrderRepository extends JpaRepository<PurchasesOrder, 
 //	@Query(value = "SELECT PURCHASES_ORDER_PO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
 //	Long getNextPurchasesOrderNextSequences();
 	@Query(value = "SELECT NVL(COUNT(PO_DATE),0)+1 FROM PURCHASES_ORDER WHERE PO_DATE = TRUNC(SYSDATE)", nativeQuery = true)
-	Long getNextPuCode();
+	Long getNextPoCode();
+	
+	@Query(value = "SELECT SEQ_PURCHASESORDER_PO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
+	Long getNextPurchasesOrderNextSequences();
 
 }
