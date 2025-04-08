@@ -114,7 +114,7 @@ public class WorkTimeController {
     		List<WorkTimeDTO> workTimeList = workTimeService.getAttendsByEmpNo(loginUser.getEmpNo());
     		model.addAttribute("workTimeList", workTimeList);
     		
-    		// MANAGER은 같은 부서 정보 조회
+    		// USER는 같은 부서 정보 조회
         	List<EmpListPreviewDTO> empList = employeesService.getEmpListUser(loginUser.getEmpNo());
     		model.addAttribute("empList", empList);
     	}
@@ -131,8 +131,6 @@ public class WorkTimeController {
             for (WorkTimeDTO row : updatedRows) {
                 Long empNo = row.getEmpNo();
                 String wktType = row.getWktType();
-
-                logger.info("@@@@@@@@@@@@@@@" + empNo + "@@@@@@@@@@@@@@" + wktType);
                 
                 workTimeService.insertWktTypeByEmpNo(row);
                 workTimeService.updateWktTypeByEmpNo(empNo, wktType);

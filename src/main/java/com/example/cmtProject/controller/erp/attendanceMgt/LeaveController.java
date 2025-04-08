@@ -31,7 +31,7 @@ import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 @RequestMapping("/leaves")
 public class LeaveController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(WorkTimeController.class);
+	private static final Logger logger = LoggerFactory.getLogger(LeaveController.class);
 	
 	@Autowired
 	private CommonService commonService;
@@ -74,9 +74,31 @@ public class LeaveController {
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
     		// ADMIN은 모든 휴가정보 조회
     		List<LeaveDTO> leaveList = leaveService.getAllLeaves();
-    		logger.info("@@@@@@@@@@@@@@@@@@@@@@" + leaveList);
     		model.addAttribute("leaveList", leaveList);
+    		
+    		// ADMIN은 모든 휴가 보유내역 조회
+    		List<LeaveDTO> usedLeftList = leaveService.getAllUsedLeftLeaves();
+    		model.addAttribute("usedLeftList" ,usedLeftList);
+    		
+    	}else if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"))) {
+    		// MANAGER는 같은 부서 출결정보 조회
+    		List<LeaveDTO> leaveList = leaveService.getLeavesByDept(loginUser.getDeptNo());
+        	model.addAttribute("leaveList", leaveList);
+        	
+        	// MANAGER은 같은 부서 휴가 보유내역 조회
+    		List<LeaveDTO> usedLeftList = leaveService.getUsedLeftLeavesByDept(loginUser.getDeptNo());
+    		model.addAttribute("usedLeftList" ,usedLeftList);
+        	
+    	} else {
+    		// USER는 본인의 출결정보만 조회
+    		List<LeaveDTO> leaveList = leaveService.getLeavesByEmpId(loginUser.getEmpId());
+    		model.addAttribute("leaveList", leaveList);
+    		
+    		// USER는 개인 휴가 보유내역 조회
+    		List<LeaveDTO> usedLeftList = leaveService.getUsedLeftLeavesByEmpId(loginUser.getEmpId());
+    		model.addAttribute("usedLeftList" ,usedLeftList);
     	}
+    	
     	
     	return "erp/attendanceMgt/leaveList";
 

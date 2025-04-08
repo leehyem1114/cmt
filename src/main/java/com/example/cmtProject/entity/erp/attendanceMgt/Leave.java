@@ -45,6 +45,9 @@ public class Leave {
     @Column(name = "LEV_DAYS", nullable = false)
     private int levDays; // 휴가 신청 일수
     
+    @Column(name = "LEV_USED_DAYS", nullable = false)
+    private int levUsedDays; // 사용한 휴가 일수
+    
     @Column(name = "LEV_LEFT_DAYS", nullable = false)
     private int levLeftDays; // 휴가 남은 일수
     
@@ -58,13 +61,16 @@ public class Leave {
     private String levApprovalStatus; // 승인 상태
     
     @Column(name = "LEV_APPROVER")
-    private Long levApprover; // 승인자
+    private String levApprover; // 승인자
     
     @Column(name = "LEV_APPROVAL_DATE")
     private LocalDateTime levApprovalDate; // 승인 일시
     
     @Column(name = "LEV_REMARKS", length = 200)
     private String levRemarks; // 비고 (WKT_REMARKS)
+    
+    @Column(name = "DOC_ID")
+    private String docId; // 문서 아이디
     
     
     
@@ -76,6 +82,7 @@ public class Leave {
     			.levStartDate(levStartDate)
     			.levEndDate(levEndDate)
     			.levDays(levDays)
+    			.levUsedDays(levUsedDays)
     			.levLeftDays(levLeftDays)
     			.levReason(levReason)
     			.levReqDate(levReqDate)
@@ -83,6 +90,7 @@ public class Leave {
     			.levApprover(levApprover)
     			.levApprovalDate(levApprovalDate)
     			.levRemarks(levRemarks)
+    			.docId(docId)
     			.build();
     }
 
@@ -90,20 +98,22 @@ public class Leave {
     
     @Builder
 	public Leave(Long levNo, String empId,String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			int levDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, Long levApprover,
-			LocalDateTime levApprovalDate, String levRemarks) {
+			int levDays, int levUsedDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
+			LocalDateTime levApprovalDate, String levRemarks, String docId) {
 		this.levNo = levNo;
 		this.levType = levType;
 		this.levStartDate = levStartDate;
 		this.levEndDate = levEndDate;
 		this.levDays = levDays;
-		this.levLeftDays = levDays;
+		this.levUsedDays = levUsedDays;
+		this.levLeftDays = levLeftDays;
 		this.levReason = levReason;
 		this.levReqDate = levReqDate;
 		this.levApprovalStatus = levApprovalStatus;
 		this.levApprover = levApprover;
 		this.levApprovalDate = levApprovalDate;
 		this.levRemarks = levRemarks;
+		this.docId = docId;
 	}
     
     
