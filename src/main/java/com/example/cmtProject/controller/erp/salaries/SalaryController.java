@@ -133,15 +133,17 @@ public class SalaryController {
 	    int year = today.getYear();
 	    int month = today.getMonthValue();
 	    
-	    LocalDate date = LocalDate.of(year, month, 20); // 그달의 20일
+	    LocalDate date = LocalDate.of(year, month, 8); // 그달의 20일
+	    
+	    System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"+today);
 	    
 	    //지급일이 아닌 경우 바로 return
-	    /*
+	    
 	    if(!(payday.equals(todayStr) && !isHoliday(date))) {
 	    	
 	    	return "fail";
 	    	
-	    }*/
+	    }
 	    
 		// 직급별 기본급 가져오기
 		List<PayBasicDTO> payBasicList = salaryService.getPayBasic();
@@ -176,6 +178,7 @@ public class SalaryController {
 			calcularatorMap.put("salBankName",  p.getSalBankName());
 			calcularatorMap.put("salBankAccount",  p.getSalBankAccount());
 			calcularatorMap.put("position",  p.getPosition());
+			//calcularatorMap.put("payDate",  p.getPayDate());
 			
 			//지급에 따라서 달라지는 기본급
 			Long tempPayBasic = Long.valueOf(p.getPayBasic());

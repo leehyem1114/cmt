@@ -193,7 +193,7 @@
 			DEPT_NAME, 
 			POSITION, 
 			EMP_TYPE, 
-<!--			PAY_DATE,-->
+			PAY_DATE,
 			PAY_BASIC, 
 			PAY_BONUS_OVERTIME, 
 			PAY_BONUS_HOLIDAY, 
@@ -216,7 +216,7 @@
 			#{deptName, jdbcType=VARCHAR},
 			#{position, jdbcType=VARCHAR},
 			#{empType, jdbcType=VARCHAR},
-<!--			#{payDate},-->
+			SYSDATE,
 			#{payBasic, jdbcType=NUMERIC},
 			#{payBonusOvertime, jdbcType=NUMERIC}, 
 			#{payBonusHoliday, jdbcType=NUMERIC},  
