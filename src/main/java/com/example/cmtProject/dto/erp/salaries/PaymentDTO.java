@@ -27,6 +27,12 @@ public class PaymentDTO {
     private String position;     	 // 직급
     private String empType;          // 고용유형
     private LocalDate payDate;       // 지급일
+    
+    private String payMonth; 	 	 	 // 지급월 -- 급야 대장
+    private Long empCount;				 // 인원수 -- 급여 대장
+    private Long totalPayAmount; // 총지급액 -- 급여 대장
+    private BigDecimal totalBonusAmount; // 총수당액 -- 급여 대장
+    private BigDecimal totalTaxAmount; // 총공제액 -- 급여 대장
 
     private Long payBasic;           // 기본급
     private BigDecimal payBonusOvertime;   // 야근수당
@@ -55,7 +61,8 @@ public class PaymentDTO {
     public PaymentDTO(Long payNo, String empName, String empId, String deptName, String position, String empType,
     		LocalDate payDate, Long payBasic, BigDecimal payBonusOvertime, BigDecimal payBonusHoliday, Long payBonusTotal,
     		BigDecimal payTaxPension, BigDecimal payTaxCare, BigDecimal payTaxHealth, BigDecimal payTaxEmployment,
-    		BigDecimal payTaxIncome, BigDecimal payTaxResidence, Long payTaxTotal, Long payTotal, String payStatus, String salBankName, String salBankAccount) {
+    		BigDecimal payTaxIncome, BigDecimal payTaxResidence, Long payTaxTotal, Long payTotal, String payStatus, String salBankName, String salBankAccount,
+    		String payMonth, Long empCount, Long totalPayAmount, BigDecimal totalBonusAmount, BigDecimal totalTaxAmount) {
     	this.payNo = payNo;
     	this.empName = empName;
     	this.empId = empId;
@@ -78,5 +85,10 @@ public class PaymentDTO {
     	this.payStatus = payStatus;
     	this.salBankName = salBankName;
     	this.salBankAccount = salBankAccount;
+    	this.payMonth = payMonth;
+    	this.empCount = empCount;
+    	this.totalPayAmount = totalPayAmount;
+    	this.totalBonusAmount= totalBonusAmount;
+    	this.totalTaxAmount = totalTaxAmount;
     }
 }

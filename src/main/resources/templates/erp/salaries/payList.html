@@ -70,11 +70,11 @@
 			<div>
 				<button type="button" class="print" onclick="payPrint()">✏️ 명세서 출력</button>
 				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
-				<button type="button" class="delete">삭제</button>
+				<button type="button" class="delete" th:data-id="*{payNo}">삭제</button>
 			</div>
 		</div><!-- <div class="button-container"> -->
 
-		<form th:action="@{/salaries/searchPayList}" method="post" th:object="${paySearchDTO}">
+<!--		<form th:action="@{/salaries/searchPayList}" method="post" th:object="${paySearchDTO}">
 			<div class="container">
 				<label class="deptLabel">부서</label>
 				<select class="form-select" id="deptName" name="dept">
@@ -90,7 +90,7 @@
 				<button type="submit" class="btnSearch">🔍 검색</button>
 				<span></span>
 			</div>
-		</form>
+		</form>-->
 		
 		<!-- 그리드 top 시작 -->
 		<div id="gridTop"></div>
@@ -104,7 +104,7 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div class="input-group mb-2">
+					<!--<div class="input-group mb-2">
 						<input type="date" id="payDate" class="form-control">
 					</div>
 					<div class="input-group mb-2">
@@ -118,7 +118,7 @@
 									th:text="${code.cmnDetailName}"></option>
 							</select>
 							<button type="submit" class="btn btn-secondary ms-2">조회</button>
-						</div>
+						</div>-->
 						<!-- 그리드 top 시작 -->
 						<div id="gridTop2" style="width: 100%"></div>
 						<!-- 그리드 끝 -->
@@ -137,6 +137,11 @@
 		console.log(/*[[${payList}]]*/ []);
 		
 		const columns = [
+			{
+		    	header: '지급번호', 
+		    	name: 'payNo',
+		    	hidden: true 
+		  	},
 			{
 				header: '지급일',
 			    name: 'payDate',
@@ -289,6 +294,7 @@
 	        columns: columns
 	    });
 	    
+		/*
 		grid.on('click', function(ev) {
 	         const rowKey = ev.rowKey;
 	         const rowData = grid.getRow(rowKey);
@@ -303,6 +309,7 @@
 	             console.log("넘긴데이터"+rowData.empId);
 	          }
 		});
+		*/
 		
 		/*
 	    grid.on('click', (checkItem) => {
@@ -369,9 +376,11 @@
 					}	
 				] // 열 설정
 			});
-				
+			
+			
 			console.log("empList:", /*[[${empList}]]*/ []);
     
+			/*
 			grid2.on('click', function(ev) {
 		         const rowKey = ev.rowKey;
 		         const rowData = grid2.getRow(rowKey);
@@ -386,6 +395,7 @@
 		             console.log("넘긴데이터"+rowData.empId);
 		          }
 			});     
+			*/
 			
 			// 체크박스 클릭 시 이벤트 추가
 			grid2.on('check', (checkItem) => {
@@ -435,7 +445,10 @@
         		
     		},
     		error: function () {
-        		alert('급여이체 실패!');
+				Swal.fire({
+				  icon: "error",
+				  title: "급여이체 실패!",
+				});
     		}
 		});
 	});
@@ -469,10 +482,52 @@
       			});
 		      	  
       	  }
-      	  
+		</script>
+		
+		<script>
+			$(document).on('click', '.delete', function () {
+					const checkedRows = grid.getCheckedRows();
+					if (checkedRows.length === 0) {
+						Swal.fire({ icon: "warning", title: "선택된 행이 없습니다." });
+						return;
+					}
+		
+					const payNos = checkedRows.map(row => row.payNo);
+						
+						Swal.fire({
+						  icon: "warning",
+						  title: "내역을 삭제하시겠습니까?",
+						  showCancelButton: true,
+						  confirmButtonText: "확인",
+						  cancelButtonText: "취소"
+					}).then((result) => {
+					   if (result.isConfirmed) {
+						   $.ajax({
+							   url: "/salaries/delete",
+							   type: "POST",
+							   contentType: 'application/json',
+							   data: JSON.stringify(payNos),
+							   success: function(response) {
+								  Swal.fire({
+								    icon: "success",
+								    title: "내역 삭제 성공!"
+								  }).then(() => {
+								    location.reload(); // ✅ 이렇게 따로 처리
+								  });
+							   },
+							   error: function () {
+							      Swal.fire({
+								    icon: "error",
+								    title: "내역 삭제 실패!",
+							      });
+						       }							
+						    });
+						}
+					});
+				});
 		</script>
 	</div>	
-</div>	
+
 
 
 

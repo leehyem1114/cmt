@@ -218,17 +218,22 @@
 			#{empType, jdbcType=VARCHAR},
 			SYSDATE,
 			#{payBasic, jdbcType=NUMERIC},
-			#{payBonusOvertime, jdbcType=NUMERIC}, 
-			#{payBonusHoliday, jdbcType=NUMERIC},  
-			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday},
-			#{payTaxPension, jdbcType=NUMERIC}, 
-			#{payTaxCare, jdbcType=NUMERIC},  
-			#{payTaxHealth, jdbcType=NUMERIC},
-			#{payTaxEmployment, jdbcType=NUMERIC}, 
-			#{payTaxIncome, jdbcType=NUMERIC},
-			#{payTaxResidence, jdbcType=NUMERIC},
-			#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + #{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence},
-			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday} - (#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + #{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence}),
+			ROUND(#{payBonusOvertime, jdbcType=NUMERIC}, 0), 
+    		ROUND(#{payBonusHoliday, jdbcType=NUMERIC}, 0),  
+    		ROUND(#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday}, 0),
+    		ROUND(#{payTaxPension, jdbcType=NUMERIC}, 0), 
+    		ROUND(#{payTaxCare, jdbcType=NUMERIC}, 0),  
+    		ROUND(#{payTaxHealth, jdbcType=NUMERIC}, 0),
+    		ROUND(#{payTaxEmployment, jdbcType=NUMERIC}, 0), 
+    		ROUND(#{payTaxIncome, jdbcType=NUMERIC}, 0),
+    		ROUND(#{payTaxResidence, jdbcType=NUMERIC}, 0),
+    		ROUND(
+      			#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + 
+      			#{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence}, 0),
+    		ROUND(
+      			#{payBasic} + #{payBonusOvertime} + #{payBonusHoliday} - 
+      			(#{payTaxPension} + #{payTaxCare} + #{payTaxHealth} + 
+       				#{payTaxEmployment} + #{payTaxIncome} + #{payTaxResidence}), 0),
 			#{salBankName, jdbcType=VARCHAR}, 
 			#{salBankAccount, jdbcType=VARCHAR}
 		)
@@ -354,7 +359,7 @@
 	
 	<!-- 급여 지급일 가져오기 -->
 	<select id="getPayDay" resultType="String">
-		SELECT CMN_DETAIL_VALUE
+		SELECT CMN_DETAIL_VALUE2
 		FROM COMMONCODE_DETAIL
 		WHERE CMN_DETAIL_CODE = 'PDY001'
 	</select>
@@ -387,6 +392,21 @@
 		(SELECT 1 
 		FROM PAYMENTS P
 		WHERE E.EMP_ID = P.EMP_ID)
+	</select>
+	
+	<!-- 월별 급여대장 조회 -->
+	<select id="getPayrolls" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+		SELECT
+			TO_CHAR(P.PAY_DATE, 'MM') AS payMonth,
+			COUNT(DISTINCT P.EMP_ID) AS empCount,
+			SUM(P.PAY_TOTAL) AS payTotalAmount,
+			SUM(P.PAY_BONUS_TOTAL) AS totalBonusAmount,
+			SUM(P.PAY_TAX_TOTAL) AS totalTaxAmount
+		FROM PAYMENTS P
+		JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
+		LEFT JOIN COMMONCODE_DETAIL CD ON E.DEPT_NO = CD.CMN_DETAIL_CODE
+		GROUP BY TO_CHAR(P.PAY_DATE, 'MM')
+		ORDER BY TO_CHAR(P.PAY_DATE, 'MM') DESC
 	</select>
 
 </mapper>
