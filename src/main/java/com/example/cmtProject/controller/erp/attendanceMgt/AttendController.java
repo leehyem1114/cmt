@@ -92,7 +92,6 @@ public class AttendController {
     @PostMapping("/check-in")
     @ResponseBody
     public ResponseEntity<String> createAttend(@RequestBody AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
-    	System.out.println("check-in dto : " + dto);
     	
     	// 로그인한 사용자의 아이디 가져오기
     	Employees loginUser = principalDetails.getUser();
@@ -108,7 +107,6 @@ public class AttendController {
 //    public ResponseEntity<String> updateAttendLeave(@ModelAttribute("AttendDTO") AttendDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
     public ResponseEntity<String> updateAttendLeave(@RequestBody Map<String, String> dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
 //         로그인한 사용자의 정보 가져오기
-    	logger.info("check-out : " + dto);
         Employees loginUser = principalDetails.getUser();
         // 퇴근 처리 서비스 호출
         Long findLatestCheckInAtdNo = attendsMapper.findLatestCheckInAtdNo(loginUser.getEmpNo());

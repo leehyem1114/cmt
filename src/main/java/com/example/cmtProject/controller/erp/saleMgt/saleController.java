@@ -81,7 +81,6 @@ public class saleController {
  		//-수주 목록에 해당하는 거래처-
  		//수주 목록에 있는 거래처 코드
  		List<String> cltCode = salesOrderRepository.findByGetCltCode();
- 		Collections.sort(cltCode);
  		model.addAttribute("cltCode",cltCode);
  		//============================== 끝 ================================
  		
@@ -130,31 +129,12 @@ public class saleController {
 	@GetMapping("/soregisterform")
 	public String soregisterform(Model model) {
  		
-//		List<Clients> cltList = clientsRepository.findAll();
-//		List<Employees> empList = employeesRepository.findAll();
-//		List<Products> productList = productsRepository.findAll();
-//		List<SalesOrderStatus> soStatusList = salesOrderStatusRepository.findAll();
-//		//공통코드에서 부서명 가져오기
-//		List<CommoncodeDetail> commListDetp = commoncodeDetailRepository.findByCmnCode("DEPT");
-//		//공통코드에서 직급명 가져오기
-//		List<CommoncodeDetail> commListPosition = commoncodeDetailRepository.findByCmnCode("POSITION");
-//		
-//	 	model.addAttribute("cltList", cltList); //회사 정보
-//	 	model.addAttribute("empList", empList); //사원 정보
-//	 	model.addAttribute("productList",productList); //제품 정보
-//	 	model.addAttribute("soStatusList", soStatusList);
-//	 	model.addAttribute("commListDetp",commListDetp); //공통코드에서 부서
-//	 	model.addAttribute("commListPosition",commListPosition); //공콩코드에서 직급
-		
 		salesOrderModels.commonSalesOrderModels(model);
 				
 	 	//수주번호 다음 시쿼스 가져오기
 		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
-		//수주코드 생성
-		String soCode = makeSoCode();
 		
 	 	model.addAttribute("nextSeq", nextSeq); //수주 번호
-	 	model.addAttribute("soCode", soCode); //수주 코드
 	 	
 	 	//th:object에서 사용할 객체 생성
 	 	model.addAttribute("salesOrder", new SalesOrder());
@@ -162,26 +142,48 @@ public class saleController {
 		return "erp/salesMgt/soRegisterForm";
 	}
 	
+	//수주 코드 생성하는 메서드
+	@ResponseBody
+	@GetMapping("/makePoCode")
+	public String makePoCode(@RequestParam("data") String data) {
+		
+		//날짜 형태를 yyyyMMdd 헝태로 변경
+		LocalDate today = LocalDate.now();        
+        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String soToday = today.format(todayFormat);
+        
+        int count = salesOrderRepository.getNextSoCode(data);
+        
+		String soCode = "";
+		data = data.replace("-", "");
+		
+		//생성되어야 할 갯수
+		count++;
+		
+		if(count > 100) {
+			soCode = "SO-" + data + "-" + count; 
+		}else if(count > 10) {
+			soCode = "SO-" + data + "-" + "0" + count;		
+		}else if(count >= 0) {
+			soCode = "SO-" + data + "-" + "00" + count;
+		}else {
+			soCode = "minus";
+		}
+		
+		return soCode;
+	}
+	
 	//수주 등록 실행
 	@Transactional
 	@PostMapping("/soregister")
-	@ResponseBody
 	public String soRegister(@ModelAttribute SalesOrder salesOrder) {
-		
-		//수주번호 다음 시쿼스 가져오기
-		Long nextSeq = salesOrderRepository.getNextSalesOrderNextSequences();
-		salesOrder.setSoNo(nextSeq);
-		
-		//수주코드 생성
-		String soCode = makeSoCode();
-		salesOrder.setSoCode(soCode);
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		salesOrder.setSoNo(null); 
 		salesOrderRepository.save(salesOrder);
 		salesOrderRepository.flush();
 		
-		return "success";
+		return "erp/salesMgt/submitSuccess";
 	}
 	
 	//수주 수정 창으로 넘길 데이터들
@@ -226,8 +228,6 @@ public class saleController {
 		ObjectMapper mapper = new ObjectMapper(); 
 		List<SalesOrderDTO> editList = mapper.readValue(json, new TypeReference<List<SalesOrderDTO>>() {});
 		
-		System.out.println(editList);
-		
 		TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
 		*/
 		
@@ -252,26 +252,7 @@ public class saleController {
 		return "success";
 	}
 	
-	//수주 코드 생성하는 메서드
-	public String makeSoCode() {
-		
-		//날짜 형태를 yyyyMMdd 헝태로 변경
-		LocalDate today = LocalDate.now();        
-        DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String soToday = today.format(todayFormat);
-        
-		Long nextSoCodeNumber = salesOrderRepository.getNextSoCode();
-		String soCode = "";
-		if(nextSoCodeNumber > 100) {
-			soCode = "SO-" + soToday + "-" + nextSoCodeNumber; 
-		}else if(nextSoCodeNumber > 10) {
-			soCode = "SO-" + soToday + "-" + "0" +nextSoCodeNumber;		
-		}else if(nextSoCodeNumber > 0) {
-			soCode = "SO-" + soToday + "-" + "00" +nextSoCodeNumber;
-		}
-		
-		return soCode;
-	}
+	
 	
 	//employees 테이블에서 부서와 직급에 해당하는 사원 이름 목록 가져오기
 	@GetMapping("/getEmpName")

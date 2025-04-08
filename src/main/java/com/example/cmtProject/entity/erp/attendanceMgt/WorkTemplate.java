@@ -39,14 +39,14 @@ public class WorkTemplate {
     @Column(name = "WT_END_TIME", nullable = false)
     private LocalDateTime wtEndTime; // 근무 종료 시간
     
-    @Column(name = "WT_TYPE", nullable = false)
+    @Column(name = "WT_TYPE", unique = true)
     private String wtType; // 기준 근무 유형 
 
     @Column(name = "WT_WORK_TIME", nullable = false)
     private int wtWorkTime; // 근로 시간 
 
-    @Column(name = "WT_BREAK_TIME", nullable = false)
-    private int wtBreakTime; // 휴식 시간 
+    @Column(name = "WT_BREAK_TIME")
+    private Integer wtBreakTime; // 휴식 시간 
 
     @Column(name = "WT_REMARK", length = 200)
     private String wtRemarks; // 비고 

@@ -12,8 +12,11 @@ import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.dto.erp.eapproval.*;
 import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.service.erp.eapproval.*;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
+import com.example.cmtProject.util.SecurityUtil;
 import com.example.cmtProject.comm.exception.*;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 /**
@@ -37,6 +42,7 @@ public class EapprovalRestController {
     private final DocFormService docFormService;
     private final ApprovalProcessService approvalProcessService;
     private final EmployeesService empService;
+    private final DocumentMapper documentMapper;
     
     /**
      * 문서 양식 조회 API
@@ -197,7 +203,13 @@ public class EapprovalRestController {
     public ApiResponse<List<EmpListPreviewDTO>> getApprovers() {
         log.debug("결재자 목록 조회 요청");
         try {
-            List<EmpListPreviewDTO> employees = empService.getEmplist();
+
+            List<EmpListPreviewDTO> employees = empService.getEmpList();
+            
+            if (employees == null) {
+                return ApiResponse.error("결재자 목록을 가져올 수 없습니다", ResponseCode.SERVER_ERROR);
+            }
+
             return ApiResponse.success(employees);
         } catch (Exception e) {
             log.error("결재자 목록 조회 중 오류 발생: {}", e.getMessage(), e);
@@ -224,6 +236,56 @@ public class EapprovalRestController {
         } catch (Exception e) {
             log.error("문서 삭제 중 오류 발생: {}", e.getMessage(), e);
             return ApiResponse.error("문서 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    
+    /**
+     * 현재 로그인한 사용자 정보 조회 (문서 양식 플레이스홀더용)
+     */
+    @GetMapping("/template-data")
+    public ApiResponse<Map<String, Object>> getTemplateData() {
+        try {
+            // 현재 로그인 사용자 정보 가져오기
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String currentUserId = auth.getName();
+            
+            // 사용자 정보 조회
+            Map<String, Object> templateData = new HashMap<>();
+            
+            // 기본 정보
+            templateData.put("DRAFTER_ID", currentUserId);
+            
+            // 사용자 이름 - SecurityUtil 사용
+            String empName = SecurityUtil.getUserName();
+            templateData.put("DRAFTER_NAME", empName);
+            
+            // 부서 정보 - documentService 사용
+            String deptCode = documentService.getEmployeeDeptCodeByEmpId(currentUserId);
+            templateData.put("DRAFT_DEPT", deptCode);
+            
+            // 부서명 조회
+            String deptName = documentMapper.selectDeptNameByDeptCode(deptCode);
+            templateData.put("DRAFT_DEPT_NAME", deptName);
+            
+            // 직위 정보 조회 - DB 조회
+            Employees employee = SecurityUtil.getCurrentUser();
+            Long positionNo = employee != null ? employee.getPositionNo() : null;
+            String positionName = "";
+            if (positionNo != null) {
+                positionName = documentMapper.selectPositionNameByPositionNo(positionNo);
+            }
+            templateData.put("POSITION_NAME", positionName);
+            
+            // 날짜 관련 정보
+            LocalDateTime now = LocalDateTime.now();
+            String currentDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            templateData.put("DRAFT_DATE", currentDate);
+            
+            return ApiResponse.success(templateData);
+        } catch (Exception e) {
+            log.error("템플릿 데이터 조회 중 오류 발생: {}", e.getMessage(), e);
+            return ApiResponse.error("템플릿 데이터 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 }

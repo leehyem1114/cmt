@@ -4,18 +4,20 @@ import com.example.cmtProject.constants.ApprovalStatus;
 import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalRequestDTO;
+import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
 import com.example.cmtProject.comm.exception.ApprovalProcessException;
+import com.example.cmtProject.service.erp.eapproval.processor.ApprovalPostProcessManager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 /**
  * 결재 프로세스 처리 서비스
  * 결재 승인/반려 등 결재 프로세스와 관련된 비즈니스 로직을 담당
@@ -27,12 +29,10 @@ public class ApprovalProcessService {
 
     private final DocumentMapper documentMapper;
     private final ApprovalLineMapper approvalLineMapper;
+    private final ApprovalPostProcessManager postProcessManager;
     
     /**
      * 결재 처리 (승인/반려)
-     * 
-     * @param requestDTO 결재 처리 요청 DTO
-     * @return 승인 여부 (true: 승인, false: 반려)
      */
     @Transactional
     public boolean processApproval(ApprovalRequestDTO requestDTO) {
@@ -42,8 +42,6 @@ public class ApprovalProcessService {
         // 결재자의 결재라인 조회
         ApprovalLineDTO approvalLine = approvalLineMapper.selectApprovalLineByDocIdAndApproverId(
                 requestDTO.getDocId(), requestDTO.getApproverId());
-        
-        log.debug(" 결재라인 정보 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + approvalLine);
         
         if (approvalLine == null) {
             throw new ApprovalProcessException("결재 권한이 없습니다");
@@ -69,6 +67,9 @@ public class ApprovalProcessService {
             // 문서 상태 변경
             documentMapper.updateDocumentStatus(requestDTO.getDocId(), DocumentStatus.REJECTED);
             log.info("문서 반려 처리 완료: {}", requestDTO.getDocId());
+            
+            // 반려 후처리 호출 (별도 트랜잭션으로 처리)
+            processPostProcessing(requestDTO.getDocId(), DocumentStatus.REJECTED);
             
             return false; // 반려
         } else {
@@ -97,10 +98,32 @@ public class ApprovalProcessService {
             documentMapper.updateDocumentStatus(docId, DocumentStatus.COMPLETED);
             documentMapper.updateApprovalDate(docId, LocalDateTime.now());
             log.info("문서 최종 승인 완료: {}", docId);
+            
+            // 완료 후처리 호출 (별도 트랜잭션으로 처리)
+            processPostProcessing(docId, DocumentStatus.COMPLETED);
         } else {
             log.debug("다음 결재자 대기 중: {}명", nextApprovers.size());
         }
     }
+    
+    // 후처리 로직을 별도 트랜잭션으로 분리하여 실행
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processPostProcessing(String docId, String status) {
+        try {
+            DocumentDTO document = documentMapper.selectDocumentById(docId);
+            if (document != null) {
+                log.info("문서 후처리 시작: {}, 상태: {}", docId, status);
+                boolean result = postProcessManager.executePostProcessing(document);
+                log.info("문서 후처리 완료: {}, 성공: {}", docId, result);
+            } else {
+                log.warn("후처리를 위한 문서를 찾을 수 없음: {}", docId);
+            }
+        } catch (Exception e) {
+            log.error("후처리 중 오류 발생 (무시됨): {}", e.getMessage(), e);
+            // 후처리 실패해도 메인 트랜잭션은 영향 없음
+        }
+    }
+
     
     /**
      * 현재 결재자 여부 확인

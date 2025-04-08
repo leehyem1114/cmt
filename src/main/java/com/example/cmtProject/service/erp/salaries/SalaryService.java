@@ -3,15 +3,19 @@ package com.example.cmtProject.service.erp.salaries;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.salaries.PayBasicDTO;
+import com.example.cmtProject.dto.erp.salaries.PayCmmCodeDetailDTO;
 import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaySearchDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
+import com.example.cmtProject.dto.erp.salaries.PaymentTempDTO;
 import com.example.cmtProject.entity.erp.salaries.Payment;
 import com.example.cmtProject.mapper.erp.salaries.SalariesMapper;
 import com.example.cmtProject.repository.erp.salaries.SalaryRepository;
@@ -35,7 +39,19 @@ public class SalaryService {
 
 	// 급여 지급 내역 조회 - 검색 기능 추가 
 	public List<PaySearchDTO> getSearchPayList(PaySearchDTO paySearchDTO) {
-		return salMapper.searchPayList(paySearchDTO);
+		return salMapper.getSearchPayList(paySearchDTO);
+	}
+	
+	// 급여 지급 내역 삭제
+	public void deletePayList(List<Long> payNos) throws Exception {
+		List<Payment> payList = salRepository.findAllById(payNos);
+
+	    if (payList.isEmpty()) {
+	    	throw new Exception("삭제할 내역이 존재하지 않습니다.");
+	    }
+	    
+	    salRepository.deleteAll(payList);
+	    
 	}
 	
 	// 야근 수당 계산
@@ -45,10 +61,11 @@ public class SalaryService {
 	
 	// 급여 대장 조회
 	public List<PaymentDTO> getPayrolls() {
-		List<Payment> payrolls = salRepository.findAll();
-		return payrolls.stream()
-				.map(payment -> payment.toDto())
-				.collect(Collectors.toList());
+//		List<Payment> payrolls = salRepository.findAll();
+//		return payrolls.stream()
+//				.map(payment -> payment.toDto())
+//				.collect(Collectors.toList());
+		return salMapper.getPayrolls();
 	}
 
 	// 직급별 기본급 계산
@@ -57,33 +74,9 @@ public class SalaryService {
 	}
 
 	// 급여 이체
-	public void savePayment(PaymentDTO paymentDTO) {
-
-//		PaymentDTO paymentTransferDTO = PaymentDTO.builder()
-//				.empNo(paymentDTO.getEmpNo())
-//		        .empName(paymentDTO.getEmpName())
-//		        .deptName(paymentDTO.getDeptName())
-//		        .position(paymentDTO.getPosition())
-//		        .empType(paymentDTO.getEmpType())
-//		        .payDate(paymentDTO.getPayDate())
-//		        .payBasic(paymentDTO.getPayBasic())
-//		        .payBonusOvertime(paymentDTO.getPayBonusOvertime())
-//		        .payBonusHoliday(paymentDTO.getPayBonusHoliday())
-//		        .payBonusTotal(paymentDTO.getPayBonusTotal())
-//		        .payTaxPension(paymentDTO.getPayTaxPension())
-//		        .payTaxCare(paymentDTO.getPayTaxCare())
-//		        .payTaxHealth(paymentDTO.getPayTaxHealth())
-//		        .payTaxEmployment(paymentDTO.getPayTaxEmployment())
-//		        .payTaxIncome(paymentDTO.getPayTaxIncome())
-//		        .payTaxResidence(paymentDTO.getPayTaxResidence())
-//		        .payTaxTotal(paymentDTO.getPayTaxTotal())
-//		        .payTotal(paymentDTO.getPayTotal())
-//		        .payStatus(paymentDTO.getPayStatus())
-//		        .salBankName(paymentDTO.getSalBankName())
-//		        .salBankAccount(paymentDTO.getSalBankAccount())
-//		        .build();
+	public int savePayment(List<Map<String, Object>> evaluatedResult) {
 		
-		//salMapper.savePayment(paymentDTO);
+		return salMapper.savePayment(evaluatedResult);
 	}	
 
 	//개인 지급내역
@@ -101,5 +94,31 @@ public class SalaryService {
 		
 		return salMapper.getPayDay();
 	}
+
+	public List<PayCmmCodeDetailDTO> getPayCommonCodeDetails() {
+		return salMapper.getPayCommonCodeDetails();
+	}
+
+	public List<EmpListPreviewDTO> getEmpList() {
+		return salMapper.getEmpList();
+	}
+	
+	public Long getNextPayNo() {
+		return salMapper.getNextPayNo();
+	}
+
+	// 급여 이체
+	public void savePaymentMap(Map<String, Object> m) {
+		System.out.println("DFDSFSFSDFDSF");
+		
+		salMapper.savePaymentMap(m);
+	}
+
+	public void savePaymentDto(PaymentTempDTO pdto) {
+		salMapper.savePaymentDto(pdto);
+	}
+
+
+
 
 }

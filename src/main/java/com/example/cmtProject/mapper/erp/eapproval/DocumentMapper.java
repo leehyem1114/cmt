@@ -106,7 +106,21 @@ public interface DocumentMapper {
      * @param approverId 결재자 ID(사번)
      * @return 결재 가능한 문서 목록
      */
-    List<DocumentDTO> selectProcessableDocumentsByApproverId(String approverId);
+	public List<DocumentDTO> selectProcessableDocumentsByApproverId(String approverId);
+    
+    /**
+     * 부서 코드로 부서명 조회
+     */
+	public String selectDeptNameByDeptCode(String deptCode);
+
+    /**
+     * 직위 번호로 직위명 조회 
+     */
+	public String selectPositionNameByPositionNo(Long positionNo);
+
+	public int selectCount(String empId);
+
+	public int myDraftCount(String empId);
 	
 	
 }

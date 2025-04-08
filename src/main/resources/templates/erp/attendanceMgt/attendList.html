@@ -246,6 +246,19 @@
               
           });
 	    
+	    
+	    // 행 아무곳이나 클릭하면 체크박스 활성화
+	    grid.on('click', ev => {
+	    	  const rowKey = ev.rowKey;
+	    	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
+	    	  if (!isChecked) {
+	    	    grid.check(rowKey);
+	    	  } else {
+	    	    grid.uncheck(rowKey);
+	    	  }
+	    	});
+	    
+	    
         /* 이벤트 리스너 추가 */
         grid.on('check', ev => {
             console.log('체크됨!', ev);

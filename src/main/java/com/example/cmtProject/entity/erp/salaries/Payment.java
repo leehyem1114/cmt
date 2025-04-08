@@ -2,6 +2,10 @@ package com.example.cmtProject.entity.erp.salaries;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 
@@ -10,6 +14,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,29 +32,46 @@ import lombok.Setter;
 public class Payment { // 급여 지급 이력 엔티티
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PAYMENTS_PAY_NO" )
+	@SequenceGenerator(name = "SEQ_PAYMENTS_PAY_NO", sequenceName="SEQ_PAYMENTS_PAY_NO", allocationSize = 1)
     @Column(name = "PAY_NO")
     private Long payNo; // 지급 번호
     
-    @Column(name = "EMP_NAME", nullable = false)
+    @Column(name = "EMP_NAME")
     private String empName;			 // 사원명
     
-    @Column(name = "EMP_ID", nullable = false)
+    @Column(name = "EMP_ID")
     private String empId; // 사원 번호
 
-    @Column(name = "DEPT_NAME", nullable = false)
+    @Column(name = "DEPT_NAME")
     private String deptName;		 // 부서명
     
-    @Column(name = "POSITION", nullable = false)
+    @Column(name = "POSITION")
     private String position;     	 // 직급
     
-    @Column(name = "EMP_TYPE", nullable = false)
+    @Column(name = "EMP_TYPE")
     private String empType;          // 고용유형
     
-    @Column(name = "PAY_DATE", nullable = false)
+    @Column(name = "PAY_DATE")
     private LocalDate payDate; // 지급일
+    
+    @Column(name = "PAY_MONTH")
+    private String payMonth; // 지급월 -- 급여 대장
+    
+    @Column(name = "EMP_COUNT")
+    private Long empCount; // 인원수 -- 급여 대장
+    
+    @Column(name = "TOTAL_PAY_AMOUNT")
+    private Long totalPayAmount; // 총지급액 -- 급여 대장
+    
+    @Column(name = "TOTAL_BONUS_AMOUNT")
+    private BigDecimal totalBonusAmount; // 총수당액 -- 급여 대장
+    
+    @Column(name = "TOTAL_TAX_AMOUNT")
+    private BigDecimal totalTaxAmount; // 총공제액 -- 급여 대장
 
-    @Column(name = "PAY_BASIC", nullable = false)
+    @Column(name = "PAY_BASIC")
     private Long payBasic; // 기본급
 
     @Column(name = "PAY_BONUS_OVERTIME")
@@ -58,7 +80,7 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_BONUS_HOLIDAY")
     private BigDecimal payBonusHoliday; // 명절수당
 
-    @Column(name = "PAY_BONUS_TOTAL", nullable = false)
+    @Column(name = "PAY_BONUS_TOTAL")
     private Long payBonusTotal; // 총수당금액
 
     @Column(name = "PAY_TAX_PENSION")
@@ -79,20 +101,20 @@ public class Payment { // 급여 지급 이력 엔티티
     @Column(name = "PAY_TAX_RESIDENCE")
     private BigDecimal payTaxResidence; // 주민세
 
-    @Column(name = "PAY_TAX_TOTAL", nullable = false)
+    @Column(name = "PAY_TAX_TOTAL")
     private Long payTaxTotal; // 총공제금액
 
-    @Column(name = "PAY_TOTAL", nullable = false)
+    @Column(name = "PAY_TOTAL")
     private Long payTotal; // 실수령액
 
-    @Column(name = "PAY_STATUS", length = 50, nullable = false)
-    private String payStatus;  // 지급 상태
+//    @Column(name = "PAY_STATUS", length = 50, nullable = false)
+//    private String payStatus;  // 지급 상태
     
-    @Column(name = "SAL_BANK_NAME", length = 50, nullable = false)
-    private String salBankName;  // 지급 상태
+    @Column(name = "SAL_BANK_NAME")
+    private String salBankName;  // 은행명
     
-    @Column(name = "SAL_BANK_ACCOUNT", length = 50, nullable = false)
-    private String salBankAccount;  // 지급 상태
+    @Column(name = "SAL_BANK_ACCOUNT")
+    private String salBankAccount;  // 계좌번호
     
     public PaymentDTO toDto() {
         return PaymentDTO.builder()
@@ -103,6 +125,11 @@ public class Payment { // 급여 지급 이력 엔티티
                 .position(position)
                 .empType(empType)
                 .payDate(payDate)
+                .payMonth(payMonth)
+                .empCount(empCount)
+                .totalPayAmount(totalPayAmount)
+                .totalBonusAmount(totalBonusAmount)
+                .totalTaxAmount(totalTaxAmount)
                 .payBasic(payBasic)
                 .payBonusOvertime(payBonusOvertime)
                 .payBonusHoliday(payBonusHoliday)
@@ -115,10 +142,28 @@ public class Payment { // 급여 지급 이력 엔티티
                 .payTaxResidence(payTaxResidence)
                 .payTaxTotal(payTaxTotal)
                 .payTotal(payTotal)
-                .payStatus(payStatus)
-                .salBankName(salBankName)         // ✅ 누락된 필드
-                .salBankAccount(salBankAccount)   // ✅ 누락된 필드
+                //.payStatus(payStatus)
+                .salBankName(salBankName)        
+                .salBankAccount(salBankAccount)
                 .build();
     }
 
-}
+}   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

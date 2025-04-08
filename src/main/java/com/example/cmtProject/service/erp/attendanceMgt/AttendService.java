@@ -70,7 +70,7 @@ public class AttendService {
 		Attend attend = Attend.builder()
 				.atdNo(atdNo)
 				.atdLeave(LocalDateTime.now()) // 퇴근 처리 시 현재 시간 설정
-				.atdType(dto.get("atdtype"))
+				.atdType(dto.get("atdType"))
 				.build();
 		attendsMapper.updateAttendLeave(attend.getAtdNo(), LocalDateTime.now(), attend.getAtdType());
 	}

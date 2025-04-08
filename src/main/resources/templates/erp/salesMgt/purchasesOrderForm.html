@@ -91,25 +91,25 @@
 			<div><h2>발주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
-			<button type="button" class="completeBtn" onclick="location.reload()">✏️ 수정</button>
+	        <button type="button" class="requestBtn" onclick="puRegisterOpenWindows()">📃 신규</button>
+			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
 	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
 
-	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
+	        <!-- <button class="cancelBtn" onclick="poEditOpenWindows()">✏️ 수정</button> 
 				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
 	        <button class="helpBtn">❓ HELP</button>
 			</div>
 	    </div>
 		
-		<form action="/sales/so" method="get" th:object="${SalesOrder}">	    
+		<form action="/purchases/po" method="get" th:object="${PurchasesOrder}">	    
 		    <div class="container1">
-				<!-- 수주 코드 -->
-		        <label class="sell_company_label">수주 코드</label>
-				<select class="sell_select" id="soCode">
+				<!-- 발주 코드 -->
+		        <label class="sell_company_label">발주 코드</label>
+				<select class="sell_select" id="poCode">
 					<option value="">--선택하세요--</option>
-		            <option th:each="code : ${soMainList}"
-						th:value="${code.soCode}"
-						th:text="${code.soCode}"
+		            <option th:each="code : ${poMainList}"
+						th:value="${code.poCode}"
+						th:text="${code.poCode}"
 					></option><!--selected="${SalesOrder.pdtCode == code}"-->
 		        </select>
 				
@@ -120,13 +120,13 @@
 		        <input type="date" class="sell_date2" id="endDate">
 				<select class="sell_select" id="dateType">
 					<option value="">일자 유형</option>
-		            <option value="soDate">수주일자</option><!--selected="${SalesOrder.pdtCode == code}"-->
-					<option value="shipDate">출하일자</option>
+		            <option value="poDate">발주일자</option><!--selected="${SalesOrder.pdtCode == code}"-->
+					<option value="shipDate">입고일자</option>
 		        </select>
 					
-				<!-- 수주 번호 -->			
-				<label class="sell_sonum_label">수주번호</label>
-		        <input type="text" id="soNo" class="sell_sonum_text">
+				<!-- 발주 번호 -->			
+				<label class="sell_sonum_label">발주번호</label>
+		        <input type="text" id="poNo" class="sell_sonum_text">
 		        <span></span>
 				
 				<!-- 검색 버튼 -->
@@ -134,19 +134,19 @@
 		    </div>
 	
 		    <div class="container2">
-				<!-- 제품 코드 -->
-		        <label>제품 코드</label>
-				<select class="sell_select" id="pdtCode">
+				<!-- 원자재 코드 -->
+		        <label>원자재 코드</label>
+				<select class="sell_select" id="mtlCode">
 					<option value="">--선택하세요--</option>
-		            <option th:each="code : ${pdtCode}"
+		            <option th:each="code : ${mtlCode}"
 						th:value="${code}"
 						th:text="${code}"
 					></option><!-- selected="${SalesOrder.pdtCode == code}" -->
 		        </select>
-		        <input type="text" id="pdtName" placeholder="NAME">
+		        <input type="text" id="mtlName" placeholder="NAME">
 		      
-				<!-- 거래처 코드 -->
-		        <label>거래처 코드</label>
+				<!-- 공급업체 코드 -->
+		        <label>공급업체 코드</label>
 				<select class="sell_select" id="cltCode">
 					<option value="">--선택하세요--</option>
 		            <option th:each="code : ${cltCode}"
@@ -158,9 +158,9 @@
 		        
 				<!-- 진행 상태 -->
 				<label>진행상태</label>
-				<select class="sell_select" id="soStatus">
+				<select class="sell_select" id="poStatus">
 					<option value="">--선택하세요--</option>
-		            <option th:each="status : ${soStatusList}"
+		            <option th:each="status : ${poStatusList}"
 						th:value="${status.statusCode}"
 						th:text="${status.statusName}"
 					></option><!--selected="${SalesOrder.cltCode == code}"-->
@@ -176,38 +176,33 @@
 		<!-- 자바 스크립트 시작, jQuery 구문 포함 -->
 		<script src="/js/jquery-3.7.1.js"></script>
 	    <script th:inline="javascript">
-		console.log(/*[[${soStatusList}]]*/ []);
+		
 		//===================================== Grid부분 시작 ===============================================
 		
 		//모든 컬럼 함깨 표시
 		let cltList = /*[[${cltList}]]*/ [];
 		let empList = /*[[${empList}]]*/ [];
-		let productList = /*[[${productList}]]*/ [];
-		let soStatusList = /*[[${soStatusList}]]*/ [];
+		let materialList = /*[[${materialList}]]*/ [];
+		let poStatusList = /*[[${poStatusList}]]*/ [];
 		
-		//2개의 컬럼으로 label과 value를 맞춘다
-// 		let cltListSelected = cltList.map(item => ({label: item.cltCode, value: item.cltName+'('+item.cltCode+')'}));
-// 		let empListSelected = empList.map(item => ({label: item.empNo, value: item.empName+'('+ item.empNo + ')'}));
-// 		let productListSelected = productList.map(item => ({label: item.pdtCode, value: item.pdtName+'('+item.pdtCode+')'}))
-// 		let soStatusListSelected = soStatusList.map(item => ({label: item.statusCode, value: item.statusName+'('+item.statusCode+')'}))
 		
 		let empListSelected = empList.map(item1 => ({text: item1.empName, label: item1.empName, value: item1.empId}));
 		let cltListSelected = cltList.map(item2 => ({text: item2.cltName, label: item2.cltName, value: item2.cltCode}));
-		let productListSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtCode}));
-		let soStatusListSelected = soStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
+		let materialListSelected = materialList.map(item => ({text: item.mtlName, label: item.mtlName, value: item.mtlCode}));
+		let poStatusListSelected = poStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
 		
 		console.log(cltList)
 		console.log(empList);
-		console.log(productList)
-		console.log(soStatusList);
+		console.log(materialList)
+		console.log(poStatusList);
 		
-	    console.log(/*[[${soMainList}]]*/ []);
+	    console.log(/*[[${poMainList}]]*/ []);
 		
-		let gridData = /*[[${soMainList}]]*/ [];
+		let gridData = /*[[${poMainList}]]*/ [];
 	    
 	    let grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
-			//data : /*[[${soMainList}]]*/ [],
+			//data : /*[[${poMainList}]]*/ [],
 			data: gridData,
 	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
 			//selectionUnit: 'row', //행 단위선택
@@ -217,24 +212,24 @@
 			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
 	        columns: [
 				{
-					header: '수주번호',
-					name: 'soNo',
+					header: '발주번호',
+					name: 'poNo',
 					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 	            {
-	                header: '수주코드',
-	                name: 'soCode',
+	                header: '발주코드',
+	                name: 'poCode',
 					width: 200,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 				{
-	                header: '수주일자',
-	                name: 'soDate',
+	                header: '발주일자',
+	                name: 'poDate',
 					width: 200,
 					fontSize: '40',
 					sortable: true, 
@@ -249,8 +244,8 @@
 			         }
 	            },
 				{
-	                header: '출하일자',
-	                name: 'shipDate',
+	                header: '입고일자',
+	                name: 'rcvDate',
 					width: 200,
 					sortable: true, 
 					filter: 'text',
@@ -283,8 +278,8 @@
 				    }
 	            },
 				{
-	                header: '제품명',
-	                name: 'pdtCode', //SalseOrder의 entity에 있는 pdtCode
+	                header: '원자재명',
+	                name: 'mtlCode', //SalseOrder의 entity에 있는 pdtCode
 					width: 200,
 					sortable: true, 
 					filter: 'text',
@@ -292,11 +287,11 @@
 					editor: {
 						type: 'select',
 						options: {
-							listItems: productListSelected //Products의 entity에 있는 pdtCode와 pdtName
+							listItems: materialListSelected //Products의 entity에 있는 pdtCode와 pdtName
 						}
 					},
 					formatter: ({ value }) => {
-				    	const pdt = productListSelected.find(item => item.value === value);
+				    	const pdt = materialListSelected.find(item => item.value === value);
 				    	return pdt ? pdt.label : value; 
 				    }
 	            },
@@ -320,7 +315,7 @@
 	            },
 	            {
 	                header: '수량',
-	                name: 'soQuantity',
+	                name: 'poQuantity',
 					width: 100,
 					sortable: true, 
 					filter: 'text',
@@ -328,8 +323,8 @@
 					editor: "text"
 	            },
 	            {
-	                header: '단가',
-	                name: 'pdtShippingPrice',
+	                header: '입고 단가',
+	                name: 'mtlReceivingPrice',
 					width: 150,
 					sortable: true, 
 					filter: 'text',
@@ -338,7 +333,7 @@
 	            },
 				{
 					header: '진행상태',
-					name: 'soStatus', //salesOrder의 entity에 있는 soStatus
+					name: 'poStatus', //salesOrder의 entity에 있는 poStatus
 					width: 200,
 					sortable: true,
 					filter: 'text',
@@ -346,11 +341,11 @@
 					editor: {
 						type: 'select',
 						options: {
-							listItems: soStatusListSelected //SalesOrderStatus의 배열 값 
+							listItems: poStatusListSelected //SalesOrderStatus의 배열 값 
 						}
 					},
 					formatter: ({ value }) => {
-				    	const stu = soStatusListSelected.find(item => item.value === value);
+				    	const stu = poStatusListSelected.find(item => item.value === value);
 				    	return stu ? stu.label : value; 
 				    }
 	            },
@@ -364,7 +359,6 @@
 		grid.on('click', ev => {
 			if(selectedEv !== null){
 				grid.removeRowClassName(selectedEv.rowKey, 'selecedRowClass');
-
 			}
 			
 			selectedEv = ev;
@@ -375,8 +369,6 @@
 		grid.on('onGridUpdated', (ev) => {
 			// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
 		    grid.refreshLayout();
-			
-		
 		});
 		
 		 grid.on('afterChange', (ev) => {
@@ -384,14 +376,14 @@
 			let evValue = ev.changes[0];
 			let rk = evValue.rowKey;
 			let rowData = grid.getRow(rk);
-			let sono = rowData.soNo;
-			console.log("sono:"+sono);
+			let pono = rowData.poNo;
+			console.log("pono:"+pono);
 			
 			//console.log(ev.changes[0]); 
 			//{rowKey: 5, columnName: 'empId', value: '930216', prevValue: '921114'}
 			
 			let sendData = {
-				soNo : sono,
+				poNo : pono,
 				columnName : evValue.columnName,
 				value : evValue.value
 			};
@@ -400,7 +392,7 @@
 			//{soNo: 445, columnName: 'soStatus', value: 'SO_INPRODUCTION'}
 			
 			$.ajax({
-				url: "/sales/soeditexe",
+				url: "/purchases/poeditexe",
 				type: "GET",
 				data: sendData,
 				success: function(result) {
@@ -419,12 +411,12 @@
 		let gridCheck = [];
 		
 		//신규 버튼 클릭시 실행되는 입력 창
-    	function soRegisterOpenWindows(){
-			window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+    	function puRegisterOpenWindows(){
+			window.open("/purchases/poRegisterForm", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
     	}
 		
-		//수정 버튼 클릭시 실행되는 수정 창
-		function soEditOpenWindows(){
+		//수정 버튼 클릭시 실행되는 수정 창 - 현재 수정 버튼 사용하지 않음
+		function poEditOpenWindows(){
 			
 			if(gridCheck.length <= 0){
 				
@@ -437,26 +429,41 @@
 			}
 			
 			let gridCheckString = JSON.stringify(gridCheck);
-			window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
+			window.open("/purchases/poeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
 		};
 		
 		//===================================== jQuery 시작 ===============================================
 		$(document).ready(function(){
+						
+			//수정 버튼을 눌렀을 때 "현재 수정 모드"
+			//검색 버튼을 눌렀을 때 "현재 검색 모드"	로 변경하는 코드
+			//<button type="button" class="completeBtn" onclick="location.reload()">✏️ 수정</button>
+				       // <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
+			$("#completeBtn").on('click', function(){
+				
+				$("#completeBtn").text("✏️현재 수정 모드")
+				$("#searchBtn").text("🔍 검색")
+			});
 			
+			$("#searchBtn").on('click', function(){
+				$("#completeBtn").text("✏️ 수정")
+				$("#searchBtn").text("🔍현재 검색 모드")
+			});
+						
+						
 			//제품명 가져오기
-			$("#pdtCode").change(function(){
-				let pdtValue = $("#pdtCode").val();
+			$("#mtlCode").change(function(){
+				let mtlValue = $("#mtlCode").val();
 
 				$.ajax({
-		           url: "/sales/getPdtName", 
+		           url: "/purchases/getMtlName", 
 		           type: "GET",       
 		           //contentType: "application/json", // GET방식일 때 삭제
 		           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
-				   data: {pdtCode: pdtValue}, //GET방식 일 때 사용
+				   data: {mtlCode: mtlValue}, //GET방식 일 때 사용
 		           success: function(response) {
-		        	  	console.log(response.CLT_CODE);
-		        	  	console.log(response.SO_NO);
-						$("#pdtName").val(response);
+		        	  
+						$("#mtlName").val(response);
 		           },
 		           error: function(error) {
 		               alert(error);
@@ -469,7 +476,7 @@
 				let cltValue = $("#cltCode").val();
 				
 				$.ajax({
-		           url: "/sales/getCltName", 
+		           url: "/purchases/getCltName", 
 		           type: "GET",       
 				   data: {cltCode: cltValue},
 		           success: function(response) {
@@ -484,31 +491,41 @@
 			//검색 버튼 클릭시
 			$("#searchBtn").on('click', function(){
 				
-				
 				let data = {
-					soCode: $("#soCode").val(),
-					soNo: $("#soNo").val(),
-					pdtCode: $("#pdtCode").val(),
+					poCode: $("#poCode").val(),
+					poNo: $("#poNo").val(),
+					mtlCode: $("#mtlCode").val(),
 					cltCode: $("#cltCode").val(),
-					soStatus: $("#soStatus").val(),
+					poStatus: $("#poStatus").val(),
 					dateType: $("#dateType").val(),
 					startDate: $("#startDate").val(),
 					endDate: $("#endDate").val(),
 				}
-				
-				var s = $("#soNo").val();
-				console.log("----------------soNo:"+ s);
+				/*
+				cltCode:"CLT006"
+				dateType:"poDate"
+				endDate:"2025-04-23"
+				mtlCode:"MTL001"
+				poCode:"PO-20250408-001"
+				poNo:"23"
+				poStatus:"PO_APPROVED"
+				startDate:"2025-04-04"
+				*/
+								
+				var s = $("#poNo").val();
+				console.log("----------------poNo:"+ s);
+				console.log(data);
 				
 				//서버로 검색할 데이터 전송
 				$.ajax({
-					url: "/sales/searchForm",
+					url: "/purchases/searchForm",
 					type: "GET",
 					//contentType: "application/json",
 					//data: JSON.stringify(data),
 					data: data,
 					success: function(response){
 						//console.log(/*[[${response}]]*/ [])
-
+	
 						grid.resetData(response);
 						console.log(response);
 						
@@ -516,7 +533,7 @@
 						grid.setColumns([
 						{
 							header: '수주번호',
-							name: 'SO_NO',
+							name: 'PO_NO',
 							width: 100,
 							//fontSize: '40',
 							sortable: true, 
@@ -525,7 +542,7 @@
 			            },
 			            {
 			                header: '수주코드',
-			                name: 'SO_CODE',
+			                name: 'PO_CODE',
 							width: 200,
 							//fontSize: '50',
 							sortable: true, 
@@ -533,8 +550,8 @@
 							align: "center" 
 			            },
 						{
-			                header: '수주일자',
-			                name: 'SO_DATE',
+			                header: '발주일자',
+			                name: 'PO_DATE',
 							width: 200,
 							//fontSize: '50',
 							sortable: true, 
@@ -542,8 +559,8 @@
 							align: 'center',
 			            },
 						{
-			                header: '출하일자',
-			                name: 'SHIP_DATE',
+			                header: '입고일자',
+			                name: 'RCV_DATE',
 							width: 200,
 							//fontSize: '50',
 							sortable: true, 
@@ -560,8 +577,8 @@
 							align: 'center',
 			            },
 						{
-			                header: '제품명',
-			                name: 'PDT_NAME', //SalseOrder의 entity에 있는 pdtCode
+			                header: '원자재명',
+			                name: 'MTL_NAME', 
 							width: 200,
 							sortable: true, 
 							filter: 'text',
@@ -578,15 +595,15 @@
 			            },
 			            {
 			                header: '수량',
-			                name: 'SO_QUANTITY',
+			                name: 'PO_QUANTITY',
 							width: 100,
 							sortable: true, 
 							filter: 'text',
 							align: "center",
 			            },
 			            {
-			                header: '단가',
-			                name: 'PDT_SHIPPING_PRICE',
+			                header: '입고 단가',
+			                name: 'MTL_RECEIVING_PRICE',
 							width: 150,
 							sortable: true, 
 							filter: 'text',
@@ -594,7 +611,7 @@
 			            },
 						{
 							header: '진행상태',
-							name: 'SO_STATUS', //salesOrder의 entity에 있는 soStatus
+							name: 'STATUS_NAME', //salesOrder의 entity에 있는 soStatus
 							width: 200,
 							sortable: true, 
 							filter: 'text',
@@ -606,6 +623,7 @@
 						alert("error msg:" + err)
 					}
 				});
+			
 			});
 		})
 			

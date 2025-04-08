@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
@@ -37,7 +38,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 	
 	//- 수주 목록에 있는 거래처코드 -
 	@Query("""
-			SELECT DISTINCT(s.cltCode) FROM SalesOrder s
+			SELECT DISTINCT s.cltCode FROM SalesOrder s ORDER BY s.cltCode
 			""")
 	List<String> findByGetCltCode();
 	
@@ -49,7 +50,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 	
 	//- 수주 목록에 있는 제품코드 -
 	@Query("""
-			SELECT DISTINCT(s.pdtCode)from SalesOrder s order by s.pdtCode
+			SELECT DISTINCT(s.pdtCode) from SalesOrder s order by s.pdtCode
 			""")
 	List<String> findByGetPdtCode();
 	
@@ -64,9 +65,9 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 	@Query(value = "SELECT SEQ_SALES_ORDER_SO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
 	Long getNextSalesOrderNextSequences();
 	
-	@Query(value = "SELECT NVL(COUNT(SO_DATE),0)+1 FROM SALES_ORDER WHERE SO_DATE = TRUNC(SYSDATE)", nativeQuery = true)
-	Long getNextSoCode();
-
+	@Query(value = "SELECT COUNT(SO_DATE) FROM SALES_ORDER WHERE TRUNC(SO_DATE) = TO_DATE(:data, 'YYYY-MM-DD')", nativeQuery = true)
+	int getNextSoCode(@Param("data") String data);
+	
 	@Query(value = "SELECT * FROM SALES_ORDER WHERE SO_NO IN :gridCheckList", nativeQuery = true)
 	List<SalesOrder> findByEditorSelectedList(@Param("gridCheckList") List<Integer> gridCheckList);
 	

@@ -115,6 +115,38 @@
  			    });
  			  });
  			});
+ 			//퇴사일 데이트박스 출력
+ 			$(document).ready(function () {
+ 			    toggleEmpEndDate();
+ 			    $('#empStatus').on('change', function () {
+ 			        toggleEmpEndDate();
+ 			    });
+
+ 			    function toggleEmpEndDate() {
+ 			        const selected = $('#empStatus option:selected').text(); // 선택된 텍스트
+ 			        if (selected.includes('퇴사')) { // 예: '퇴사' or 'RESIGNED'
+ 			            $('#empEndDateWrapper').show();
+ 			        } else {
+ 			            $('#empEndDateWrapper').hide();
+ 			            $('#empEndDate').val(''); // 값도 초기화
+ 			        }
+ 			    }
+ 			});
+ 			
+ 			//주차 등록버튼 
+			$('#empParkingStatus').on('change', function(){
+				toggleEmpParkingStatus();
+			
+			function toggleEmpParkingStatus(){
+				const selected = $('#empParkingStatus option:selected').text();
+				if(selected.includes('미등록')){
+					$('#empCarNumber').hide();
+					$('#empCarNumber').val('');
+				} else {
+					$('#empCarNumber').show();
+				}
+			}
+			});
 
         </script>
         <!-- 카카오주소 api -->
@@ -148,7 +180,7 @@
     <div layout:fragment="content">
         <!-- 페이지 내용 작성 영역 시작 -->
         
-        <h3>나의 인사 카드</h3>
+        <h3>사원 현황</h3>
         
         <!-- 
             여기에 페이지별 HTML 코드를 작성하세요.
@@ -311,27 +343,37 @@
 		                    
 		                    <div class="form-row">
 			                    <label for="empAddress1">주소</label>
-								<div>
-									<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="${emp.empAddress1}">
+								<div class="form-item">
+									<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="*{empAddress1}">
+									<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="*{empPostCode}" readonly><br>
 									<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
 								</div>
-								<div>
-									<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="${emp.empAddress2}">
-									<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="${emp.empPostCode}" readonly><br>
+							</div>
+			                   <div class="form-row">
+			                    <label for="empAddress2"></label>
+								<div class="form-item">
+									<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="*{empAddress2}" placeholder="상세주소">
 								</div>
-		                    </div>
+							</div>
 		                    
 		                    <hr>
 		                    <div class="form-row">
 			                    <label for="empStatus">재직상태</label>
 			                    <div class="form-item" >
-			                       <input type="hidden" th:field="*{empStatus}"/>
-			                       <select id="empStatus" name="empStatus" class="form-select" th:field="*{empStatus}" disabled>
+			                       <select id="empStatus" name="empStatus" class="form-select" th:field="*{empStatus}" >
 				                       	<th:block th:each="code : ${commonCodeMap['EMP_STATUS']}">
 									        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 									    </th:block>
 									</select>
 			                    </div>
+			                    <div id="empEndDateWrapper" class="form-item">
+									<label for="empEndDate">퇴사일</label>
+									<input type="date" id="empEndDate" name="empEndDate" class="form-control" th:field="*{empEndDate}">
+								</div>
+		                        </div>
+			                    
+			                    
+		                    <div class="form-row">
 			                    <label for="empType">고용유형</label>
 			                   <div class="form-item" >
 			                       <input type="hidden" th:field="*{empType}"/>
@@ -342,8 +384,8 @@
 									</select>
 			                    </div>
 		                    </div>
-		                    <div class="form-row">
-		                    <label for="empEducationLevel">학력</label>
+		                   <div class="form-row">
+		                   <label for="empEducationLevel">학력</label>
 		                   <div class="form-item" >
 		                       <input type="hidden" th:field="*{empEducationLevel}"/>
 		                       <select id="empEducationLevel" name="empEducationLevel" class="form-select" th:field="*{empEducationLevel}" disabled>
@@ -351,8 +393,8 @@
 								        <option th:value="${code.cmnDetailCode}" th:text="${code.cmnDetailName}"></option>
 								    </th:block>
 								</select>
-		                    </div>
-		                    </div>
+		                   </div>
+		                   </div>
 		                    
 		                    <div class="form-row">
 			                    <label for="empParkingStatus">주차등록</label>

@@ -119,6 +119,23 @@
                     }
                 });
             }
+            
+            
+          //주차 등록버튼 
+			$('#empParkingStatus').on('change', function(){
+				toggleEmpParkingStatus();
+			
+			function toggleEmpParkingStatus(){
+				const selected = $('#empParkingStatus option:selected').text();
+				if(selected.includes('미등록')){
+					$('#empCarNumber').hide();
+					$('#empCarNumber').val('');
+				} else {
+					$('#empCarNumber').show();
+				}
+			}
+			});
+          
         </script>
 		
         <!-- 캘린더 -->
@@ -174,7 +191,7 @@
         <div class="card">
             <div class="card-header">
                  <!-- 사원 등록 버튼 (클릭하면 모달 띄움) -->
-				<div class="mt-4">
+				<div class="mt-4" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
 				    <button type="button" class="btn btn-primary btnRegiEmp" data-bs-toggle="modal" data-bs-target="#empModal">
 				        사원 등록 <i class="fa-solid fa-plus"></i>
 				    </button>
@@ -228,7 +245,7 @@
 							  // 시작일 DatePicker
 							  const startPicker = new tui.DatePicker('#startDateWrapper', {
 								language: 'ko',  
-							    date: new Date(),
+							    date: null,
 							    input: {
 							      element: '#startDate',
 							      format: 'yyyy-MM-dd'
@@ -238,7 +255,7 @@
 							  // 종료일 DatePicker
 							  const endPicker = new tui.DatePicker('#endDateWrapper', {
 								language: 'ko',  
-							    date: new Date(),
+							    date: null,
 							    input: {
 							      element: '#endDate',
 							      format: 'yyyy-MM-dd'
@@ -358,7 +375,7 @@
 		                    </div>
 		                    <label for="empId">사원번호</label>
 		                    <div class="form-item">
-		                        <input type="text" id="empId" class="form-control" name="empId" placeholder="사원 번호 입력" required>
+		                        <input type="text" id="empId" class="form-control" name="empId"  th:value="${empCode}" required>
 		                        <p id="idCheckMsg"></p>
 		                    </div>
 	                    </div>
@@ -456,18 +473,20 @@
 						</div>
 						
 						<br>
-						
-	                   <div class="form-row">
+						 <div class="form-row">
 		                    <label for="empAddress1">주소</label>
 							<div class="form-item">
-								<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25">
+								<input type="text" id="empAddress1" name="empAddress1" class="form-control" size="25" th:value="*{empAddress1}">
+								<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" th:value="*{empPostCode}" readonly><br>
 								<input type="button" value="주소검색" onclick="search_address()" class="btn btn-primary btnAddress"><br>
 							</div>
+						</div>
+		                   <div class="form-row">
+		                   <label for="empAddress2"></label>
 							<div class="form-item">
-								<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" placeholder="상세주소" >
-								<input type="text" id="empPostCode" name="empPostCode" class="form-control" size="6" readonly><br>
+								<input type="text" id="empAddress2" name="empAddress2" class="form-control" size="25" th:value="*{empAddress2}" placeholder="상세주소">
 							</div>
-	                    </div>
+						</div>
 	                    
 	                    <hr>
 	                    

@@ -96,11 +96,11 @@
 	    .excelBtn { background: darkblue; color: white; }
 	    .helpBtn { background: orange; color: white; }
     </style>
-</head>
-<body>
-	
+	</head>
+
+	<body>
     <div layout:fragment="content">
-   		<form id="soForm" method="post" th:action="@{/sales/soregister}" th:object="${salesOrder}"><!-- onsubmit="return validateForm(event)">-->
+   		<form id="soForm" method="post" th:action="@{/sales/soregister}" th:object="${salesOrder}">
 		 <div class="container">
 	    	<h2>수주 정보 입력</h2>
 	        <div class="form-group">
@@ -119,11 +119,13 @@
 	        </div>
 	        <div class="form-group">
 	            <label>수주번호 *</label><!-- 서버에서 바로 처리 -->
-	            <input type="text" th:value="${nextSeq}" readonly="true">
+	            <input type="text" th:value="${nextSeq}" id="sonoTxt" readonly="true">
+				<input type="hidden" id="sonoHid" th:field="*{soNo}">
 	        </div>
 	        <div class="form-group">
-	            <label>수주코드 *</label><!-- 서버에서 바로 처리 -->
-	            <input type="text" th:value="${soCode}" readonly="true">
+	            <label>수주코드 생성 *</label><!-- 서버에서 바로 처리 -->
+				<input type="date" id="soCodeMakeDate">
+				<input type="text" id="soCodeTxt" readonly="true" th:field="*{soCode}">
 	        </div>
 	        <div class="form-group date-container">
 	            <label>수주일자 *</label>
@@ -170,12 +172,11 @@
     	</div><!-- <div class="container"> -->
 			
     	<div style="text-align: center;">
-			<button type="button" onclick="validateForm()">입력</button>
-    		<button type="button" onclick="window.close()">취소</button>
+			<button type="submit" class="requestBtn">입력</button>
+    		<button type="button" class="cancelBtn" onclick="window.close()">취소</button>
     	</div>
-		</form>	
-    </div> <!-- layout:fragment="content" -->
-   	
+	</form>	
+   
 	<!-- 모달 시작 -->
 	<div class="modal fade" id="cltModal" tabindex="-1" insert>
 	    <div class="modal-dialog" style="max-width: 60%;">
@@ -197,7 +198,6 @@
 	    </div><!-- modal-dialog modal-lg -->
 	</div><!-- modal -->
 	<!-- 모달 끝 -->
-	
 	
 	<!-- 그리드 시작-->
     <script th:inline="javascript">
@@ -310,100 +310,108 @@
 	
     </script>
 	<!-- 그리드 끝-->
-	
-	<th:block layout:fragment="script">
-		<script src="https://code.jquery.com/jquery.min.js"></script>
-	    <script>
-    	$(document).ready(function(){
-    		
-			//부서와 직위가 변할 때 마다 다른 직원 목록 가져오기
-    		let deptCode = $("#deptSelected").val();
-    		let posCode = $("#posSelected").val();
+
+	<script src="https://code.jquery.com/jquery.min.js"></script>
+    <script>
+	$(document).ready(function(){
+		
+		//soNo 텍스박스의 th:value와 th:field를 같이 사용할 수 없기 때문에 
+		//값을 hidden에 넣는다
+		var sonotxt = $("#sonoTxt").val();
+		$("#sonoHid").val(sonotxt);
+		
+		//달력을 클릭했을 때 서버로 데이터를 넘겨 발주코드를 생성
+		$("#soCodeMakeDate").on('change', function(){
 			
-			let code = {
+			var v = $(this).val();
+			
+			$.ajax({
+				url: '/sales/makePoCode',
+				type: 'GET',
+				data: {data: v},
+				success : function(response){
+					console.log(response)
+					$("#soCodeTxt").val(response);
+				},
+				error : function(error){
+					console.log("error:" + error)
+				}
+				
+			});
+		})
+		
+		
+		//부서와 직위가 변할 때 마다 다른 직원 목록 가져오기
+		let deptCode = $("#deptSelected").val();
+		let posCode = $("#posSelected").val();
+		
+		let code = {
+			"deptCode" : deptCode,
+			"posCode" : posCode
+		};
+		
+		ajaxExe(code);
+		
+		//부서 셀이 변경될 때 마다 내용 갱신 후 ajaxExe(서버쪽으로 전송)에 반영
+		$("#deptSelected").on("change",function(){
+			//alert("dept변경");
+			deptCode = $("#deptSelected").val();
+			posCode = $("#posSelected").val();
+			
+			code = {
     			"deptCode" : deptCode,
     			"posCode" : posCode
     		};
-    		
+			
 			ajaxExe(code);
-			
-			//부서 셀이 변경될 때 마다 내용 갱신 후 ajaxExe(서버쪽으로 전송)에 반영
-    		$("#deptSelected").on("change",function(){
-    			//alert("dept변경");
-    			deptCode = $("#deptSelected").val();
-				posCode = $("#posSelected").val();
-				
-				code = {
-	    			"deptCode" : deptCode,
-	    			"posCode" : posCode
-	    		};
-				
-				ajaxExe(code);
-    		})
-    		
-			//직급 셀이 변경될 때 마다 내용 갱신 후 ajaxExe(서버쪽으로 전송)에 반영
-    		$("#posSelected").on("change", function(){
-				deptCode = $("#deptSelected").val();
-				posCode = $("#posSelected").val();
-				
-				code = {
-	    			"deptCode" : deptCode,
-	    			"posCode" : posCode
-	    		};
-				
-				ajaxExe(code);
-    		})
-			
-			
-			function ajaxExe(code){
-				if(code){
-					$.ajax({
-		    			url:"/sales/getEmpName",
-		    			type:"GET",
-		    			data: code,
-		    			success: function(data){
-		    				let $select = $("#empSelected");
-							
-							//$select.find("option:not(:first)").remove();
-							$select.find("option").remove();
-							
-							//서버로부터 data를 가져와서 셀렉션에 forEach로 추가
-							data.forEach(emp => {
-								console.log(emp)
-								let option = `<option value="${emp.EMP_NO}">${emp.EMP_NAME}</option>`;
-								$select.append(option);								
-							});
-		    			},
-		    			error: function(error){
-		    				alert(error);
-		    			}
-		    		}); 
-				}
-			}
-    	});
+		})
 		
-		//입력 버튼
-		function validateForm(event) {
+		//직급 셀이 변경될 때 마다 내용 갱신 후 ajaxExe(서버쪽으로 전송)에 반영
+		$("#posSelected").on("change", function(){
+			deptCode = $("#deptSelected").val();
+			posCode = $("#posSelected").val();
 			
-			/* 
+			code = {
+    			"deptCode" : deptCode,
+    			"posCode" : posCode
+    		};
 			
-			여기 유요성 검사 
-			
-			*/
-			
-			//setTimeout으로 창을 닫는다
-			setTimeout(function(){
-				
-				window.opener.location.reload();
-				
-				window.close();
-				
-			},1000);
-			
-			//서브밋 setTimeout 이후 실행
-			document.getElementById("soForm").submit();
+			ajaxExe(code);
+		})
+		
+		
+		function ajaxExe(code){
+			if(code){
+				$.ajax({
+	    			url:"/sales/getEmpName",
+	    			type:"GET",
+	    			data: code,
+	    			success: function(data){
+	    				let $select = $("#empSelected");
+						
+						//$select.find("option:not(:first)").remove();
+						$select.find("option").remove();
+						
+						//서버로부터 data를 가져와서 셀렉션에 forEach로 추가
+						data.forEach(emp => {
+							console.log(emp)
+							let option = `<option value="${emp.EMP_NO}">${emp.EMP_NAME}</option>`;
+							$select.append(option);								
+						});
+	    			},
+	    			error: function(error){
+	    				alert(error);
+	    			}
+	    		}); 
+			}
 		}
-	    </script>
+	});
+	
+    </script>
+	
+	</div> <!-- layout:fragment="content" -->
+	
+	<th:block layout:fragment="script">
 	</th:block>
 </body>
 

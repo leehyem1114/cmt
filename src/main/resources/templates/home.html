@@ -5,11 +5,12 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layouts/layout}"> 
 <head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" /> <!-- 토스트 -->
-	 <th:block layout:fragment="script">
-    	<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
-<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+	<th:block layout:fragment="script">
+    <link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
+	<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
 
         <script type="text/javascript">
             /* 
@@ -45,10 +46,7 @@
                      ],
                  });
              });
-            
 
-             
-             
              
             
             // DOMContentLoaded 이벤트: 페이지 로딩 완료 후 실행
@@ -91,39 +89,102 @@
 <!-- 	        <span th:text="${#authentication.name}"></span>님, 환영합니다! -->
 			<br>
 	    <!-- ------------------나의 카드------------------ -->
-			<div class="card-body py-4 px-4">
-	           <div class="d-flex align-items-center">
-	               <div class="avatar avatar-xl">
-	                   <img th:if="${#authentication.principal.user.empProfile == null}" th:src="@{/imagess/profile_preview.png}" alt="Face 1">
-	                   <img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${#authentication.principal.user.empProfile}}">
-	               </div>
-	               <div class="ms-3 name">
-	                   <h5 class="font-bold" th:text="${#authentication.principal.user.empName}"></h5>
-	                   <h6 class="text-muted mb-0" th:text="${'@'+ #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
-	               </div>
-	           </div>
-	       </div>
+   			<div class="d-flex gap-3 flex-wrap">
+   			<a href="/emp/myEmplist">
+				<div class="card" style="width: 400px; min-width: 160px; text-align: center;">
+					<div class="card-body py-3 px-3">
+			           <div class="d-flex align-items-center">
+			               <div class="avatar avatar-xl">
+			                   <img th:if="${#authentication.principal.user.empProfile == null}" th:src="@{/imagess/profile_preview.png}" alt="Face 1">
+			                   <img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${#authentication.principal.user.empProfile}}">
+			               </div>
+			               <div class="ms-3 name">
+			                   <h5 class="font-bold" th:text="${#authentication.principal.user.empName}"></h5>
+			                   <h6 class="text-muted mb-0" th:text="${'@'+ #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
+			               </div>
+			           </div>
+			       </div>
+				</div>
+			</a>	       
+				
+	            <a href="/eapproval/documents">
+					<div class="card" style="width: 300px; min-width: 160px; text-align: center;">
+		            <div class="card-body px-3 py-3">
+		                <div class="row" >
+		                    <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+		                        <div class="stats-icon purple mb-2">
+		                            <i class="fa-solid fa-user-check"></i>
+		                        </div>
+		                    </div>
+		                    <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+		                        <h6 class="text-muted font-semibold" style="white-space: nowrap;">결재 대기 중인 문서</h6>
+		                        <h6 class="font-extrabold mb-0"><span th:text="${pendingApprovalCount}">0</span>개</h6>
+		                    </div>
+		                </div> 
+		            </div>
+		        	</div>
+	        	</a>
+	        	<a href="/eapproval/documents">
+					<div class="card" style="width: 300px; min-width: 160px; text-align: center;">
+		            <div class="card-body px-3 py-3">
+		                <div class="row" >
+		                    <div class="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
+		                        <div class="stats-icon purple mb-2">
+		                            <i class="fa-solid fa-list-check"></i>
+		                        </div>
+		                    </div>
+		                    <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
+		                        <h6 class="text-muted font-semibold" style="white-space: nowrap;">진행중인 기안 문서</h6>
+		                        <h6 class="font-extrabold mb-0"><span th:text="${myDraftCount}">0</span>개</h6>
+		                    </div>
+		                </div> 
+		            </div>
+		       		</div>
+	       		 </a>
+			</div>
+        
+        <div class="col-12 col-xl-8">
+           <div class="card">
+               <div class="card-header">
+                   <h4>NOTICE <i class="fa-solid fa-comment"></i></h4>
+               </div>
+               <div class="card-body">
+                   <div class="table-responsive">
+                       <table class="table table-hover table-lg">
+                           <thead>
+                               <tr>
+                                   <th>Name</th>
+                                   <th>Dept</th>
+                                   <th>Title</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+						    <tr th:each="notice, iterStat : ${noticeList}" th:if="${iterStat.index < 3}">
+						        <td class="col-3">
+						            <div class="d-flex align-items-center">
+						            <p class="mb-0" th:text="${notice.empName}">이름</p>
+						            </div>
+						        </td>
+						        <td class="col-3">
+						            <div class="d-flex align-items-center">
+						            <p class="mb-0" th:text="${notice.deptName + ' / ' + notice.positionName}">부서 / 직급</p>
+						            </div>
+						        </td>
+						        <td class="col-auto">
+						                <p class="font-bold ms-3 mb-0" th:text="${notice.title}">제목</p>
+						        </td>
+						    </tr>
+						</tbody>
+                       </table>
+                   </div>
+               </div>
+           </div>
+		</div>
 	       
 	       
 	    <!-- ------------------------------------ -->
-			<div id="calendar" style="height: 600px" ></div> <!-- 캘린더 -->
+			<div id="calendar" style="height: 650px;"></div> <!-- 캘린더 -->
 	    <!-- ------------------------------------ -->
-	        <a th:href="@{/logout}">로그아웃</a>
-	    </div>
-
-	    <!-- 로그아웃 상태일 경우 -->
-	    <div th:unless="${#authorization.expression('isAuthenticated()')}">
-	        <a th:href="@{/login}">로그인</a>
-	    </div>
-	    <!-- ----------------- -->
-	</div>
-	<br>
-	<a href="joinForm">회원가입</a>
-	<br>
-	<br>
-	<br>
-	<a href="pdt">완제품 페이지</a>			
-	</div>
     
     <!-- 
         페이지별 JavaScript 추가 영역.

@@ -65,7 +65,7 @@ public class SalesOrder {
 	 * List<SalesOrder> findByEmpNo(Long empNo);
 	 */
 	@Column(name = "EMP_NO")
-	private Long empNo; //사원코드
+	private Long empNo; //사원번호
 	
 	@Column(name = "WHS_CODE")
 	private String whsCode;  //창고코드

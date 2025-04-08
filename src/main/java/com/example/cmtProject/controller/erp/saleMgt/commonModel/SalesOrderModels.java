@@ -46,7 +46,8 @@ public class SalesOrderModels {
 	public void commonSalesOrderModels(Model model) {
 		
 		//거래처
-		List<Clients> cltList = clientsRepository.findAll();
+		//List<Clients> cltList = clientsRepository.findAll();
+		List<Clients> cltList = clientsRepository.findByCltType("ORDER");
 		
 		//인사
         List<Employees> empList = employeesRepository.findAll();

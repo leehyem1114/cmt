@@ -16,7 +16,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class EmpRegistDTO {
 	private Long empNo;        // e.emp_no
-	private String empLevel;    // 이름
+	private String empLevel;    // 권한
     private String empName;    // 이름
     private String empId;    // 사번
     private String empPassword; // 비밀번호
@@ -35,6 +35,7 @@ public class EmpRegistDTO {
     private String empAddress2; // 상세주소
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate empStartDate; // 입사일
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate empEndDate; // 퇴사일
     private String empEndReason; // 퇴사사유
     private String employmentType; // 채용구분

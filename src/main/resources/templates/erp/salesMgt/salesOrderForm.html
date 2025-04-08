@@ -92,7 +92,7 @@
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
 	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
-			<button type="button" class="completeBtn" onclick="location.reload()">✏️ 수정</button>
+			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
 	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
 
 	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
@@ -176,6 +176,7 @@
 		<!-- 자바 스크립트 시작, jQuery 구문 포함 -->
 		<script src="/js/jquery-3.7.1.js"></script>
 	    <script th:inline="javascript">
+			
 		console.log(/*[[${soStatusList}]]*/ []);
 		//===================================== Grid부분 시작 ===============================================
 		
@@ -423,7 +424,7 @@
 			window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
     	}
 		
-		//수정 버튼 클릭시 실행되는 수정 창
+		//수정 버튼 클릭시 실행되는 수정 창 - 현재 수정 버튼 사용하지 않음
 		function soEditOpenWindows(){
 			
 			if(gridCheck.length <= 0){
@@ -442,6 +443,23 @@
 		
 		//===================================== jQuery 시작 ===============================================
 		$(document).ready(function(){
+			
+			//수정 버튼을 눌렀을 때 "현재 수정 모드"
+			//검색 버튼을 눌렀을 때 "현재 검색 모드"	로 변경하는 코드
+			//<button type="button" class="completeBtn" onclick="location.reload()">✏️ 수정</button>
+				       // <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
+			$("#completeBtn").on('click', function(){
+				
+				$("#completeBtn").text("✏️현재 수정 모드")
+				$("#searchBtn").text("🔍 검색")
+			});
+			
+			$("#searchBtn").on('click', function(){
+				$("#completeBtn").text("✏️ 수정")
+				$("#searchBtn").text("🔍현재 검색 모드")
+			});
+			
+					
 			
 			//제품명 가져오기
 			$("#pdtCode").change(function(){
@@ -483,7 +501,6 @@
 			
 			//검색 버튼 클릭시
 			$("#searchBtn").on('click', function(){
-				
 				
 				let data = {
 					soCode: $("#soCode").val(),
