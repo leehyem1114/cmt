@@ -353,7 +353,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     /**
      * 휴가일수 추출 - 자동 계산된 값 활용
      */
-    private int extractLeaveDays(Document htmlDoc, LocalDateTime startDate, LocalDateTime endDate) {
+    private double extractLeaveDays(Document htmlDoc, LocalDateTime startDate, LocalDateTime endDate) {
         // 자동 계산된 휴가일수 추출 시도
         String leaveDaysStr = formDataExtractor.extractField(htmlDoc, "#leaveDays");
         log.debug("자동 계산된 휴가일수 추출 시도: '{}'", leaveDaysStr);
@@ -361,18 +361,13 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         if (leaveDaysStr != null && !leaveDaysStr.trim().isEmpty()) {
             try {
                 // 숫자로 파싱 시도
-                return Double.valueOf(leaveDaysStr).intValue();
+                return Double.valueOf(leaveDaysStr);
             } catch (NumberFormatException e) {
                 log.debug("휴가일수 파싱 실패: {}", leaveDaysStr);
             }
         }
         
-        // 자동 계산 값이 없으면 직접 계산
-        if (startDate != null && endDate != null) {
-            return (int) ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate()) + 1;
-        }
-        
         // 기본값
-        return 1;
+        return 1.0;
     }
 }
