@@ -91,11 +91,12 @@
 			<div><h2>수주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
 			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
 	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
+	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+			<button type="button" class="excelBtn" id="delBtn" onclick="soDelOpenWindows()">❎ 삭제</button>
 
-	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
+	        <!-- <button class="cancelBtn" onclick="soDelOpenWindows()">✏️ 수정</button> 
 				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
 	        <button class="helpBtn">❓ HELP</button>
 			</div>
@@ -424,10 +425,16 @@
 			window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
     	}
 		
-		//수정 버튼 클릭시 실행되는 수정 창 - 현재 수정 버튼 사용하지 않음
-		function soEditOpenWindows(){
+		//삭제 버튼 클릭시 실행되는 수정 창 - 현재 수정 버튼 사용하지 않음
+		function soDelOpenWindows(){
 			
-			if(gridCheck.length <= 0){
+			//gridCheck = grid.getCheckedRowKeys(); 선택된 키값 가져오기
+			var checkedValue = grid.getCheckedRows();
+			var checkedArray = checkedValue.map(row => row.soNo)
+			
+			console.log(checkedArray);
+			
+			if(checkedValue.length <= 0){
 				
 				Swal.fire({
 				  icon: "warning",
@@ -437,9 +444,33 @@
 				return;
 			}
 			
-			let gridCheckString = JSON.stringify(gridCheck);
-			window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
-		};
+			Swal.fire({
+				title: '삭제 하시겠습니까?',
+			   	text: "이 작업은 되돌릴 수 없습니다!",
+			  	icon: 'warning',
+			  	showCancelButton: true,
+			  	confirmButtonText: '확인',
+			  	cancelButtonText: '취소'
+			}).then((result) => {
+			  if (result.isConfirmed) {
+			    
+					$.ajax({
+						url: "/sales/delItems",
+						type: "POST",
+						contentType: "application/json",
+						data: JSON.stringify(checkedValue),
+						success: function(result){
+							if(result === "SUCCESS"){
+								location.reload();
+							}
+						},
+						error: function(msg){
+							console.log("error:" + msg);
+						}
+					});	
+			  	} 
+			});
+		};//soDelOpenWindows
 		
 		//===================================== jQuery 시작 ===============================================
 		$(document).ready(function(){
