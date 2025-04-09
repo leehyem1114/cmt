@@ -69,4 +69,7 @@ public class PurchasesOrder {
 	@Column(name = "PO_COMMENTS")
 	private String poComments;  //비고
 	
+	@Column(name = "PO_VISIBLE")
+	private String poVisible;
+	
 }

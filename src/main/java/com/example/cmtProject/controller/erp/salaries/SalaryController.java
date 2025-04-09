@@ -302,10 +302,18 @@ public class SalaryController {
 
 	// 급여 대장 조회
 	@GetMapping("/payroll")
-	public String getPayroll(Model model  ) {
-		List<PaymentDTO> payrolls = salaryService.getPayrolls();
-		model.addAttribute("payrolls", payrolls);
+	public String getPayroll(Model model) {
+		List<PaymentDTO> payrollSummaryList = salaryService.getMonthlyPayrollSummaryList();
+		model.addAttribute("payrollSummaryList", payrollSummaryList);
 		return "erp/salaries/payroll";
+	}
+	
+	// 월별 급여 대장 상세 조회
+	@PostMapping("/payroll/detail")
+	@ResponseBody
+	public List<PaymentDTO> getPayrollDetail(@RequestParam("payMonth") String payMonth) {
+		System.out.println("전달된 payMonth = " + payMonth);
+	    return salaryService.getMonthlyPayrollDetailList(payMonth);
 	}
 	
 	

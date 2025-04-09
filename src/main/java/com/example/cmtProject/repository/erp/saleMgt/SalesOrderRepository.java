@@ -78,6 +78,11 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 	@Transactional
 	@Query(value = "UPDATE SALES_ORDER SET EMP_NO = :empNo WHERE SO_NO = :soNo", nativeQuery = true)
 	int updateEmpNo(@Param("empNo") Long empNo, @Param("soNo") Long soNo);
+
+	@Transactional
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("UPDATE SalesOrder s SET s.soVisible = :visibleType WHERE s.soNo IN :soNoList")
+	void updateSoVisibleBySoNo(@Param("visibleType") String visibleType, @Param("soNoList") List<Integer> soNoList);
 }
 
 /*

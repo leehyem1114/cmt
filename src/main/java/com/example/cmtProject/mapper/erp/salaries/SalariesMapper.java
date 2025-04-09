@@ -54,7 +54,10 @@ public interface SalariesMapper {
 
 	void savePaymentDto(PaymentTempDTO pdto);
 	
-	// 급여 대장
-	List<PaymentDTO> getPayrolls();
+	// 월별 급여 대장 간략 조회
+	List<PaymentDTO> getMonthlyPayrollSummaryList();
+	
+	// 월별 급여 대장 상세 조회 
+	List<PaymentDTO> getMonthlyPayrollDetailList(@Param("payMonth") String payMonth);
 	
 }

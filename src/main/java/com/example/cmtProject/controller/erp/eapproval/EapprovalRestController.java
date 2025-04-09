@@ -209,7 +209,7 @@ public class EapprovalRestController {
         log.debug("결재자 목록 조회 요청");
         try {
 
-            List<EmpListPreviewDTO> employees = empService.getEmpList();
+            List<EmpListPreviewDTO> employees = documentService.getApproversExceptDrafter();
             
             if (employees == null) {
                 return ApiResponse.error("결재자 목록을 가져올 수 없습니다", ResponseCode.SERVER_ERROR);

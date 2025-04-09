@@ -70,9 +70,7 @@ public class Leave {
     private String levRemarks; // 비고 (WKT_REMARKS)
     
     @Column(name = "DOC_ID")
-    private String docId; // 문서 아이디
-    
-    
+    private String docId; // 문서 아이디 
     
     public Leave toDTO() {
     	return Leave.builder()
@@ -93,8 +91,6 @@ public class Leave {
     			.docId(docId)
     			.build();
     }
-
-
     
     @Builder
 	public Leave(Long levNo, String empId,String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
@@ -115,9 +111,4 @@ public class Leave {
 		this.levRemarks = levRemarks;
 		this.docId = docId;
 	}
-    
-    
-    
-    
-
 }

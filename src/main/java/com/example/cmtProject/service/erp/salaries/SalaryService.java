@@ -59,13 +59,18 @@ public class SalaryService {
 		return salMapper.getOverTimes(paymentDTO);
 	}
 	
-	// 급여 대장 조회
-	public List<PaymentDTO> getPayrolls() {
+	// 월별 급여 대장 간략 조회
+	public List<PaymentDTO> getMonthlyPayrollSummaryList() {
 //		List<Payment> payrolls = salRepository.findAll();
 //		return payrolls.stream()
 //				.map(payment -> payment.toDto())
 //				.collect(Collectors.toList());
-		return salMapper.getPayrolls();
+		return salMapper.getMonthlyPayrollSummaryList();
+	}
+	
+	// 월별 급여 대장 상세 조회
+	public List<PaymentDTO> getMonthlyPayrollDetailList(String payMonth) {
+		return salMapper.getMonthlyPayrollDetailList(payMonth);
 	}
 
 	// 직급별 기본급 계산
@@ -109,8 +114,6 @@ public class SalaryService {
 
 	// 급여 이체
 	public void savePaymentMap(Map<String, Object> m) {
-		System.out.println("DFDSFSFSDFDSF");
-		
 		salMapper.savePaymentMap(m);
 	}
 
