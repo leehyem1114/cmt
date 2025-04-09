@@ -21,7 +21,7 @@
 		    L.LEV_START_DATE, 
 		    L.LEV_END_DATE, 
 		    L.LEV_DAYS, 
-		    15 - NVL(L.LEV_USED_DAYS, 0) - NVL(L.LEV_DAYS, 0) AS LEV_LEFT_DAYS,
+		    #{vacationDaysDays} - NVL(L.LEV_USED_DAYS, 0) - NVL(L.LEV_DAYS, 0) AS LEV_LEFT_DAYS,
 		    L.LEV_REASON,
 		    L.LEV_REQ_DATE,
 		    L.LEV_APPROVAL_STATUS,
@@ -101,7 +101,7 @@
 		    E.EMP_NAME,
 		    C_DEPT.CMN_DETAIL_NAME AS DEPT_NAME,
 		    NVL(L.LEV_USED_DAYS, 0) AS LEV_USED_DAYS,
-	   		15 - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
+	   		#{vacationDaysDays} - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
 		FROM EMPLOYEES E
 		LEFT JOIN LEAVES L ON L.EMP_ID = E.EMP_ID
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
@@ -154,21 +154,23 @@
 			LEV_APPROVAL_STATUS,
 			LEV_APPROVER,
 			LEV_APPROVAL_DATE,
-			LEV_REMARKS
+			LEV_REMARKS,
+			DOC_ID
 			)
 		VALUES(
-			#{emp.empId},                <!-- Employees 객체의 empNo -->
+			#{empId},                <!-- Employees 객체의 empNo -->
 	        #{dto.levType},               <!-- LeaveDTO의 필드들 -->
 	        #{dto.levStartDate},
 	        #{dto.levEndDate},
 	        #{dto.levDays, jdbcType=DOUBLE},
-	        #{dto.levUsedDays, jdbcType=DOUBLE} + #{dto.levDays, jdbcType=DOUBLE}
+	        #{dto.levUsedDays, jdbcType=DOUBLE},
 	        #{dto.levReason},
 	        SYSDATE,
-	        '대기',
+	        #{dto.levApprovalStatus},
 	        #{dto.levApprover},
 	        #{dto.levApprovalDate},
-	        #{dto.levRemarks}
+	        #{dto.levRemarks},
+	        #{docId}
 			)
 	</insert>
 	

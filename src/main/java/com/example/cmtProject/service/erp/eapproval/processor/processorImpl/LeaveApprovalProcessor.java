@@ -76,6 +76,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
                 // 결재선에서 마지막 결재자 추출 로직은 이미 extractLeaveData에 있음
                 log.warn("결재자 정보를 설정할 수 없습니다.");
             }
+
             
             // 2. 기안자(휴가 신청자) 정보 생성 - 중요: document.getDrafterId() 사용
             Employees drafterUser = new Employees();
@@ -135,6 +136,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
                 log.warn("결재자 정보를 설정할 수 없습니다.");
             }
             
+
             // 2. 기안자(휴가 신청자) 정보 생성 - 중요: document.getDrafterId() 사용
             Employees drafterUser = new Employees();
             drafterUser.setEmpId(document.getDrafterId());
@@ -143,6 +145,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             leaveService.insertLeaveWithDocId(leaveDTO, drafterUser, document.getDocId());
             log.info("휴가 반려 정보 저장 완료: 기안자={}, 결재자={}, 문서ID={}", 
                    document.getDrafterId(), leaveDTO.getLevApprover(), document.getDocId());
+
             
             return true;
         } catch (Exception e) {
