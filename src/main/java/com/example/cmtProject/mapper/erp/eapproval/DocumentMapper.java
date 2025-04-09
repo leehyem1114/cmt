@@ -67,10 +67,21 @@ public interface DocumentMapper {
     
     /**
      * 상태별 문서 목록 조회
-     * @param docStatus 문서 상태
+     * @param docStatus 문서 상태 ------사용자 없으면 삭제
      * @return 문서 목록
      */
 	public List<DocumentDTO> selectDocumentsByStatus(String docStatus);
+	
+	
+	/**
+	 * 상태별 문서 목록 조회 (특정 사용자 관련 문서만)
+	 * @param docStatus 문서 상태
+	 * @param userId 사용자 ID
+	 * @return 문서 목록
+	 */
+	List<DocumentDTO> selectDocumentsByStatusAndRelatedUser(
+	        @Param("docStatus") String docStatus, 
+	        @Param("userId") String userId);
     
     /**
      * 결재자별 대기 문서 목록 조회
