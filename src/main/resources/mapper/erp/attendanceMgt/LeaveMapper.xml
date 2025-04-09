@@ -146,9 +146,9 @@
 			EMP_ID, 
 			LEV_TYPE, 
 			LEV_START_DATE, 
-			LEV_END_TYPE, 
+			LEV_END_DATE, 
 			LEV_DAYS,
-			LEV_LEFT_DAYS,
+			LEV_USED_DAYS,
 			LEV_REASON,
 			LEV_REQ_DATE,
 			LEV_APPROVAL_STATUS,
@@ -161,16 +161,26 @@
 	        #{dto.levType},               <!-- LeaveDTO의 필드들 -->
 	        #{dto.levStartDate},
 	        #{dto.levEndDate},
-	        #{dto.levDays},
-	        #{dto.levLeftDays},
+	        #{dto.levDays, jdbcType=DOUBLE},
+	        #{dto.levUsedDays, jdbcType=DOUBLE} + #{dto.levDays, jdbcType=DOUBLE}
 	        #{dto.levReason},
-	        now(),
+	        SYSDATE,
 	        '대기',
 	        #{dto.levApprover},
 	        #{dto.levApprovalDate},
 	        #{dto.levRemarks}
 			)
 	</insert>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	<!-- 결재 연동을 위한 쿼리 추가 -->
     
@@ -193,6 +203,7 @@
             LEV_END_DATE, 
             LEV_DAYS,
             LEV_LEFT_DAYS,
+            LEV_USED_DAYS,
             LEV_REASON,
             LEV_REQ_DATE,
             LEV_APPROVAL_STATUS,
@@ -207,6 +218,7 @@
             #{dto.levEndDate},
             #{dto.levDays},
             #{dto.levLeftDays},
+            #{dto.levUsedDays},
             #{dto.levReason},
             SYSDATE,
             #{dto.levApprovalStatus},

@@ -30,31 +30,31 @@ public class Leave {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long levNo; // 휴가NO
     
-    @Column(name = "EMP_ID", nullable = false)
+    @Column(name = "EMP_ID")
     private String empId; // 사원번호 (EMP_NO), 사원 테이블 참조
 
-    @Column(name = "LEV_TYPE", nullable = false)
+    @Column(name = "LEV_TYPE")
     private String levType; // 휴가 유형
 
-    @Column(name = "LEV_START_DATE", nullable = false)
+    @Column(name = "LEV_START_DATE")
     private LocalDateTime levStartDate; // 휴가 시작일
     
-    @Column(name = "LEV_END_DATE", nullable = false)
+    @Column(name = "LEV_END_DATE")
     private LocalDateTime levEndDate; // 휴가 종료일
     
-    @Column(name = "LEV_DAYS", nullable = false)
-    private double levDays; // 휴가 신청 일수
+    @Column(name = "LEV_DAYS")
+    private Double levDays; // 휴가 신청 일수
     
-    @Column(name = "LEV_USED_DAYS", nullable = false)
-    private double levUsedDays; // 사용한 휴가 일수
+    @Column(name = "LEV_USED_DAYS")
+    private Double levUsedDays; // 사용한 휴가 일수
     
-    @Column(name = "LEV_LEFT_DAYS", nullable = false)
-    private double levLeftDays; // 휴가 남은 일수
+    @Column(name = "LEV_LEFT_DAYS")
+    private Double levLeftDays; // 휴가 남은 일수
     
-    @Column(name = "LEV_REASON", nullable = false)
+    @Column(name = "LEV_REASON")
     private String levReason; // 휴가 사유
     
-    @Column(name = "LEV_REQ_DATE", nullable = false)
+    @Column(name = "LEV_REQ_DATE")
     private LocalDateTime levReqDate; // 휴가 신청 일시
     
     @Column(name = "LEV_APPROVAL_STATUS")
@@ -70,9 +70,7 @@ public class Leave {
     private String levRemarks; // 비고 (WKT_REMARKS)
     
     @Column(name = "DOC_ID")
-    private String docId; // 문서 아이디
-    
-    
+    private String docId; // 문서 아이디 
     
     public Leave toDTO() {
     	return Leave.builder()
@@ -93,12 +91,10 @@ public class Leave {
     			.docId(docId)
     			.build();
     }
-
-
     
     @Builder
 	public Leave(Long levNo, String empId,String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			double levDays, double levUsedDays, double levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
+			Double levDays, Double levUsedDays, Double levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
 			LocalDateTime levApprovalDate, String levRemarks, String docId) {
 		this.levNo = levNo;
 		this.levType = levType;
@@ -115,9 +111,4 @@ public class Leave {
 		this.levRemarks = levRemarks;
 		this.docId = docId;
 	}
-    
-    
-    
-    
-
 }

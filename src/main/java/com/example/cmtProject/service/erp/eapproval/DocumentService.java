@@ -177,11 +177,20 @@ public class DocumentService {
     }
 
     /**
-     * 상태별 문서 목록 조회
+     * 상태별 문서 목록 조회 ---------삭제예정 모든 상태를 조회하기에  혹시나 누가 쓸까봐 나겨둠
      */
     public List<DocumentDTO> getDocumentsByStatus(String status) {
         log.debug("상태별 문서 목록 조회: {}", status);
         return documentMapper.selectDocumentsByStatus(status);
+    }
+    
+    /**
+     * 상태별 문서 목록 조회 (특정 사용자 관련 문서만)
+     * 사용자가 기안자이거나 결재선에 포함된 문서만 조회
+     */
+    public List<DocumentDTO> getDocumentsByStatusAndRelatedUser(String status, String userId) {
+        log.debug("상태별 관련 문서 목록 조회: 상태={}, 사용자={}", status, userId);
+        return documentMapper.selectDocumentsByStatusAndRelatedUser(status, userId);
     }
     
     /**
