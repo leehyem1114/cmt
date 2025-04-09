@@ -27,6 +27,7 @@ public class EmpDTO {
     private String deptName;   // 부서명
     private Long positionNo; // 직위번호 (FK)
     private String deptPosition; //직급
+    private LocalDate empStartDate;
 
  	
 }
