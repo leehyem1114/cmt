@@ -37,7 +37,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean processApproved(DocumentDTO document) {
-        log.info("휴가 신청 결재 완료 처리 시작: 문서ID={}", document.getDocId());
+        log.info("휴가 신청 결재 완료 처리 시작: 문서ID={}, 기안자={}", document.getDocId(), document.getDrafterId());
         
         try {
             // 이미 처리된 휴가가 있는지 확인
@@ -61,42 +61,30 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             leaveDTO.setLevApprovalDate(LocalDateTime.now());
             leaveDTO.setLevRemarks("결재 승인 처리");
             
-            // 결재자 ID가 없는 경우 현재 사용자로 설정
-            if (leaveDTO.getLevApprover() == null) {
-                Employees currentUser = SecurityUtil.getCurrentUser();
-                if (currentUser != null) {
-                    leaveDTO.setLevApprover(currentUser.getEmpId());
-                    log.debug("현재 사용자를 결재자로 설정: {}", currentUser.getEmpId());
-                }
+            // 휴가 유형 코드 변환
+            convertLeaveTypeToCode(leaveDTO);
+            
+            // 중요: 기안자와 결재자 구분 명확하게 처리
+            // 1. 결재자 ID 설정 (승인한 사람)
+            Employees currentUser = SecurityUtil.getCurrentUser();
+            if (currentUser != null) {
+                // 결재자 ID를 levApprover 필드에 설정
+                leaveDTO.setLevApprover(currentUser.getEmpId());
+                log.debug("결재자 정보 설정: {}", currentUser.getEmpId());
+            } else if (leaveDTO.getLevApprover() == null) {
+                // 최종 결재자 정보가 없고, 현재 사용자 정보도 없는 경우 fallback
+                // 결재선에서 마지막 결재자 추출 로직은 이미 extractLeaveData에 있음
+                log.warn("결재자 정보를 설정할 수 없습니다.");
             }
             
-            // 휴가 정보 저장
-            Employees currentUser = SecurityUtil.getCurrentUser();
-            if (currentUser == null) {
-                log.warn("현재 사용자 정보를 가져올 수 없습니다. 기안자 정보 사용");
-                currentUser = new Employees();
-                currentUser.setEmpId(document.getDrafterId());
-            }
-            if (leaveDTO.getLevType().equals("일반휴가")) {
-            	leaveDTO.setLevType("VCN001"); 
-            }
-            if (leaveDTO.getLevType().equals("연차")) {
-            	leaveDTO.setLevType("VCN002"); 
-            }
-            if (leaveDTO.getLevType().equals("병가")) {
-            	leaveDTO.setLevType("VCN003"); 
-            }
-            if (leaveDTO.getLevType().equals("출산휴가")) {
-            	leaveDTO.setLevType("VCN004"); 
-            }
-            if (leaveDTO.getLevType().equals("반차")) {
-            	leaveDTO.setLevType("VCN007"); 
-            }
-            if (leaveDTO.getLevType().equals("경조사")) {
-            	leaveDTO.setLevType("VCN006"); 
-            }
-            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
-            log.info("휴가 신청 정보 저장 완료: 문서ID={}", document.getDocId());
+            // 2. 기안자(휴가 신청자) 정보 생성 - 중요: document.getDrafterId() 사용
+            Employees drafterUser = new Employees();
+            drafterUser.setEmpId(document.getDrafterId());
+            
+            // 3. 휴가 정보 저장 - 기안자 ID 사용 (중요: 기안자 ID로 저장)
+            leaveService.insertLeaveWithDocId(leaveDTO, drafterUser, document.getDocId());
+            log.info("휴가 신청 정보 저장 완료: 기안자={}, 결재자={}, 문서ID={}", 
+                   document.getDrafterId(), leaveDTO.getLevApprover(), document.getDocId());
             
             return true;
         } catch (Exception e) {
@@ -108,7 +96,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean processRejected(DocumentDTO document) {
-        log.info("휴가 신청 결재 반려 처리 시작: 문서ID={}", document.getDocId());
+        log.info("휴가 신청 결재 반려 처리 시작: 문서ID={}, 기안자={}", document.getDocId(), document.getDrafterId());
         
         try {
             // 이미 처리된 휴가가 있는지 확인
@@ -132,25 +120,29 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             leaveDTO.setLevApprovalDate(LocalDateTime.now());
             leaveDTO.setLevRemarks("결재 반려 처리");
             
-            // 결재자 ID가 없는 경우 현재 사용자로 설정
-            if (leaveDTO.getLevApprover() == null) {
-                Employees currentUser = SecurityUtil.getCurrentUser();
-                if (currentUser != null) {
-                    leaveDTO.setLevApprover(currentUser.getEmpId());
-                    log.debug("현재 사용자를 결재자로 설정: {}", currentUser.getEmpId());
-                }
-            }
+            // 휴가 유형 코드 변환
+            convertLeaveTypeToCode(leaveDTO);
             
-            // 휴가 정보 저장 (반려 이력 목적)
+            // 중요: 기안자와 결재자 구분 명확하게 처리
+            // 1. 결재자 ID 설정 (반려한 사람)
             Employees currentUser = SecurityUtil.getCurrentUser();
-            if (currentUser == null) {
-                log.warn("현재 사용자 정보를 가져올 수 없습니다. 기안자 정보 사용");
-                currentUser = new Employees();
-                currentUser.setEmpId(document.getDrafterId());
+            if (currentUser != null) {
+                // 결재자 ID를 levApprover 필드에 설정
+                leaveDTO.setLevApprover(currentUser.getEmpId());
+                log.debug("결재자 정보 설정: {}", currentUser.getEmpId());
+            } else if (leaveDTO.getLevApprover() == null) {
+                // 최종 결재자 정보가 없고, 현재 사용자 정보도 없는 경우 fallback
+                log.warn("결재자 정보를 설정할 수 없습니다.");
             }
             
-            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
-            log.info("휴가 반려 정보 저장 완료: 문서ID={}", document.getDocId());
+            // 2. 기안자(휴가 신청자) 정보 생성 - 중요: document.getDrafterId() 사용
+            Employees drafterUser = new Employees();
+            drafterUser.setEmpId(document.getDrafterId());
+            
+            // 3. 휴가 정보 저장 - 기안자 ID 사용 (중요: 기안자 ID로 저장)
+            leaveService.insertLeaveWithDocId(leaveDTO, drafterUser, document.getDocId());
+            log.info("휴가 반려 정보 저장 완료: 기안자={}, 결재자={}, 문서ID={}", 
+                   document.getDrafterId(), leaveDTO.getLevApprover(), document.getDocId());
             
             return true;
         } catch (Exception e) {
@@ -167,6 +159,37 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     }
     
     /**
+     * 휴가 유형을 코드로 변환
+     */
+    private void convertLeaveTypeToCode(LeaveDTO leaveDTO) {
+        if (leaveDTO.getLevType() == null) return;
+        
+        switch(leaveDTO.getLevType()) {
+            case "일반휴가":
+                leaveDTO.setLevType("VCN001");
+                break;
+            case "연차":
+                leaveDTO.setLevType("VCN002");
+                break;
+            case "병가":
+                leaveDTO.setLevType("VCN003");
+                break;
+            case "출산휴가":
+                leaveDTO.setLevType("VCN004");
+                break;
+            case "반차":
+                leaveDTO.setLevType("VCN007");
+                break;
+            case "경조사":
+                leaveDTO.setLevType("VCN006");
+                break;
+            default:
+                // 코드가 이미 설정된 경우 또는 알 수 없는 유형은 유지
+                break;
+        }
+    }
+    
+    /**
      * HTML 문서에서 휴가 신청 정보 추출
      */
     private LeaveDTO extractLeaveData(Document htmlDoc, DocumentDTO document) {
@@ -174,10 +197,10 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         
         LeaveDTO leaveDTO = new LeaveDTO();
         
-        // 기안자 정보 설정
+        // 중요: 기안자 정보 명확히 설정 - 휴가 신청자는 기안자
         leaveDTO.setEmpId(document.getDrafterId());
         
-        log.info(document.getDrafterId());
+        log.info("휴가 신청자(기안자) ID: {}", document.getDrafterId());
         
         // 휴가 유형 추출
         String leaveType = extractLeaveType(htmlDoc);
@@ -194,12 +217,6 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         Double days = (double) extractLeaveDays(htmlDoc, startDate, endDate);
         leaveDTO.setLevDays(days);
         
-//        // 남은 휴가 일수 설정 (임시값, 실제로는 사용자 정보에서 가져와야 함)
-//        leaveDTO.setLevLeftDays(15 - days); 
-//        
-//        // test위해 사용한일수 임의값
-//        leaveDTO.setLevUsedDays(2);
-        
         // 휴가 사유 추출
         String reason = extractLeaveReason(htmlDoc);
         leaveDTO.setLevReason(reason);
@@ -207,19 +224,20 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         // 신청일시 - 문서 기안일로 설정
         leaveDTO.setLevReqDate(document.getDraftDate());
         
-        //최종 결재자 ID
+        // 최종 결재자 ID 설정
         if(document.getApprovalLines() != null && !document.getApprovalLines().isEmpty()) {
-        
             ApprovalLineDTO lastApprover = document.getApprovalLines()
                     .stream()
                     .max(Comparator.comparing(ApprovalLineDTO::getApprovalOrder))
                     .orElse(null);
             
-            leaveDTO.setLevApprover(lastApprover.getApproverId());
+            if (lastApprover != null) {
+                leaveDTO.setLevApprover(lastApprover.getApproverId());
+                log.debug("결재선에서 최종 결재자 설정: {}", lastApprover.getApproverId());
+            }
         }
         
-        //상태 
-        
+        // 상태 설정
         leaveDTO.setLevApprovalStatus(document.getDocStatus());
         
         log.debug("휴가 신청 정보 추출 완료: {}", leaveDTO);
@@ -354,6 +372,4 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         // 기본값
         return 1;
     }
-
 }
-
