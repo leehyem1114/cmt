@@ -261,9 +261,11 @@
 		                        <li class="submenu-item ">
 		                            <a href="/eapproval/document/new">기안서 작성</a>
 								</li>	
+								<sec:authorize access="hasRole('ROLE_ADMIN')">
 								<li class="submenu-item ">
 								    <a href="/eapproval/forms">문서 양식 관리</a>
 								</li>	
+								</sec:authorize>
 		                    </ul>
 		                </li>
 		                
@@ -460,7 +462,7 @@
 		                    </a>
 		                </li>
 						
-
+<!-- 					<div sec:authorize access="hasRole('ROLE_ADMIN')"> -->
 						<li class="sidebar-title">관리자</li>
 						<li class="sidebar-item  has-sub">
 						    <a href="#" class='sidebar-link'>
@@ -473,6 +475,7 @@
 						        </li>
 						    </ul>
 						</li>
+<!-- 					</div> -->
 		            </ul>
 		            
 		            
