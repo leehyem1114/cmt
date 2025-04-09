@@ -32,7 +32,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
     private final LeaveService leaveService;
     
     // 휴가 신청서 양식 ID - 실제 양식 ID로 변경 필요
-    private static final String LEAVE_FORM_ID = "test001"; 
+    private static final String LEAVE_FORM_ID = "휴가신청서"; 
     
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -77,7 +77,24 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
                 currentUser = new Employees();
                 currentUser.setEmpId(document.getDrafterId());
             }
-            
+            if (leaveDTO.getLevType().equals("일반휴가")) {
+            	leaveDTO.setLevType("VCN001"); 
+            }
+            if (leaveDTO.getLevType().equals("연차")) {
+            	leaveDTO.setLevType("VCN002"); 
+            }
+            if (leaveDTO.getLevType().equals("병가")) {
+            	leaveDTO.setLevType("VCN003"); 
+            }
+            if (leaveDTO.getLevType().equals("출산휴가")) {
+            	leaveDTO.setLevType("VCN004"); 
+            }
+            if (leaveDTO.getLevType().equals("반차")) {
+            	leaveDTO.setLevType("VCN007"); 
+            }
+            if (leaveDTO.getLevType().equals("경조사")) {
+            	leaveDTO.setLevType("VCN006"); 
+            }
             leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
             log.info("휴가 신청 정보 저장 완료: 문서ID={}", document.getDocId());
             
@@ -160,6 +177,8 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         // 기안자 정보 설정
         leaveDTO.setEmpId(document.getDrafterId());
         
+        log.info(document.getDrafterId());
+        
         // 휴가 유형 추출
         String leaveType = extractLeaveType(htmlDoc);
         leaveDTO.setLevType(leaveType);
@@ -172,14 +191,14 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
         leaveDTO.setLevEndDate(endDate);
         
         // 휴가 일수 추출
-        int days = extractLeaveDays(htmlDoc, startDate, endDate);
+        Double days = (double) extractLeaveDays(htmlDoc, startDate, endDate);
         leaveDTO.setLevDays(days);
         
-        // 남은 휴가 일수 설정 (임시값, 실제로는 사용자 정보에서 가져와야 함)
-        leaveDTO.setLevLeftDays(15 - days); 
-        
-        // test위해 사용한일수 임의값
-        leaveDTO.setLevUsedDays(2);
+//        // 남은 휴가 일수 설정 (임시값, 실제로는 사용자 정보에서 가져와야 함)
+//        leaveDTO.setLevLeftDays(15 - days); 
+//        
+//        // test위해 사용한일수 임의값
+//        leaveDTO.setLevUsedDays(2);
         
         // 휴가 사유 추출
         String reason = extractLeaveReason(htmlDoc);
