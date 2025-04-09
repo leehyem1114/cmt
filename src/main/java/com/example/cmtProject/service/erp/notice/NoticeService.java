@@ -1,6 +1,7 @@
 package com.example.cmtProject.service.erp.notice;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,15 @@ public class NoticeService {
 	//공지사항 insert
 	public int regiNoti(NoticeDTO noticeDTO) {
 		return noticeMapper.insertNotice(noticeDTO);
+	}
+	//공지사항 디테일
+	public NoticeDTO getNoticeDetail(Long id) {
+		return noticeMapper.selectNoti(id);
+	}
+
+	public int deleteById(Long noticeId) {
+		return noticeMapper.deleteNoti(noticeId);
+		
 	}
 
 	
