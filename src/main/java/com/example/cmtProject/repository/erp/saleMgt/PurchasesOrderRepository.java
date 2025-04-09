@@ -57,4 +57,9 @@ public interface PurchasesOrderRepository extends JpaRepository<PurchasesOrder, 
 	
 	@Query(value = "SELECT SEQ_PURCHASESORDER_PO_NO.NEXTVAL FROM DUAL", nativeQuery = true)
 	Long getNextPurchasesOrderNextSequences();
+	
+	@Transactional
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("UPDATE PurchasesOrder p SET p.poVisible = :visibleType WHERE p.poNo IN :poNoList")
+	void updatePoVisibleByPoNo(@Param("visibleType") String visibleType, @Param("poNoList") List<Integer> poNoList);
 }
