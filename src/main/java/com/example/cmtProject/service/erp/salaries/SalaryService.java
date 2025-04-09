@@ -72,6 +72,21 @@ public class SalaryService {
 	public List<PaymentDTO> getMonthlyPayrollDetailList(String payMonth) {
 		return salMapper.getMonthlyPayrollDetailList(payMonth);
 	}
+	
+	// 월별 급여 대장 - 부서별 급여 현황
+	public List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth) {
+		
+		List<PaymentDTO> result = salMapper.getMonthlyDeptPayrollList(payMonth);
+		System.out.println("호가인" + result);
+		
+		return result;
+	}
+	
+	// 월별 급여 대장 - 전 직원 급여 합계
+	public Map<String, Object> getMonthlyPayrollTotalList(String payMonth) {
+		System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"+payMonth);
+		return salMapper.getMonthlyPayrollTotalList(payMonth);
+	}
 
 	// 직급별 기본급 계산
 	public List<PayBasicDTO> getPayBasic() {
@@ -120,7 +135,6 @@ public class SalaryService {
 	public void savePaymentDto(PaymentTempDTO pdto) {
 		salMapper.savePaymentDto(pdto);
 	}
-
 
 
 
