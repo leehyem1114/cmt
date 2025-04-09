@@ -70,16 +70,19 @@ public class LeaveController {
     	LocalDate startDate = loginUser.getEmpStartDate();
     	
     	commonCodeName(model, commonService);
+
+//    	leaveService.updateEmployeesAnnualLeaveBase();
     	
+    	   	
     	
     	// 어드민은 모든정보 보기, 매니저는 자기 부서만, 사원은 자기거만 보기
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
     		// ADMIN은 모든 휴가정보 조회
-    		List<LeaveDTO> leaveList = leaveService.getAllLeaves(startDate);
+    		List<LeaveDTO> leaveList = leaveService.getAllLeaves();
     		model.addAttribute("leaveList", leaveList);
     		
     		// ADMIN은 모든 휴가 보유내역 조회
-    		List<LeaveDTO> usedLeftList = leaveService.getAllUsedLeftLeaves(startDate);
+    		List<LeaveDTO> usedLeftList = leaveService.getAllUsedLeftLeaves();
     		model.addAttribute("usedLeftList" ,usedLeftList);
     		
     	}else if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"))) {

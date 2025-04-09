@@ -12,7 +12,7 @@ import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
 public interface LeaveMapper {
 
 	// ADMIN은 모든 휴가정보 조회
-	List<LeaveDTO> getAllLeaves(int vacationDaysDays);
+	List<LeaveDTO> getAllLeaves();
 	
 	// MANAGER는 같은 부서 출결정보 조회
 	List<LeaveDTO> getLeavesByDept(Long deptNo);
@@ -21,7 +21,7 @@ public interface LeaveMapper {
 	List<LeaveDTO> getLeavesByEmpId(String empId);
 	
 	// ADMIN은 모든 휴가 보유내역 조회
-	List<LeaveDTO> getAllUsedLeftLeaves(int vacationDaysDays);
+	List<LeaveDTO> getAllUsedLeftLeaves();
 	
 	// MANAGER은 같은 부서 휴가 보유내역 조회
 	List<LeaveDTO> getUsedLeftLeavesByDept(Long deptNo);
@@ -31,8 +31,14 @@ public interface LeaveMapper {
 
 	// 휴가 일정 관리 저장
 	void insertLeave(@Param("dto") LeaveDTO dto, @Param("empId") String empId, @Param("docId") String docId);
+	
+	// 1년에 한번 휴가일수 추가되는 메서드
+	void updatelLeaveLeftDays(@Param("empId") String empId, @Param("levLeftDays") int levLeftDays);
 
+	// 사원 추가시 휴가일도 추가
+	void insertLeaveEmp(@Param("empId") String empId, @Param("vacationDaysDays") int vacationDaysDays);
 
+	
 	
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -50,6 +56,8 @@ public interface LeaveMapper {
     int updateLeaveStatus(@Param("levNo") Long levNo, 
                         @Param("status") String status, 
                         @Param("remarks") String remarks);
+
+	
 }
 
 

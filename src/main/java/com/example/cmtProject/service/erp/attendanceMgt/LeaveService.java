@@ -11,8 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
+import com.example.cmtProject.dto.erp.employees.EmpDTO;
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
+import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.erp.attendanceMgt.LeaveMapper;
+import com.example.cmtProject.mapper.erp.employees.EmployeesMapper;
 
 @Service
 public class LeaveService {
@@ -20,7 +24,9 @@ public class LeaveService {
 	private static final Logger logger = LoggerFactory.getLogger(LeaveService.class);
 	
 	@Autowired
-	LeaveMapper leaveMapper;
+	private LeaveMapper leaveMapper;
+	@Autowired
+	private EmployeesMapper employeesMapper;
 	
 	// 년차에 따른 연차 갯수 구하는 함수
 	public int calculateAnnualLeaveDays(int yearsOfService) {
@@ -35,10 +41,8 @@ public class LeaveService {
 	
 
 	// ADMIN은 모든 휴가정보 조회
-	public List<LeaveDTO> getAllLeaves(LocalDate startDate) {
-		int yearsOfService = Period.between(startDate, LocalDate.now()).getYears();
-		int vacationDaysDays = calculateAnnualLeaveDays(yearsOfService);
-		return leaveMapper.getAllLeaves(vacationDaysDays);
+	public List<LeaveDTO> getAllLeaves() {
+		return leaveMapper.getAllLeaves();
 	}
 
 	// MANAGER는 같은 부서 출결정보 조회
@@ -52,10 +56,8 @@ public class LeaveService {
 	}    
 	
 	// ADMIN은 모든 휴가 보유내역 조회
-	public List<LeaveDTO> getAllUsedLeftLeaves(LocalDate startDate) {
-		int yearsOfService = Period.between(startDate, LocalDate.now()).getYears();
-		int vacationDaysDays = calculateAnnualLeaveDays(yearsOfService);
-		return leaveMapper.getAllUsedLeftLeaves(vacationDaysDays);
+	public List<LeaveDTO> getAllUsedLeftLeaves() {
+		return leaveMapper.getAllUsedLeftLeaves();
 	}
 	
 	// ADMIN은 모든 휴가 보유내역 조회
@@ -70,8 +72,8 @@ public class LeaveService {
 
 	// 휴가 일정 관리 저장
 	@Transactional
-	public void insertLeave(LeaveDTO dto, Employees loginUser, String docId) {
-		
+	public void insertLeave(LeaveDTO dto, EmpDTO loginUser, String docId) {
+
 	    double levDays = dto.getLevDays() != null ? dto.getLevDays() : 0.0;
 	    double levLeftDays = dto.getLevLeftDays() != null ? dto.getLevLeftDays() : 0.0;
 	    double levUsedDays = dto.getLevUsedDays() != null ? dto.getLevUsedDays() : 0.0;
@@ -91,8 +93,29 @@ public class LeaveService {
 	}
 
 	
+	@Transactional
+	public void insertLeaveEmp(EmpRegistDTO emp) {
+		int yearsOfService = Period.between(emp.getEmpStartDate(), LocalDate.now()).getYears();
+		int vacationDaysDays = calculateAnnualLeaveDays(yearsOfService);
+		leaveMapper.insertLeaveEmp(emp.getEmpId(), vacationDaysDays);
+	}
 	
-	
+//	@Transactional
+//	public void updateEmployeesAnnualLeaveBase() {
+//	    List<EmpListPreviewDTO> allEmployees = employeesMapper.selectEmpList(); // 전체 직원 조회
+//
+//	    for (EmpListPreviewDTO emp : allEmployees) {
+//	        LocalDate startDate = emp.getEmpStartDate();
+//	        if (startDate == null) continue; // 방어 처리
+//
+//	        int yearsOfService = Period.between(startDate, LocalDate.now()).getYears();
+//	        int levLeftDays = calculateAnnualLeaveDays(yearsOfService);
+//	        
+//	        leaveMapper.insertLeaveEmp(emp.getEmpId(), levLeftDays);
+//	        leaveMapper.updatelLeaveLeftDays(emp.getEmpId(), levLeftDays);
+//	    }
+//	}
+
 	
 	
 	
@@ -138,6 +161,9 @@ public class LeaveService {
         int result = leaveMapper.updateLeaveStatus(levNo, status, remarks);
         return result > 0;
     }
+
+
+	
 
     
 }
