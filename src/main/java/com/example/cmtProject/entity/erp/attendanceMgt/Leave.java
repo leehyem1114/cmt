@@ -43,13 +43,13 @@ public class Leave {
     private LocalDateTime levEndDate; // 휴가 종료일
     
     @Column(name = "LEV_DAYS", nullable = false)
-    private int levDays; // 휴가 신청 일수
+    private double levDays; // 휴가 신청 일수
     
     @Column(name = "LEV_USED_DAYS", nullable = false)
-    private int levUsedDays; // 사용한 휴가 일수
+    private double levUsedDays; // 사용한 휴가 일수
     
     @Column(name = "LEV_LEFT_DAYS", nullable = false)
-    private int levLeftDays; // 휴가 남은 일수
+    private double levLeftDays; // 휴가 남은 일수
     
     @Column(name = "LEV_REASON", nullable = false)
     private String levReason; // 휴가 사유
@@ -98,7 +98,7 @@ public class Leave {
     
     @Builder
 	public Leave(Long levNo, String empId,String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			int levDays, int levUsedDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
+			double levDays, double levUsedDays, double levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
 			LocalDateTime levApprovalDate, String levRemarks, String docId) {
 		this.levNo = levNo;
 		this.levType = levType;

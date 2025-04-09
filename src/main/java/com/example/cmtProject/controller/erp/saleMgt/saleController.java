@@ -2,9 +2,11 @@ package com.example.cmtProject.controller.erp.saleMgt;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -277,6 +279,29 @@ public class saleController {
 		System.out.println("mainDtoList:"+ mainDtoList);
 		
 		return mainDtoList;
+	}
+	
+	//선택돤 items 삭제
+	@ResponseBody
+	@PostMapping("/delItems")
+	public String deleteItems(@RequestBody List<Map<String, Object>> data) {
+		
+//		System.out.println("data:" + data);
+		
+		List<Integer> soNoList = new ArrayList<>();
+		
+		for(Map<String, Object> list : data) {
+			
+			Integer soNoTemp = (Integer)list.get("soNo");
+			soNoList.add(soNoTemp);
+		}
+		
+		System.out.println(soNoList);
+		
+		String visibleType = "N";
+		salesOrderRepository.updateSoVisibleBySoNo(visibleType, soNoList);
+		
+		return "SUCCESS";
 	}
 	
 	@GetMapping("/poform")
