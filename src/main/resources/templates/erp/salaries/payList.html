@@ -281,7 +281,12 @@
 		columns.forEach(column => {
 		    if (moneyColumns.includes(column.name)) {
 		        column.formatter = (value) => {
-		            if (!value.value && value.value !== 0) return '';
+		            //if (!value.value && value.value !== 0) return '';
+					let val = value.value;
+					            if (val === null || val === undefined || val === '') {
+					                val = 0;
+					            }
+					
 		            return value.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 		        };
 		    }
