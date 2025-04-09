@@ -132,6 +132,7 @@
 			               </div>
 			               <div class="ms-3 name">
 			                   <h5 class="font-bold" th:text="${#authentication.principal.user.empName}"></h5>
+							   <h6 class="text-muted" th:text="${loginUser.deptName + '팀 / ' + loginUser.deptPosition}">부서 / 직급</h6>
 			                   <h6 class="text-muted mb-0" th:text="${'@'+ #strings.arraySplit(#authentication.principal.user.empEmail, '@')[0]}">[@Email]</h6>
 			               </div>
 			           </div>

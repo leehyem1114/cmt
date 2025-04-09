@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
+import com.example.cmtProject.dto.erp.employees.EmpDTO;
 import com.example.cmtProject.dto.erp.notice.NoticeDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.service.erp.eapproval.DocFormService;
+import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.notice.NoticeService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,6 +38,7 @@ public class MainController {
 	
 	@Autowired
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
+	@Autowired EmployeesService empService;
 	
 	@GetMapping({"","/"})
 
@@ -58,6 +61,8 @@ public class MainController {
 		model.addAttribute("noticeList",noticeList);
 		System.out.println("공지사항 리스트!!!!!!!"+noticeList);
 		
+		EmpDTO loginUser = empService.getEmpList(empId);
+		model.addAttribute("loginUser", loginUser);
 
 		return "home";
 	}
