@@ -22,7 +22,8 @@
     <!-- 기존 form, 버튼, 그리드 등 다 여기 -->
      <h3>공지사항</h3>
      
-     	<button type="button" class="btn btn-primary" onclick="location.href='/noticeForm'">
+     	<button type="button" class="btn btn-primary" onclick="location.href='/noticeForm'"
+     	sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
 		  공지사항 작성
 		</button>    	
 		
@@ -65,9 +66,9 @@
 				
 				grid.on('click', ev => {
 				    const rowKey = ev.rowKey;
-				    const emp = grid.getRow(rowKey);
+				    const notice = grid.getRow(rowKey);
 				
-				    if(emp){
+				    if(notice){
 				        const id = notice.noticeId;
 				        const url = `/notice/detail/${id}`;
 				        const options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
