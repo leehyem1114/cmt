@@ -315,9 +315,13 @@ public class SalaryController {
 		System.out.println("전달된 payMonth = " + payMonth);
 		
 		Map<String, Object> result = new HashMap<>();
-		result.put("department", salaryService.getMonthlyPayrollDetailList(payMonth));
-		//result.put("payTotal", salaryService.getDepartmentPayrollStats(payMonth));
+		result.put("deptList", salaryService.getMonthlyDeptPayrollList(payMonth)); // 부서별 급여 내역
+		System.out.println("SDSFSDDSDF"+salaryService.getMonthlyDeptPayrollList(payMonth));
 		
+		System.out.println(salaryService.getMonthlyPayrollTotalList(payMonth));
+		
+		result.put("payTotal", salaryService.getMonthlyPayrollTotalList(payMonth)); // 전 직원 급여 합계
+
 	    return result;
 	}
 	
