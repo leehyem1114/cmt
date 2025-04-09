@@ -111,14 +111,14 @@
 						<select class="form-select" id="dept" name="dept">
 							<option th:each="dept : ${deptList}" th:value="${dept.cmnDetailCode}"
 								th:text="${dept.cmnDetailName}"></option>
-						</select>
+						</select>-->
 						<div class="input-group mb-2">
 							<select class="form-select" id="position" name="position">
 								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"
 									th:text="${code.cmnDetailName}"></option>
 							</select>
-							<button type="submit" class="btn btn-secondary ms-2">조회</button>
-						</div>-->
+						</div>
+<!--						<button type="submit" class="btn btn-secondary ms-2">조회</button>-->
 						<!-- 그리드 top 시작 -->
 						<div id="gridTop2" style="width: 100%"></div>
 						<!-- 그리드 끝 -->
@@ -425,6 +425,7 @@
     		data: { position: position,
     				empIdList: empIdList
     		},
+			traditional: true,
     		success: function (res) {
 				
 				if(res === 'fail'){

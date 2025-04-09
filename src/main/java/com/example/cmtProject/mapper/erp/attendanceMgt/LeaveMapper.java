@@ -1,5 +1,6 @@
 package com.example.cmtProject.mapper.erp.attendanceMgt;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -11,7 +12,7 @@ import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
 public interface LeaveMapper {
 
 	// ADMIN은 모든 휴가정보 조회
-	List<LeaveDTO> getAllLeaves();
+	List<LeaveDTO> getAllLeaves(int vacationDaysDays);
 	
 	// MANAGER는 같은 부서 출결정보 조회
 	List<LeaveDTO> getLeavesByDept(Long deptNo);
@@ -20,7 +21,7 @@ public interface LeaveMapper {
 	List<LeaveDTO> getLeavesByEmpId(String empId);
 	
 	// ADMIN은 모든 휴가 보유내역 조회
-	List<LeaveDTO> getAllUsedLeftLeaves();
+	List<LeaveDTO> getAllUsedLeftLeaves(int vacationDaysDays);
 	
 	// MANAGER은 같은 부서 휴가 보유내역 조회
 	List<LeaveDTO> getUsedLeftLeavesByDept(Long deptNo);
@@ -29,7 +30,7 @@ public interface LeaveMapper {
 	List<LeaveDTO> getUsedLeftLeavesByEmpId(String empId);
 
 	// 휴가 일정 관리 저장
-	void insertLeave(@Param("dto") LeaveDTO dto, @Param("empId") String empId);
+	void insertLeave(@Param("dto") LeaveDTO dto, @Param("empId") String empId, @Param("docId") String docId);
 
 
 	

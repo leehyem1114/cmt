@@ -95,6 +95,9 @@ public class SalesOrder {
 	
 	@Column(name = "SO_COMMENTS")
 	private String soComments;  //비고
+	
+	@Column(name = "SO_VISIBLE")
+	private String soVisible;
 }
 
 /*

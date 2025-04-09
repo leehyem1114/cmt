@@ -186,9 +186,14 @@ public class EapprovalRestController {
      */
     @GetMapping(PathConstants.API_DOCUMENTS + "/status/{status}")
     public ApiResponse<List<DocumentDTO>> getDocumentsByStatus(@PathVariable("status") String status) {
-        log.debug("상태별 문서 목록 조회 요청: 상태={}", status);
+        // 현재 사용자 ID 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserId = auth.getName();
+        
+        log.debug("상태별 문서 목록 조회 요청: 상태={}, 사용자={}", status, currentUserId);
+        
         try {
-            List<DocumentDTO> documents = documentService.getDocumentsByStatus(status);
+            List<DocumentDTO> documents = documentService.getDocumentsByStatusAndRelatedUser(status, currentUserId);
             return ApiResponse.success(documents);
         } catch (Exception e) {
             log.error("문서 목록 조회 중 오류 발생: {}", e.getMessage(), e);
@@ -204,7 +209,7 @@ public class EapprovalRestController {
         log.debug("결재자 목록 조회 요청");
         try {
 
-            List<EmpListPreviewDTO> employees = empService.getEmpList();
+            List<EmpListPreviewDTO> employees = documentService.getApproversExceptDrafter();
             
             if (employees == null) {
                 return ApiResponse.error("결재자 목록을 가져올 수 없습니다", ResponseCode.SERVER_ERROR);
