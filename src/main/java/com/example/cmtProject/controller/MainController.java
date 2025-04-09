@@ -69,12 +69,12 @@ public class MainController {
 	}
 	
 	@GetMapping("/loginSuccess")
-	public @ResponseBody String loginSucess() {
+	public  String loginSucess() {
 		
 		System.out.println("login 성공");
 		
-		//return "redirect:/";
-		return "<script>alert('로그인 성공'); location.href='/';</script>";
+		return "redirect:/";
+//		return "<script>alert('로그인 성공'); location.href='/';</script>";
 	}
 	
 	@GetMapping("/loginFail")

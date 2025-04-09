@@ -114,7 +114,7 @@ public class EmployeesController {
 		//사원ID 자동생성
 		String empCode = makeEmpCode();
 		model.addAttribute("empCode",empCode);
-		System.out.println(">>>>>>>>>>>>사원번호" + empCode);
+		System.out.println(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
 
 		
 		List<EmpListPreviewDTO> empList = empService.getEmpList();
@@ -150,10 +150,13 @@ public class EmployeesController {
 		int empRegi = empService.insertEmp(empRegistDTO,empProfileFile);
 
 		if(empRegi > 0) {
+
 			leaveService.insertLeaveEmp(empRegistDTO);
+
+			System.out.println("직원추가 완료 : " + empRegistDTO);
+
 			return "redirect:/emp/emplist";
 		}
-		System.out.println("직원추가 완료 : " + empRegistDTO);
 		return "erp/employees/emplist";
 	}
 	

@@ -399,7 +399,7 @@
 		SELECT
 			TO_CHAR(P.PAY_DATE, 'YYYY-MM') AS payMonth,
 			COUNT(DISTINCT P.EMP_ID) AS empCount,
-			SUM(P.PAY_TOTAL) AS payTotalAmount,
+			SUM(P.PAY_TOTAL) AS totalPayAmount,
 			SUM(P.PAY_BONUS_TOTAL) AS totalBonusAmount,
 			SUM(P.PAY_TAX_TOTAL) AS totalTaxAmount
 		FROM PAYMENTS P
@@ -446,6 +446,11 @@
 		LEFT JOIN PAYROLLSUMLIST PS ON P.PAY_DATE = PS.PAY_DATE
 		WHERE TO_CHAR(P.PAY_DATE, 'MM') = #{payMonth}
 		ORDER BY P.EMP_ID
+	</select>
+	
+	<!-- 부서별 급여 현황 -->
+	<select id="">
+	
 	</select>
 
 </mapper>
