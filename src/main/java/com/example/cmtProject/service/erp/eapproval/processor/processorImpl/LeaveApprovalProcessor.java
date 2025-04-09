@@ -95,7 +95,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             if (leaveDTO.getLevType().equals("경조사")) {
             	leaveDTO.setLevType("VCN006"); 
             }
-            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
+            leaveService.insertLeave(leaveDTO, currentUser, document.getDocId());
             log.info("휴가 신청 정보 저장 완료: 문서ID={}", document.getDocId());
             
             return true;
@@ -149,7 +149,7 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
                 currentUser.setEmpId(document.getDrafterId());
             }
             
-            leaveService.insertLeaveWithDocId(leaveDTO, currentUser, document.getDocId());
+            leaveService.insertLeave(leaveDTO, currentUser, document.getDocId());
             log.info("휴가 반려 정보 저장 완료: 문서ID={}", document.getDocId());
             
             return true;
