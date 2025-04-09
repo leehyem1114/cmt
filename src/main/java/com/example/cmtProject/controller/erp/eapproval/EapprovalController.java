@@ -52,16 +52,28 @@ public class EapprovalController {
      */
     @GetMapping(PathConstants.DOCUMENT_LIST)
     public String documentList(Model model, Principal principal) {
-    	
+        
         String currentUserId = principal.getName();
         log.info("전자결재 문서함 접속: {}", currentUserId);
         
         try {
+            // 내가 기안한 문서
             model.addAttribute("myDrafts", documentService.getDrafterDocumentsByEmpId(currentUserId));
+            
+            // 내가 결재해야 할 문서
             model.addAttribute("pendingDocs", documentService.getPendingDocumentsByEmpId(currentUserId));
-            model.addAttribute("processingDocs", documentService.getDocumentsByStatus(DocumentStatus.PROCESSING));
-            model.addAttribute("completedDocs", documentService.getDocumentsByStatus(DocumentStatus.COMPLETED));
-            model.addAttribute("rejectedDocs", documentService.getDocumentsByStatus(DocumentStatus.REJECTED));
+            
+            // 나와 관련된 진행 중 문서 (내가 기안했거나 결재선에 포함된 문서 중 진행 중인 것)
+            model.addAttribute("processingDocs", documentService.getDocumentsByStatusAndRelatedUser(
+                    DocumentStatus.PROCESSING, currentUserId));
+            
+            // 완료된 문서 (내가 관련된 것만)
+            model.addAttribute("completedDocs", documentService.getDocumentsByStatusAndRelatedUser(
+                    DocumentStatus.COMPLETED, currentUserId));
+            
+            // 반려된 문서 (내가 관련된 것만)
+            model.addAttribute("rejectedDocs", documentService.getDocumentsByStatusAndRelatedUser(
+                    DocumentStatus.REJECTED, currentUserId));
             
             return PathConstants.VIEW_DOCUMENT_LIST;
         } catch (Exception e) {
@@ -189,7 +201,6 @@ public class EapprovalController {
         
         try {
             List<DocumentDTO> documents = documentService.getProcessableDocumentsByEmpId(principal.getName());
-//            List<DocumentDTO> documents = documentService.getPendingDocumentsByEmpId(principal.getName()); 삭제처리
             model.addAttribute("documents", documents);
             model.addAttribute("approvalType", approvalType);
             model.addAttribute("keyword", keyword);
@@ -205,11 +216,13 @@ public class EapprovalController {
      * 완료 문서함
      */
     @GetMapping(PathConstants.COMPLETED)
-    public String completed(Model model, @RequestParam(required = false) String keyword) {
-        log.info("완료 문서함 접속");
+    public String completed(Model model, Principal principal, @RequestParam(required = false) String keyword) {
+        log.info("완료 문서함 접속: {}", principal.getName());
         
         try {
-            List<DocumentDTO> documents = documentService.getDocumentsByStatus(DocumentStatus.COMPLETED);
+            String currentUserId = principal.getName();
+            List<DocumentDTO> documents = documentService.getDocumentsByStatusAndRelatedUser(
+                    DocumentStatus.COMPLETED, currentUserId);
             
             model.addAttribute("documents", documents);
             model.addAttribute("keyword", keyword);
@@ -225,11 +238,13 @@ public class EapprovalController {
      * 반려 문서함
      */
     @GetMapping(PathConstants.REJECTED)
-    public String rejected(Model model, @RequestParam(required = false) String keyword) {
-        log.info("반려 문서함 접속");
+    public String rejected(Model model, Principal principal, @RequestParam(required = false) String keyword) {
+        log.info("반려 문서함 접속: {}", principal.getName());
         
         try {
-            List<DocumentDTO> documents = documentService.getDocumentsByStatus(DocumentStatus.REJECTED);
+            String currentUserId = principal.getName();
+            List<DocumentDTO> documents = documentService.getDocumentsByStatusAndRelatedUser(
+                    DocumentStatus.REJECTED, currentUserId);
             
             model.addAttribute("documents", documents);
             model.addAttribute("keyword", keyword);
