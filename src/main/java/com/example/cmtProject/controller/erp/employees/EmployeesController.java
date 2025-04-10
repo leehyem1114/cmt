@@ -32,7 +32,9 @@ import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/emp")
 public class EmployeesController {
@@ -95,13 +97,21 @@ public class EmployeesController {
 								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
 						        @AuthenticationPrincipal PrincipalDetails principal,
 						        Model model) throws Exception {
+		
+		 if (empProfileFile == null || empProfileFile.isEmpty()) {
+		        System.out.println("파일이 전달되지 않았습니다.");
+		 }
+		 
 	    int result = empService.updateEmp(dto,empProfileFile);
+	    
 	    if(result > 0) {
 	    	model.addAttribute("emp", result);
-	    	return "사원정보 수정 완료";
+	    	log.info("constroller의 result:" + result);
+	    	return "success";
 	    }
 	    System.out.println("바뀐 사원정보~~~~~~~~~~"+ result);
-	    return "erp/employees/myEmplist";
+	    
+	    return "fail";
 	}
 	
 	

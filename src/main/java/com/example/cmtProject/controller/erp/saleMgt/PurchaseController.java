@@ -34,8 +34,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Controller
 @RequestMapping("/purchases")
 public class PurchaseController {
@@ -154,6 +155,9 @@ public class PurchaseController {
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		purchasesOrder.setPoNo(null);
+		log.info("purchasesOrder:"+purchasesOrder);
+		purchasesOrder.setPoVisible("Y");
+		log.info("purchasesOrder:"+purchasesOrder);
 		purchasesOrderRepository.save(purchasesOrder);
 		purchasesOrderRepository.flush();
 

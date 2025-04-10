@@ -19,6 +19,8 @@ import org.apache.commons.jexl3.MapContext;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -71,31 +73,78 @@ public class SalaryController {
 
 	// 급여 지급 내역 조회
 	@GetMapping("/payList")
-	public String getPayList(Model model ){
+	public String getPayList(Model model) {
 
-		model.addAttribute("paySearchDTO", new PaySearchDTO());
-		commonCodeName(model,commonService);
-		
-		List<PaymentDTO> payList = salaryService.getPayList();
-		model.addAttribute("payList", payList);
-		
-		System.out.println("payList:"+payList);
-		
-		// 공통 코드에서 가져오기
-		List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
-		model.addAttribute("deptList", deptList);
-		
-		//List<EmpListPreviewDTO> empList = employeesService.getEmpList();
-		//model.addAttribute("empList", empList);
-		List<EmpListPreviewDTO> empList = salaryService.getEmpList();
-		model.addAttribute("empList", empList);
-		System.out.println("사원 목록 확인 : " + empList);
-		
-		List<CommonCodeDetailDTO> payDay = commonService.getCommonCodeDetails("PAYDAY", null);
-		model.addAttribute("payDay", payDay);
-		
-		return "erp/salaries/payList";
+	    // 현재 로그인한 사용자 정보 가져오기
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    String currentUserId = auth.getName();
+
+	    // ADMIN 권한 여부 확인
+	    boolean isAdmin = auth.getAuthorities().stream()
+	            .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+
+	    // empId: 사원은 본인 ID, 관리자는 null (전체 조회)
+	    String empIdForQuery = isAdmin ? null : currentUserId;
+
+	    // 급여 지급내역 필터림 검색 (추후 검색 기능 확장 가능)
+	    model.addAttribute("paySearchDTO", new PaySearchDTO());
+
+	    // 공통 코드 바인딩
+	    commonCodeName(model, commonService);
+
+	    // 급여 목록 조회 (권한에 따라 전체 또는 본인만)
+	    List<PaymentDTO> payList = salaryService.getPayList(empIdForQuery);
+	    model.addAttribute("payList", payList);
+	    System.out.println("payList: " + payList);
+
+	    // 부서명 목록 공통 코드에서 가져오기
+	    List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
+	    model.addAttribute("deptList", deptList);
+
+	    // 사원 목록
+	    List<EmpListPreviewDTO> empList = salaryService.getEmpList();
+	    model.addAttribute("empList", empList);
+	    System.out.println("사원 목록 확인 : " + empList);
+
+	    // 급여 지급일 공통 코드에서 가져오기
+	    List<CommonCodeDetailDTO> payDay = commonService.getCommonCodeDetails("PAYDAY", null);
+	    model.addAttribute("payDay", payDay);
+
+	    return "erp/salaries/payList";
 	}
+
+	
+	
+//	// 급여 지급 내역 조회
+//	@GetMapping("/payList")
+//	public String getPayList(Model model ){
+//		
+//		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//		String currentUserId = auth.getName();
+//		
+//		model.addAttribute("paySearchDTO", new PaySearchDTO());
+//		commonCodeName(model,commonService);
+//		
+//		List<PaymentDTO> payList = salaryService.getPayList(currentUserId);
+//		model.addAttribute("payList", payList);
+//		
+//		System.out.println("payList:"+payList);
+//		
+//		// 공통 코드에서 가져오기
+//		List<CommonCodeDetailNameDTO> deptList = commonService.getCodeListByGroup("DEPT");
+//		model.addAttribute("deptList", deptList);
+//		
+//		//List<EmpListPreviewDTO> empList = employeesService.getEmpList();
+//		//model.addAttribute("empList", empList);
+//		List<EmpListPreviewDTO> empList = salaryService.getEmpList();
+//		model.addAttribute("empList", empList);
+//		System.out.println("사원 목록 확인 : " + empList);
+//		
+//		List<CommonCodeDetailDTO> payDay = commonService.getCommonCodeDetails("PAYDAY", null);
+//		model.addAttribute("payDay", payDay);
+//		
+//		return "erp/salaries/payList";
+//	}
 	
 	// 급여 지급 내역 검색 요청
 	@PostMapping("/searchPayList")

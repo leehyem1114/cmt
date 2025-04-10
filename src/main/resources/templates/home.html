@@ -128,7 +128,8 @@
 			           <div class="d-flex align-items-center">
 			               <div class="avatar avatar-xl">
 			                   <img th:if="${#authentication.principal.user.empProfile == null}" th:src="@{/imagess/profile_preview.png}" alt="Face 1">
-			                   <img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${#authentication.principal.user.empProfile}}">
+<!-- 			                   <img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${#authentication.principal.user.empProfile}}"> -->
+								<img th:if="${#authentication.principal.user.empProfile != null}" th:src="@{'/images/' + ${emp.empProfile}}">
 			               </div>
 			               <div class="ms-3 name">
 			                   <h5 class="font-bold" th:text="${#authentication.principal.user.empName}"></h5>

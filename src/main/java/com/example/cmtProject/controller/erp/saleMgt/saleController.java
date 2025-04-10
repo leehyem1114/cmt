@@ -40,6 +40,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Controller
 @RequestMapping("/sales")
 public class saleController {
@@ -182,6 +185,12 @@ public class saleController {
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		salesOrder.setSoNo(null); 
+		log.info("salesOrder=======1:" + salesOrder);
+		
+		salesOrder.setSoVisible("Y");
+		
+		log.info("salesOrder========2:" + salesOrder);
+		
 		salesOrderRepository.save(salesOrder);
 		salesOrderRepository.flush();
 		

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
+import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
 import com.example.cmtProject.dto.erp.employees.EmpDTO;
 import com.example.cmtProject.dto.erp.notice.NoticeDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
@@ -35,10 +36,10 @@ public class MainController {
 	@Autowired private EmployeesRepository empRepository;
 	@Autowired private DocFormService docFormService;
 	@Autowired private NoticeService noticeService;
+	@Autowired private EmployeesService empService;
 	
 	@Autowired
 	private BCryptPasswordEncoder bCrypPasswordEncoder;
-	@Autowired EmployeesService empService;
 	
 	@GetMapping({"","/"})
 
@@ -60,6 +61,9 @@ public class MainController {
 		List<NoticeDTO> noticeList = noticeService.getAllNoticesWithNames();
 		model.addAttribute("noticeList",noticeList);
 		System.out.println("공지사항 리스트!!!!!!!"+noticeList);
+		
+		EmpRegistDTO emp = empService.getMyEmpList(empId);
+		model.addAttribute("emp",emp);
 		
 		EmpDTO loginUser = empService.getEmpList(empId);
 		model.addAttribute("loginUser", loginUser);
