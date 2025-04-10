@@ -105,7 +105,10 @@
 						header: '인원수',
 						name: 'empCount',
 						sortable: true,
-						align: "center"
+						align: "center",
+						formatter: function({ value }) {
+							return `${value}명`;
+						}
 					},
 					{
 						header: '급여대장',
