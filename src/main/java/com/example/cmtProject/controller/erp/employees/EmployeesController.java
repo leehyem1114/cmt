@@ -78,7 +78,10 @@ public class EmployeesController {
 		String empId = principalDetails.getUser().getEmpId();
 		EmpRegistDTO emp = empService.getMyEmpList(empId);
 		model.addAttribute("emp",emp);
-		System.out.println("~~~DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
+		
+		log.info("emp:=========================="+ emp);
+		
+		System.out.println("~~~=====================DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
 		 //공통코드 가져오기
 		commonCodeName(model, commonService);
 		
@@ -106,6 +109,7 @@ public class EmployeesController {
 	    
 	    if(result > 0) {
 	    	model.addAttribute("emp", result);
+	    	System.out.println("----------================== result:" + result);
 	    	log.info("constroller의 result:" + result);
 	    	return "success";
 	    }
