@@ -1,5 +1,7 @@
 package com.example.cmtProject.mapper.erp.attendanceMgt;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -7,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.WorkTemplateDTO;
 import com.example.cmtProject.dto.erp.attendanceMgt.WorkTimeDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
 public interface WorkTimeMapper {
@@ -37,6 +40,9 @@ public interface WorkTimeMapper {
 
 	// 사원 근무 목록 저장
 	void saveWorkTemplates(WorkTemplateDTO templates);
+	
+	// 회사원의 근무일정 시간 추출
+	LocalDateTime getWorkTemplateByEmpNo(Long empNo);
 
 	
 
