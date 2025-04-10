@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpDTO;
 import com.example.cmtProject.dto.erp.employees.EmpRegistDTO;
+import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.dto.erp.notice.NoticeDTO;
 import com.example.cmtProject.entity.erp.notice.Notice;
+import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.notice.NoticeService;
 
@@ -29,12 +32,14 @@ import jakarta.websocket.Session;
 public class NoticeController {
 	@Autowired NoticeService noticeService;
 	@Autowired EmployeesService empService;
-	
+	@Autowired CommonService commonService;
 	
 	@GetMapping("/noticeList")
 	public String noticeList(Model model,NoticeDTO noticeDTO) {
+		commonCodeName(model, commonService);
 		List<NoticeDTO> noticeList = noticeService.getAllNoticesWithNames();
 		model.addAttribute("noticeList",noticeList);
+		model.addAttribute("searchEmpDTO", new searchEmpDTO());
 		
 		return "erp/notice/noticeList";
 	}
@@ -79,4 +84,32 @@ public class NoticeController {
 		 
 		 return result > 0 ? "response" : "";
 	}
+	
+	///****사원 셀랙트박스****/
+	@PostMapping("/notice/searchEmp")
+	public String searchDept(@ModelAttribute searchEmpDTO searchEmpDTO,Model model)throws Exception {
+		commonCodeName(model, commonService);
+		List<NoticeDTO> noticeList = noticeService.getAllNoticesWithNames();
+		model.addAttribute("noticeList",noticeList);
+		model.addAttribute("searchEmpDTO", new searchEmpDTO());
+		
+		return "erp/notice/noticeList";
+	}
+	
+	//=========================
+	//공통코드 DetailName 불러오는 메서드
+		public static void commonCodeName(Model model , CommonService commonService) {
+			
+			List<String> groupCodes = commonService.getAllGroupCodes();
+			System.out.println("그룹코드 리스트 :::::"+groupCodes);
+//			String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
+			//공통코드 추가시 "NEW_CODE" 추가
+			
+			Map<String, List<CommonCodeDetailNameDTO>> commonCodeMap = new HashMap<>();
+			
+			for(String groupCode : groupCodes) {
+				commonCodeMap.put(groupCode, commonService.getCodeListByGroup(groupCode));
+			}
+			model.addAttribute("commonCodeMap",commonCodeMap);
+		}
 }

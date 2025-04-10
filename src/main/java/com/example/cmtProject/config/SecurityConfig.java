@@ -29,6 +29,7 @@ public class SecurityConfig{
             .authorizeHttpRequests((authorizeRequests) -> authorizeRequests
             .requestMatchers("/user/**").authenticated() //user는 로그인하면 접근 가능
             .requestMatchers("/eapproval/**").authenticated()
+            .requestMatchers("/emp/findId").permitAll() //아이디 찾기 누구나 가능
             .requestMatchers("/emp/**").authenticated() //인사테이블은 로그인필수
             .requestMatchers("/notice/**").authenticated() //공지사항테이블은 로그인필수
             .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER") //ADMIN또는 MANAGER가 접근

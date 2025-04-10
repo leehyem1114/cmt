@@ -27,6 +27,8 @@ public class NoticeDTO {
     
     private String deptName;      // 부서명 (조인으로 가져옴)
     private String positionName;  // 직급명 (조인으로 가져옴)
+    private String dept;
+    
     
     @ConstructorProperties({"noticeId", "title", "empName", "deptName", "positionName","createdAt"})
     public NoticeDTO(Long noticeId, String title, String empName, String deptName, String positionName,LocalDate  createdAt) {
