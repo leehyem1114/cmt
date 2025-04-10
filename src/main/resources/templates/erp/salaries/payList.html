@@ -5,7 +5,7 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:decorate="~{layouts/layout}">
 <head>
-
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<!-- 그리드 -->
 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
@@ -69,7 +69,7 @@
 				<h2>급여 조회</h2>
 			</div>
 			<div>
-				<button type="button" class="print" onclick="payPrint()">✏️ 명세서 출력</button>
+				<button type="button" class="print" onclick="payPrint()" sec:authorize="hasRole('ROLE_ADMIN')">✏️ 명세서 출력</button>
 				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
 				<button type="button" class="delete" th:data-id="*{payNo}">삭제</button>
 			</div>
