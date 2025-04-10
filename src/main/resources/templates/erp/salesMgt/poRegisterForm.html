@@ -119,7 +119,7 @@
 	        </div>
 	        <div class="form-group">
 	            <label>발주번호 *</label><!-- 서버에서 바로 처리 th:value="${nextSeq}"와  th:filed="*{poNo}"를 같이 사용 못 한다 -->
- 	            <input type="text" th:value="${nextSeq}" id="ponoTxt" readonly="true"> 
+ 	            <input type="text" th:value="${nextSeq + 1}" id="ponoTxt" readonly="true"> 
 				<input type="hidden" id="ponoHid" th:field="*{poNo}">
 	        </div>
 	        <div class="form-group">
