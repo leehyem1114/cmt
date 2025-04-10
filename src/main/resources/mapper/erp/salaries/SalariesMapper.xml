@@ -168,7 +168,7 @@
     <insert id="savePayment" parameterType="java.util.List">
     	INSERT INTO PAYMENTS (
 			PAY_NO,
-			EMP_NAME
+			EMP_NAME,
 			EMP_ID,
 			DEPT_NAME,
 			POSITION,
@@ -364,7 +364,7 @@
 		    PO.CMN_DETAIL_NAME AS position
 		FROM PAYMENTS P
 			JOIN EMPLOYEES E 
-			    ON P.EMP_NO = E.EMP_NO
+			    ON P.EMP_ID = E.EMP_ID
 			LEFT JOIN COMMONCODE_DETAIL D 
 			    ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE AND D.CMN_CODE = 'DEPT'
 			LEFT JOIN COMMONCODE_DETAIL PO 

@@ -4,7 +4,9 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/layout}">
 
 <head>
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<!-- 그리드 -->
+	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 
@@ -62,7 +64,7 @@
 
 		<!-- 급여 대장 모달 -->
 		<div class="modal fade" id="payrollModal" tabindex="-1">
-			<div class="modal-dialog modal-full">
+			<div class="modal-dialog modal-xl">
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="payCalcModal">상세 급여 대장</h5>
@@ -207,6 +209,10 @@
 									scrollX: true,
 									scrollY: true,								
 									summary: createSummaryOptions(),
+									pageOptions: {
+										useClient: true,
+										perPage: 5
+									},
 									columns: [
 										{
 											header: '사원번호',
@@ -341,6 +347,7 @@
 									columns: [
 										{
 											header: '구분',
+											width: 100,
 											formatter: ({ value }) => value || '합계'
 										},
 										{
