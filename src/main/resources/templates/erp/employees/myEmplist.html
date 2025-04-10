@@ -37,6 +37,7 @@
     
     <th:block layout:fragment="script">
     	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <script type="text/javascript">
             /* 
              * 페이지별 JavaScript 코드 작성 영역
@@ -53,38 +54,39 @@
             	    // 파일 추가
             	    formData.append("empProfileFile", $("input[name='empProfileFile']")[0].files[0]);
 
+            	    Swal.fire({
+				        title: '수정 하시겠습니까?',
+				        icon: 'warning',
+				        showCancelButton: true,   
+				        confirmButtonColor: '#435ebe',   
+				        cancelButtonColor: '#f27474',       
+				        confirmButtonText: '네',         
+				        cancelButtonText: '아니오'       
+    	        	 }).then((result) => {
+    	        	        if (result.isConfirmed) {
+    	        	        	$.ajax({
+    	        	        	    url: "/emp/myEmplist",
+    	        	        	    method: "POST",
+    	        	        	    data: formData,               // 그대로 넘긴다
+    	        	        	    processData: false,           // 필수
+    	        	        	    contentType: false,           // 필수
+    	        	        	    success: function(response) {
+    	        	        	        if(response === "fail"){
+    	        	        	        	Swal.fire("회원 가입해야 합니다");
+    	        	        	        }else if(response === "success"){
+    	        	        	        	Swal.fire("수정 완료");
+    	        	        	        	location.reload();
+    	        	        	        }
+    	        	        	    },
+    	        	        	    error: function(error) {
+    	                	        	Swal.fire("정보 수정 실패ㅠㅠ");
+    	                	        }
+    	                	    });
+    	        	        }
+    	        	    });
+            	    
             	    // AJAX 전송
-            	    $.ajax({
-            	        url: "/emp/myEmplist",
-            	        method: "POST",
-//             	        dataType: "json", //json으로 설정시 json으로 보내야하는데 단순문자열 "정보수정 성공" 보내서 error 뜸
-            	        data: formData,
-            	        processData: false, //FormData 사용시 필수
-            	        contentType: false,//FormData 사용시 필수
-            	        success: function(response) {
-            	        	Swal.fire({
-        				        title: '수정 하시겠습니까?',
-        				        icon: 'warning',
-        				        showCancelButton: true,   
-        				        confirmButtonColor: '#435ebe',   
-        				        cancelButtonColor: '#f27474',       
-        				        confirmButtonText: '네',         
-        				        cancelButtonText: '아니오'       
-            	        	 }).then((result) => {
-            	        	        if (result.isConfirmed) {
-            	        	            Swal.fire({
-            	        	                title: '수정이 완료되었습니다!',
-            	        	                icon: 'success'
-            	        	            }).then(() => {
-            	        	                location.reload();
-            	        	            });
-            	        	        }
-            	        	    });
-            	        	},
-            	        error: function(error) {
-            	        	Swal.fire("정보 수정 실패ㅠㅠ");
-            	        }
-            	    });
+            	    
             	};
             
            //프로필사진 미리보기
@@ -102,16 +104,16 @@
  			    $("#preview_profile").html("");
  			
  			    imageFiles.forEach(file => {
- 			      let reader = new FileReader();
- 			      reader.onload = function (event) {
- 			        let img = $("<img>")
- 			          .attr("src", event.target.result)
- 			          .attr("height", "100px")
- 			          .addClass("profile-thumb");
+ 			      	let reader = new FileReader();
+ 			      	reader.onload = function (event) {
+ 			        	let img = $("<img>")
+ 			          	.attr("src", event.target.result)
+ 			          	.attr("height", "100px")
+ 			          	.addClass("profile-thumb");
  			
- 			        $("#preview_profile").append(img);
- 			      };
- 			      reader.readAsDataURL(file);
+ 			       		$("#preview_profile").append(img);
+ 			      	};
+ 			      	reader.readAsDataURL(file);
  			    });
  			  });
  			});
@@ -219,7 +221,7 @@
 								    </div>
 								</div>
 								<div>
-									<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" class="form-control" multiple>
+									<input type="file" name="empProfileFile"  id="empProfileFile" accept="image/*" class="form-control">
 			                    </div>
 							</div>
 							<div class="form-item">
