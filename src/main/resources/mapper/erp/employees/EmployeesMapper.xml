@@ -70,14 +70,18 @@
    <select id="selectDept" resultType="com.example.cmtProject.dto.erp.employees.searchEmpDTO">
 	    SELECT 
 	        E.EMP_NO AS empNo,
-	       	E.EMP_ID AS empId,
-	        E.EMP_NAME AS empName, 
+	        E.EMP_ID AS empId,
+	        E.EMP_NAME AS empName,
 	        D.CMN_DETAIL_NAME AS deptName,
-	        P.CMN_DETAIL_NAME AS deptPosition,
-	        E.EMP_START_DATE AS empStartDate 
+	        P.CMN_DETAIL_NAME AS positionName,
+	        E.EMP_START_DATE AS empStartDate,
+	        
+	        TO_CHAR(N.CREATED_AT, 'YYYY-MM-DD') AS createdAt
+	
 	    FROM EMPLOYEES E
 	    JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
 	    JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
+	    
 	    <where>
 	        <if test="dept != null and dept != ''">
 	            AND D.CMN_DETAIL_CODE = #{dept}
@@ -88,7 +92,7 @@
 	        <if test="startDate != null and endDate != null">
 	            AND E.EMP_START_DATE BETWEEN #{startDate} AND #{endDate}
 	        </if>
-	    </where>
+    </where>
 	   
 	</select>
 	
