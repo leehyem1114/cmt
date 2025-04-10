@@ -1,5 +1,6 @@
 package com.example.cmtProject.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -15,6 +16,8 @@ import com.example.cmtProject.constants.PathConstants;
 @EnableWebSecurity //스프링 시큐리티 필터가 스프링 필터체인에 등록이 됨
 @EnableMethodSecurity(securedEnabled = true, prePostEnabled = true) 
 public class SecurityConfig{
+	 @Autowired
+	    private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
 	//password 암호화 하기 위한 Bean객체
     @Bean
@@ -43,7 +46,8 @@ public class SecurityConfig{
                     .passwordParameter("empPassword") // password 필드 이름 변경
                     .loginProcessingUrl("/login") //login주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인을 진행해준다. 그렇기 때문에 cotroller에 login페이지가 없다.
                     .defaultSuccessUrl("/") //로그인이 성공하면 main페이지로 간다
-                    .failureUrl("/loginFail")
+//                    .failureUrl("/loginFail")
+                    .failureHandler(customAuthenticationFailureHandler)
                     .permitAll() // 로그인 페이지는 누구나 접근 가능
             )
             .logout(logout -> logout

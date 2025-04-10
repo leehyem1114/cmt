@@ -147,6 +147,7 @@ public class EmployeesController {
 		commonCodeName(model, commonService);
 		
 		List<searchEmpDTO> searchDTO = empService.getSearchDept(searchEmpDTO);
+		
 		model.addAttribute("emplist",searchDTO);
 		System.out.println(">>>>>>>>"+searchDTO);
 		

@@ -5,7 +5,7 @@
 
 	  
 	  
-	  
+<head>
 <th:block layout:fragment="css">
     <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
     <link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
@@ -13,6 +13,9 @@
     <style>
         /* 기존 CSS 스타일들 여기 */
     </style>
+</head>
+    
+<body>
 </th:block>
 
 
@@ -87,67 +90,67 @@
 				</script>
 	             </table>
 	         </div>
+	         
+	         <script type="text/javascript">
+
+				//grid 데이터 원본 저장
+				const originalData = grid.getData();
+				
+				document.getElementById('searchInput').addEventListener('input', function (e) {
+				  const keyword = e.target.value.toLowerCase();
+				
+				  // 원본 데이터를 기준으로 필터링
+				  const filtered = originalData.filter(row => {
+				    return Object.values(row).some(val => {
+				      if (val == null) return false;
+				      return String(val).toLowerCase().includes(keyword);
+				    });
+				  });
+				
+				  // 필터링된 데이터로 그리드 업데이트
+				  grid.resetData(filtered);
+				});
+				
+				
+				function applyFilter() {
+					  const keyword = document.getElementById('searchInput').value.toLowerCase();
+					  const start = document.getElementById('startDate').value;
+					  const end = document.getElementById('endDate').value;
+				
+					  let filtered = originalData;
+				
+					  if (start && end) {
+					    const startDate = new Date(start);
+					    const endDate = new Date(end);
+					    endDate.setHours(23, 59, 59, 999);
+				
+					    filtered = filtered.filter(row => {
+					      const atdDate = new Date(row.atdDate);
+					      return atdDate >= startDate && atdDate <= endDate;
+					    });
+					  }
+				
+					  if (keyword) {
+					    filtered = filtered.filter(row =>
+					      Object.values(row).some(val =>
+					        val != null && String(val).toLowerCase().includes(keyword)
+					      )
+					    );
+					  }
+				
+					  grid.resetData(filtered);
+					}
+				
+					document.getElementById('dateSearchBtn').addEventListener('click', applyFilter);
+					document.getElementById('searchInput').addEventListener('input', applyFilter);
+				
+				
+				
+				</script>
     	
 </div>
 
-<script type="text/javascript">
 
-//grid 데이터 원본 저장
-const originalData = grid.getData();
-
-document.getElementById('searchInput').addEventListener('input', function (e) {
-  const keyword = e.target.value.toLowerCase();
-
-  // 원본 데이터를 기준으로 필터링
-  const filtered = originalData.filter(row => {
-    return Object.values(row).some(val => {
-      if (val == null) return false;
-      return String(val).toLowerCase().includes(keyword);
-    });
-  });
-
-  // 필터링된 데이터로 그리드 업데이트
-  grid.resetData(filtered);
-});
-
-
-function applyFilter() {
-	  const keyword = document.getElementById('searchInput').value.toLowerCase();
-	  const start = document.getElementById('startDate').value;
-	  const end = document.getElementById('endDate').value;
-
-	  let filtered = originalData;
-
-	  if (start && end) {
-	    const startDate = new Date(start);
-	    const endDate = new Date(end);
-	    endDate.setHours(23, 59, 59, 999);
-
-	    filtered = filtered.filter(row => {
-	      const atdDate = new Date(row.atdDate);
-	      return atdDate >= startDate && atdDate <= endDate;
-	    });
-	  }
-
-	  if (keyword) {
-	    filtered = filtered.filter(row =>
-	      Object.values(row).some(val =>
-	        val != null && String(val).toLowerCase().includes(keyword)
-	      )
-	    );
-	  }
-
-	  grid.resetData(filtered);
-	}
-
-	document.getElementById('dateSearchBtn').addEventListener('click', applyFilter);
-	document.getElementById('searchInput').addEventListener('input', applyFilter);
-
-
-
-</script>
-<
-	    	
 
 <th:block layout:fragment="script">
     <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
@@ -160,7 +163,6 @@ function applyFilter() {
 
 
 
-
-
+</body>
 
 </html>
