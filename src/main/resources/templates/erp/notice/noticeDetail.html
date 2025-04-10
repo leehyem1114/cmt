@@ -1,14 +1,18 @@
 <html xmlns:th="http://www.thymeleaf.org" 
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layoutNoSideBar}">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+ <!--      layout:decorate="~{layouts/layoutNoSideBar}"> -->
 
-	  
-	  
-	  
 <th:block layout:fragment="css">
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+	
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" />
+	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
+		
+    <!-- 부트스트랩 및 기본 스타일 -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+    <link rel="stylesheet" href="/assets/vendors/perfect-scrollbar/perfect-scrollbar.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+    
     <style>
         /* 기존 CSS 스타일들 여기 */
     </style>
