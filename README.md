@@ -30,7 +30,8 @@
     ERP(Enterprise Resource Planning, 전사적 자원 관리)는 기업이 인사, 회계, 생산, 물류, 영업 등 주요 비즈니스 프로세스를 통합적으로 관리하는 시스템입니다.   
 
 1. # 주제 🚓
-    __자동차 프레임 부품생산 기업__   
+    __자동차 프레임 부품생산 기업__
+   중앙 집중형 제조 및 추적 시스템 과 ERP의 결합 
 
     <span style='color:red'>CMT Co., Ltd.</span>
     
