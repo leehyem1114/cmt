@@ -25,6 +25,10 @@ import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.mapper.erp.employees.EmployeesMapper;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class EmployeesService {
 	@Autowired private EmployeesMapper empMapper;
@@ -93,8 +97,12 @@ public class EmployeesService {
 	        String uuid = UUID.randomUUID().toString();
 	        String fileName = uuid + "_" + empProfileFile.getOriginalFilename();
 	        
+	        //log.info("fileName:"+fileName);
+	        
 			//파일 저장할 경로 생성
 			Path uploadDir = Paths.get(uploadBaseLocation,itemImgLocation);
+			
+			log.info("uploadDir:"+uploadDir);
 			
 			if(!Files.exists(uploadDir)) { //존재하지 않으면
 				Files.createDirectories(uploadDir);
@@ -109,10 +117,11 @@ public class EmployeesService {
 			//DTO에 파일명 저장
 			dto.setEmpProfile(fileName);
 		}
+		log.info("dto:" + dto);
+		int result = empMapper.updateEmp(dto);
+		log.info("result:"+ result);
 		
-		return empMapper.updateEmp(dto);
-		
-		
+		return 1; 
 	}
 	
 	//멤버 리스트에서 사원조회
