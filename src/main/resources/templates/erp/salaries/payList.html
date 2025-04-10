@@ -69,9 +69,9 @@
 				<h2>급여 조회</h2>
 			</div>
 			<div>
-				<button type="button" class="btn btn-primary transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">급여 이체</button>
+				<button type="button" class="btn btn-primary transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal" sec:authorize="hasRole('ROLE_ADMIN')">급여 이체</button>
 				<button type="button" class="btn btn-primary print" onclick="payPrint()" sec:authorize="hasRole('ROLE_ADMIN')">명세서 출력</button>
-				<button type="button" class="btn btn-danger delete" th:data-id="*{payNo}">삭제</button>
+				<button type="button" class="btn btn-danger delete" th:data-id="*{payNo}" sec:authorize="hasRole('ROLE_ADMIN')">삭제</button>
 			</div>
 		</div><!-- <div class="button-container"> -->
 
