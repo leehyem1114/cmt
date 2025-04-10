@@ -61,7 +61,50 @@
 	      
 	    LEFT JOIN COMMONCODE_DETAIL ET 
 	      ON E.EMP_TYPE = ET.CMN_DETAIL_CODE
+	      
+	    <where>
+        <if test="empId != null and empId != ''">
+            E.EMP_ID = #{empId}
+        </if>
+    </where>
 	</select>
+	
+<!--     급여 지급 내역 -->
+<!--    <select id="getPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">    	-->
+<!--		SELECT-->
+<!--	        P.PAY_NO                AS payNo,-->
+<!--	        P.PAY_DATE              AS payDate,-->
+<!--	        P.PAY_BASIC             AS payBasic,-->
+<!--	        P.PAY_BONUS_OVERTIME    AS payBonusOvertime,-->
+<!--	        P.PAY_BONUS_HOLIDAY     AS payBonusHoliday,-->
+<!--	        P.PAY_BONUS_TOTAL       AS payBonusTotal,-->
+<!--	        P.PAY_TAX_PENSION       AS payTaxPension,-->
+<!--	        P.PAY_TAX_CARE          AS payTaxCare,-->
+<!--	        P.PAY_TAX_HEALTH        AS payTaxHealth,-->
+<!--	        P.PAY_TAX_EMPLOYMENT    AS payTaxEmployment,-->
+<!--	        P.PAY_TAX_INCOME        AS payTaxIncome,-->
+<!--	        P.PAY_TAX_RESIDENCE     AS payTaxResidence,-->
+<!--	        P.PAY_TAX_TOTAL         AS payTaxTotal,-->
+<!--	        P.PAY_TOTAL             AS payTotal,-->
+<!--	        E.EMP_NAME              AS empName,-->
+<!--	        E.EMP_ID				AS empId,-->
+<!--	        E.SAL_BANK_NAME			AS salBankName,-->
+<!--	        E.SAL_BANK_ACCOUNT		AS salBankAccount,-->
+<!--	        DN.CMN_DETAIL_NAME      AS deptName,-->
+<!--	        PO.CMN_DETAIL_NAME      AS position,-->
+<!--	        ET.CMN_DETAIL_NAME      AS empType-->
+<!--	    FROM PAYMENTS P-->
+<!--	    LEFT JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID-->
+	    
+<!--	    LEFT JOIN COMMONCODE_DETAIL DN -->
+<!--	      ON TO_CHAR(E.DEPT_NO) = DN.CMN_DETAIL_CODE-->
+	      
+<!--	    LEFT JOIN COMMONCODE_DETAIL PO -->
+<!--	      ON TO_CHAR(E.POSITION_NO) = PO.CMN_DETAIL_CODE-->
+	      
+<!--	    LEFT JOIN COMMONCODE_DETAIL ET -->
+<!--	      ON E.EMP_TYPE = ET.CMN_DETAIL_CODE-->
+<!--	</select>-->
 
 	<!-- 급여 지급 내역 검색 필터링 -->
 	<select id="getSearchPayList" resultType="com.example.cmtProject.dto.erp.salaries.PaySearchDTO">

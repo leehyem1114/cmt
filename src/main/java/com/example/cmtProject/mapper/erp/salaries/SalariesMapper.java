@@ -20,7 +20,7 @@ public interface SalariesMapper {
 	// List<SalaryItemDTO> salItemTypes();
 	
 	// 급여 지급 내역
-	List<PaymentDTO> getPayList();
+	List<PaymentDTO> getPayList(@Param("empId") String empId);
 	
 	// 급여 지급 내역 필터링 검색
 	List<PaySearchDTO> getSearchPayList(PaySearchDTO paySearchDTO);

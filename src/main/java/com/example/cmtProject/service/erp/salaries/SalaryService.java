@@ -28,13 +28,13 @@ public class SalaryService {
 	private SalariesMapper salMapper;	
 	
 	// 급여 지급 내역 조회
-	public List<PaymentDTO> getPayList() {
+	public List<PaymentDTO> getPayList(String empId) {
 //		List<Payment> payList = salRepository.findAll();
 //		return payList.stream()
 //				.map(payment -> payment.toDto())
 //				.collect(Collectors.toList());
 		
-		return salMapper.getPayList();
+		return salMapper.getPayList(empId);
 	}
 
 	// 급여 지급 내역 조회 - 검색 기능 추가 
