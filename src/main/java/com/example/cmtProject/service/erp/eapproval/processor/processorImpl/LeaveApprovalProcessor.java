@@ -3,14 +3,19 @@ package com.example.cmtProject.service.erp.eapproval.processor.processorImpl;
 import com.example.cmtProject.dto.erp.attendanceMgt.LeaveDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
+import com.example.cmtProject.dto.erp.employees.EmpDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 import com.example.cmtProject.service.erp.eapproval.processor.ApprovalPostProcessor;
 import com.example.cmtProject.service.erp.eapproval.processor.FormDataExtractor;
+import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +35,8 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
 
     private final FormDataExtractor formDataExtractor;
     private final LeaveService leaveService;
+    @Autowired
+    private EmployeesService employeesService;
     
     // 휴가 신청서 양식 ID - 실제 양식 ID로 변경 필요
     private static final String LEAVE_FORM_ID = "휴가신청서"; 
@@ -82,8 +89,10 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             Employees drafterUser = new Employees();
             drafterUser.setEmpId(document.getDrafterId());
             
+            EmpDTO loginUser = employeesService.getEmpList(drafterUser.getEmpId());
+            
             // 3. 휴가 정보 저장 - 기안자 ID 사용 (중요: 기안자 ID로 저장)
-            leaveService.insertLeaveWithDocId(leaveDTO, drafterUser, document.getDocId());
+            leaveService.insertLeave(leaveDTO, loginUser, document.getDocId());
             log.info("휴가 신청 정보 저장 완료: 기안자={}, 결재자={}, 문서ID={}", 
                    document.getDrafterId(), leaveDTO.getLevApprover(), document.getDocId());
             
@@ -141,8 +150,10 @@ public class LeaveApprovalProcessor implements ApprovalPostProcessor {
             Employees drafterUser = new Employees();
             drafterUser.setEmpId(document.getDrafterId());
             
+            EmpDTO loginUser = employeesService.getEmpList(drafterUser.getEmpId());
+
             // 3. 휴가 정보 저장 - 기안자 ID 사용 (중요: 기안자 ID로 저장)
-            leaveService.insertLeaveWithDocId(leaveDTO, drafterUser, document.getDocId());
+            leaveService.insertLeave(leaveDTO, loginUser, document.getDocId());
             log.info("휴가 반려 정보 저장 완료: 기안자={}, 결재자={}, 문서ID={}", 
                    document.getDrafterId(), leaveDTO.getLevApprover(), document.getDocId());
 

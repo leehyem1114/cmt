@@ -368,11 +368,13 @@
 									    </th:block>
 									</select>
 			                    </div>
-			                    <div id="empEndDateWrapper" class="form-item">
-									<label for="empEndDate">퇴사일</label>
+			                    <label for="empEndDate">퇴사일</label>
+								<div class="form-item">
+			                    <div id="empEndDateWrapper" style="display: none;">
 									<input type="date" id="empEndDate" name="empEndDate" class="form-control" th:field="*{empEndDate}">
 								</div>
-		                        </div>
+								</div>
+		                    </div>
 			                    
 			                    
 		                    <div class="form-row">
@@ -385,8 +387,6 @@
 									    </th:block>
 									</select>
 			                    </div>
-		                    </div>
-		                   <div class="form-row">
 		                   <label for="empEducationLevel">학력</label>
 		                   <div class="form-item" >
 		                       <input type="hidden" th:field="*{empEducationLevel}"/>

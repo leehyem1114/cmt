@@ -32,7 +32,7 @@ public class SecurityConfig{
             .requestMatchers("/emp/**").authenticated() //인사테이블은 로그인필수
             .requestMatchers("/notice/**").authenticated() //공지사항테이블은 로그인필수
             .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER") //ADMIN또는 MANAGER가 접근
-            .requestMatchers("/admin/**").hasRole("ADMIN") //ADMIN만 접근
+            .requestMatchers("/admin/**","/comm/**").hasRole("ADMIN") //ADMIN만 접근
             .anyRequest().permitAll() //그 외 모든 요청은 허용
             )
             .formLogin(login -> login

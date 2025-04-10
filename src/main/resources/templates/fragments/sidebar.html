@@ -183,7 +183,7 @@
 					
 				
 				
-			        <i class="fa-solid fa-user" style="    margin-top: 6px; margin-right: 6px;"></i> <span th:text="${#authentication.principal.user.empName}"> </span>  /  <span th:text="${#authentication.principal.user.empId}"> </span>
+			        <i class="fa-solid fa-user" style=" margin-top: 5px; margin-right: 6px;"></i> <span th:text="${#authentication.principal.user.empName}"> </span>  /  <span th:text="${#authentication.principal.user.empId}"> </span>
 			    
 		        <!-- 로그아웃 버튼 -->
 
@@ -261,9 +261,11 @@
 		                        <li class="submenu-item ">
 		                            <a href="/eapproval/document/new">기안서 작성</a>
 								</li>	
+								<sec:authorize access="hasRole('ROLE_ADMIN')">
 								<li class="submenu-item ">
 								    <a href="/eapproval/forms">문서 양식 관리</a>
 								</li>	
+								</sec:authorize>
 		                    </ul>
 		                </li>
 		                
@@ -299,9 +301,6 @@
 		                        </li>
 		                        <li class="submenu-item ">
 		                            <a href="/worktimes/list">근무 시간</a>
-		                        </li>
-		                        <li class="submenu-item ">
-		                            <a href="/overtimes/list">초과 근무</a>
 		                        </li>
 		                        <li class="submenu-item ">
 		                            <a href="/leaves/list">휴가 관리</a>
@@ -460,7 +459,7 @@
 		                    </a>
 		                </li>
 						
-
+<!-- 					<div sec:authorize access="hasRole('ROLE_ADMIN')"> -->
 						<li class="sidebar-title">관리자</li>
 						<li class="sidebar-item  has-sub">
 						    <a href="#" class='sidebar-link'>
@@ -473,6 +472,7 @@
 						        </li>
 						    </ul>
 						</li>
+<!-- 					</div> -->
 		            </ul>
 		            
 		            

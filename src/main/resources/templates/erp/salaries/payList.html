@@ -7,6 +7,7 @@
 <head>
 
 	<!-- 그리드 -->
+	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 	
@@ -281,7 +282,12 @@
 		columns.forEach(column => {
 		    if (moneyColumns.includes(column.name)) {
 		        column.formatter = (value) => {
-		            if (!value.value && value.value !== 0) return '';
+		            //if (!value.value && value.value !== 0) return '';
+					let val = value.value;
+					            if (val === null || val === undefined || val === '') {
+					                val = 0;
+					            }
+					
 		            return value.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 		        };
 		    }
@@ -350,7 +356,11 @@
 			grid2 = new tui.Grid({
 				el: document.getElementById('gridTop2'), 
 				data : /*[[${empList}]]*/ [],
-				rowHeaders: ['checkbox'], 
+				rowHeaders: ['checkbox'],
+				pageOptions: {
+									useClient: true,
+								    perPage: 5
+								  },
 				columns: [
 					{
 						header: '사원번호',

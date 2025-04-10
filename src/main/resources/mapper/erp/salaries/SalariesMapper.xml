@@ -399,7 +399,7 @@
 		SELECT
 			TO_CHAR(P.PAY_DATE, 'YYYY-MM') AS payMonth,
 			COUNT(DISTINCT P.EMP_ID) AS empCount,
-			SUM(P.PAY_TOTAL) AS payTotalAmount,
+			SUM(P.PAY_TOTAL) AS totalPayAmount,
 			SUM(P.PAY_BONUS_TOTAL) AS totalBonusAmount,
 			SUM(P.PAY_TAX_TOTAL) AS totalTaxAmount
 		FROM PAYMENTS P
@@ -447,5 +447,58 @@
 		WHERE TO_CHAR(P.PAY_DATE, 'MM') = #{payMonth}
 		ORDER BY P.EMP_ID
 	</select>
+	
+	<!-- 월별 급여대장 - 부서별 급여 현황 -->
+	<select id="getMonthlyDeptPayrollList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+		SELECT
+	        P.PAY_DATE              AS payDate,
+	        P.PAY_BASIC             AS payBasic,
+	        P.PAY_BONUS_OVERTIME    AS payBonusOvertime,
+	        P.PAY_BONUS_HOLIDAY     AS payBonusHoliday,
+	        P.PAY_BONUS_TOTAL       AS payBonusTotal,
+	        P.PAY_TAX_PENSION       AS payTaxPension,
+	        P.PAY_TAX_CARE          AS payTaxCare,
+	        P.PAY_TAX_HEALTH        AS payTaxHealth,
+	        P.PAY_TAX_EMPLOYMENT    AS payTaxEmployment,
+	        P.PAY_TAX_INCOME        AS payTaxIncome,
+	        P.PAY_TAX_RESIDENCE     AS payTaxResidence,
+	        P.PAY_TAX_TOTAL         AS payTaxTotal,
+	        P.PAY_TOTAL             AS payTotal,
+	        E.EMP_NAME              AS empName,
+	        E.EMP_ID				AS empId,
+	        DN.CMN_DETAIL_NAME      AS deptName,
+	        PO.CMN_DETAIL_NAME      AS position
+	    FROM PAYMENTS P
+	    LEFT JOIN EMPLOYEES E ON P.EMP_ID = E.EMP_ID
+	    
+	    LEFT JOIN COMMONCODE_DETAIL DN 
+	      ON TO_CHAR(E.DEPT_NO) = DN.CMN_DETAIL_CODE
+	      
+	    LEFT JOIN COMMONCODE_DETAIL PO 
+	      ON TO_CHAR(E.POSITION_NO) = PO.CMN_DETAIL_CODE
 
+	    WHERE TO_CHAR(P.PAY_DATE, 'YYYY-MM') = #{payMonth}  	
+	</select>
+
+
+	<!-- 월별 급여대장 - 전 직원 급여 합계 -->
+	<select id="getMonthlyPayrollTotalList" resultType="java.util.Map">
+		SELECT
+			NVL(SUM(PAY_BASIC), 0) AS payBasic,
+			NVL(SUM(PAY_BONUS_OVERTIME), 0) AS payBonusOvertime,
+			NVL(SUM(PAY_BONUS_HOLIDAY), 0) AS payBonusHoliday,
+			NVL(SUM(PAY_BONUS_TOTAL), 0) AS totalBonusAmount,
+			NVL(SUM(PAY_TAX_PENSION), 0) AS payTaxPension,
+			NVL(SUM(PAY_TAX_HEALTH), 0) AS payTaxHealth,
+			NVL(SUM(PAY_TAX_CARE), 0) AS payTaxCare,
+			NVL(SUM(PAY_TAX_EMPLOYMENT), 0) AS payTaxEmployment,
+			NVL(SUM(PAY_TAX_INCOME), 0) AS payTaxIncome,
+			NVL(SUM(PAY_TAX_RESIDENCE), 0) AS payTaxResidence,
+			NVL(SUM(PAY_TAX_TOTAL), 0) AS totalTaxAmount,
+			NVL(SUM(PAY_TOTAL), 0) AS totalPayAmount
+		FROM PAYMENTS
+		WHERE TO_CHAR(PAY_DATE, 'YYYY-MM') = #{payMonth}
+	</select>
+	
+	
 </mapper>

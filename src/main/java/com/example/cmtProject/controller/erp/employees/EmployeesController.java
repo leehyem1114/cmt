@@ -28,6 +28,7 @@ import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.service.comm.CommonService;
+import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 
 import jakarta.servlet.http.HttpSession;
@@ -40,6 +41,7 @@ public class EmployeesController {
 	@Autowired private EmployeesService empService;
 	@Autowired private CommonService commonService;
 	@Autowired private EmployeesRepository employeesRepository;
+	@Autowired private LeaveService leaveService;
 
 	//공통코드 DetailName 불러오는 메서드
 	public static void commonCodeName(Model model , CommonService commonService) {
@@ -122,7 +124,7 @@ public class EmployeesController {
 		//사원ID 자동생성
 		String empCode = makeEmpCode();
 		model.addAttribute("empCode",empCode);
-		System.out.println(">>>>>>>>>>>>사원번호" + empCode);
+		System.out.println(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
 
 		
 		List<EmpListPreviewDTO> empList = empService.getEmpList();
@@ -156,11 +158,15 @@ public class EmployeesController {
 							,Model model) throws Exception {
 		//프로필 업로드
 		int empRegi = empService.insertEmp(empRegistDTO,empProfileFile);
-		
+
 		if(empRegi > 0) {
+
+			leaveService.insertLeaveEmp(empRegistDTO);
+
+			System.out.println("직원추가 완료 : " + empRegistDTO);
+
 			return "redirect:/emp/emplist";
 		}
-		System.out.println("직원추가 완료 : " + empRegistDTO);
 		return "erp/employees/emplist";
 	}
 	

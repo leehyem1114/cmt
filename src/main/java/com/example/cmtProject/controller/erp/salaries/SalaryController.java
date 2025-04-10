@@ -311,10 +311,21 @@ public class SalaryController {
 	// 월별 급여 대장 상세 조회
 	@PostMapping("/payroll/detail")
 	@ResponseBody
-	public List<PaymentDTO> getPayrollDetail(@RequestParam("payMonth") String payMonth) {
+	public Map<String, Object> getPayrollDetail(@RequestParam("payMonth") String payMonth) {
 		System.out.println("전달된 payMonth = " + payMonth);
-	    return salaryService.getMonthlyPayrollDetailList(payMonth);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("deptList", salaryService.getMonthlyDeptPayrollList(payMonth)); // 부서별 급여 내역
+		System.out.println("SDSFSDDSDF"+salaryService.getMonthlyDeptPayrollList(payMonth));
+		
+		System.out.println(salaryService.getMonthlyPayrollTotalList(payMonth));
+		
+		result.put("payTotal", salaryService.getMonthlyPayrollTotalList(payMonth)); // 전 직원 급여 합계
+
+	    return result;
 	}
+	
+
 	
 	
 	
