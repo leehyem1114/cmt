@@ -74,10 +74,7 @@
 	        E.EMP_NAME AS empName,
 	        D.CMN_DETAIL_NAME AS deptName,
 	        P.CMN_DETAIL_NAME AS positionName,
-	        E.EMP_START_DATE AS empStartDate,
-	        
-	        TO_CHAR(N.CREATED_AT, 'YYYY-MM-DD') AS createdAt
-	
+	        E.EMP_START_DATE AS empStartDate
 	    FROM EMPLOYEES E
 	    JOIN COMMONCODE_DETAIL D ON TO_CHAR(E.DEPT_NO) = D.CMN_DETAIL_CODE
 	    JOIN COMMONCODE_DETAIL P ON TO_CHAR(E.POSITION_NO) = P.CMN_DETAIL_CODE
