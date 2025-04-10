@@ -116,6 +116,7 @@
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
     <where>
 	    C.CLT_TYPE = 'ORDER' 
+    	AND SO.SO_VISIBLE = 'Y'
         <if test="soCode != null and soCode != ''">
             AND SO.SO_CODE = #{soCode}
         </if>
