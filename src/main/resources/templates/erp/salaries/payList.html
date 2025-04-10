@@ -114,10 +114,14 @@
 								th:text="${dept.cmnDetailName}"></option>
 						</select>-->
 						<div class="input-group mb-2">
-							<select class="form-select" id="position" name="position">
-								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"
-									th:text="${code.cmnDetailName}"></option>
-							</select>
+<!--							<select class="form-select" id="position" name="position">-->
+<!--								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"-->
+<!--									th:text="${code.cmnDetailName}"></option>-->
+<!--							</select>-->
+						<!-- <select> 대신 숨겨서 넘기기 -->
+						<input type="hidden" id="position" name="position"
+						       th:value="${commonCodeMap['POSITION'][0].cmnDetailCode}" />
+
 						</div>
 <!--						<button type="submit" class="btn btn-secondary ms-2">조회</button>-->
 						<!-- 그리드 top 시작 -->
@@ -199,7 +203,7 @@
 			 },
 			 {
 			    header: '명절수당',
-			    name: 'PAY_BONUS_HOLIDAY',
+			    name: 'PAY_BONUS_HOIDAY',
 				width: 100,
 				align: "right"
 			 },
@@ -297,6 +301,10 @@
 	        el: document.getElementById('gridTop'), 
 			data : /*[[${payList}]]*/ [],
 	        rowHeaders: ['checkbox'],
+			pageOptions: {
+				useClient: true,
+				perPage: 5
+			},
 	        columns: columns
 	    });
 	    
@@ -358,9 +366,9 @@
 				data : /*[[${empList}]]*/ [],
 				rowHeaders: ['checkbox'],
 				pageOptions: {
-									useClient: true,
-								    perPage: 5
-								  },
+					useClient: true,
+					perPage: 5
+				},
 				columns: [
 					{
 						header: '사원번호',
