@@ -12,6 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
     	  // 이미지 파일 경로
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:///D:/profile/images/profile/");
+    	
+//        registry.addResourceHandler("/images/**")
+//        		.addResourceLocations("file:/usr/local/cmt/images/profile/");
 
         // PDF 파일 경로
         registry.addResourceHandler("/pdfs/**")

@@ -28,16 +28,20 @@ import com.example.cmtProject.dto.erp.employees.searchEmpDTO;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.service.comm.CommonService;
+import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/emp")
 public class EmployeesController {
 	@Autowired private EmployeesService empService;
 	@Autowired private CommonService commonService;
 	@Autowired private EmployeesRepository employeesRepository;
+	@Autowired private LeaveService leaveService;
 
 	//공통코드 DetailName 불러오는 메서드
 	public static void commonCodeName(Model model , CommonService commonService) {
@@ -74,14 +78,16 @@ public class EmployeesController {
 		String empId = principalDetails.getUser().getEmpId();
 		EmpRegistDTO emp = empService.getMyEmpList(empId);
 		model.addAttribute("emp",emp);
-		System.out.println("~~~DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
+		
+		log.info("emp:=========================="+ emp);
+		
+		System.out.println("~~~=====================DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
 		 //공통코드 가져오기
 		commonCodeName(model, commonService);
 		
 		
 		return "erp/employees/myEmplist";
 	}
-	
 	
 
 
@@ -94,13 +100,22 @@ public class EmployeesController {
 								@RequestParam("empProfileFile") MultipartFile empProfileFile, //파일받는용도
 						        @AuthenticationPrincipal PrincipalDetails principal,
 						        Model model) throws Exception {
+		
+		 if (empProfileFile == null || empProfileFile.isEmpty()) {
+		        System.out.println("파일이 전달되지 않았습니다.");
+		 }
+		 
 	    int result = empService.updateEmp(dto,empProfileFile);
+	    
 	    if(result > 0) {
 	    	model.addAttribute("emp", result);
-	    	return "사원정보 수정 완료";
+	    	System.out.println("----------================== result:" + result);
+	    	log.info("constroller의 result:" + result);
+	    	return "success";
 	    }
 	    System.out.println("바뀐 사원정보~~~~~~~~~~"+ result);
-	    return "erp/employees/myEmplist";
+	    
+	    return "fail";
 	}
 	
 	
@@ -112,7 +127,7 @@ public class EmployeesController {
 		//사원ID 자동생성
 		String empCode = makeEmpCode();
 		model.addAttribute("empCode",empCode);
-		System.out.println(">>>>>>>>>>>>사원번호" + empCode);
+		System.out.println(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
 
 		
 		List<EmpListPreviewDTO> empList = empService.getEmpList();
@@ -132,6 +147,7 @@ public class EmployeesController {
 		commonCodeName(model, commonService);
 		
 		List<searchEmpDTO> searchDTO = empService.getSearchDept(searchEmpDTO);
+		
 		model.addAttribute("emplist",searchDTO);
 		System.out.println(">>>>>>>>"+searchDTO);
 		
@@ -146,11 +162,15 @@ public class EmployeesController {
 							,Model model) throws Exception {
 		//프로필 업로드
 		int empRegi = empService.insertEmp(empRegistDTO,empProfileFile);
-		
+
 		if(empRegi > 0) {
+
+			leaveService.insertLeaveEmp(empRegistDTO);
+
+			System.out.println("직원추가 완료 : " + empRegistDTO);
+
 			return "redirect:/emp/emplist";
 		}
-		System.out.println("직원추가 완료 : " + empRegistDTO);
 		return "erp/employees/emplist";
 	}
 	

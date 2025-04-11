@@ -84,7 +84,7 @@
         ORDER BY d.DRAFT_DATE DESC
     </select>
 
-    <!-- 상태별 문서 목록 -->
+    <!-- 상태별 문서 목록   사용자 없으면 삭제 처리예정-->
     <select id="selectDocumentsByStatus" resultMap="documentResultMap">
         SELECT
             d.DOC_ID, d.DOC_NUMBER, d.FORM_ID, d.TITLE,
@@ -97,6 +97,25 @@
         WHERE d.DOC_STATUS = #{docStatus}
         ORDER BY d.DRAFT_DATE DESC
     </select>
+    
+    <!-- 상태별 문서 목록 (특정 사용자 관련 문서만) -->
+	<select id="selectDocumentsByStatusAndRelatedUser" resultMap="documentResultMap">
+	    SELECT DISTINCT
+	        d.DOC_ID, d.DOC_NUMBER, d.FORM_ID, d.TITLE,
+	        d.DRAFTER_ID, e.EMP_NAME AS DRAFTER_NAME,
+	        d.DRAFT_DEPT, c.CMN_DETAIL_NAME AS DRAFT_DEPT_NAME,
+	        d.DRAFT_DATE, d.DOC_STATUS
+	    FROM DOCUMENTS d
+	    LEFT JOIN EMPLOYEES e ON d.DRAFTER_ID = e.EMP_ID
+	    LEFT JOIN COMMONCODE_DETAIL c ON d.DRAFT_DEPT = c.CMN_DETAIL_CODE
+	    LEFT JOIN APPROVAL_LINES a ON d.DOC_ID = a.DOC_ID
+	    WHERE d.DOC_STATUS = #{docStatus}
+	    AND (
+	        d.DRAFTER_ID = #{userId}
+	        OR a.APPROVER_ID = #{userId}
+	    )
+	    ORDER BY d.DRAFT_DATE DESC
+	</select>
 
     <!-- 결재자별 대기 문서 목록 (결재순서 고려) -->
     <select id="selectPendingDocumentsByApproverId" resultMap="documentResultMap">

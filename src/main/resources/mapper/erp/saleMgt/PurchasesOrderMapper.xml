@@ -15,7 +15,9 @@
 	    LEFT JOIN WAREHOUSES W ON P.WHS_CODE = W.WHS_CODE
 	    LEFT JOIN MATERIALS M ON P.MTL_CODE = M.MTL_CODE
 	    LEFT JOIN PURCHASES_ORDER_STATUS PS ON P.PO_STATUS = PS.STATUS_CODE
-	 ORDER BY P.PO_NO DESC
+	    WHERE (C.CLT_TYPE = 'SUPPLIER' OR C.CLT_TYPE IS NULL)
+		AND P.PO_VISIBLE = 'Y'
+        ORDER BY P.PO_NO DESC
     </select>
     
     <!-- 수주 메인에서 수정 -->
@@ -62,6 +64,7 @@
 	    LEFT JOIN PURCHASES_ORDER_STATUS PS ON PO.PO_STATUS = PS.STATUS_CODE
     <where>
 	    C.CLT_TYPE = 'SUPPLIER'
+	    AND PO.PO_VISIBLE = 'Y'
         <if test="poCode != null and poCode != ''">
             AND PO.PO_CODE = #{poCode}
         </if>

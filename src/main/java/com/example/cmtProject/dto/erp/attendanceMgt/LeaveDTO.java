@@ -24,9 +24,9 @@ public class LeaveDTO {
 	private LocalDateTime levStartDate; // 휴가 시작일
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levEndDate; // 휴가 종료일
-	private int levDays; // 휴가일수
-	private int levUsedDays; // 사용한 휴가일수
-	private int levLeftDays; // 남은 휴가일수
+	private Double levDays; // 휴가일수
+	private Double levUsedDays; // 사용한 휴가일수
+	private Double levLeftDays; // 남은 휴가일수
 	private String levReason; // 사유
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDateTime levReqDate; // 신청일시
@@ -72,7 +72,7 @@ public class LeaveDTO {
 
     @Builder
 	public LeaveDTO(String empId, String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
-			int levDays, int levUsedDays, int levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
+			Double levDays, Double levUsedDays, Double levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
 			LocalDateTime levApprovalDate, String levRemarks, String deptName, String levTypeName, String empName, String docId) {
     	this.empId = empId;
 		this.levType = levType;

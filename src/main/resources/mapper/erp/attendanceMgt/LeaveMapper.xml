@@ -21,7 +21,7 @@
 		    L.LEV_START_DATE, 
 		    L.LEV_END_DATE, 
 		    L.LEV_DAYS, 
-		    15 - NVL(L.LEV_USED_DAYS, 0) - NVL(L.LEV_DAYS, 0) AS LEV_LEFT_DAYS,
+		    LE.LEV_LEFT_DAYS - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS,
 		    L.LEV_REASON,
 		    L.LEV_REQ_DATE,
 		    L.LEV_APPROVAL_STATUS,
@@ -30,7 +30,9 @@
 		    L.LEV_REMARKS
 		FROM LEAVES L
 		JOIN EMPLOYEES E ON L.EMP_ID = E.EMP_ID
-
+		
+		JOIN LEAVE_EMP LE ON L.EMP_ID = LE.EMP_ID
+		
 		JOIN COMMONCODE_DETAIL C_TYPE ON L.LEV_TYPE = C_TYPE.CMN_DETAIL_CODE
 		
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
@@ -49,7 +51,7 @@
 		    L.LEV_START_DATE, 
 		    L.LEV_END_DATE, 
 		    L.LEV_DAYS, 
-		    15 - NVL(L.LEV_USED_DAYS, 0) - NVL(L.LEV_DAYS, 0) AS LEV_LEFT_DAYS,
+		    LE.LEV_LEFT_DAYS - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS,
 		    L.LEV_REASON,
 		    L.LEV_REQ_DATE,
 		    L.LEV_APPROVAL_STATUS,
@@ -58,6 +60,8 @@
 		    L.LEV_REMARKS
 		FROM LEAVES L
 		JOIN EMPLOYEES E ON L.EMP_ID = E.EMP_ID
+		
+		JOIN LEAVE_EMP LE ON L.EMP_ID = LE.EMP_ID
 
 		JOIN COMMONCODE_DETAIL C_TYPE ON L.LEV_TYPE = C_TYPE.CMN_DETAIL_CODE
 		
@@ -77,7 +81,7 @@
 		    L.LEV_START_DATE, 
 		    L.LEV_END_DATE, 
 		    L.LEV_DAYS, 
-		    15 - NVL(L.LEV_USED_DAYS, 0) - NVL(L.LEV_DAYS, 0) AS LEV_LEFT_DAYS,
+		    LE.LEV_LEFT_DAYS - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS,
 		    L.LEV_REASON,
 		    L.LEV_REQ_DATE,
 		    L.LEV_APPROVAL_STATUS,
@@ -86,6 +90,8 @@
 		    L.LEV_REMARKS
 		FROM LEAVES L
 		JOIN EMPLOYEES E ON L.EMP_ID = E.EMP_ID
+		
+		JOIN LEAVE_EMP LE ON L.EMP_ID = LE.EMP_ID
 
 		JOIN COMMONCODE_DETAIL C_TYPE ON L.LEV_TYPE = C_TYPE.CMN_DETAIL_CODE
 		
@@ -101,9 +107,10 @@
 		    E.EMP_NAME,
 		    C_DEPT.CMN_DETAIL_NAME AS DEPT_NAME,
 		    NVL(L.LEV_USED_DAYS, 0) AS LEV_USED_DAYS,
-	   		15 - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
+	   		LE.LEV_LEFT_DAYS - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
 		FROM EMPLOYEES E
 		LEFT JOIN LEAVES L ON L.EMP_ID = E.EMP_ID
+		LEFT JOIN LEAVE_EMP LE ON E.EMP_ID = LE.EMP_ID
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
 		ORDER BY L.LEV_NO DESC
 	</select>
@@ -115,9 +122,10 @@
 		    E.EMP_NAME,
 		    C_DEPT.CMN_DETAIL_NAME AS DEPT_NAME,
 		    NVL(L.LEV_USED_DAYS, 0) AS LEV_USED_DAYS,
-	   		15 - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
+	   		LE.LEV_LEFT_DAYS - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
 		FROM EMPLOYEES E
 		LEFT JOIN LEAVES L ON L.EMP_ID = E.EMP_ID
+		LEFT JOIN LEAVE_EMP LE ON E.EMP_ID = LE.EMP_ID
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
 		WHERE E.DEPT_NO = #{deptNo}
 		ORDER BY L.LEV_NO DESC
@@ -130,11 +138,12 @@
 		    E.EMP_NAME,
 		    C_DEPT.CMN_DETAIL_NAME AS DEPT_NAME,
 		    NVL(L.LEV_USED_DAYS, 0) AS LEV_USED_DAYS,
-	   		15 - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
+	   		LE.LEV_LEFT_DAYS - NVL(L.LEV_USED_DAYS, 0) AS LEV_LEFT_DAYS
 		FROM EMPLOYEES E
 		LEFT JOIN LEAVES L ON L.EMP_ID = E.EMP_ID
+		LEFT JOIN LEAVE_EMP LE ON E.EMP_ID = LE.EMP_ID
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
-		WHERE E.EMP_NO = #{empNo}
+		WHERE E.EMP_ID = #{empId}
 		ORDER BY L.LEV_NO DESC
 	</select>
 	
@@ -146,31 +155,54 @@
 			EMP_ID, 
 			LEV_TYPE, 
 			LEV_START_DATE, 
-			LEV_END_TYPE, 
+			LEV_END_DATE, 
 			LEV_DAYS,
-			LEV_LEFT_DAYS,
+			LEV_USED_DAYS,
 			LEV_REASON,
 			LEV_REQ_DATE,
 			LEV_APPROVAL_STATUS,
 			LEV_APPROVER,
 			LEV_APPROVAL_DATE,
-			LEV_REMARKS
+			LEV_REMARKS,
+			DOC_ID
 			)
 		VALUES(
-			#{emp.empId},                <!-- Employees 객체의 empNo -->
+			#{empId},                <!-- Employees 객체의 empNo -->
 	        #{dto.levType},               <!-- LeaveDTO의 필드들 -->
 	        #{dto.levStartDate},
 	        #{dto.levEndDate},
-	        #{dto.levDays},
-	        #{dto.levLeftDays},
+	        #{dto.levDays, jdbcType=DOUBLE},
+	        #{dto.levUsedDays, jdbcType=DOUBLE},
 	        #{dto.levReason},
-	        now(),
-	        '대기',
+	        SYSDATE,
+	        #{dto.levApprovalStatus},
 	        #{dto.levApprover},
 	        #{dto.levApprovalDate},
-	        #{dto.levRemarks}
+	        #{dto.levRemarks},
+	        #{docId}
 			)
 	</insert>
+	
+	<insert id="insertLeaveEmp">
+		INSERT INTO LEAVE_EMP
+		VALUES (#{empId}, #{vacationDaysDays})
+	</insert>
+	
+	<update id="updatelLeaveLeftDays" parameterType="map">
+		UPDATE LEAVE_EMP
+		SET LEV_LEFT_DAYS = #{levLeftDays}
+		WHERE EMP_ID = #{empId}
+	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	<!-- 결재 연동을 위한 쿼리 추가 -->
     
@@ -193,6 +225,7 @@
             LEV_END_DATE, 
             LEV_DAYS,
             LEV_LEFT_DAYS,
+            LEV_USED_DAYS,
             LEV_REASON,
             LEV_REQ_DATE,
             LEV_APPROVAL_STATUS,
@@ -207,6 +240,7 @@
             #{dto.levEndDate},
             #{dto.levDays},
             #{dto.levLeftDays},
+            #{dto.levUsedDays},
             #{dto.levReason},
             SYSDATE,
             #{dto.levApprovalStatus},

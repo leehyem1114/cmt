@@ -119,7 +119,7 @@
 	        </div>
 	        <div class="form-group">
 	            <label>수주번호 *</label><!-- 서버에서 바로 처리 -->
-	            <input type="text" th:value="${nextSeq}" id="sonoTxt" readonly="true">
+	            <input type="text" th:value="${nextSeq + 1}" id="sonoTxt" readonly="true">
 				<input type="hidden" id="sonoHid" th:field="*{soNo}">
 	        </div>
 	        <div class="form-group">

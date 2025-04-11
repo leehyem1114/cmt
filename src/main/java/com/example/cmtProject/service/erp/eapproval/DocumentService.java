@@ -4,14 +4,19 @@ import com.example.cmtProject.constants.ApprovalStatus;
 import com.example.cmtProject.constants.DocumentStatus;
 import com.example.cmtProject.dto.erp.eapproval.DocumentDTO;
 import com.example.cmtProject.dto.erp.eapproval.DocumentSaveRequestDTO;
+import com.example.cmtProject.dto.erp.employees.EmpListPreviewDTO;
 import com.example.cmtProject.dto.erp.eapproval.ApprovalLineDTO;
 import com.example.cmtProject.mapper.erp.eapproval.DocumentMapper;
+import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.mapper.erp.eapproval.ApprovalLineMapper;
 import com.example.cmtProject.comm.exception.DocumentAccessDeniedException;
 import com.example.cmtProject.comm.exception.DocumentNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,7 @@ public class DocumentService {
     private final ApprovalLineMapper approvalLineMapper;
     private final ApprovalProcessService approvalProcessService;
     private final ObjectMapper objectMapper;
+    private final EmployeesService empService;
 
     /**
      * DTO를 이용한 문서 저장
@@ -177,11 +184,20 @@ public class DocumentService {
     }
 
     /**
-     * 상태별 문서 목록 조회
+     * 상태별 문서 목록 조회 ---------삭제예정 모든 상태를 조회하기에  혹시나 누가 쓸까봐 나겨둠
      */
     public List<DocumentDTO> getDocumentsByStatus(String status) {
         log.debug("상태별 문서 목록 조회: {}", status);
         return documentMapper.selectDocumentsByStatus(status);
+    }
+    
+    /**
+     * 상태별 문서 목록 조회 (특정 사용자 관련 문서만)
+     * 사용자가 기안자이거나 결재선에 포함된 문서만 조회
+     */
+    public List<DocumentDTO> getDocumentsByStatusAndRelatedUser(String status, String userId) {
+        log.debug("상태별 관련 문서 목록 조회: 상태={}, 사용자={}", status, userId);
+        return documentMapper.selectDocumentsByStatusAndRelatedUser(status, userId);
     }
     
     /**
@@ -247,5 +263,28 @@ public class DocumentService {
     public List<DocumentDTO> getProcessableDocumentsByEmpId(String empId) {
         log.debug("결재 가능한 문서 목록 조회: {}", empId);
         return documentMapper.selectProcessableDocumentsByApproverId(empId);
+    }
+    
+    /**
+     * 기안자를 제외한 결재자 목록 조회
+     * @return 필터링된 결재자 목록
+     */
+    public List<EmpListPreviewDTO> getApproversExceptDrafter() {
+        // 현재 사용자 ID 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserId = auth.getName();
+        
+        // 모든 사원 목록 조회 (기존 서비스 활용)
+        List<EmpListPreviewDTO> allEmployees = empService.getEmpList();
+        
+        // 기안자 제외 필터링
+        List<EmpListPreviewDTO> filteredEmployees = allEmployees.stream()
+            .filter(emp -> !emp.getEmpId().equals(currentUserId))
+            .collect(Collectors.toList());
+        
+        log.debug("결재자 목록 필터링: 전체 {}명, 필터링 후 {}명", 
+                  allEmployees.size(), filteredEmployees.size());
+        
+        return filteredEmployees;
     }
 }

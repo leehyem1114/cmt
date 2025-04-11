@@ -2,7 +2,9 @@ package com.example.cmtProject.controller.erp.saleMgt;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.annotations.Comment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -31,8 +34,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Controller
 @RequestMapping("/purchases")
 public class PurchaseController {
@@ -151,6 +155,9 @@ public class PurchaseController {
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		purchasesOrder.setPoNo(null);
+		log.info("purchasesOrder:"+purchasesOrder);
+		purchasesOrder.setPoVisible("Y");
+		log.info("purchasesOrder:"+purchasesOrder);
 		purchasesOrderRepository.save(purchasesOrder);
 		purchasesOrderRepository.flush();
 
@@ -216,4 +223,28 @@ public class PurchaseController {
 		
 		return mainDtoList;
 	}
+	
+	//선택돤 items 삭제
+	@ResponseBody
+	@PostMapping("/delItems")
+	public String deleteItems(@RequestBody List<Map<String, Object>> data) {
+		
+//			System.out.println("data:" + data);
+		
+		List<Integer> poNoList = new ArrayList<>();
+		
+		for(Map<String, Object> list : data) {
+			
+			Integer poNoTemp = (Integer)list.get("poNo");
+			poNoList.add(poNoTemp);
+		}
+		
+		System.out.println(poNoList);
+		
+		String visibleType = "N";
+		purchasesOrderRepository.updatePoVisibleByPoNo(visibleType, poNoList);
+		
+		return "SUCCESS";
+	}
+	
 }

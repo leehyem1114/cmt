@@ -2,17 +2,20 @@
 	<html xmlns:th="http://www.thymeleaf.org" 
 	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-	      layout:decorate="~{layouts/layout}"> 
+	      layout:decorate="~{layouts/layout}">
 	<head>
 		
 	<!-- date-picker -->
 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
 	<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
-		
+	
+	<!-- pagination -->
+	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+			
 	<!-- toast 부트스트랩 기본 -->
-	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" />
 	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
-
+		
 	<title>CMT</title>
 	<style>
 		
@@ -91,11 +94,12 @@
 			<div><h2>수주조회</h2></div>
 			<div>
 	        <!-- <button class="request" onclick="location.href='/sales/soregisterform'">📃 신규</button> -->
-	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
 			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
 	        <button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
+	        <button type="button" class="requestBtn" onclick="soRegisterOpenWindows()">📃 신규</button>
+			<button type="button" class="excelBtn" id="delBtn" onclick="soDelOpenWindows()">❎ 삭제</button>
 
-	        <!-- <button class="cancelBtn" onclick="soEditOpenWindows()">✏️ 수정</button> 
+	        <!-- <button class="cancelBtn" onclick="soDelOpenWindows()">✏️ 수정</button> 
 				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
 	        <button class="helpBtn">❓ HELP</button>
 			</div>
@@ -171,13 +175,13 @@
 		<br>
 
 		<!-- grid 출력 태그 -->
-	   	<div id="gridTop" style="width:1600px"></div>
+<!--	   	<div id="gridTop" style="width:1600px"></div>-->
+		<div id="gridTop"></div>
 		
 		<!-- 자바 스크립트 시작, jQuery 구문 포함 -->
 		<script src="/js/jquery-3.7.1.js"></script>
 	    <script th:inline="javascript">
 			
-		console.log(/*[[${soStatusList}]]*/ []);
 		//===================================== Grid부분 시작 ===============================================
 		
 		//모든 컬럼 함깨 표시
@@ -214,8 +218,12 @@
 			//selectionUnit: 'row', //행 단위선택
 			scrollX: true,
             scrollY: true,
-			width: 1600,  // 전체 너비 지정
-			bodyHeight: 550, // 세로 스크롤을 위한 높이 지정
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
 	        columns: [
 				{
 					header: '수주번호',
@@ -424,10 +432,16 @@
 			window.open("/sales/soregisterform", "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
     	}
 		
-		//수정 버튼 클릭시 실행되는 수정 창 - 현재 수정 버튼 사용하지 않음
-		function soEditOpenWindows(){
+		//삭제 버튼 클릭시 실행되는 수정 창 - 현재 수정 버튼 사용하지 않음
+		function soDelOpenWindows(){
 			
-			if(gridCheck.length <= 0){
+			//gridCheck = grid.getCheckedRowKeys(); 선택된 키값 가져오기
+			var checkedValue = grid.getCheckedRows();
+			var checkedArray = checkedValue.map(row => row.soNo)
+			
+			console.log(checkedArray);
+			
+			if(checkedValue.length <= 0){
 				
 				Swal.fire({
 				  icon: "warning",
@@ -437,9 +451,33 @@
 				return;
 			}
 			
-			let gridCheckString = JSON.stringify(gridCheck);
-			window.open("/sales/soeditform?gridCheck="+encodeURIComponent(gridCheckString), "_blank", "toolbar=no, menubar=no, status=no, width=1100, height=650, resizable=no")	
-		};
+			Swal.fire({
+				title: '삭제 하시겠습니까?',
+			   	text: "이 작업은 되돌릴 수 없습니다!",
+			  	icon: 'warning',
+			  	showCancelButton: true,
+			  	confirmButtonText: '확인',
+			  	cancelButtonText: '취소'
+			}).then((result) => {
+			  if (result.isConfirmed) {
+			    
+					$.ajax({
+						url: "/sales/delItems",
+						type: "POST",
+						contentType: "application/json",
+						data: JSON.stringify(checkedValue),
+						success: function(result){
+							if(result === "SUCCESS"){
+								location.reload();
+							}
+						},
+						error: function(msg){
+							console.log("error:" + msg);
+						}
+					});	
+			  	} 
+			});
+		};//soDelOpenWindows
 		
 		//===================================== jQuery 시작 ===============================================
 		$(document).ready(function(){
@@ -611,7 +649,7 @@
 			            },
 						{
 							header: '진행상태',
-							name: 'SO_STATUS', //salesOrder의 entity에 있는 soStatus
+							name: 'STATUS_NAME', //salesOrder의 entity에 있는 soStatus
 							width: 200,
 							sortable: true, 
 							filter: 'text',

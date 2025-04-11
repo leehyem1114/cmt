@@ -4,9 +4,13 @@ import java.beans.ConstructorProperties;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class NoticeDTO {
 
     private Long noticeId;
@@ -23,6 +27,8 @@ public class NoticeDTO {
     
     private String deptName;      // 부서명 (조인으로 가져옴)
     private String positionName;  // 직급명 (조인으로 가져옴)
+    private String dept;
+    
     
     @ConstructorProperties({"noticeId", "title", "empName", "deptName", "positionName","createdAt"})
     public NoticeDTO(Long noticeId, String title, String empName, String deptName, String positionName,LocalDate  createdAt) {

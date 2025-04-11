@@ -8,5 +8,9 @@ import com.example.cmtProject.dto.erp.notice.NoticeDTO;
 public interface NoticeMapper {
 	//공지사항 insert
 	int insertNotice(NoticeDTO noticeDTO);
+	//공지사항 select
+	NoticeDTO selectNoti(Long id);
+	//공지사항 삭제
+	int deleteNoti(Long noticeId);
 
 }

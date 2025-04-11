@@ -1,5 +1,6 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 	<div th:fragment="sidebar" >
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 		
 		<div id="topbar" class="d-block row d-flex justify-content-between align-items-center" >
 	        <div class="col-md-8 d-flex justify-content-start">
@@ -182,7 +183,7 @@
 					
 				
 				
-			        <span th:text="${#authentication.principal.user.empName}"></span>님,반갑읍니다 ^^...
+			        <i class="fa-solid fa-user" style=" margin-top: 5px; margin-right: 6px;"></i> <span th:text="${#authentication.principal.user.empName}"> </span>  /  <span th:text="${#authentication.principal.user.empId}"> </span>
 			    
 		        <!-- 로그아웃 버튼 -->
 
@@ -206,6 +207,7 @@
 				</th:block>
 	        </div> <!-- right -->
 		</div> <!-- topbar -->
+	<!-- 반드시 헤드에 이게 있어야 함 -->
 	
 		<div id="sidebar" class="active">
 			<div class="sidebar-wrapper active">
@@ -259,7 +261,8 @@
 		                        <li class="submenu-item ">
 		                            <a href="/eapproval/document/new">기안서 작성</a>
 								</li>	
-								<li class="submenu-item ">
+							
+								<li class="submenu-item " sec:authorize="hasRole('ROLE_ADMIN')">
 								    <a href="/eapproval/forms">문서 양식 관리</a>
 								</li>	
 		                    </ul>
@@ -299,9 +302,6 @@
 		                            <a href="/worktimes/list">근무 시간</a>
 		                        </li>
 		                        <li class="submenu-item ">
-		                            <a href="/overtimes/list">초과 근무</a>
-		                        </li>
-		                        <li class="submenu-item ">
 		                            <a href="/leaves/list">휴가 관리</a>
 		                        </li>
 		                    </ul>
@@ -316,8 +316,7 @@
 		                        <li class="submenu-item ">
 		                            <a href="/salaries/payList">급여 지급 내역</a>
 		                        </li>
-		                        <li class="submenu-item" >
-		                        <!-- <li class="submenu-item" sec:authorize="hasRole('ROLE_ATHR001')"> -->
+		                        <li class="submenu-item" sec:authorize="hasRole('ROLE_ADMIN')"> 
 		                            <a href="/salaries/payroll">급여 대장</a>
 		                        </li>
 		                    </ul>
@@ -458,7 +457,7 @@
 		                    </a>
 		                </li>
 						
-
+ 					<div sec:authorize="hasRole('ROLE_ADMIN')"> 
 						<li class="sidebar-title">관리자</li>
 						<li class="sidebar-item  has-sub">
 						    <a href="#" class='sidebar-link'>
@@ -471,6 +470,7 @@
 						        </li>
 						    </ul>
 						</li>
+ 					</div> 
 		            </ul>
 		            
 		            

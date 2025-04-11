@@ -4,7 +4,9 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security" layout:decorate="~{layouts/layout}">
 
 <head>
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<!-- 그리드 -->
+	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 
@@ -40,12 +42,12 @@
 				<div class="tab-content" id="documentTabContent">
 					<!-- 월별 급여대장 탭 -->
 					<div class="tab-pane fade show active" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
-						<div style="margin-bottom: 10px; display: flex; align-items: center;">
+						<!--<div style="margin-bottom: 10px; display: flex; align-items: center;">
 							<select class="form-select" id="monthlySelect" style="width: 200px;">
 								<option value="">월 선택</option>
 							</select>
-						</div>
-						<div id="monthlyGrid" style="width: 100%; height: 500px;"></div>
+						</div>-->
+						<div id="monthlyGrid" style="width: 100%;"></div>
 					</div>
 					<!-- 연간 급여대장 탭 -->
 					<!--<div class="tab-pane fade" id="yearly" role="tabpanel" aria-labelledby="yearly-tab">
@@ -61,15 +63,19 @@
 		</div>
 
 		<!-- 급여 대장 모달 -->
-		<div class="modal fade" id="payTransferModal" tabindex="-1">
-			<div class="modal-dialog modal-lg">
+		<div class="modal fade" id="payrollModal" tabindex="-1">
+			<div class="modal-dialog modal-xl">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="payCalcModal">급여 대장</h5>
+						<h5 class="modal-title" id="payCalcModal">상세 급여 대장</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<div id="monthlyGrid" style="width: 100%"></div>
+						<!-- 그리드 시작 -->
+						<h5>급여 현황</h5>
+						<div id="deptlGrid"></div>
+						<h5>전 직원 급여 합계</h5>
+						<div id="payTotalGrid"></div>
 						<!-- 그리드 끝 -->
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
@@ -77,13 +83,16 @@
 					</div>
 				</div>
 			</div>	
-		</div><!-- 급여 이체 모달 -->
+		</div><!-- 급여 대장 모달 -->
 
 		<script th:inline="javascript">
-			console.log(/*[[${payrolls}]]*/[]);
+			console.log(/*[[${payrollSummaryList}]]*/[]);
+			
+			let selectedRowKey = null;
+			
 			const grid = new tui.Grid({
 				el: document.getElementById('monthlyGrid'),
-				data: /*[[${monthlyPayroll}]]*/[],
+				data: /*[[${payrollSummaryList}]]*/[],
 				rowHeaders: ['checkbox'],
 				columns: [
 					{
@@ -97,72 +106,376 @@
 						name: 'empCount',
 						sortable: true,
 						align: "center",
-						formatter: ({value}) => `${formatNumber(value || 0)}명`
+						formatter: function({ value }) {
+							return `${value}명`;
+						}
 					},
 					{
 						header: '급여대장',
 						name: 'sliDesc',
-						align: "center"
+						align: "center",
+						formatter: ({rowKey}) => {
+  							return `<span class="view-button" data-rowkey="${rowKey}" data-bs-toggle="modal" data-bs-target="#payrollModal" style="color:blue; cursor:pointer;">조회</span>`;
+						  }
 					},
 					{
 						header: '총지급액',
 						name: 'totalPayAmount',
-						align: "right",
+						align: "right",						
 						formatter: ({value}) => `${formatNumber(value || 0)}원`
 					}
 				]
 			});
+			
+			
+			
+			let grid2; // 부서1 급여 현황
+			let grid3; // 전 직원 급여 합계	
+			
+			// 금액 컬럼에 자동으로 천 단위 콤마 구분
+			function formatNumber(value) {
+			    if (value === null || value === undefined) return '0';
+			    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+			}
+			
+			// 합계 행 만들기
+			function createSummaryOptions() {
+				const summaryContent = {
+						empId: {
+							template: () => '<div style="text-align: center; font-weight: bold;">합계</div>'
+						},
+						empName: { template: () => '' },
+						position: { template: () => '' }
+				};
+
+				const moneyColumns = [
+					'payBasic', 'payBonusOvertime', 'payBonusHoliday', 'payBonusTotal',
+					'payTaxPension', 'payTaxHealth', 'payTaxCare', 'payTaxEmployment',
+					'payTaxIncome', 'payTaxResidence', 'payTaxTotal', 'payTotal'
+				];
+
+				moneyColumns.forEach(col => {
+					summaryContent[col] = {
+						template: (valueMap) => `<div style="text-align: right; font-weight: bold;">
+									             ${formatNumber(valueMap.sum)}</div>`
+						};
+				});
+
+				return {
+					position: 'bottom',
+					height: 40,
+					columnContent: summaryContent
+				};
+			}	   
+			
+
+
+			
+			
+			// 조회 버튼 클릭 시 선택한 rowKey 저장
+			document.addEventListener('click', function (e) {
+				if (e.target && e.target.classList.contains('view-button')) {
+				    selectedRowKey = e.target.dataset.rowkey;
+				}
+			});
+			    //const modal = document.getElementById('payrollModal');
+				//modal.addEventListener('shown.bs.modal', shownModalHandler);
+
+				//function shownModalHandler() {
+				     //document.getElementById('payrollModal').removeEventListener('shown.bs.modal', shownModalHandler);
+				
+					 
+					 
+					document.getElementById('payrollModal').addEventListener('shown.bs.modal', () => {
+					 if (selectedRowKey !== null) {
+					       const rowData = grid.getRow(Number(selectedRowKey));
+					       console.log("선택된 행 데이터:", rowData);
+
+					$.ajax({
+						type: 'POST',
+					    url: '/salaries/payroll/detail',
+					    data: { payMonth: rowData.payMonth },
+					    success: function (data) {
+							
+							debugger;
+							const deptList = data.DEPT_LIST;
+							const payTotal = data.PAY_TOTAL || {};
+							//payTotal.payNo = '합계';
+							const gridData = [payTotal];
+							
+								
+							if (!grid2) {
+								grid2 = new tui.Grid({
+									el: document.getElementById('deptlGrid'),
+									data: deptList,
+									rowHeaders: ['rowNum'],
+									scrollX: true,
+									scrollY: true,								
+									summary: createSummaryOptions(),
+									pageOptions: {
+										useClient: true,
+										perPage: 5
+									},
+									columns: [
+										{
+											header: '사원번호',
+											name: 'EMP_ID',
+											hidden: true
+										},
+										{
+											header: '사원명',
+											name: 'empName',
+											sortable: true,
+											width: 100,
+											align: "center"
+										},
+										{
+											header: '직급',
+											name: 'position',
+											sortable: true,
+											width: 100,
+											align: "center"
+										},
+										{
+											header: '기본급',
+											name: 'payBasic',
+											sortable: true,
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '야근수당',
+											name: 'payBonusOvertime',
+											sortable: true,
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '명절수당',
+											name: 'payBonusHoliday',
+											sortable: true,
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '총수당금액',
+											name: 'payBonusTotal',
+											sortable: true,
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '국민연금',
+											name: 'payTaxPension',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '건강보험',
+											name: 'payTaxHealth',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '장기요양보험',
+											name: 'payTaxCare',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '고용보험',
+											name: 'payTaxEmployment',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '소득세',
+											name: 'payTaxIncome',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '주민세',
+											name: 'payTaxResidence',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '총공제금액',
+											name: 'payTaxTotal',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '실수령액',
+											name: 'payTotal',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										}
+									]
+								});
+								} else {
+									grid2.resetData(deptList);
+								} // 부서 급여 현황
+								
+								
+								
+								
+								
+								// 전 직원 급여 합계
+								//const payTotalData = Array.isArray(data.payTotal) ? data.payTotal : [data.payTotal ?? {}];
+								//payTotalData.forEach(row => row.payNo = '합계');
+
+								// 그리드 - 열 설정 시 name 에 _ 사라짐
+								
+								if (!grid3) {
+								grid3 = new tui.Grid({
+									el: document.getElementById('payTotalGrid'),
+									data: gridData,
+									rowHeaders: ['rowNum'],
+									scrollX: true,
+									scrollY: true,	
+									columns: [
+										{
+											header: '구분',
+											width: 100,
+											formatter: ({ value }) => value || '합계'
+										},
+										{
+											header: '기본급',
+											name: 'PAYBASIC',
+											sortable: true,
+											width: 100,
+											align: "center",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '야근수당',
+											name: 'PAYBONUSOVERTIME',
+											sortable: true,
+											width: 100,
+											align: "center",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '명절수당',
+											name: 'PAYBONUSHOLIDAY',
+											sortable: true,
+											width: 100,
+											align: "center",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '총수당금액',
+											name: 'TOTALBONUSAMOUNT',
+											sortable: true,
+											width: 100,
+											align: "center",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '국민연금',
+											name: 'PAYTAXPENSION',
+											sortable: true,
+											width: 100,
+											align: "center",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '건강보험',
+											name: 'PAYTAXHEALTH',
+											sortable: true,
+											width: 100,
+											align: "center",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '장기요양보험',
+											name: 'PAYTAXCARE',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '고용보험',
+											name: 'PAYTAXEMPLOYMENT',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '소득세',
+											name: 'PAYTAXINCOME',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '주민세',
+											name: 'PAYTAXRESIDENCE',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '총공제금액',
+											name: 'TOTALTAXAMOUNT',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										},
+										{
+											header: '실수령액',
+											name: 'TOTALPAYAMOUNT',
+											width: 100,
+											align: "right",
+											formatter: ({value}) => formatNumber(value || 0)
+										}
+									]
+								});
+							} else {
+								grid3.resetData([payTotal]);
+							} // 전 직원 급여 합계
+	
+							},
+							error: function () {
+							   Swal.fire({
+								 icon: "error",
+								 title: "상세 급여대장 조회 실패!"
+							   });
+						}
+					});
+						}
+					});
+
+
 
 			// 체크박스 클릭 시 이벤트 추가
-			monthlyGrid.on('check', (checkItem) => {
+			grid.on('check', (checkItem) => {
 				console.log("체크 확인");
 			});
 
 			// 체크 해제 시 이벤트 추가
-			monthlyGrid.on('uncheck', (checkItem) => {
+			grid.on('uncheck', (checkItem) => {
 				console.log("체크 해제 확인");
 			});
+			
 
-
-			const grid2 = new tui.Grid({
-				el: document.getElementById('yearlyGrid'),
-				data: /*[[${yearlyPayroll}]]*/[],
-				rowHeaders: ['checkbox'],
-				columns: [
-					{
-						header: '지급연도',
-						name: 'sliType'
-					},
-					{
-						header: '대장명(연간)',
-						name: 'sliName'
-					},
-					{
-						header: '총 인원',
-						name: 'sliPriority'
-					},
-					{
-						header: '급여 요약',
-						name: 'sliDesc'
-					},
-					{
-						header: '총지급액',
-						name: 'sliFormula'
-					}
-				]
-			});
-
-			// 체크박스 클릭 시 이벤트 추가
-			yearlyGrid.on('check', (checkItem) => {
-				console.log("체크 확인");
-			});
-
-			// 체크 해제 시 이벤트 추가
-			yearlyGrid.on('uncheck', (checkItem) => {
-				console.log("체크 해제 확인");
-			});
-
-
+			
+			
+			
 
 		</script>
 		<!-- 그리드 끝 -->

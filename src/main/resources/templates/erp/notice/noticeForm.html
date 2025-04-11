@@ -21,27 +21,41 @@
     <!-- 기존 form, 버튼, 그리드 등 다 여기 -->
      <h3>공지사항 작성</h3>
      
-    	<form action="/noticeForm" method="post">
+    	<form action="/noticeForm" method="post" id="noticeForm">
     	
 			 <!-- 문서 내용 카드 -->
             <div class="card mt-4">
-	            <div class="card-header d-flex align-items-center gap-3">
-		        <h6 class="mb-0">작성자</h6>
-		        <input type="hidden" name="empId" th:value="${loginUser.empId}">
-		        <input type="text" class="form-control" name="empName" th:value="${loginUser.empName}" style="max-width: 100px;">
-		        <h6 class="mb-0">부서</h6>
-		        <input type="hidden" name="deptNo" th:value="${loginUser.deptNo}">
-				<input type="text" class="form-control" name="deptName" th:value="${loginUser.deptName}" style="max-width: 100px;">
-		        <h6 class="mb-0">직급</h6>
-		        <input type="hidden" name="positionNo" th:value="${loginUser.positionNo}">
-		        <input type="text" class="form-control" name="deptPosition" th:value="${loginUser.deptPosition}" style="max-width: 100px;">
-		    </div>
-		    <div class="card-header d-flex align-items-center gap-3">
-		        <h6 class="mb-0">작성일</h6>
-		        <input type="date" class="form-control" name="createdAt"  th:value="${today}" required style="max-width: 300px;">
-		    </div>
-			</div>
+			    <div class="card-header d-flex align-items-center gap-3">
+			        <h6 class="mb-0">사번</h6>
+			        <input type="hidden" name="empId" th:value="${loginUser.empId}">
+			        <span th:text="${loginUser.empId}"></span>
+			
+			        <h6 class="mb-0">작성자</h6>
+			        <input type="hidden" name="empName" th:value="${loginUser.empName}">
+			        <span th:text="${loginUser.empName}"></span>
+			    </div>
+			
+			    <div class="card-header d-flex align-items-center gap-3">
+			        <h6 class="mb-0">부서</h6>
+			        <input type="hidden" name="deptNo" th:value="${loginUser.deptNo}">
+			        <input type="hidden" name="deptName" th:value="${loginUser.deptName}">
+			        <span th:text="${loginUser.deptName}"></span>
+			
+			        <h6 class="mb-0">직급 </h6>
+			        <input type="hidden" name="positionNo" th:value="${loginUser.positionNo}">
+			        <input type="hidden" name="deptPosition" th:value="${loginUser.deptPosition}">
+			        <span th:text="${loginUser.deptPosition}"></span>
+			    </div>
+
+    <div class="card-header d-flex align-items-center gap-3">
+        <h6 class="mb-0">작성일</h6>
+        <input type="date" class="form-control" name="createdAt" th:value="${today}" required style="max-width: 300px;">
+    </div>
+</div>
+            
 			<div class="card mt-4">
+			
+			
 	            <div class="card-header d-flex align-items-center gap-3">
 				    <h4 class="mb-0">제목</h4>
 				    <input type="text" id="title" class="form-control" name="title" required style="max-width: 800px;">
@@ -57,7 +71,7 @@
     		
     		<div class="d-flex justify-content-center gap-2 mt-4">
 			    <input type="button" value="돌아가기" onclick="location.href='/noticeList'" class="btn btn-secondary">
-			    <input type="submit" value="작성" class="btn btn-primary">
+			    <button type="button" onclick="confirmSubmit()" class="btn btn-primary">작성</button>
 			</div>
     	</form>
     	
@@ -90,6 +104,22 @@
 	      ]
 	    });
 	  });
+	  
+	  
+	    function confirmSubmit() {
+	        Swal.fire({
+	            title: '공지사항을 등록하시겠습니까?',
+	            icon: 'question',
+	            showCancelButton: true,
+	            confirmButtonText: '네, 등록할게요',
+	            cancelButtonText: '아니요'
+	        }).then((result) => {
+	            if (result.isConfirmed) {
+	                document.getElementById('noticeForm').submit();
+	            }
+	        });
+	    }
+	</script>
 	</script>
     <script>
         // 기존 JavaScript 코드

@@ -2,9 +2,11 @@ package com.example.cmtProject.controller.erp.saleMgt;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Controller
 @RequestMapping("/sales")
 public class saleController {
@@ -180,6 +185,12 @@ public class saleController {
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		salesOrder.setSoNo(null); 
+		log.info("salesOrder=======1:" + salesOrder);
+		
+		salesOrder.setSoVisible("Y");
+		
+		log.info("salesOrder========2:" + salesOrder);
+		
 		salesOrderRepository.save(salesOrder);
 		salesOrderRepository.flush();
 		
@@ -277,6 +288,29 @@ public class saleController {
 		System.out.println("mainDtoList:"+ mainDtoList);
 		
 		return mainDtoList;
+	}
+	
+	//선택돤 items 삭제
+	@ResponseBody
+	@PostMapping("/delItems")
+	public String deleteItems(@RequestBody List<Map<String, Object>> data) {
+		
+//		System.out.println("data:" + data);
+		
+		List<Integer> soNoList = new ArrayList<>();
+		
+		for(Map<String, Object> list : data) {
+			
+			Integer soNoTemp = (Integer)list.get("soNo");
+			soNoList.add(soNoTemp);
+		}
+		
+		System.out.println(soNoList);
+		
+		String visibleType = "N";
+		salesOrderRepository.updateSoVisibleBySoNo(visibleType, soNoList);
+		
+		return "SUCCESS";
 	}
 	
 	@GetMapping("/poform")

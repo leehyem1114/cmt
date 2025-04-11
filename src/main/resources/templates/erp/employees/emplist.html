@@ -321,7 +321,7 @@
 								    if(emp){
 								        const id = emp.empId;
 								        const url = `/emp/emplist/${id}`;
-								        const options = "width=900,height=800,top=100,left=300,scrollbars=yes,resizable=yes";
+								        const options = "width=1100,height=800,resizable=yes";
 
 								        window.open(url, 'empDetail_' + id, options);
 								    }
@@ -436,7 +436,7 @@
 							<label for="empStartDate2">입사일</label>
 						    <div style="position: relative;" class="form-item">
 						      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
-						        <input type="text" id="empStartDate2" aria-label="empStartDate2" >
+						        <input type="text" id="empStartDate2" name="empStartDate" aria-label="empStartDate2" >
 						        <span class="tui-ico-date"></span>
 						      </div>
 						      <div id="startDateWrapper2" style="margin-top: -1px; position: relative; z-index: 1000;"></div>

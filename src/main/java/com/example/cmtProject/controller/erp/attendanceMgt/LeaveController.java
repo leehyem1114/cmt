@@ -1,5 +1,6 @@
 package com.example.cmtProject.controller.erp.attendanceMgt;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +67,13 @@ public class LeaveController {
         }
     	// 유저정보
     	Employees loginUser = principalDetails.getUser();
+    	LocalDate startDate = loginUser.getEmpStartDate();
     	
     	commonCodeName(model, commonService);
+
+//    	leaveService.updateEmployeesAnnualLeaveBase();
     	
+    	   	
     	
     	// 어드민은 모든정보 보기, 매니저는 자기 부서만, 사원은 자기거만 보기
     	if (principalDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))){
@@ -106,17 +111,8 @@ public class LeaveController {
     }
     
     
-    // 휴가 일정 관리 저장
-    @PostMapping("/insert")
-    @ResponseBody
-    public ResponseEntity<Void> insertLeave(@RequestBody LeaveDTO dto, @AuthenticationPrincipal PrincipalDetails principalDetails) {
-    	// 로그인한 사용자의 아이디 가져오기
-    	Employees loginUser = principalDetails.getUser();
-    	
-        leaveService.insertLeave(dto, loginUser);
-        return ResponseEntity.ok().build();
-    }
     
+
     
     
     

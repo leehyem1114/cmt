@@ -163,6 +163,18 @@
         SET WKT_TYPE = #{wktType}
         WHERE EMP_NO = #{empNo}
 	</update>
+	
+	
+	
+	
+	
+	<!-- 사원 NO를 토대로 근무 일정 추출 -->
+	<select id="getWorkTemplateByEmpNo" resultType="java.time.LocalDateTime">
+		SELECT WT.WT_START_TIME
+		FROM WORK_TEMPLATES WT
+		JOIN WORK_TIMES W ON W.WKT_TYPE = WT.WT_TYPE 
+		WHERE EMP_NO = #{empNo}
+	</select>
     
 
 	

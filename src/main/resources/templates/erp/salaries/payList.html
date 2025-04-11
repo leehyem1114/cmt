@@ -5,8 +5,9 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:decorate="~{layouts/layout}">
 <head>
-
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<!-- 그리드 -->
+	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 	
@@ -44,7 +45,7 @@
 		justify-content: space-between;
 	}
 		
-	button {
+/* 	button {
 		padding: 5px 10px;
 	    border: none;
 	    cursor: pointer;
@@ -55,7 +56,7 @@
 	.calculate { background:dodgerblue; color: white; }
 	.print { background: purple; color: white; }
 	.transfer { background: green; color: white; }
-	.delete { background: red; color: white; }
+	.delete { background: red; color: white; } */
 	</style>
 </head>
 
@@ -68,9 +69,9 @@
 				<h2>급여 조회</h2>
 			</div>
 			<div>
-				<button type="button" class="print" onclick="payPrint()">✏️ 명세서 출력</button>
-				<button type="button" class="transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal">❓ 급여 이체</button>
-				<button type="button" class="delete" th:data-id="*{payNo}">삭제</button>
+				<button type="button" class="btn btn-primary transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal" sec:authorize="hasRole('ROLE_ADMIN')">급여 이체</button>
+				<button type="button" class="btn btn-primary print" onclick="payPrint()" sec:authorize="hasRole('ROLE_ADMIN')">명세서 출력</button>
+				<button type="button" class="btn btn-danger delete" th:data-id="*{payNo}" sec:authorize="hasRole('ROLE_ADMIN')">삭제</button>
 			</div>
 		</div><!-- <div class="button-container"> -->
 
@@ -111,14 +112,18 @@
 						<select class="form-select" id="dept" name="dept">
 							<option th:each="dept : ${deptList}" th:value="${dept.cmnDetailCode}"
 								th:text="${dept.cmnDetailName}"></option>
-						</select>
+						</select>-->
 						<div class="input-group mb-2">
-							<select class="form-select" id="position" name="position">
-								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"
-									th:text="${code.cmnDetailName}"></option>
-							</select>
-							<button type="submit" class="btn btn-secondary ms-2">조회</button>
-						</div>-->
+<!--							<select class="form-select" id="position" name="position">-->
+<!--								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"-->
+<!--									th:text="${code.cmnDetailName}"></option>-->
+<!--							</select>-->
+						<!-- <select> 대신 숨겨서 넘기기 -->
+						<input type="hidden" id="position" name="position"
+						       th:value="${commonCodeMap['POSITION'][0].cmnDetailCode}" />
+
+						</div>
+<!--						<button type="submit" class="btn btn-secondary ms-2">조회</button>-->
 						<!-- 그리드 top 시작 -->
 						<div id="gridTop2" style="width: 100%"></div>
 						<!-- 그리드 끝 -->
@@ -198,7 +203,7 @@
 			 },
 			 {
 			    header: '명절수당',
-			    name: 'PAY_BONUS_HOLIDAY',
+			    name: 'PAY_BONUS_HOIDAY',
 				width: 100,
 				align: "right"
 			 },
@@ -281,7 +286,12 @@
 		columns.forEach(column => {
 		    if (moneyColumns.includes(column.name)) {
 		        column.formatter = (value) => {
-		            if (!value.value && value.value !== 0) return '';
+		            //if (!value.value && value.value !== 0) return '';
+					let val = value.value;
+					            if (val === null || val === undefined || val === '') {
+					                val = 0;
+					            }
+					
 		            return value.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 		        };
 		    }
@@ -291,6 +301,10 @@
 	        el: document.getElementById('gridTop'), 
 			data : /*[[${payList}]]*/ [],
 	        rowHeaders: ['checkbox'],
+			pageOptions: {
+				useClient: true,
+				perPage: 5
+			},
 	        columns: columns
 	    });
 	    
@@ -350,7 +364,11 @@
 			grid2 = new tui.Grid({
 				el: document.getElementById('gridTop2'), 
 				data : /*[[${empList}]]*/ [],
-				rowHeaders: ['checkbox'], 
+				rowHeaders: ['checkbox'],
+				pageOptions: {
+					useClient: true,
+					perPage: 5
+				},
 				columns: [
 					{
 						header: '사원번호',
@@ -425,6 +443,7 @@
     		data: { position: position,
     				empIdList: empIdList
     		},
+			traditional: true,
     		success: function (res) {
 				
 				if(res === 'fail'){

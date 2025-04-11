@@ -20,7 +20,7 @@ public interface SalariesMapper {
 	// List<SalaryItemDTO> salItemTypes();
 	
 	// 급여 지급 내역
-	List<PaymentDTO> getPayList();
+	List<PaymentDTO> getPayList(@Param("empId") String empId);
 	
 	// 급여 지급 내역 필터링 검색
 	List<PaySearchDTO> getSearchPayList(PaySearchDTO paySearchDTO);
@@ -54,7 +54,16 @@ public interface SalariesMapper {
 
 	void savePaymentDto(PaymentTempDTO pdto);
 	
-	// 급여 대장
-	List<PaymentDTO> getPayrolls();
+	// 월별 급여 대장 간략 조회
+	List<PaymentDTO> getMonthlyPayrollSummaryList();
+	
+	// 월별 급여 대장 상세 조회 
+	List<PaymentDTO> getMonthlyPayrollDetailList(@Param("payMonth") String payMonth);
+
+	// 월별 급여 대장 - 부서별 급여 현황
+	List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth);
+
+	// 월별 급여 대장 - 전 직원 급여 합계
+	Map<String, Object> getMonthlyPayrollTotalList(String payMonth);
 	
 }

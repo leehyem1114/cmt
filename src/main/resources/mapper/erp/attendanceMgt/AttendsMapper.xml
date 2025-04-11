@@ -145,4 +145,9 @@
 	    WHERE ATD_NO = #{atdNo}
 	</update>
 	
+	<insert id="insertAttend">
+		INSERT INTO ATTENDS(EMP_NO, EMP_NAME, ATD_DATE, ATD_STATUS, ATD_TYPE)
+		VALUES(#{emp.empNo}, #{emp.empName}, #{dto.atdDate, jdbcType=TIMESTAMP}, #{dto.atdStatus, jdbcType=VARCHAR}, #{dto.atdType})
+	</insert>
+	
 </mapper>

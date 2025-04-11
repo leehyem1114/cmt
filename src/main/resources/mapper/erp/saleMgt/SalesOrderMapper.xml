@@ -61,7 +61,8 @@
         LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
         LEFT JOIN WAREHOUSES W ON SO.WHS_CODE = W.WHS_CODE
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
-        WHERE C.CLT_TYPE = 'ORDER' OR C.CLT_TYPE IS NULL
+        WHERE (C.CLT_TYPE = 'ORDER' OR C.CLT_TYPE IS NULL)
+		AND SO.SO_VISIBLE = 'Y'
         ORDER BY SO.SO_NO DESC
     </select>
     
@@ -115,6 +116,7 @@
         LEFT JOIN SALES_ORDER_STATUS S ON SO.SO_STATUS = S.STATUS_CODE
     <where>
 	    C.CLT_TYPE = 'ORDER' 
+    	AND SO.SO_VISIBLE = 'Y'
         <if test="soCode != null and soCode != ''">
             AND SO.SO_CODE = #{soCode}
         </if>

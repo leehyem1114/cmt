@@ -28,13 +28,13 @@ public class SalaryService {
 	private SalariesMapper salMapper;	
 	
 	// 급여 지급 내역 조회
-	public List<PaymentDTO> getPayList() {
+	public List<PaymentDTO> getPayList(String empId) {
 //		List<Payment> payList = salRepository.findAll();
 //		return payList.stream()
 //				.map(payment -> payment.toDto())
 //				.collect(Collectors.toList());
 		
-		return salMapper.getPayList();
+		return salMapper.getPayList(empId);
 	}
 
 	// 급여 지급 내역 조회 - 검색 기능 추가 
@@ -59,13 +59,33 @@ public class SalaryService {
 		return salMapper.getOverTimes(paymentDTO);
 	}
 	
-	// 급여 대장 조회
-	public List<PaymentDTO> getPayrolls() {
+	// 월별 급여 대장 간략 조회
+	public List<PaymentDTO> getMonthlyPayrollSummaryList() {
 //		List<Payment> payrolls = salRepository.findAll();
 //		return payrolls.stream()
 //				.map(payment -> payment.toDto())
 //				.collect(Collectors.toList());
-		return salMapper.getPayrolls();
+		return salMapper.getMonthlyPayrollSummaryList();
+	}
+	
+	// 월별 급여 대장 상세 조회
+	public List<PaymentDTO> getMonthlyPayrollDetailList(String payMonth) {
+		return salMapper.getMonthlyPayrollDetailList(payMonth);
+	}
+	
+	// 월별 급여 대장 - 부서별 급여 현황
+	public List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth) {
+		
+		List<PaymentDTO> result = salMapper.getMonthlyDeptPayrollList(payMonth);
+		System.out.println("호가인" + result);
+		
+		return result;
+	}
+	
+	// 월별 급여 대장 - 전 직원 급여 합계
+	public Map<String, Object> getMonthlyPayrollTotalList(String payMonth) {
+		System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"+payMonth);
+		return salMapper.getMonthlyPayrollTotalList(payMonth);
 	}
 
 	// 직급별 기본급 계산
@@ -109,15 +129,12 @@ public class SalaryService {
 
 	// 급여 이체
 	public void savePaymentMap(Map<String, Object> m) {
-		System.out.println("DFDSFSFSDFDSF");
-		
 		salMapper.savePaymentMap(m);
 	}
 
 	public void savePaymentDto(PaymentTempDTO pdto) {
 		salMapper.savePaymentDto(pdto);
 	}
-
 
 
 

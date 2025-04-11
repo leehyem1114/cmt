@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.erp.attendanceMgt.AttendDTO;
+import com.example.cmtProject.dto.erp.attendanceMgt.WorkTemplateDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
 public interface AttendsMapper {
@@ -37,6 +39,8 @@ public interface AttendsMapper {
     int updateAttendLeave(@Param("atdNo") Long atdNo,
                           @Param("atdLeave") LocalDateTime atdLeave,
                           @Param("atdType") String atdType);
+
+	void insertAttend(@Param("dto") AttendDTO dto, @Param("emp") Employees emp);
 	
 
 }
