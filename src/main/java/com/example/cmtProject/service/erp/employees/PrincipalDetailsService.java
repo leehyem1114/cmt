@@ -1,5 +1,6 @@
 package com.example.cmtProject.service.erp.employees;
 
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,7 +21,13 @@ public class PrincipalDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String empId) throws UsernameNotFoundException {
         Employees user = employeesRepository.findByEmpId(empId)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사원입니다."));
+
+        // 재직 상태 확인
+        if ("RETIRED".equalsIgnoreCase(user.getEmpStatus())) {
+            throw new DisabledException("퇴사한 사원은 로그인할 수 없습니다.");
+        }
+
         return new PrincipalDetails(user);
     }
 }
