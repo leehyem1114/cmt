@@ -4,9 +4,15 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 		  
-		  
-		 
 	<head>
+			
+	<!-- pagination -->
+	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+			
+	<!-- toast 부트스트랩 기본  -->
+ 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" /> 
+ 	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script> 
+			
 		
     <meta charset="UTF-8">
     <title>BOM 정보</title>
@@ -24,8 +30,8 @@
 </head>
 <body>
 	<div layout:fragment="content">
+	<h4>BOM 정보</h4>
 	<div class="container mt-5">
-	    <h4>BOM 정보</h4>
 	    <div class="row mb-3">
 	        <div class="col-md-3">
 	            <input type="month" class="form-control" placeholder="등록월">
@@ -52,60 +58,49 @@
 	    </div>
 
 	    <h6 class="section-title">상품</h6>
-	    <table class="table table-bordered align-middle">
-	        <thead>
-	            <tr>
-	                <th><input type="checkbox"></th>
-	                <th>상품번호</th>
-	                <th>상품유형</th>
-	                <th>상품명</th>
-	                <th>단위</th>
-	                <th>등록일</th>
-	            </tr>
-	        </thead>
-	        <tbody>
-	            <tr>
-	                <td><input type="checkbox"></td>
-	                <td>82</td>
-	                <td>반제품</td>
-	                <td>슬라이드 블록</td>
-	                <td>EA</td>
-	                <td>2025-02-12 12:19:45</td>
-	            </tr>
-	            <tr>
-	                <td><input type="checkbox"></td>
-	                <td>81</td>
-	                <td>반제품</td>
-	                <td>샤프트</td>
-	                <td>EA</td>
-	                <td>2025-02-07 17:12:20</td>
-	            </tr>
-	            <!-- 더 많은 행 추가 가능 -->
-	        </tbody>
-	    </table>
+		<!-- grid 사용, window.pdtGrid로 접근하기위해 이름을 ptdGrid로 설정  -->
+		<div th:replace="~{fragments/gridLayout :: tuiGrid('pdtGrid', ${gridOptions})}"></div>
 
 	    <h6 class="section-title">BOM</h6>
-	    <table class="table table-bordered align-middle">
-	        <thead>
-	            <tr>
-	                <th><input type="checkbox"></th>
-	                <th>bom번호</th>
-	                <th>원자재</th>
-	                <th>자재상품</th>
-	                <th>단위</th>
-	                <th>소모량</th>
-	                <th>등록일</th>
-	                <th>공정</th>
-	                <th>상태</th>
-	            </tr>
-	        </thead>
-	        <tbody>
-	            <tr><td colspan="9" class="text-center">No data.</td></tr>
-	        </tbody>
-	    </table>
+		<!-- grid 사용 -->
+		<div th:replace="~{fragments/gridLayout :: tuiGrid('bomGrid', ${gridOptions})}"></div>
+		
 	</div><!-- <div class="container mt-5"> -->
 		
 	<script>
+		
+		document.addEventListener("DOMContentLoaded", function () {
+	         // gridId가 pdtGrid라고 가정
+	         window.pdtGrid.on('click', ev => {
+				
+	             const rowKey = ev.rowKey;
+	             const rowData = window.pdtGrid.getRow(rowKey);
+
+	             if (rowData) {
+	                 const productCode = rowData.pdtCode; // 예: PDT_CODE 컬럼
+	                 console.log("선택된 제품코드:", productCode);
+
+	                 // AJAX 요청으로 BOM 데이터 불러오기
+	                 $.ajax({
+	                     url: '/bom/data', // 컨트롤러에서 이 경로 처리
+	                     type: 'GET',
+	                     data: { productCode: productCode },
+	                     success: function (bomData) {
+	                         console.log("BOM 데이터:", bomData);
+	                         // 아래 그리드에 데이터 갱신
+	                         if (window.bomGrid) {
+	                             window.bomGrid.resetData(bomData);
+	                         }
+	                     },
+	                     error: function (err) {
+	                         console.error("BOM 데이터 로딩 실패", err);
+	                     }
+	                 });
+	             }
+	         });
+	     });  
+		 
+		 
   	    const fileUpload = document.getElementById("fileUpload");
   	    const fileName = document.getElementById("fileName");
   	    fileUpload.addEventListener("change", function () {
@@ -116,6 +111,11 @@
   		function downloadExcel() {
               window.location.href = "/bom/excel-file-down";
           }
+		  
+		  
+		  
+		  
+		  
   	</script>
 		
 		

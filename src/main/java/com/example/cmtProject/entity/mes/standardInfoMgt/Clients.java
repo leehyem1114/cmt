@@ -44,4 +44,7 @@ public class Clients {
 	
 	@Column(name = "CLT_COMMENTS")
 	private String cltComments; //비고
+	
+	@Column(name = "CLT_PRC_TYPE")
+	private String cltPrcType;
 }

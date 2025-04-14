@@ -22,14 +22,8 @@ public class Materials {
 	@Column(name = "MTL_NO")
 	private Long mtlNo;
 	
-	@Column(name = "MTL_BASE_PRICE")
-	private Long mtlBasePrice;
-	                   
 	@Column(name = "MTL_CODE")
 	private String mtlCode;
-	
-	@Column(name = "MTL_COMMENTS")
-	private String mtlComments;
 	
 	@Column(name = "MTL_NAME")
 	private String mtlName;
@@ -37,13 +31,21 @@ public class Materials {
 	@Column(name = "MTL_STANDARD")
 	private String mtlStandard;
 	
-	@Column(name = "MTL_SUPP_CODE")
-	private String mtlSuppCode;
-	
 	@Column(name = "MTL_UNIT")
 	private String mtlUnit;
 	
+	@Column(name = "MTL_BASE_PRICE")
+	private Long mtlBasePrice;
+	                   
+	@Column(name = "MTL_PRC_TYPE")
+	private String mtlPrcType;
+	
+	@Column(name = "MTL_CLT_CODE")
+	private String mtlCltCode; 
+	
 	@Column(name = "MTL_USE_YN")
 	private Character mtlUseYN;
+	
+	@Column(name = "MTL_COMMENTS")
+	private String mtlComments;
 }
-
