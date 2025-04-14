@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+	<head>
+		
+    <meta charset="UTF-8">
+    <title>BOM 정보</title>
+ 
+    <style>
+        body { background-color: #f4f8fc; }
+        .container { background-color: white; padding: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h4 { margin-bottom: 1.5rem; }
+        .section-title { margin-top: 2rem; font-weight: bold; }
+        .btn-upload { background-color: #007bff; color: white; }
+        .btn-download { background-color: #28a745; color: white; }
+        table thead { background-color: #f1f5fb; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="container mt-5">
+    <h4>BOM 정보</h4>
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <input type="month" class="form-control" placeholder="등록월">
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="상품명을 입력해주세요.">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-5 text-end">
+            <input type="file" id="fileUpload" hidden>
+            <label for="fileUpload" class="btn btn-secondary">파일 선택</label>
+            <span id="fileName">선택된 파일 없음</span>
+            <button class="btn btn-upload">엑셀 파일 업로드</button>
+            <button class="btn btn-download">상품등록 엑셀 양식 다운로드</button>
+        </div>
+    </div>
+
+    <div class="text-end mb-2">
+        <button class="btn btn-outline-primary">상품등록</button>
+    </div>
+
+    <h6 class="section-title">상품</h6>
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th><input type="checkbox"></th>
+                <th>상품번호</th>
+                <th>상품유형</th>
+                <th>상품명</th>
+                <th>단위</th>
+                <th>등록일</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>82</td>
+                <td>반제품</td>
+                <td>슬라이드 블록</td>
+                <td>EA</td>
+                <td>2025-02-12 12:19:45</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>81</td>
+                <td>반제품</td>
+                <td>샤프트</td>
+                <td>EA</td>
+                <td>2025-02-07 17:12:20</td>
+            </tr>
+            <!-- 더 많은 행 추가 가능 -->
+        </tbody>
+    </table>
+
+    <h6 class="section-title">BOM</h6>
+    <table class="table table-bordered align-middle">
+        <thead>
+            <tr>
+                <th><input type="checkbox"></th>
+                <th>bom번호</th>
+                <th>원자재</th>
+                <th>자재상품</th>
+                <th>단위</th>
+                <th>소모량</th>
+                <th>등록일</th>
+                <th>공정</th>
+                <th>상태</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="9" class="text-center">No data.</td></tr>
+        </tbody>
+    </table>
+</div><!-- <div class="container mt-5"> -->
+</div><!-- <div layout:fragment="content"> -->
+
+<script>
+    const fileUpload = document.getElementById("fileUpload");
+    const fileName = document.getElementById("fileName");
+    fileUpload.addEventListener("change", function () {
+        fileName.textContent = this.files.length > 0 ? this.files[0].name : "선택된 파일 없음";
+    });
+</script>
+</body>
+</html>
