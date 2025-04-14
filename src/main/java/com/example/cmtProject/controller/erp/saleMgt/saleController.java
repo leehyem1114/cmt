@@ -355,5 +355,30 @@ public class saleController {
 		
 		return "erp/salesMgt/baseSale";
 	}
+	
+	@GetMapping("/myPage")
+	public String myPage(Model model) throws JsonProcessingException {
+		
+		List<String> columnList = new ArrayList<>();
+		columnList.add("1213");
+		columnList.add("1214");
+		
+		List<String> dataList = new ArrayList<>();
+		dataList.add("1213");
+		dataList.add("1214");
+		
+		// Controller
+		ObjectMapper mapper = new ObjectMapper();
+		String columnsJson = mapper.writeValueAsString(columnList);
+		String dataJson = mapper.writeValueAsString(dataList);
+
+		model.addAttribute("gridTopConfig", Map.of(
+		    "columns", columnsJson,
+		    "data", dataJson
+		));
+		 
+		
+		return "erp/salesMgt/myPage";
+	}
 }
 
