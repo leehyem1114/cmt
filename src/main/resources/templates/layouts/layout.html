@@ -8,45 +8,8 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- ======= 공통 JavaScript 파일 (모든 페이지에서 사용) ======= -->
-    <!-- jQuery 라이브러리 - 가장 먼저 로드해서 의존성 문제 해결 -->
-    <script src="/js/jquery-3.7.1.js"></script>
     
-    <!-- 부트스트랩 및 UI 관련 스크립트 -->
-    <script src="/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="/assets/js/bootstrap.bundle.min.js"></script>
-    <script src="/assets/js/main.js"></script>
-    
-    <!-- TOAST UI 라이브러리 스크립트 -->
-    <script type="text/javascript" src="https://uicdn.toast.com/tui.pagination/v3.4.0/tui-pagination.js"></script>
-    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.js"></script>
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-    
-    <!-- SweetAlert2 라이브러리 (알림창) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- 공통 JavaScript 코드 (jQuery 이후에 로드) -->
-    <script src="/js/commonJs/commonAlert.js"></script>
-    <script src="/js/commonJs/commonApi.js"></script>
-    <script src="/js/commonJs/commonUI.js"></script>
-    <script src="/js/commonJs/commonValidation.js"></script>
-    <script src="/js/commonJs/commonGrid.js"></script>
-    <script src="/js/commonJs/commonSearch.js"></script>
-    
-        <!-- ======= 개별 페이지 JavaScript ======= -->
-    <!-- 각 페이지에서 필요한 특정 스크립트를 이 블록에 추가할 수 있음 -->
-    <th:block layout:fragment="script">
-        <!-- 이 영역은 비워두세요. 각 페이지에서 이 영역을 채웁니다. -->
-    </th:block>
-
-
-    <!-- 타이틀 패턴: 각 페이지의 타이틀 + 접미사 -->
-    <!-- <title layout:title-pattern="$CONTENT_TITLE - CMT">CMT</title> -->
-
-
-    <!-- ======= 공통 CSS 파일 (모든 페이지에서 사용) ======= -->
+        <!-- ======= 공통 CSS 파일 (모든 페이지에서 사용) ======= -->
     <!-- 파비콘 및 아이콘 -->
     <link rel="icon" href="/images/favicon.png" type="images/png">
     <link rel="stylesheet" href="/assets/vendors/bootstrap-icons/bootstrap-icons.css">
@@ -91,6 +54,44 @@
 
         /* 추가 공통 스타일은 여기에 작성 */
     </style>
+
+    <!-- ======= 공통 JavaScript 파일 (모든 페이지에서 사용) ======= -->
+    <!-- jQuery 라이브러리 - 가장 먼저 로드해서 의존성 문제 해결 -->
+    <script src="/js/jquery-3.7.1.js"></script>
+    
+    <!-- 부트스트랩 및 UI 관련 스크립트 -->
+    <script src="/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/main.js"></script>
+    
+    <!-- TOAST UI 라이브러리 스크립트 -->
+    <script type="text/javascript" src="https://uicdn.toast.com/tui.pagination/v3.4.0/tui-pagination.js"></script>
+    <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.js"></script>
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    
+    <!-- SweetAlert2 라이브러리 (알림창) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- 공통 JavaScript 코드 (jQuery 이후에 로드) -->
+    <script src="/js/commonJs/commonAlert.js"></script>
+    <script src="/js/commonJs/commonApi.js"></script>
+    <script src="/js/commonJs/commonUI.js"></script>
+    <script src="/js/commonJs/commonValidation.js"></script>
+    <script src="/js/commonJs/commonGrid.js"></script>
+    <script src="/js/commonJs/commonSearch.js"></script>
+    
+        <!-- ======= 개별 페이지 JavaScript ======= -->
+    <!-- 각 페이지에서 필요한 특정 스크립트를 이 블록에 추가할 수 있음 -->
+    <th:block layout:fragment="script">
+        <!-- 이 영역은 비워두세요. 각 페이지에서 이 영역을 채웁니다. -->
+    </th:block>
+
+
+    <!-- 타이틀 패턴: 각 페이지의 타이틀 + 접미사 -->
+    <!-- <title layout:title-pattern="$CONTENT_TITLE - CMT">CMT</title> -->
+
+
 </head>
 
 <body>
