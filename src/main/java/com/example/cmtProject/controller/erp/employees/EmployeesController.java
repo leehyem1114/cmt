@@ -146,10 +146,11 @@ public class EmployeesController {
 	public String searchDept(@ModelAttribute searchEmpDTO searchEmpDTO,Model model)throws Exception {
 		commonCodeName(model, commonService);
 		
-		List<searchEmpDTO> searchDTO = empService.getSearchDept(searchEmpDTO);
+		 List<searchEmpDTO> emplist = empService.getSearchDept(searchEmpDTO);
+		model.addAttribute("emplist", emplist);
 		
-		model.addAttribute("emplist",searchDTO);
-		System.out.println(">>>>>>>>"+searchDTO);
+		model.addAttribute("searchEmpDTO",searchEmpDTO);
+		System.out.println(">>>>>>>>"+searchEmpDTO);
 		
 		return "erp/employees/emplist";
 	}
