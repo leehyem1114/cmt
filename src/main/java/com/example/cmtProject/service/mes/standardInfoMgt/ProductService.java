@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDto;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.mapper.mes.standardInfoMgt.ProductMapper;
 
@@ -48,4 +49,9 @@ public class ProductService {
     	int result = productMapper.delete(pdtCode);
 		return result;
     }
+
+	public int pdtMainUpdate(ProductsEditDto pdtEditDto) {
+		
+		return productMapper.pdtMainUpdate(pdtEditDto);
+	}
 }

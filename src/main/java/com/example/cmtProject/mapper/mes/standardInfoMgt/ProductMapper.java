@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDto;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 
 @Mapper
@@ -23,5 +24,7 @@ public interface ProductMapper {
     
     // 삭제
     public int delete(int pdtCode) throws Exception;
+
+	public int pdtMainUpdate(ProductsEditDto pdtEditDto);
 
 }

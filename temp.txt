@@ -4,8 +4,6 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 		  
-		  
-		 
 	<head>
 		
     <meta charset="UTF-8">
@@ -20,7 +18,8 @@
         .btn-download { background-color: #28a745; color: white; }
         table thead { background-color: #f1f5fb; }
 		.filediv {display: flex;}
-    </style>
+		.selecedRowClass {background-color:aliceblue !important; color: white; }
+    </style>																																																																																																																																																					
 </head>
 <body>
 	<div layout:fragment="content">
@@ -45,41 +44,378 @@
             <input type="file" class="form-control" id="fileInput" accept=".xlsx" style="width: 400px;">
             <button class="btn btn-upload" style="margin-right: 10px;margin-left: 10px;">엑셀 파일 업로드</button>
             <button class="btn btn-download" onclick="downloadExcel()">BOM 엑셀 양식 다운로드</button>
+			<div class="text-end mb-2">
+		        <button class="btn btn-outline-primary" style="margin-left: 400px;">상품등록</button>
+		    </div>
         </div>
 					
-	    <div class="text-end mb-2">
-	        <button class="btn btn-outline-primary">상품등록</button>
-	    </div>
-
+		<!-- grid 사용, window.pdtGrid로 접근하기위해 이름을 ptdGrid로 설정  -->
 	    <h6 class="section-title">상품</h6>
-		<!-- grid 사용 -->
-		<div th:replace="~{fragments/gridLayout :: tuiGrid('salesGrid', ${gridOptions})}"></div>
+		<div id="pdtGrid"></div>
 
-	    <h6 class="section-title">BOM</h6>
 		<!-- grid 사용 -->
-		<div th:replace="~{fragments/gridLayout :: tuiGrid('salesGrid', ${gridOptions})}"></div>
+	    <h6 class="section-title">BOM</h6>
+		<div id="bomGrid"></div>
 		
+		<div>
+			<button class="btn btn-outline-primary">자재 찾기</button>
+			<button class="btn btn-outline-primary">저장</button>
+			<button class="btn btn-outline-primary">삭제</button>
+		</div>
 	</div><!-- <div class="container mt-5"> -->
+
 		
-	<script>
-  	    const fileUpload = document.getElementById("fileUpload");
-  	    const fileName = document.getElementById("fileName");
-  	    fileUpload.addEventListener("change", function () {
-  	        fileName.textContent = this.files.length > 0 ? this.files[0].name : "선택된 파일 없음";
-  	    });
-  		
-  		
-  		function downloadExcel() {
-              window.location.href = "/bom/excel-file-down";
-          }
+	 <script th:inline="javascript">
+		
+		function downloadExcel(){
+			
+		}
+		
+		
+		
+		let gridData = /*[[${pdtList}]]*/ [];
+		
+		//let empListSelected = empList.map(item1 => ({text: item1.empName, label: item1.empName, value: item1.empId}));
+		
+		console.log(gridData);
+		
+		let grid = new tui.Grid({
+	        el: document.getElementById('pdtGrid'), 
+			//data : /*[[${pdtList}]]*/ [],
+			data: gridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+            scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: '상품번호',
+					name: 'pdtNo',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	           {
+	                header: '상품코드',
+	                name: 'pdtCode',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '상품 이름',
+	                name: 'pdtName',
+					width: 200,
+					fontSize: '40',
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: "text"
+	            },
+				{
+	                header: '상품 상세 내용',
+	                name: 'pdtSpecification',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					editor: "text"
+	            },
+	            {
+					header: '상품 가격',
+	                name: 'pdtShippingPrice',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: "text"
+	            },
+				{
+	                header: '비고',
+	                name: 'pdtComments', //SalseOrder의 entity에 있는 pdtCode
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: 'center',
+					editor: "text"
+	            }
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+	    
+		let selectedEv = null;
+		
+		//클릭시 제품 선택 값의 BOM을 하단 그리드에 출력
+		grid.on('click', ev => {
+			if(selectedEv !== null){
+				grid.removeRowClassName(selectedEv.rowKey, 'selecedRowClass');
+			}
+			
+			selectedEv = ev;
+			grid.addRowClassName(selectedEv.rowKey, 'selecedRowClass');
+			
+			//클릭해서 하단 BOM에 선택된 상품 정보 출력
+			let evValue = ev;
+
+			let rk = evValue.rowKey;
+			let rowData = grid.getRow(rk);
+			let pdtCode = rowData.pdtCode;
+			console.log("pdtCode:"+pdtCode);
+			
+			
+			$.ajax({
+			url: '/bom/bom-selected', // 컨트롤러에서 이 경로 처리
+            type: 'GET',
+            data: { pdtCode: pdtCode },
+            success: function (bomData) {
+					
+				console.log("BOM:", bomData);
+				console.log("BOM.COLUMNS 데이터:", bomData.COLUMNS);
+				console.log("BOM.data 데이터:", bomData.DATA);
+
+				for (let col of bomData.COLUMNS) {
+					col.name = col.NAME
+					col.header = col.HEADER
+					delete col.NAME
+					delete col.HEADER
+				}
+				 
+                //if (bomGrid) {
+                     //bomGrid.setColumns(bomData.COLUMNS);
+					 //bomGrid.resetData(bomData);
+					 
+					 /* ========================================== BOM 그리드 시작 ==========================================  */
+					 let grid2 = new tui.Grid({
+			 	        el: document.getElementById('bomGrid'), 
+			 			//data : /*[[${pdtList}]]*/ [],
+			 			data: bomData,
+			 	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			 			//selectionUnit: 'row', //행 단위선택
+			 			scrollX: true,
+			             scrollY: true,
+			 			//width: 1600,  // 전체 너비 지정
+			 			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			 			pageOptions: {
+			 			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			 			   perPage: 10        // 페이지당 행 수
+			 			 },
+			 	        columns: [
+			 				{
+			 					header: '상품번호',
+			 					name: 'BOM_NO',
+			 					width: 100,
+			 					sortable: true, 
+			 					filter: 'text',
+			 					align: "center" 
+			 	            },
+			 	           {
+			 	                header: '상품코드',
+			 	                name: 'pdtCode',
+			 					width: 200,
+			 					sortable: true, 
+			 					filter: 'text',
+			 					align: "center" 
+			 	            },
+			 				{
+			 	                header: '상품 이름',
+			 	                name: 'pdtName',
+			 					width: 200,
+			 					fontSize: '40',
+			 					sortable: true, 
+			 					filter: 'text',
+			 					align: 'center',
+			 					editor: "text"
+			 	            },
+			 				{
+			 	                header: '상품 상세 내용',
+			 	                name: 'pdtSpecification',
+			 					width: 200,
+			 					sortable: true, 
+			 					filter: 'text',
+			 					align: "center",
+			 					editor: "text"
+			 	            },
+			 	            {
+			 					header: '상품 가격',
+			 	                name: 'pdtShippingPrice',
+			 					width: 200,
+			 					sortable: true, 
+			 					filter: 'text',
+			 					align: 'center',
+			 					editor: "text"
+			 	            },
+			 				{
+			 	                header: '비고',
+			 	                name: 'pdtComments', //SalseOrder의 entity에 있는 pdtCode
+			 					width: 200,
+			 					sortable: true, 
+			 					filter: 'text',
+			 					align: 'center',
+			 					editor: "text"
+			 	            }
+			 	        ], // 열 설정
+			 			autoEdit: true,
+			 			editingEvent: 'dblclick' 
+			 	    });
+			 	    
+			 		let selectedEv = null;
+			 		
+			 		grid.on('click', ev => {
+			 			if(selectedEv !== null){
+			 				grid.removeRowClassName(selectedEv.rowKey, 'selecedRowClass');
+			 			}
+			 			
+			 			selectedEv = ev;
+			 			grid.addRowClassName(selectedEv.rowKey, 'selecedRowClass');
+			 			
+			 			//클릭해서 하단 BOM에 선택된 상품 정보 출력
+			 			let evValue = ev;
+
+			 			let rk = evValue.rowKey;
+			 			let rowData = grid.getRow(rk);
+			 			let pdtCode = rowData.pdtCode;
+			 			console.log("pdtCode:"+pdtCode);
+			 			
+			 			
+			 			$.ajax({
+			 			url: '/bom/bom-selected', // 컨트롤러에서 이 경로 처리
+			             type: 'GET',
+			             data: { pdtCode: pdtCode },
+			             success: function (bomData) {
+			 					
+			 				console.log("BOM:", bomData);
+			 				console.log("BOM.COLUMNS 데이터:", bomData.COLUMNS);
+			 				console.log("BOM.data 데이터:", bomData.DATA);
+
+			 				for (let col of bomData.COLUMNS) {
+			 					col.name = col.NAME
+			 					col.header = col.HEADER
+			 					delete col.NAME
+			 					delete col.HEADER
+			 				}
+			 				 
+			 				// bomData = {}
+			 				// bomData.columns = [{name: 'test', header: '제품 코드'}]
+			 				// bomData.data = [{test: 'zxc'}, {test: 'qwe'}]
+			 				// console.log("TEST:", bomData);
+			 				 
+			                 // 아래 그리드에 데이터 갱신
+			 				
+			                 if (bomGrid) {
+			                      //bomGrid.setColumns(bomData.COLUMNS);
+			 					 bomGrid.resetData(bomData);
+			                 }
+			             },
+			             error: function (err) {
+			             	console.error("BOM 데이터 로딩 실패", err);
+			             	}
+			 			});
+			 		});
+			 			
+			 		
+			 		grid.on('onGridUpdated', (ev) => {
+			 			// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
+			 		    grid.refreshLayout();
+			 		});
+			 		
+			 		//수정
+			 		grid.on('afterChange', (ev) => {
+			 			
+			 			let evValue = ev.changes[0];
+			 			let rk = evValue.rowKey;
+			 			let rowData = grid.getRow(rk);
+			 			let pdtNo = rowData.pdtNo;
+			 			console.log("pdtNo:"+pdtNo);
+			 			
+			 			//console.log(ev.changes[0]); 
+			 			//{rowKey: 5, columnName: 'empId', value: '930216', prevValue: '921114'}
+			 			
+			 			let sendData = {
+			 				pdtNo : pdtNo,
+			 				columnName : evValue.columnName,
+			 				value : evValue.value
+			 			};
+			 			
+			 			console.log(sendData);
+			 			//{soNo: 445, columnName: 'soStatus', value: 'SO_INPRODUCTION'}
+			 			
+			 			$.ajax({
+			 				url: "/bom/bomeditexe",
+			 				type: "GET",
+			 				data: sendData,
+			 				success: function(result) {
+			 					console.log(result);
+			 				},
+			 				error: function(errorResult) {
+			 					grid.restore(); // 이전 상태로 롤백
+			 				}
+			 			});
+			 	    });
+			 
+					 
+					 
+					 
+					 
+					 /* ========================================== BOM 그리드 끝 ========================================== */
+					 
+                //}
+            },
+            error: function (err) {
+            	console.error("BOM 데이터 로딩 실패", err);
+            	}
+			});
+		});
+			
+		
+		grid.on('onGridUpdated', (ev) => {
+			// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
+		    grid.refreshLayout();
+		});
+		
+		//수정
+		grid.on('afterChange', (ev) => {
+			
+			let evValue = ev.changes[0];
+			let rk = evValue.rowKey;
+			let rowData = grid.getRow(rk);
+			let pdtNo = rowData.pdtNo;
+			console.log("pdtNo:"+pdtNo);
+			
+			//console.log(ev.changes[0]); 
+			//{rowKey: 5, columnName: 'empId', value: '930216', prevValue: '921114'}
+			
+			let sendData = {
+				pdtNo : pdtNo,
+				columnName : evValue.columnName,
+				value : evValue.value
+			};
+			
+			console.log(sendData);
+			//{soNo: 445, columnName: 'soStatus', value: 'SO_INPRODUCTION'}
+			
+			$.ajax({
+				url: "/bom/bomeditexe",
+				type: "GET",
+				data: sendData,
+				success: function(result) {
+					console.log(result);
+				},
+				error: function(errorResult) {
+					grid.restore(); // 이전 상태로 롤백
+				}
+			});
+	    });
   	</script>
 		
-		
-		
-	</div><!-- <div layout:fragment="content"> -->
-
-		
+	</div><!-- <div layout:fragment="content"> -->	
 	</body>
-	
-	
 	</html>
