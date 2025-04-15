@@ -8,9 +8,14 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 스타일 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-	
+	<!-- 스크립트 -->	
+
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
+	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script> <!-- 카카오api -->
+	<script src="/js/employees/emplist.js" defer></script>
 	
     <title>Cmt</title>
 <style type="text/css">
@@ -45,135 +50,8 @@
 	}
 
 </style>
-<th:block layout:fragment="script">
-	    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script type="text/javascript">
-            /* 
-             * 페이지별 JavaScript 코드 작성 영역
-             * - TOAST UI 초기화
-             * - 이벤트 핸들러
-             * - Ajax 요청
-             * - 기타 페이지별 로직
-             */
-            
-           //프로필사진 미리보기
-		$(function () {
-			$("#empProfileFile").on("change", function (e) {
-		    let files = e.target.files;
-		    let imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
-		
-		    if (imageFiles.length > 1) {
-		    	alert("프로필 사진은 1장만 업로드 가능합니다.");
-		    	imageFiles = imageFiles.slice(0, 1);
-		    }
-		
-		    $("#preview_profile").html("");
-		
-		    imageFiles.forEach(file => {
-		      let reader = new FileReader();
-		      reader.onload = function (event) {
-		      	let img = $("<img>")
-		          .attr("src", event.target.result)
-		          .attr("height", "100px")
-		          .addClass("profile-thumb");
-		
-		        $("#preview_profile").append(img);
-		      };
-		      reader.readAsDataURL(file);
-		    });
-		  });
-			
-			
-			  // 사원번호 유효성 검사
-			$("#empId").on("keyup", function() {
-			    var empId = $(this).val();
-			    $.ajax({
-			        url : '/emp/checkId',
-			        type : 'post',
-			        data : { empId : empId },
-			        success : function(response){
-			        	console.log(response);
-			            if(response == 1){
-			                $('#idCheckMsg').text('[중복 아이디] 이미 사용중인 아이디 입니다.').css('color', 'black');
-			            } else {
-			                $('#idCheckMsg').text('사용 가능한 아이디 입니다.').css('color', 'green');
-			            } 
-			        },
-			        error : function(){
-			            console.log("아이디 중복체크 오류");
-			        }
-			    });
-			});
-		});
-            //사원등록 얼럿창
-            function empSubmit(){
-            	Swal.fire({
-                    title: '사원등록을 저장하겠습니까?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: '사원등록',
-                    cancelButtonText: '아니오'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('empRegi').submit();
-                    }
-                });
-            }
-            
-            
-          //주차 등록버튼 
-			$('#empParkingStatus').on('change', function(){
-				toggleEmpParkingStatus();
-			
-			function toggleEmpParkingStatus(){
-				const selected = $('#empParkingStatus option:selected').text();
-				if(selected.includes('미등록')){
-					$('#empCarNumber').hide();
-					$('#empCarNumber').val('');
-				} else {
-					$('#empCarNumber').show();
-				}
-			}
-			});
-          
-        </script>
-		
-        <!-- 캘린더 -->
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		<script>
-		    document.addEventListener("DOMContentLoaded", function() {
-		        flatpickr(".datepicker", {
-// 		            enableTime: true,  // 시간 선택 가능
-		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
-// 		            time_24hr: true,  // 24시간 형식
-// 		            minDate: "today", // 오늘 이후 선택 가능
-		            locale: "ko" // 한국어 설정 (선택 사항)
-		        });
-		    });
-		</script>
-		<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-		<script type="text/javascript">
-			function search_address() {
-				new daum.Postcode({
-					oncomplete : function(data) {
-						console.log(data);
-						document.empRegi.empPostCode.value = data.zonecode;
-	
-						let address = data.address;
-						if (data.buildingName != "") {
-							address += " (" + data.buildingName + ")";
-						}
-	
-						document.empRegi.empAddress1.value = address;
-						document.empRegi.empAddress2.focus();
-					}
-				}).open();
-			}
-		</script>
-    </th:block>
 </head>
 <body>
-	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- 
         중요: layout:fragment="content"는 레이아웃 템플릿에 실제 페이지 내용이 삽입될 위치를 지정합니다.
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
@@ -198,6 +76,7 @@
 				</div>
             </div>
             <div class="card-body">
+				
 <!--                 <p>이 영역에 페이지의 주요 내용을 작성하세요.</p> -->
                 <div id="searchForm"> <!-- 사원검색박스 -->
 	                <form th:action="@{/emp/emplist/searchEmp}" method="post" th:object="${searchEmpDTO}" >
@@ -265,9 +144,9 @@
 							</script>
 							
 							<button type="submit" class="btn btn-primary btnSearchEmp">검색</button>    
-							
 						</div>
 	                </form>
+					<button type="button" class="btn btn-outline-secondary mx-3" onclick="empPrint()" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">PDF 출력</button>
                 </div>
                 <!-- 표 예시 -->
                 <div class="table-responsive">
@@ -294,6 +173,11 @@
 							        data: emplist,
 							        scrollX: false,
 							        scrollY: false,
+							        rowHeaders: ['checkbox'],
+							        pageOptions: {
+							    	    useClient: true,      // 클라이언트 페이징
+							    	    perPage: 13           // 페이지당 행 수
+							    	  },
 							        columns: [
 							            { header: 'NO', name: 'rowNum', sortable: true,align: 'center'},
 							            { header: '사원번호', name: 'empId',sortable: true, align: 'center'},
@@ -314,18 +198,22 @@
 							        ]
 							    });
 								
-								grid.on('click', ev => {
-								    const rowKey = ev.rowKey;
-								    const emp = grid.getRow(rowKey);
+							    grid.on('click', ev => {
+							        // 체크박스 컬럼 클릭은 무시
+							        if (ev.columnName === '_checked') return;
 
-								    if(emp){
-								        const id = emp.empId;
-								        const url = `/emp/emplist/${id}`;
-								        const options = "width=1100,height=800,resizable=yes";
+							        const rowKey = ev.rowKey;
+							        const emp = grid.getRow(rowKey);
 
-								        window.open(url, 'empDetail_' + id, options);
-								    }
-								});
+							        if (emp) {
+							            const id = emp.empId;
+							            const url = `/emp/emplist/${id}`;
+							            const options = "width=1100,height=800,resizable=yes";
+
+							            window.open(url, 'empDetail_' + id, options);
+							        }
+							    });
+
 							</script>
                         </tbody>
                     </table>
@@ -577,6 +465,21 @@
         여기에 페이지에서 사용할 스크립트를 작성하세요.
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
+	<th:block layout:fragment="script">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+		<script>
+		    document.addEventListener("DOMContentLoaded", function() {
+		        flatpickr(".datepicker", {
+// 		            enableTime: true,  // 시간 선택 가능
+		            dateFormat: "Y-m-d",  // 날짜 및 시간 포맷
+// 		            time_24hr: true,  // 24시간 형식
+// 		            minDate: "today", // 오늘 이후 선택 가능
+		            locale: "ko" // 한국어 설정 (선택 사항)
+		        });
+		    });
+		</script>
+		
+    </th:block>
     
 </body>
 </html>

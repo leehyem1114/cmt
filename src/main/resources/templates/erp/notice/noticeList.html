@@ -66,6 +66,10 @@
 				       data: noticeList,
 				       scrollX: false,
 				       scrollY: false,
+				       pageOptions: {
+				    	    useClient: true,      // 클라이언트 페이징
+				    	    perPage: 10           // 페이지당 행 수
+				    	  },
 				       columns: [
 				           { header: 'NO', name: 'rowNum', sortable: true,align: 'center'},
 				           { header: '제목', name: 'title',sortable: true, align: 'center'},

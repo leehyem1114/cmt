@@ -58,7 +58,6 @@ public class NoticeController {
 	public String registNotice(@ModelAttribute NoticeDTO noticeDTO) {
 		int notice = noticeService.regiNoti(noticeDTO);
 		if(notice > 0) {
-			System.out.println("공지사항 올라감");
 			return "redirect:/noticeList";
 		} else {
 			return "erp/notice/noticeList";
@@ -71,7 +70,6 @@ public class NoticeController {
 		NoticeDTO noticeList = noticeService.getNoticeDetail(id);
 	        model.addAttribute("notice", noticeList);
 	        
-	        System.out.println(">>>상세" + noticeList);
 	        return "erp/notice/noticeDetail";
 	    }
 	

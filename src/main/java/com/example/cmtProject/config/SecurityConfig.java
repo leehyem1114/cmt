@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.example.cmtProject.constants.PathConstants;
 
@@ -18,6 +19,7 @@ import com.example.cmtProject.constants.PathConstants;
 public class SecurityConfig{
 	 @Autowired
 	    private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+	 @Autowired CustomLoginSuccessHandler customLoginSuccessHandler;
 
 	//password 암호화 하기 위한 Bean객체
     @Bean
@@ -45,7 +47,8 @@ public class SecurityConfig{
                     .usernameParameter("empId") // username 필드 이름 변경
                     .passwordParameter("empPassword") // password 필드 이름 변경
                     .loginProcessingUrl("/login") //login주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인을 진행해준다. 그렇기 때문에 cotroller에 login페이지가 없다.
-                    .defaultSuccessUrl("/") //로그인이 성공하면 main페이지로 간다
+                    .successHandler(customLoginSuccessHandler) // 쿠키기억
+//                    .defaultSuccessUrl("/") //로그인이 성공하면 main페이지로 간다
 //                    .failureUrl("/loginFail")
                     .failureHandler(customAuthenticationFailureHandler)
                     .permitAll() // 로그인 페이지는 누구나 접근 가능

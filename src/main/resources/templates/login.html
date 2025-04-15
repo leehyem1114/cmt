@@ -58,9 +58,9 @@
                     <h1 class="auth-title">Log in.</h1>
                     <p class="auth-subtitle mb-5">행운 가득한 하루 되세요 🍀🍀🍀</p>
             
-                    <form action="login" method="post" onsubmit="return validityCheck()" id="loginForm">
+                    <form action="/login" method="post" onsubmit="return validityCheck()" id="loginForm">
                         <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="text" class="form-control form-control-xl" placeholder="ID" id="empId" name="empId">
+                            <input type="text" class="form-control form-control-xl" placeholder="ID" id="empId" name="empId" th:value="${savedEmpId}">
                             <div class="form-control-icon">
                                 <i class="bi bi-person"></i>
                             </div>
@@ -72,8 +72,10 @@
                             </div>
                         </div>
                         <div class="form-check form-check-lg d-flex align-items-end">
-                            <input class="form-check-input me-2" type="checkbox" id="flexCheckDefault">
                             <label class="form-check-label text-gray-600" for="flexCheckDefault">
+                            	<input class="form-check-input me-2" type="checkbox"
+							       id="flexCheckDefault" name="rememberId"
+							       th:checked="${savedEmpId != null}">
                                 아이디 기억하기
                             </label>
                         </div>
