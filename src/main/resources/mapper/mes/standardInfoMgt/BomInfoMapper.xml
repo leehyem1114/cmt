@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력 --> 
+<mapper namespace="com.example.cmtProject.mapper.mes.standardInfoMgt.BomInfoMapper">
+	
+	<select id="getBomInfoTotalList" resultType="com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO">
+		SELECT * 
+		FROM BOM B 
+		LEFT JOIN PRODUCTS PR ON B.PDT_CODE = PR.PDT_CODE
+		LEFT JOIN MATERIALS M ON B.MTL_CODE = M.MTL_CODE
+		LEFT JOIN PRODUCT_PROCESS_TYPE P ON B.BOM_PRC_TYPE = P.PDT_PRC_TYPE_CODE
+		WHERE B.PDT_CODE = #{pdtCode}
+		ORDER BY BOM_NO
+	</select>
+	
+</mapper>

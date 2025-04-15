@@ -39,4 +39,27 @@
         DELETE FROM PRODUCTS
         WHERE PDT_CODE = #{pdtCode}
     </delete>
+    
+    <!-- 기준 정보에서 수정 -->
+    <update id="pdtMainUpdate" parameterType="com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO">
+    UPDATE PRODUCTS 
+    <set>
+        <if test="columnName == 'pdtCode'">
+            PDT_CODE = #{value}
+        </if>
+        <if test="columnName == 'pdtName'">
+            PDT_NAME = #{value}
+        </if>
+        <if test="columnName == 'pdtSpecification'">
+            PDT_SPECIFICATION = #{value}
+        </if>
+        <if test="columnName == 'pdtShippingPrice'">
+            PDT_SHIPPING_PRICE = CAST(#{value} AS NUMBER)
+        </if>
+        <if test="columnName == 'pdtComments'">
+            PDT_COMMENTS = #{value}
+        </if>
+    </set>
+    WHERE PDT_NO = #{pdtNo}
+	</update>
 </mapper>

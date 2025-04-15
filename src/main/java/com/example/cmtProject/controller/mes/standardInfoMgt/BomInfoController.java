@@ -2,17 +2,32 @@ package com.example.cmtProject.controller.mes.standardInfoMgt;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDto;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
+import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
+import com.example.cmtProject.service.mes.standardInfoMgt.BomInfoService;
+import com.example.cmtProject.service.mes.standardInfoMgt.ProductService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -23,60 +38,158 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/bom")
 public class BomInfoController {
 
+	
+	@Autowired
+	private ProductsRepository productsRepository;
+	
+	@Autowired
+	private ProductService productsService;
+	
+	@Autowired
+	private BomInfoService bomInfoService;
+	
 	@GetMapping("/bom-info")
-	public String getMethodName(Model model) {
+	public String bomInfo(Model model) {
 		
-		/*
-		// 1. 임시 데이터 생성
-	    List<Map<String, Object>> data = new ArrayList<>();
-
-	    Map<String, Object> row1 = new HashMap<>();
-	    row1.put("soNo", "SO-20240401");
-	    row1.put("soDate", "2024-04-01");
-
-	    Map<String, Object> row2 = new HashMap<>();
-	    row2.put("soNo", "SO-20240402");
-	    row2.put("soDate", "2024-04-02");
-
-	    data.add(row1);
-	    data.add(row2);
-
-	    // 2. Grid 옵션 설정
-	    Map<String, Object> gridOptions = new HashMap<>();
-	    gridOptions.put("columns", List.of(
-	        Map.of("name", "soNo", "header", "OrderNumber", "width", 120),
-	        Map.of("name", "soDate", "header", "OrderDate", "width", 150)
-	    ));
-	    gridOptions.put("data", data);
-
-	    // 3. Thymeleaf에 전달
-	    model.addAttribute("gridOptions", gridOptions);
-		log.info("gridOptions:"+gridOptions);
-		*/
+		List<Products> pdtList = productsRepository.findAll();
 		
-		
-		
-		//------------------------ 그리드 컬럼과 데이터 생성 ---------------------------------
-		List<Map<String, Object>> columnDefs = List.of(
-		    Map.of("header", "제품명", "name", "productName"),
-		    Map.of("header", "수량", "name", "quantity")
-		);
-	
-		List<Map<String, Object>> data = List.of(
-		    Map.of("productName", "차체 A", "quantity", 100),
-		    Map.of("productName", "차체 B", "quantity", 200)
-		);
-	
-		model.addAttribute("gridOptions", Map.of(
-		    "columns", columnDefs,
-		    "data", data
-		));
-		
-		
+		model.addAttribute("pdtList", pdtList);
 		
 		return "mes/standardInfoMgt/bomInfo";
 	}
 	
+	@ResponseBody
+	@GetMapping("/bom-selected")
+	public Map<String, Object> bomSelected(@RequestParam("pdtCode") String pdtCode){
+	//public void bomSelected(@RequestParam("pdtCode") String pdtCode){
+
+		log.info("pdtCode:" + pdtCode);
+		List<BomInfoTotalDTO> bomtotal = bomInfoService.getBomInfoTotalList(pdtCode);
+		
+		log.info("bomtotal"+bomtotal);
+		
+		List<Map<String, Object>> bomData = bomtotal.stream()
+			    .map(b -> {
+			        Map<String, Object> map = new HashMap<>();
+			        map.put("BOM_NO", b.getBomNo());
+			        map.put("PDT_CODE", b.getPdtCode());
+					map.put("PDT_NAME", b.getPdtName()); 
+					map.put("MTL_CODE", b.getMtlCode());
+					map.put("MTL_NAME", b.getMtlName());  
+					map.put("BOM_QTY", b.getBomQty());
+					map.put("BOM_UNIT", b.getBomUnit()); 
+					map.put("PDT_PRC_TYPE_NAME",b.getPdtPrcTypeName());
+			        return map;
+			    }).collect(Collectors.toList());
+		
+		//그리드에 출력시킬 컬럼 생성
+		List<Map<String, Object>> columns = List.of(
+				Map.of("header", "BOM 고유번호", "name", "BOM_NO"),
+				Map.of("header", "제품 코드", "name", "PDT_CODE"),
+				Map.of("header", "제품 이름", "name", "PDT_NAME"),
+				Map.of("header", "원자재 코드", "name", "MTL_CODE"),
+				Map.of("header", "원자재 이름", "name", "MTL_NAME"),
+				Map.of("header", "수량", "name", "BOM_QTY"),
+				Map.of("header", "단위", "name", "BOM_UNIT"),
+				Map.of("header", "공정 단계", "name", "PDT_PRC_TYPE_NAME")
+			);
+	
+		return Map.of(
+				"columns", columns,
+				"data", bomData
+			);
+	}
+	
+	
+	//----------------------------------------- 카멜 -> 스네이크 자동 적용 ------------------------------------
+	//최초 로딩시 그리드에 출력할 제품 목록
+	@GetMapping("/bom-info-frgmsVersion")
+	public String bomInfoFrgmsVersion(Model model) {
+		
+		List<Products> pdtList = productsRepository.findAll();
+		
+		//상단 그리드에 출력하기 위해서 List<Products> => List<Map<...>>형태로 변환
+		List<Map<String, Object>> productData = pdtList.stream()
+		    .map(p -> {
+		        Map<String, Object> map = new HashMap<>();
+		        map.put("pdtNo", p.getPdtNo());
+		        map.put("pdtCode", p.getPdtCode());
+		        map.put("pdtName", p.getPdtName());
+		        map.put("pdtSpecification", p.getPdtSpecification());
+		        map.put("pdtShippingPrice", p.getPdtShippingPrice());
+		        map.put("pdtComments", p.getPdtComments());
+		        return map;
+		    }).collect(Collectors.toList());
+	
+		//그리드에 출력시킬 컬럼 생성
+		List<Map<String, Object>> columns = List.of(
+				Map.of("header", "제품코드", "name", "pdtCode"),
+				Map.of("header", "제품명", "name", "pdtName"),
+				Map.of("header", "규격", "name", "pdtSpecification"),
+				Map.of("header", "출하단가", "name", "pdtShippingPrice"),
+				Map.of("header", "비고", "name", "pdtComments")
+			);
+		
+		model.addAttribute("pdtGridOptions", Map.of(
+		    "columns", columns,
+		    "data", productData
+		));
+		
+		//BOM그리드에 최초 로딩시 공백으로 나타내기 위해 빈 List전달
+		model.addAttribute("bomGridOptions", Map.of(
+			    "columns", List.of(),
+			    "data", List.of()
+			));
+		
+		return "mes/standardInfoMgt/bomInfoFrgmsVersion";
+	}
+	
+	//상단 제품에서 선택했을 때 가져올 BOM데이터
+	
+	//상품 그리드 선택했을 때 BOM 그리드에 선택한 상품 보여주기
+	@ResponseBody
+	@GetMapping ("/bom-selected-frgmsVersion")
+	public Map<String, Object> bomSelectedFrgmsVersion(@RequestParam("productCode") String pdtCode){
+		
+		List<BomInfoTotalDTO> bomtotal = bomInfoService.getBomInfoTotalList(pdtCode);
+		
+		log.info("bomtotal"+bomtotal);
+		
+		
+		List<Map<String, Object>> bomData = bomtotal.stream()
+			    .map(b -> {
+			        Map<String, Object> map = new HashMap<>();
+			        map.put("BOM_NO", b.getBomNo());
+			        map.put("PDT_CODE", b.getPdtCode());
+					map.put("PDT_NAME", b.getPdtName()); 
+					map.put("MTL_CODE", b.getMtlCode());
+					map.put("MTL_NAME", b.getMtlName());  
+					map.put("BOM_QTY", b.getBomQty());
+					map.put("BOM_UNIT", b.getBomUnit()); 
+					map.put("PDT_PRC_TYPE_NAME",b.getPdtPrcTypeName());
+			        return map;
+			    }).collect(Collectors.toList());
+		
+		//그리드에 출력시킬 컬럼 생성
+		List<Map<String, Object>> columns = List.of(
+				Map.of("header", "BOM 고유번호", "name", "BOM_NO"),
+				Map.of("header", "제품 코드", "name", "PDT_CODE"),
+				Map.of("header", "제품 이름", "name", "PDT_NAME"),
+				Map.of("header", "원자재 코드", "name", "MTL_CODE"),
+				Map.of("header", "원자재 이름", "name", "MTL_NAME"),
+				Map.of("header", "수량", "name", "BOM_QTY"),
+				Map.of("header", "단위", "name", "BOM_UNIT"),
+				Map.of("header", "공정 단계", "name", "PDT_PRC_TYPE_NAME")
+			);
+			
+		return Map.of(
+				"columns", columns,
+				"data", bomData
+			);
+	}
+	//----------------------------------------- 끝 ------------------------------------
+	
+	//엑셀 파일 다운로드
 	@GetMapping("/excel-file-down")
 	public void downloadExcel(HttpServletResponse response) throws IOException {
 	    String fileName = "bom_form.xls";
@@ -93,6 +206,18 @@ public class BomInfoController {
 	    // 파일 내용을 응답 스트림에 복사
 	    StreamUtils.copy(inputStream, response.getOutputStream());
 	    response.flushBuffer();
+	}
+	
+	//상품 그리드 수정
+	@ResponseBody
+	@GetMapping("/bomeditexe")
+	public int bomeditexep(@ModelAttribute ProductsEditDto pdtEditDto) throws JsonMappingException, JsonProcessingException {
+		
+		log.info(pdtEditDto.toString());
+		
+		int resultEdit = productsService.pdtMainUpdate(pdtEditDto); 
+		
+		return resultEdit;
 	}
 	
 }
