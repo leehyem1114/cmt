@@ -36,8 +36,8 @@ public class Iqc {
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
 
-    @Column(name = "IQCM_NO", nullable = false)
-    private Long iqcmNo;
+    @Column(name = "QCM_NO", nullable = false)
+    private Long qcmNo;
 
     @Column(name = "MTL_NO", nullable = false)
     private Long mtlNo;

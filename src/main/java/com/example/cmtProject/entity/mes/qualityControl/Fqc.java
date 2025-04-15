@@ -36,8 +36,8 @@ public class Fqc {
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
 
-    @Column(name = "FQCM_NO", nullable = false)
-    private Long fqcmNo;
+    @Column(name = "QCM_NO", nullable = false)
+    private Long qcmNo;
 
     @Column(name = "PDT_NO", nullable = false)
     private Long pdtNo;
