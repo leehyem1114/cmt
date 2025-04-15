@@ -27,6 +27,7 @@ import com.example.cmtProject.service.erp.eapproval.DocFormService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.notice.NoticeService;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
@@ -60,7 +61,6 @@ public class MainController {
 		//공지사항
 		List<NoticeDTO> noticeList = noticeService.getAllNoticesWithNames();
 		model.addAttribute("noticeList",noticeList);
-		System.out.println("공지사항 리스트!!!!!!!"+noticeList);
 		
 		EmpRegistDTO emp = empService.getMyEmpList(empId);
 		model.addAttribute("emp",emp);
@@ -73,8 +73,17 @@ public class MainController {
 	
 	@GetMapping("/login") //로그인폼
 	public String loginForm(HttpServletRequest request, Model model) {
-		
-		return "login";
+		String empId = null;
+	    if (request.getCookies() != null) {
+	        for (Cookie cookie : request.getCookies()) {
+	            if ("empId".equals(cookie.getName())) {
+	                empId = cookie.getValue();
+	                break;
+	            }
+	        }
+	    }
+	    model.addAttribute("savedEmpId", empId);
+	    return "login";
 	}
 	
 	@GetMapping("/loginSuccess")
