@@ -9,7 +9,7 @@ import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.entity.erp.salesMgt.SalesOrderStatus;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Clients;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
-import com.example.cmtProject.entity.mes.standardInfoMgt.Warehouses;
+import com.example.cmtProject.entity.mes.wareHouse.Warehouses;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;

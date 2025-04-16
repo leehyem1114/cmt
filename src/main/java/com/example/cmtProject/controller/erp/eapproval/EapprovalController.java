@@ -31,7 +31,7 @@ import java.util.List;
  */
 @Controller
 @RequestMapping(PathConstants.APPROVAL_BASE)
-@RequiredArgsConstructor
+@RequiredArgsConstructor //final 필드나 @NonNull이 붙은 필드만을 포함한 생성자를 자동생성
 @Slf4j
 public class EapprovalController {
 
