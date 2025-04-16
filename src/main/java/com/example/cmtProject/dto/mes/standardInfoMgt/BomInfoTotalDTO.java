@@ -41,10 +41,10 @@ public class BomInfoTotalDTO {
     
     //ProductProcessType
     private Long pdtPrcNo;
-    private String pdtPrcTypeCode;
-    private String pdtPrcTypeName;
-    private int  pdtPrcPriority;
+    private String prcTypeCode;
+    private String prcTypeName;
+    private int prcPriority;
     private LocalDate createDate;
-    private String pdtComment;
+    private String prcComment;
     
 }

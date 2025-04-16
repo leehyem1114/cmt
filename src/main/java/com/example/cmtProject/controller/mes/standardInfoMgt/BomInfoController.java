@@ -2,6 +2,7 @@ package com.example.cmtProject.controller.mes.standardInfoMgt;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +20,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.BomEditDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsDTO;
-import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDto;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDTO;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Materials;
+import com.example.cmtProject.entity.mes.standardInfoMgt.ProcessInfo;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
+import com.example.cmtProject.repository.erp.saleMgt.MaterialsOrderRepository;
+import com.example.cmtProject.repository.mes.standardInfoMgt.ProcessInfoRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
 import com.example.cmtProject.service.mes.standardInfoMgt.BomInfoService;
 import com.example.cmtProject.service.mes.standardInfoMgt.ProductService;
@@ -48,26 +54,44 @@ public class BomInfoController {
 	@Autowired
 	private BomInfoService bomInfoService;
 	
+	@Autowired
+	private MaterialsOrderRepository materialsOrderRepository;
+
+	@Autowired
+	private ProcessInfoRepository processInfoRepository;
+	
 	@GetMapping("/bom-info")
 	public String bomInfo(Model model) {
 		
-		List<Products> pdtList = productsRepository.findAll();
+		List<Products> productList = productsRepository.findAll();
 		
-		model.addAttribute("pdtList", pdtList);
+		model.addAttribute("productList", productList);
+		
+		List<BomInfoTotalDTO> bomList = new ArrayList<>();
+		
+		model.addAttribute("bomList", bomList);
+		
+		List<Materials> materialsList = materialsOrderRepository.findAll(); 
+		
+		model.addAttribute("materialsList", materialsList);
+		
+		List<ProcessInfo> processList = processInfoRepository.findAll();
+		
+		model.addAttribute("processList", processList);
 		
 		return "mes/standardInfoMgt/bomInfo";
 	}
 	
+	//상품 그리드에서 선택된 제품에 해당하는 BOM 데이터 불러오기
 	@ResponseBody
 	@GetMapping("/bom-selected")
-	public Map<String, Object> bomSelected(@RequestParam("pdtCode") String pdtCode){
+	//public Map<String, Object> bomSelected(@RequestParam("pdtCode") String pdtCode){
 	//public void bomSelected(@RequestParam("pdtCode") String pdtCode){
+	public List<BomInfoTotalDTO> bomSelected(@RequestParam("pdtCode") String pdtCode){
 
-		log.info("pdtCode:" + pdtCode);
 		List<BomInfoTotalDTO> bomtotal = bomInfoService.getBomInfoTotalList(pdtCode);
-		
-		log.info("bomtotal"+bomtotal);
-		
+		/*
+		// 데이터와 컬럼 분리
 		List<Map<String, Object>> bomData = bomtotal.stream()
 			    .map(b -> {
 			        Map<String, Object> map = new HashMap<>();
@@ -97,11 +121,12 @@ public class BomInfoController {
 		return Map.of(
 				"columns", columns,
 				"data", bomData
-			);
+			);*/
+		
+		return bomtotal;
 	}
 	
-	
-	//----------------------------------------- 카멜 -> 스네이크 자동 적용 ------------------------------------
+	//----------------------------------------- 카멜 -> 스네이크 자동 적용 되어 일치 시키기 위해서 전부 스네이크로 변경해 줘야 함 ------------------------------------
 	//최초 로딩시 그리드에 출력할 제품 목록
 	@GetMapping("/bom-info-frgmsVersion")
 	public String bomInfoFrgmsVersion(Model model) {
@@ -166,7 +191,7 @@ public class BomInfoController {
 					map.put("MTL_NAME", b.getMtlName());  
 					map.put("BOM_QTY", b.getBomQty());
 					map.put("BOM_UNIT", b.getBomUnit()); 
-					map.put("PDT_PRC_TYPE_NAME",b.getPdtPrcTypeName());
+					map.put("PRC_TYPE_NAME",b.getPrcTypeName());
 			        return map;
 			    }).collect(Collectors.toList());
 		
@@ -179,7 +204,7 @@ public class BomInfoController {
 				Map.of("header", "원자재 이름", "name", "MTL_NAME"),
 				Map.of("header", "수량", "name", "BOM_QTY"),
 				Map.of("header", "단위", "name", "BOM_UNIT"),
-				Map.of("header", "공정 단계", "name", "PDT_PRC_TYPE_NAME")
+				Map.of("header", "공정 단계", "name", "PRC_TYPE_NAME")
 			);
 			
 		return Map.of(
@@ -208,10 +233,10 @@ public class BomInfoController {
 	    response.flushBuffer();
 	}
 	
-	//상품 그리드 수정
+	//상품 그리드에서 바로 수정
 	@ResponseBody
-	@GetMapping("/bomeditexe")
-	public int bomeditexep(@ModelAttribute ProductsEditDto pdtEditDto) throws JsonMappingException, JsonProcessingException {
+	@GetMapping("/pdteditexe")
+	public int pdteditexep(@ModelAttribute ProductsEditDTO pdtEditDto) throws JsonMappingException, JsonProcessingException {
 		
 		log.info(pdtEditDto.toString());
 		
@@ -220,4 +245,16 @@ public class BomInfoController {
 		return resultEdit;
 	}
 	
+	//BOM 그리드에서 바로 수정
+	@ResponseBody
+	@GetMapping("/bomeditexe")
+	public int bomeditexep(@ModelAttribute BomEditDTO bomEditDto) throws JsonMappingException, JsonProcessingException {
+		
+		log.info(bomEditDto.toString());
+		
+		int resultEdit = bomInfoService.bomMainUpdate(bomEditDto); 
+		
+		//return resultEdit;
+		return 1;
+	}
 }
