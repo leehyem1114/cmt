@@ -16,7 +16,7 @@ public class IqcDTO {
 	private Long iqcNo;                 // 입고 검사 NO
     private String iqcCode;            // 입고 검사 코드
     private String empId;              // 사용자 ID
-    private Long iqcmNo;               // 입고 검사 기준 번호
+    private Long qcmNo;               // 입고 검사 기준 번호
     private Long mtlNo;                // 원자재 NO
     private LocalDateTime iqcTime;     // 검사 시간
     private Double iqcMeasuredValue;   // 측정값
