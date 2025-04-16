@@ -6,4 +6,24 @@
 
 <mapper namespace="com.example.cmtProject.mapper.mes.qualityControl.QcmMapper">
 
+
+<select id="getAllQcm" resultType="com.example.cmtProject.dto.mes.qualityControl.QcmDTO">
+	SELECT Q.QCM_NO,
+		   Q.QCM_CODE,
+		   Q.QCM_NAME,
+		   M.MTL_NO,
+		   P.PDT_NO,
+		   Q.QCM_TARGET_VALUE,
+		   Q.QCM_MAX_VALUE,
+		   Q.QCM_MIN_VALUE,
+		   C_UNIT.CMN_DETAIL_NAME AS QCM_UNIT,
+		   Q.QCM_METHOD
+	FROM QCM Q
+	JOIN MATERIALS M ON M.MTL_NO = Q.MTL_NO
+	JOIN PRODUCTS P ON P.PDT_NO = Q.PDT_NO   
+	JOIN COMMONCODE_DETAIL C_UNIT ON C_UNIT.CMN_DETAIL_CODE = Q.QCM_UNIT
+</select>
+
+
+
 </mapper>
