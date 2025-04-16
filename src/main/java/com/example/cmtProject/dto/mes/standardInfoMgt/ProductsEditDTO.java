@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductsEditDto {
+public class ProductsEditDTO {
 	
 	private Long pdtNo;
 	private String columnName;

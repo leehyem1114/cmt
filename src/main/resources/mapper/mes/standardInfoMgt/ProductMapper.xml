@@ -41,7 +41,7 @@
     </delete>
     
     <!-- 기준 정보에서 수정 -->
-    <update id="pdtMainUpdate" parameterType="com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO">
+    <update id="pdtMainUpdate" parameterType="com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDTO">
     UPDATE PRODUCTS 
     <set>
         <if test="columnName == 'pdtCode'">
