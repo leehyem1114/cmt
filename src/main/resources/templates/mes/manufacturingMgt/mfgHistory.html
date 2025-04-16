@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+	<title>CMT</title>
+</head>
+<body>
+	<div layout:fragment="content">
+	<h4>생산 이력</h4>
+		<div id="mfgHistoryGrid"></div>
+
+	
+	<script th:inline="javascript">
+	
+	//================================== 그리드 상단 상품 부분 ================================= 
+	let gridData = /*[[${mfgScheduleList}]]*/ [];
+	
+	let grid = new tui.Grid({
+        el: document.getElementById('mfgHistoryGrid'), 
+		data: gridData,
+        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+		//selectionUnit: 'row', //행 단위선택
+		scrollX: true,
+        scrollY: true,
+		//width: 1600,  // 전체 너비 지정
+		//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+		pageOptions: {
+		   useClient: true,   // 클라이언트 사이드 페이징 사용
+		   perPage: 10        // 페이지당 행 수
+		 },
+        columns: [
+           {
+                header: '생산계획번호',
+                name: 'mpNo',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+			{
+                header: '제품명',
+                name: 'pdtName',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: "center",
+				editor: "text"
+            },
+            {
+				header: '상태',
+                name: 'mpStatus',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '생산 시작일',
+                name: 'mpStartDate', 
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '생산 완료일',
+                name: 'mpEnddate',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '소요시간',
+                name: 'woDurationTime',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            }
+        ], // 열 설정
+		autoEdit: true,
+		editingEvent: 'dblclick' 
+    });
+		
+	/*
+	grid.on('onGridUpdated', (ev) => {
+		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
+	    grid.refreshLayout();
+	});*/
+	
+	
+	</script>
+	
+	</div>
+</body>
+</html>
