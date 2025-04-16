@@ -38,7 +38,7 @@
             {
                 id: '4',
                 calendarId: 'luck',
-                title: '🍀법정공휴일🍀',
+                title: '🪷부처님 오신날🪷',
                 category: 'time',
                 start: '2025-05-5',
                 end: '2025-05-6',
@@ -46,7 +46,7 @@
             {
                 id: '5',
                 calendarId: 'work',
-                title: '수원 출장',
+                title: '수원 출장 ✈️',
                 category: 'time',
                 start: '2025-05-20',
                 end: '2025-05-23',
@@ -118,3 +118,13 @@
 	function addScheduleBtn(){
 		alert("개발중입니다.");
 	}
+	
+		document.addEventListener("DOMContentLoaded", function () {
+	        const todayElement = document.getElementById("today");
+	        const today = new Date();
+	        
+	        const yyyy = today.getFullYear();
+	        const mm = String(today.getMonth() + 1).padStart(2, '0');
+	        
+	        todayElement.textContent = `${yyyy}년 ${mm}월`;
+	    });

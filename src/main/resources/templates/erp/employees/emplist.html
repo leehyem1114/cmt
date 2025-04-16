@@ -146,7 +146,9 @@
 							<button type="submit" class="btn btn-primary btnSearchEmp">검색</button>    
 						</div>
 	                </form>
-					<button type="button" class="btn btn-outline-secondary mx-3" onclick="empPrint()" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">PDF 출력</button>
+	                <div class ="tooltip-wrapper" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')" title="MANAGER 또는 ADMIN만 가능합니다.">
+						<button type="button" class="btn btn-outline-secondary mx-3" onclick="empPrint()" >PDF 출력</button>
+	                </div>
                 </div>
                 <!-- 표 예시 -->
                 <div class="table-responsive">

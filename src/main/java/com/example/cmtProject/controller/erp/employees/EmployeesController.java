@@ -128,7 +128,7 @@ public class EmployeesController {
 		//사원ID 자동생성
 		String empCode = makeEmpCode();
 		model.addAttribute("empCode",empCode);
-		System.out.println(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
+		log.info(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
 
 		
 		List<EmpListPreviewDTO> empList = empService.getEmpList();
@@ -213,7 +213,7 @@ public class EmployeesController {
 	@PostMapping("/checkId")
 	@ResponseBody
 	public boolean checkId(@RequestParam("empId")String empId) {
-		 System.out.println("넘어온 empId >>> " + empId);
+		log.info("넘어온 empId >>> " + empId);
 		return empService.checkId(empId);
 	}
 	
