@@ -1,4 +1,4 @@
-package com.example.cmtProject.entity.mes;
+package com.example.cmtProject.entity.mes.manufacturingMgt;
 
 import java.time.LocalDate;
 
@@ -31,18 +31,12 @@ public class MfgSchedule { // 제조 계획
     
     @Column(name = "PDT_CODE")
 	private String pdtCode;  // 제품 코드
-    
-    @Column(name = "MTL_CODE")
-	private String mtlCode;  // 자재 코드
 
     @Column(name = "PDT_PRC_TYPE_CODE")
 	private String pdtPrcTypeCode;  // 공정 코드
 
-    @Column(name = "EQP_CODE")
-	private String eqpCode;  // 설비 코드
-
     @Column(name = "EMP_ID")
-	private String empId;  // 작업자 사번
+	private String empId;  // 등록 직원 사번
 
     @Column(name = "MS_QTY")
 	private Long msQty;  // 계획 수량

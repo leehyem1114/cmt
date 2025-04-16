@@ -1,4 +1,4 @@
-package com.example.cmtProject.entity.mes;
+package com.example.cmtProject.entity.mes.manufacturingMgt;
 
 import java.time.LocalDate;
 
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "MFG_RESULTS")
 @NoArgsConstructor
 @AllArgsConstructor
-public class mfgResults { // 생산 실적
+public class MfgResults { // 생산 실적
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MFG_RESULTS_MR_NO")
@@ -26,7 +26,7 @@ public class mfgResults { // 생산 실적
     @Column(name = "MR_NO")
 	private Long mrNo;  // 생산 실적 번호
 	
-	@Column(name = "MO_NO")
+	@Column(name = "MS_NO")
 	private Long msNo;  // 제조 계획 번호
 
     @Column(name = "PDT_CODE")
