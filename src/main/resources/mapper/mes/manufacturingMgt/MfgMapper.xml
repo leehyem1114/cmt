@@ -5,4 +5,10 @@
 
 <mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgMapper">
 
+<select id="getMfgPlanTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+	SELECT *
+	FROM SALES_ORDER SO
+	LEFT JOIN PRODUCTS PR ON SO.PDT_CODE = PR.PDT_CODE
+</select>
+
 </mapper>
