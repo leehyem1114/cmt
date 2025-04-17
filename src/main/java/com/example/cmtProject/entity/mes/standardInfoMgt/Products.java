@@ -17,7 +17,6 @@ import lombok.ToString;
 @Table(name = "PRODUCTS")
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Products {
 	
 	@Id
@@ -32,12 +31,31 @@ public class Products {
     @Column(name = "PDT_NAME")
 	private String pdtName;
 	
-    @Column(name = "PDT_SPECIFICATION")
-	private String pdtSpecification;
-	
     @Column(name = "PDT_SHIPPING_PRICE")
 	private String pdtShippingPrice;
 	
     @Column(name = "PDT_COMMENTS")
 	private String pdtComments;
+    
+    @Column(name = "PDT_USEYN")
+    private String pdtUseyn;
+    
+    @Column(name = "MTL_TYPE_CODE")
+    private String mtlTypeCode;
+    
+    @Column(name = "PDT_WEIGHT")
+    private String pdtWeight;
+    
+    @Column(name = "WT_TYPE_CODE")
+    private String wtTypeCode;
+    
+    @Column(name = "PDT_SIZE")
+    private String pdtSize;
+    
+    @Column(name = "LT_TYPE_CODE")
+    private String ltTypeCode;
+    
+    @Column(name = "PDT_TYPE")
+    private String pdtType;
 }
+

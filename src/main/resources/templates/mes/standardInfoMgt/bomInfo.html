@@ -50,7 +50,7 @@
             <button class="btn btn-download" id="pdtExcelDownBtn">상품 엑셀 다운로드</button>
 			<div class="text-end mb-2">
 		        <!--<button class="btn btn-outline-primary" style="margin-left: 400px;">상품등록</button>-->
-				<button type="button" class="btn btn-outline-primary" style="margin-left: 400px;" data-bs-toggle="modal" data-bs-target="#empModal">
+				<button type="button" class="btn btn-outline-primary" style="margin-left: 400px;" id="registerPdt"> <!-- data-bs-toggle="modal" data-bs-target="#empModal">-->
 				    상품 등록
 				</button>
 		    </div>
@@ -66,11 +66,10 @@
 		
 		<div>
 			<button class="btn btn-outline-primary">자재 찾기</button>
-			<button class="btn btn-outline-primary">삭제</button>
+			<button class="btn btn-outline-primary" id="deleteBtn">삭제</button>
 		</div>
 	</div><!-- <div class="container mt-5"> -->
 
-		
 	<!--  모달 창 시작 -->
 	<div class="modal fade" id="empModal" tabindex="-1" aria-labelledby="empModalLabel" aria-hidden="true">
 	    <div class="modal-dialog modal-lg">
@@ -92,7 +91,7 @@
 	                    	
                        	</select>
                     </div>
-                    <label for="deptName">상품 우형</label>
+                    <label for="deptName">상품 유형</label>
                     <div class="form-group" required>
                        <select id="deptName" name="" class="form-select">
 						<option>상품유형</option>
@@ -115,6 +114,21 @@
 		
 	//================================== 그리드 상단 상품 부분 ================================= 
 	let gridData = /*[[${productList}]]*/ [];
+	console.log(gridData)
+	let materialTypeList = /*[[${materialTypeList}]]*/ [];
+	let lengthUnitList = /*[[${lengthUnitList}]]*/ [];
+	let weightUnitList = /*[[${weightUnitList}]]*/ [];
+	let productTypeList = /*[[${productTypeList}]]*/ []
+	
+	let materialTypeSelected = materialTypeList.map(item => ({text: item.mtlTypeName, label: item.mtlTypeName, value: item.mtlTypeCode}));
+	let lengthUnitSelected = lengthUnitList.map(item => ({text: item.ltTypeSymbol, label: item.ltTypeSymbol, value: item.ltTypeCode}));
+	let weightUnitSelected = weightUnitList.map(item => ({text: item.wtTypeSymbol, label: item.wtTypeSymbol, value: item.wtTypeCode}));
+	let productTypeSelected = productTypeList.map(item => ({text: item.pdtTypeName, label: item.pdtTypeName, value: item.pdtTypeCode}));
+	
+	console.log(materialTypeList);
+	console.log(lengthUnitList);
+	console.log(weightUnitSelected);
+	console.log(productTypeSelected);
 	
 	let grid = new tui.Grid({
         el: document.getElementById('pdtGrid'), 
@@ -142,11 +156,29 @@
            {
                 header: '상품코드',
                 name: 'pdtCode',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
+			{  
+	            header: '상품 타입',
+	            name: 'pdtTypeName', 
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: productTypeSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const pdtValue = productTypeSelected.find(item => item.value === value);
+			    	return pdtValue ? pdtValue.label : value; 
+			    }
+			},
 			{
                 header: '상품 이름',
                 name: 'pdtName',
@@ -157,33 +189,97 @@
 				align: 'center',
 				editor: "text"
             },
-			{
-                header: '상품 상세 내용',
-                name: 'pdtSpecification',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center",
-				editor: "text"
-            },
             {
 				header: '상품 가격',
                 name: 'pdtShippingPrice',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
 				editor: "text"
             },
 			{
-                header: '비고',
-                name: 'pdtComments', //SalseOrder의 entity에 있는 pdtCode
+				header: '자재 타입',
+               	name: 'mtlTypeCode', 
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: materialTypeSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const matValue = materialTypeSelected.find(item => item.value === value);
+			    	return matValue ? matValue.label : value; 
+			    }
+			},
+			{
+				header: '무게',
+               	name: 'pdtWeight',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+			},
+			{
+				header: '무게 단위',
+               	name: 'wtTypeCode',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: weightUnitSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const weiValue = weightUnitSelected.find(item => item.value === value);
+			    	return weiValue ? weiValue.label : value; 
+			    }
+			},
+			{
+				header: '길이',
+               	name: 'pdtSize',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+			},
+			{
+				header: '길이 단위',
+               	name: 'ltTypeCode',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: lengthUnitSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const lenValue = lengthUnitSelected.find(item => item.value === value);
+			    	return lenValue ? lenValue.label : value; 
+			    }
+			},
+			
+			{
+	            header: '비고',
+	            name: 'pdtComments',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
 				editor: "text"
-            }
+	        },
         ], // 열 설정
 		autoEdit: true,
 		editingEvent: 'dblclick' 
@@ -206,7 +302,7 @@
 		let rk = evValue.rowKey;
 		let rowData = grid.getRow(rk);
 		let pdtCode = rowData.pdtCode;
-		
+		console.log(pdtCode)
 		//상품 그리드에서 선택된 제품에 해당하는 BOM 데이터 불러오기
 		$.ajax({
 		url: '/bom/bom-selected', 
@@ -235,12 +331,6 @@
 		});
 	});
 		
-	/*
-	grid.on('onGridUpdated', (ev) => {
-		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
-	    grid.refreshLayout();
-	});*/
-	
 	//수정
 	grid.on('afterChange', (ev) => {
 		
@@ -383,6 +473,16 @@
 	    bomGrid.refreshLayout();
 	});
 	
+	let selectedEv2 = null;
+	bomGrid.on('click', (ev) => {
+		if(selectedEv2 !== null){
+			bomGrid.removeRowClassName(selectedEv2.rowKey, 'selecedRowClass');
+		}
+		
+		selectedEv2 = ev;
+		bomGrid.addRowClassName(selectedEv2.rowKey, 'selecedRowClass');
+	})
+	
 	//수정
 	bomGrid.on('afterChange', (ev) => {
 		
@@ -476,10 +576,15 @@
 			
 			worksheet["A1"] = { t: "s", v: "pdtNo", r:"<t>pdtNo</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtNo', w: 'pdtNo'};
 			worksheet["B1"] = { t: "s", v: "pdtCode", r:"<t>pdtCode</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtCode', w: 'pdtCode'};
-			worksheet["C1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtName', w: 'pdtName'};
-			worksheet["D1"] = { t: "s", v: "pdtSpecification", r:"<t>pdtSpecification</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtSpecification', w: 'pdtSpecification'};
+			worksheet["C1"] = { t: "s", v: "pdtTypeName", r:"<t>pdtTypeName</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtTypeName', w: 'pdtTypeName'};
+			worksheet["D1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtName', w: 'pdtName'};
 			worksheet["E1"] = { t: "s", v: "pdtShippingPrice", r:"<t>pdtShippingPrice</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtShippingPrice', w: 'pdtShippingPrice'};
-			worksheet["F1"] = { t: "s", v: "pdtComments", r:"<t>pdtComments</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtComments', w: 'pdtComments'};
+			worksheet["F1"] = { t: "s", v: "mtlTypeCode", r:"<t>mtlTypeCode</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'mtlTypeCode', w: 'mtlTypeCode'};
+			worksheet["G1"] = { t: "s", v: "pdtWeight", r:"<t>pdtWeight</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtWeight', w: 'pdtWeight'};
+			worksheet["H1"] = { t: "s", v: "wtTypeCode", r:"<t>wtTypeCode</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'wtTypeCode', w: 'wtTypeCode'};
+			worksheet["I1"] = { t: "s", v: "pdtSize", r:"<t>pdtSize</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtSize', w: 'pdtSize'};
+			worksheet["J1"] = { t: "s", v: "ltTypeCode", r:"<t>ltTypeCode</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'ltTypeCode', w: 'ltTypeCode'};
+			worksheet["K1"] = { t: "s", v: "pdtComments", r:"<t>pdtComments</t><phoneticPr fontId='1'' type='noConversion'/>", h: 'pdtComments', w: 'pdtComments'};
 
 			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
@@ -490,6 +595,113 @@
 		reader.readAsArrayBuffer(file);
 		
 	});	
+	
+	$(document).ready(function(){
+		
+		//삭제 버튼 클릭시 상품과 BOM에서 삭제가 됨
+		$('#deleteBtn').on('click', function(){
+			
+			//상품 그리드 선택
+			var gridChecked = grid.getCheckedRows();
+			var gridArray = gridChecked.map(row => row.pdtNo)
+			console.log(gridArray)
+			
+			//BOM그리드 선택
+			var bomGridChecked = bomGrid.getCheckedRows();
+			var bomGridArray = bomGridChecked.map(row => row.BOM_NO)
+			console.log(bomGridArray)
+			
+			if(gridArray.length > 0 && bomGridArray.length > 0){
+				Swal.fire({
+				  icon: "warning",
+				  title: "동시에 2개 항목을 삭제 할 수 없습니다.",
+				});
+				return;
+			}
+			
+			if(gridArray.length > 0){
+				Swal.fire({
+					title: '선택된 상품을 삭제 하시겠습니까?',
+				   	text: '이 작업은 되돌릴 수 없습니다!',
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+					
+				  if (result.isConfirmed) {
+				    
+						$.ajax({
+							url: "/pdt/delItems",
+							type: "POST",
+							contentType: "application/json",
+							data: JSON.stringify(gridArray),
+							success: function(result){
+								if(result === "SUCCESS"){
+									alert("success");
+									location.reload();
+								}
+							},
+							error: function(msg){
+								console.log("error:" + msg);
+							}//error
+						});//ajax
+				  	}//if
+				});//then
+			}//if문
+			
+			if(bomGridArray.length > 0){
+				
+					Swal.fire({
+					title: '선택된 BOM 데이터를 삭제 하시겠습니까?',
+				   	text: '이 작업은 되돌릴 수 없습니다!',
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				  if (result.isConfirmed) {
+				    
+						$.ajax({
+							url: "/sales/delItems",
+							type: "POST",
+							contentType: "application/json",
+							data: JSON.stringify(bomGridArray),
+							success: function(result){
+								if(result === "SUCCESS"){
+									location.reload();
+								}
+							},
+							error: function(msg){
+								console.log("error:" + msg);
+							}//error
+						});//ajax
+				  	}//if
+				});//then
+			}//if문
+			
+			
+			
+			if(gridArray.length <= 0 && bomGridArray.length <= 0){
+				Swal.fire({
+				  icon: "warning",
+				  title: "선택된 항목이 없습니다.",
+				});
+				return;
+			}
+		})//$('#deleteBtn').on('click', function(){
+		
+		//상품 등록
+		$('#registerPdt').on('click', function(){
+			grid.prependRow({
+			  pdtNo: 'P002',
+			  pdtName: '포커스 추가',
+			  pdtPrice: 15000
+			}, {
+			  focus: true
+			});
+		})
+	});//$(document)
 	
   	</script>
 		
