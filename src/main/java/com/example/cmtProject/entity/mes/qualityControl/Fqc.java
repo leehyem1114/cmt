@@ -39,14 +39,20 @@ public class Fqc {
     @Column(name = "QCM_NO", nullable = false)
     private Long qcmNo;
 
-    @Column(name = "PDT_NO", nullable = false)
-    private Long pdtNo;
+    @Column(name = "PDT_NAME", nullable = false)
+    private String pdtName;
 
     @Column(name = "FQC_TIME")
     private LocalDateTime fqcTime;
 
     @Column(name = "FQC_MEASURED_VALUE")
     private Double fqcMeasuredValue;
+    
+    @Column(name = "QCM_UNIT_LENGTH")
+    private String qcmUnitLength;
+
+    @Column(name = "QCM_UNIT_WEIGHT")
+    private String qcmUnitWeight;
 
     @Column(name = "FQC_INSPECTION_STATUS")
     private String fqcInspectionStatus;
@@ -54,8 +60,8 @@ public class Fqc {
     @Column(name = "FQC_INSPECTION_RESULT", length = 1)
     private String fqcInspectionResult; // 'P' / 'F'
 
-    @Column(name = "WHS_NO")
-    private Long whsNo;
+    @Column(name = "WHS_NAME")
+    private String whsName;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;

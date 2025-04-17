@@ -34,11 +34,11 @@ public class Qcm {
     @Column(name = "QCM_NAME", nullable = false)
     private String qcmName;
 
-    @Column(name = "MTL_NO")
-    private Long mtlNo;
+    @Column(name = "MTL_NAME")
+    private String mtlName;
 
-    @Column(name = "PDT_NO")
-    private Long pdtNo;
+    @Column(name = "PDT_NAME")
+    private String pdtName;
     
     @Column(name = "QCM_TARGET_VALUE", nullable = false)
     private Double qcmTargetValue;
@@ -49,8 +49,11 @@ public class Qcm {
     @Column(name = "QCM_MIN_VALUE", nullable = false)
     private Double qcmMinValue;
 
-    @Column(name = "QCM_UNIT", nullable = false)
-    private String qcmUnit;
+    @Column(name = "QCM_UNIT_LENGTH")
+    private String qcmUnitLength;
+
+    @Column(name = "QCM_UNIT_WEIGHT")
+    private String qcmUnitWeight;
 
     @Column(name = "QCM_METHOD")
     private String qcmMethod;

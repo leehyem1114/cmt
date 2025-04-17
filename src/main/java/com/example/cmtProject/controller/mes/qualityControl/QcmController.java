@@ -37,6 +37,7 @@ public class QcmController {
 		
     	List<QcmDTO> qcmList = qcmService.getAllQcm();
     	model.addAttribute("qcmList", qcmList);
+    	log.info("" + qcmList);
     	
 		return "mes/qualityControl/qcmList";
 	}
