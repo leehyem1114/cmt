@@ -1,5 +1,4 @@
-columns: [
-			{
+{
 				header: '상품번호',
 				name: 'pdtNo',
 				width: 100,
@@ -10,11 +9,29 @@ columns: [
            {
                 header: '상품코드',
                 name: 'pdtCode',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
+			{  
+	            header: '상품 타입',
+	            name: 'pdtTypeName', 
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: productTypeSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const pdtValue = productTypeSelected.find(item => item.value === value);
+			    	return pdtValue ? pdtValue.label : value; 
+			    }
+			},
 			{
                 header: '상품 이름',
                 name: 'pdtName',
@@ -25,30 +42,95 @@ columns: [
 				align: 'center',
 				editor: "text"
             },
-			{
-                header: '상품 상세 내용',
-                name: 'pdtSpecification',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center",
-				editor: "text"
-            },
             {
 				header: '상품 가격',
                 name: 'pdtShippingPrice',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
 				editor: "text"
             },
 			{
-                header: '비고',
-                name: 'pdtComments', //SalseOrder의 entity에 있는 pdtCode
+				header: '자재 타입',
+               	name: 'mtlTypeCode', 
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: materialTypeSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const matValue = materialTypeSelected.find(item => item.value === value);
+			    	return matValue ? matValue.label : value; 
+			    }
+			},
+			{
+				header: '무게',
+               	name: 'pdtWeight',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+			},
+			{
+				header: '무게 단위',
+               	name: 'wtTypeCode',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: weightUnitSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const weiValue = weightUnitSelected.find(item => item.value === value);
+			    	return weiValue ? weiValue.label : value; 
+			    }
+			},
+			{
+				header: '길이',
+               	name: 'pdtSize',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+			},
+			{
+				header: '길이 단위',
+               	name: 'ltTypeCode',
+				width: 80,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: 'select',
+					options: {
+						listItems: lengthUnitSelected 
+					}
+				},
+				formatter: ({ value }) => {
+			    	const lenValue = lengthUnitSelected.find(item => item.value === value);
+			    	return lenValue ? lenValue.label : value; 
+			    }
+			},
+			
+			{
+	            header: '비고',
+	            name: 'pdtComments',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
 				editor: "text"
-            }
+	        },
+        ], // 열 설정

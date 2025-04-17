@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDTO;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
 import com.example.cmtProject.mapper.mes.standardInfoMgt.ProductMapper;
@@ -53,5 +54,10 @@ public class ProductService {
 	public int pdtMainUpdate(ProductsEditDTO pdtEditDto) {
 		
 		return productMapper.pdtMainUpdate(pdtEditDto);
+	}
+
+	public List<ProductTotalDTO> getProductTotalList() {
+		
+		return productMapper.getProductTotalList();
 	}
 }

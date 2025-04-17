@@ -8,13 +8,14 @@
 	
 	<select id="getBomInfoTotalList" resultType="com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO">
 		SELECT * 
-		FROM BOM B 
-		LEFT JOIN PRODUCTS PR ON B.PDT_CODE = PR.PDT_CODE
-		LEFT JOIN MATERIALS M ON B.MTL_CODE = M.MTL_CODE
-		LEFT JOIN PROCESS_INFO P ON B.BOM_PRC_TYPE = P.PRC_TYPE_CODE
-		WHERE B.PDT_CODE = #{pdtCode}
-		ORDER BY BOM_NO
-	</select>
+		  FROM BOM B 
+		  LEFT JOIN PRODUCTS PR ON B.PDT_CODE = PR.PDT_CODE
+		  LEFT JOIN MATERIALS M ON B.MTL_CODE = M.MTL_CODE
+		  LEFT JOIN PROCESS_INFO P ON B.BOM_PRC_TYPE = P.PRC_TYPE_CODE
+		 WHERE B.PDT_CODE = #{pdtCode} 
+		 AND B.USE_YN = 'Y'
+		 ORDER BY BOM_NO
+	</select>  
 	
 	<!-- 기준 정보에서 수정, MTL_NAME이 columnName이지만 실제 값은 MTL_CODE 값을 가져온다. 그리드의 셀렉트 부분 때문 -->
     <update id="bomMainUpdate" parameterType="com.example.cmtProject.dto.mes.standardInfoMgt.BomEditDTO">

@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
+import com.example.cmtProject.controller.mes.standardInfoMgt.commModels.BomInfoModels;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomEditDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO;
-import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDTO;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Materials;
 import com.example.cmtProject.entity.mes.standardInfoMgt.ProcessInfo;
@@ -44,40 +44,44 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/bom")
 public class BomInfoController {
 
-	
 	@Autowired
 	private ProductsRepository productsRepository;
-	
-	@Autowired
-	private ProductService productsService;
-	
-	@Autowired
-	private BomInfoService bomInfoService;
-	
 	@Autowired
 	private MaterialsOrderRepository materialsOrderRepository;
-
 	@Autowired
 	private ProcessInfoRepository processInfoRepository;
 	
+	@Autowired
+	private ProductService productsService;
+	@Autowired
+	private BomInfoService bomInfoService;
+	
+	@Autowired 
+	private BomInfoModels bomInfoModels;
+	
 	@GetMapping("/bom-info")
-	public String bomInfo(Model model) {
+	public String bomInfo(Model model) throws Exception {
 		
-		List<Products> productList = productsRepository.findAll();
+		//삭제되면 USERYN을 사용해야 하기 때문에 REPOSITORY 사용 못 함
+		//List<Products> productList = productsRepository.findAll();
 		
+		//products만으로는 한글을 그리드의 select박스에 출력할 수 없다. 그래서 ProductTotalDTO을 만듦
+		//List<Products> productList = productsService.list();
+		
+		List<ProductTotalDTO> productList = productsService.getProductTotalList();
 		model.addAttribute("productList", productList);
 		
 		List<BomInfoTotalDTO> bomList = new ArrayList<>();
-		
 		model.addAttribute("bomList", bomList);
 		
 		List<Materials> materialsList = materialsOrderRepository.findAll(); 
-		
 		model.addAttribute("materialsList", materialsList);
 		
 		List<ProcessInfo> processList = processInfoRepository.findAll();
-		
 		model.addAttribute("processList", processList);
+		
+		//단위 데이터 models
+		bomInfoModels.commonBomInfoModels(model);
 		
 		return "mes/standardInfoMgt/bomInfo";
 	}
@@ -140,7 +144,6 @@ public class BomInfoController {
 		        map.put("pdtNo", p.getPdtNo());
 		        map.put("pdtCode", p.getPdtCode());
 		        map.put("pdtName", p.getPdtName());
-		        map.put("pdtSpecification", p.getPdtSpecification());
 		        map.put("pdtShippingPrice", p.getPdtShippingPrice());
 		        map.put("pdtComments", p.getPdtComments());
 		        return map;

@@ -20,7 +20,13 @@ public class ProductsDTO {
 	private Long pdtNo;
 	private String pdtCode;
 	private String pdtName;
-	private String pdtSpecification;
 	private String pdtShippingPrice;
 	private String pdtComments;
+    private String pdtUseyn;
+    private String mtlTypeCode;
+    private String pdtWeight;
+    private String wtTypeCode;
+    private String pdtSize;
+    private String ltTypeCode;
+    private String pdtType;
 }
