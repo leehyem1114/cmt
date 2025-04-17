@@ -393,21 +393,21 @@
 				align: "center" 
             },
            {
-                header: '상품 코드',
+                header: '제품 코드',
                 name: 'PDT_CODE',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
-			{
+			/*{
                 header: '상품 이름',
                 name: 'PDT_NAME',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
-            },
+            },*/
 			{
                 header: '원자재 이름',
                 name: 'MTL_NAME',
@@ -550,7 +550,7 @@
 	let file;
 	let reader;
 	
-	//파일이 선택시 실행
+	//파일 선택시 실행
 	document.getElementById('fileInput').addEventListener('change', function (e) {	
 		
 	    file = e.target.files[0];
