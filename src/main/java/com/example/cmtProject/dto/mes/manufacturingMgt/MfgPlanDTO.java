@@ -14,13 +14,14 @@ import lombok.NoArgsConstructor;
 public class MfgPlanDTO {
 
     private Long mpNo;              // 생산 계획 번호
-    private String soNo;            // 수주 번호
+    private String soCode;          // 수주 번호
     private String empId;           // 등록 직원 사번
+    private String empName;			// 등록 직원명
     private String mpStatus;        // 생산 계획 상태
     private String mpPriority;      // 우선순위
     private LocalDate mpCreatedAt;  // 등록일자
     private LocalDate mpUpdatedAt;  // 수정일자
-    private LocalDate soDueDate;    // 납품 기한
+    //private LocalDate soDueDate;    // 납품 기한
     private LocalDate mpStartDate;  // 생산 시작 예정일
     private LocalDate mpEndDate;    // 생산 종료 예정일
     
