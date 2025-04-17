@@ -70,7 +70,7 @@
 	<script th:inline="javascript">
 	
 	//================================== 그리드 상단 상품 부분 ================================= 
-	let gridData = /*[[${mfgScheduleList}]]*/ [];
+	let gridData = /*[[${msList}]]*/ [];
 	
 	let grid = new tui.Grid({
         el: document.getElementById('mfgScheduleGrid'), 
@@ -141,7 +141,7 @@
             },
 			{
                 header: '공정코드',
-                name: 'pdtPrcTypeCode',
+                name: 'prcCode',
 				width: 200,
 				fontSize: '40',
 				sortable: true, 
@@ -151,7 +151,7 @@
             },
             {
 				header: '계획수량',
-                name: 'msQty',
+                name: 'allocatedQty',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -169,7 +169,7 @@
             },
 			{
                 header: '제조 완료 예정일',
-                name: 'msEnddate',
+                name: 'msEndDate',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -242,7 +242,7 @@
 					},
 					{
 						header: '공정코드',
-						name: 'pdtPrcTypeCode', 
+						name: 'prcCode', 
 						sortable: true,
 						align: "center"
 					},

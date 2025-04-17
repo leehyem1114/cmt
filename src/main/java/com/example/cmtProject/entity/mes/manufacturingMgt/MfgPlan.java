@@ -26,8 +26,8 @@ public class MfgPlan { // 생산 계획
     @Column(name = "MP_NO")
 	private Long mpNo;  // 생산 계획 번호
 	
-    @Column(name = "SO_No")
-	private Long soNo;  // 수주 번호
+    @Column(name = "SO_CODE")
+	private String soCode;  // 수주 코드
 
     @Column(name = "EMP_ID")
 	private String empId;  // 등록 직원 사번

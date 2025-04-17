@@ -57,7 +57,7 @@
 				</div>
 	            <div class="modal-footer">
 	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                <button type="submit" class="btn btn-primary">등록</button>
+	                <button type="button" id="mfgPlanRegiBtn" class="btn btn-primary">등록</button>
 		        </div>
 	        </div> <!-- modal-content -->
 	    </div><!-- modal-dialog modal-lg -->
@@ -67,7 +67,7 @@
 	<script th:inline="javascript">
 	
 	//================================== 그리드 부분 ================================= 
-	let gridData = /*[[${mfgPlanList}]]*/ [];
+	let gridData = /*[[${mpList}]]*/ [];
 	
 	let grid1 = new tui.Grid({
         el: document.getElementById('mfgPlanGrid'), 
@@ -93,7 +93,7 @@
             },
            {
                 header: '수주번호',
-                name: 'soNo',
+                name: 'soCode',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -138,7 +138,7 @@
             },
 			{
                 header: '생산 완료 예정일',
-                name: 'mpEnddate',
+                name: 'mpEndDate',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -249,6 +249,49 @@
 		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
 	    grid.refreshLayout();
 	});*/
+	
+	//상품 계획 등록 시작 -------------------------------------------
+	$('#mfgPlanRegiBtn').on('click', function () {
+		const checkedRows = grid2.getCheckedRows();
+		const mpRegiList = checkedRows.map(row => ({
+			soCode: row.soCode,
+			pdtCode: row.pdtCode,
+			
+		}));
+
+		$.ajax({
+    		type: 'POST',
+    		url: '/mfg/mfgPlanRegi',
+            contentType: 'application/json',
+    		data: JSON.stringify(mpRegiList),
+    		success: function (res) {
+				
+				if(res === 'fail'){
+					Swal.fire({
+					  icon: "error",
+					  title: "입력하지 않은 항목이 있습니다.",
+					});
+				}
+				
+				if(res === 'success'){
+					Swal.fire({
+					  icon: "success",
+					  title: "생산 계획이 등록되었습니다.",
+					});
+					
+					location.reload(); // or 특정 그리드/뷰 갱신
+				}
+        		
+    		},
+    		error: function () {
+				Swal.fire({
+				  icon: "error",
+				  title: "생산 계획 등록 실패!",
+				});
+    		}
+		});
+	});
+	//상품 계획 등록 끝---------------------------------------------------------	
 	
 	
 	</script>

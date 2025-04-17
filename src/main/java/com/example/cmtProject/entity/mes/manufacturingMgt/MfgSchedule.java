@@ -32,14 +32,14 @@ public class MfgSchedule { // 제조 계획
     @Column(name = "PDT_CODE")
 	private String pdtCode;  // 제품 코드
 
-    @Column(name = "PDT_PRC_TYPE_CODE")
-	private String pdtPrcTypeCode;  // 공정 코드
+    @Column(name = "PRC_CODE")
+	private String prcCode;  // 공정 코드
 
     @Column(name = "EMP_ID")
 	private String empId;  // 등록 직원 사번
 
-    @Column(name = "MS_QTY")
-	private Long msQty;  // 계획 수량
+    @Column(name = "ALLOCATED_QTY")
+	private Long allocatedQty;  // 계획 수량
 
     @Column(name = "MS_STATUS")
 	private String msStatus;  // 제조 계획 상태

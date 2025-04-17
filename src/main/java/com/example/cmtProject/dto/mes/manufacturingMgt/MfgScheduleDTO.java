@@ -16,9 +16,10 @@ public class MfgScheduleDTO {
     private Long msNo;             // 제조 계획 번호
     private Long mpNo;             // 생산 계획 번호
     private String pdtCode;        // 제품 코드
-    private String pdtPrcTypeCode; // 공정 코드
+    private String prcCode; 	   // 공정 코드
     private String empId;          // 등록 직원 사번
-    private Long msQty;            // 계획 수량
+    private String empName; 	   // 등록 직원명
+    private Long allocatedQty;    // 계획 수량
     private String msStatus;       // 제조 계획 상태
     private String msPriority;     // 우선순위
     private LocalDate msCreatedAt; // 등록일자
