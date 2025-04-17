@@ -52,67 +52,24 @@
 	                <h5 class="modal-title" id="mfgModalLabel">상품 등록</h5>
 	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	            </div>
-	            <form action="mfgPlanRegi" method="post">
-	                <div class="modal-body">
-						<label for="soCode">수주주문번호</label>
-	                    <div class="form-group">
-	                        <input type="text" id="soCode" class="form-control" name="" placeholder="수주주문번호 입력" required>
-	                    </div>
-						<label for="empId">등록직원사번</label>
-						<div class="form-group" >
-                        	<input type="text" id="empId" class="form-control" name="" placeholder="사번 입력" required>
-                    	</div>
-                    	<label for="mpStatus">생산 계획 상태</label>
-                    	<div class="form-group" required>
-	                        <select id="mpStatus" name="" class="form-select">
-								<option>상태</option>
-								<option value="등록">등록</option>
-								<option value="생산중">생산중</option>
-								<option value="완료">완료</option>
-								<option value="대기중">대기중</option>
-								<option value="중단">중단</option>
-								<option value="종료">종료</option>
-	                       </select>
-                    	</div>
-                    	<label for="mpPriority">우선순위</label>
-                    	<div class="form-group" required>
-	                        <select id="mpPriority" name="" class="form-select">
-								<option>우선순위</option>
-								<option value="상">상</option>
-								<option value="중">중</option>
-								<option value="하">하</option>
-	                       </select>
-                    	</div>
-                    	<label for="soDueDate">납품 기한</label>
-                    	<div class="form-group" required>
-							<input type="date" id="soDueDate" class="form-control" name="" required>
-                    	</div> 
-                    	<label for="mpStartDate">생산 시작 예정일</label>
-                    	<div class="form-group" required>
-							<input type="date" id="mpStartDate" class="form-control" name="" required>
-                    	</div>
-                    	<label for="mpEndDate">생산 완료 예정일</label>
-                    	<div class="form-group" required>
-							<input type="date" id="mpEndDate" class="form-control" name="" required>
-                    	</div>                      	                        	                      	
-	                </div>
-	                <div class="modal-footer">
-	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-	                    <button type="submit" class="btn btn-primary">등록</button>
-	                </div>
-	            </form>
+	            <div class="modal-body">
+	            	<div id="soGrid"></div>
+				</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                <button type="submit" class="btn btn-primary">등록</button>
+		        </div>
 	        </div> <!-- modal-content -->
 	    </div><!-- modal-dialog modal-lg -->
 	</div><!-- modal -->
 	<!-- 모달 끝 -->
-	
-	
+
 	<script th:inline="javascript">
 	
 	//================================== 그리드 부분 ================================= 
 	let gridData = /*[[${mfgPlanList}]]*/ [];
 	
-	let grid = new tui.Grid({
+	let grid1 = new tui.Grid({
         el: document.getElementById('mfgPlanGrid'), 
 		data: gridData,
         rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
@@ -210,6 +167,82 @@
 		autoEdit: true,
 		editingEvent: 'dblclick' 
     });
+	
+	let grid2 = null;
+	
+	document.getElementById('mfgPlanModal').addEventListener('shown.bs.modal', () => {
+		if (!grid2) {
+			grid2 = new tui.Grid({
+				el: document.getElementById('soGrid'), 
+				data : /*[[${soList}]]*/ [],
+				rowHeaders: ['checkbox'],
+				pageOptions: {
+					useClient: true,
+					perPage: 5
+				},
+				columns: [
+					{
+						header: '수주주문번호',
+						name: 'soCode',
+						align: "center"
+					},
+					{
+						header: '제품코드',
+						name: 'pdtCode',
+						align: "center"
+					},
+					{
+						header: '제품명',
+						name: 'pdtName', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '주문단위',
+						name: 'bomUnit', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '거래처명',
+						name: 'cltName', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '납품기한',
+						name: 'soDueDate', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '우선순위',
+						name: 'mpPriority', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '생산 시작 예정일',
+						name: 'mpStartDate', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '생산 완료 예정일',
+						name: 'mpEndDate', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '재고 조회',
+						name: 'pdtQty', 
+						sortable: true,
+						align: "center"
+					}
+				]
+			});
+		}
+	});	
 		
 	/*
 	grid.on('onGridUpdated', (ev) => {
