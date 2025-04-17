@@ -39,14 +39,20 @@ public class Iqc {
     @Column(name = "QCM_NO", nullable = false)
     private Long qcmNo;
 
-    @Column(name = "MTL_NO", nullable = false)
-    private Long mtlNo;
+    @Column(name = "MTL_NAME", nullable = false)
+    private String mtlName;
 
     @Column(name = "IQC_TIME")
     private LocalDateTime iqcTime;
 
     @Column(name = "IQC_MEASURED_VALUE")
     private Double iqcMeasuredValue;
+    
+    @Column(name = "QCM_UNIT_LENGTH")
+    private String qcmUnitLength;
+
+    @Column(name = "QCM_UNIT_WEIGHT")
+    private String qcmUnitWeight;
 
     @Column(name = "IQC_INSPECTION_STATUS")
     private String iqcInspectionStatus; // 검사전 / 검사중 / 검사완료
@@ -54,8 +60,8 @@ public class Iqc {
     @Column(name = "IQC_INSPECTION_RESULT", length = 1)
     private String iqcInspectionResult; // 'P' / 'F'
 
-    @Column(name = "WHS_NO")
-    private Long whsNo;
+    @Column(name = "WHS_NAME")
+    private String whsName;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;

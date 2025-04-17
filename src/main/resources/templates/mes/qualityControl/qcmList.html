@@ -67,8 +67,6 @@
             el: document.getElementById('gridTop'),
             data: /*[[${qcmList}]]*/ [],
             rowHeaders: ['checkbox'],
-            scrollX: false,
-            scrollY: false,
             pageOptions: {
     	        useClient: true,  // 서버 사이드 페이징 활성화
     	        perPage: 20
@@ -79,85 +77,87 @@
             	  name: 'qcmNo', 
             	  sortable: true, 
             	  filter: 'text', 
-            	  width: 150,
             	  align: "center",
             	  hidden: true
             	},
             	{ 
-                  header: '사원번호', 
-            	  name: 'empId', 
+                  header: '검사 코드', 
+            	  name: 'qcmCode', 
             	  sortable: true, 
             	  filter: 'text', 
             	  width: 150,
             	  align: "center" 
             	},
             	{ 
-                  header: '사원이름', 
-              	  name: 'empName', 
+                  header: '검사명', 
+              	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
               	  width: 150,
               	  align: "center" 
               	},
             	{ 
-               	  header: '부서', 
-               	  name: 'deptName', 
+               	  header: '원자재', 
+               	  name: 'mtlName', 
                	  sortable: true, 
                	  filter: 'text',
-               	  width: 150,
-               	  align: "center",
-             		formatter: function({ row }) {
- 	           		  return row.deptName;
- 	           		}
+               	  align: "center"
             	},
             	{ 
-            	  header: '출근시간', 
-            	  name: 'wtStartTime', 
+            	  header: '완제품', 
+            	  name: 'pdtName', 
             	  sortable: true, 
             	  filter: 'text',
-            	  width: 300,
-           		  align: "center",
-	           		formatter: function({ value }) {
-	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
-	
-	           		    const date = new Date(value);
-	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
-
-		           		const hours = String(date.getHours()).padStart(2, '0');
-		           	    const minutes = String(date.getMinutes()).padStart(2, '0');
-	           		    
-	           		    return `${hours}시 ${minutes}분`;
-	           		}
+           		  align: "center"
            		},
             	{ 
-            	  header: '퇴근시간', 
-            	  name: 'wtEndTime', 
+            	  header: '목표값', 
+            	  name: 'qcmTargetValue', 
             	  sortable: true, 
             	  filter: 'text',
-            	  width: 300,
-           		  align: "center",
-	           		formatter: function({ value }) {
-	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
-	
-	           		    const date = new Date(value);
-	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
-	
-	           		    const hours = String(date.getHours()).padStart(2, '0');
-	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
-	           		    
-	           		    return `${hours}시 ${minutes}분`;
-	           		}
+            	  width: 100,
+           		  align: "center"
            		},
             	{ 
-           	      header: '기준근무유형', 
-           		  name: 'wktTypeName', 
+           	      header: '상한값', 
+           		  name: 'qcmMaxValue', 
            		  sortable: true, 
            		  filter: 'text',
-           		  align: "center",
-           			formatter: function({ row }) {
-	           		  return row.wktTypeName;
-	           		}
-            	}
+           		  width: 100,
+           		  align: "center"
+            	},
+            	{ 
+           	      header: '하한값', 
+           		  name: 'qcmMinValue', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 100,
+           		  align: "center"
+              	},
+            	{ 
+           	      header: '단위(무게)', 
+           		  name: 'qcmUnitWeight', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 100,
+           		  align: "center"
+              	},
+            	{ 
+           	      header: '단위(길이)', 
+           		  name: 'qcmUnitLength', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 100,
+           		  align: "center"
+              	},
+            	{ 
+           	      header: '검사방법', 
+           		  name: 'qcmMethod', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 150,
+           		  align: "center"
+              	}
             ],
             
             
