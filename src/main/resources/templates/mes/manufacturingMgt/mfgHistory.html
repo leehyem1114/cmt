@@ -10,8 +10,23 @@
 <body>
 	<div layout:fragment="content">
 	<h4>생산 이력</h4>
+	
+	<div class="card">
+		<div class="card-body">
+	    	<div class="row g-3 mb-4">
+	            <div class="col-md-3">	
+	                <input type="text" class="form-control" placeholder="생산계획번호를 입력해주세요.">
+	            </div>
+	            <div class="col-md-2 d-flex align-items-end">
+	            	<button type="button" class="btn btn-outline-secondary">
+		            	<i class="bi bi-search"></i>
+		            </button>
+	            </div>
+	    	</div>
+	    </div>
+	    	
 		<div id="mfgHistoryGrid"></div>
-
+	</div>
 	
 	<script th:inline="javascript">
 	
@@ -35,7 +50,7 @@
            {
                 header: '생산계획번호',
                 name: 'mpNo',
-				width: 200,
+				width: 250,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
@@ -43,7 +58,7 @@
 			{
                 header: '제품명',
                 name: 'pdtName',
-				width: 200,
+				width: 500,
 				sortable: true, 
 				filter: 'text',
 				align: "center",
@@ -52,7 +67,7 @@
             {
 				header: '상태',
                 name: 'mpStatus',
-				width: 200,
+				width: 250,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -61,7 +76,7 @@
 			{
                 header: '생산 시작일',
                 name: 'mpStartDate', 
-				width: 200,
+				width: 250,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -70,16 +85,7 @@
 			{
                 header: '생산 완료일',
                 name: 'mpEnddate',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            },
-			{
-                header: '소요시간',
-                name: 'woDurationTime',
-				width: 200,
+				width: 250,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
