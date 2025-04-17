@@ -9,21 +9,107 @@
 </head>
 <body>
 	<div layout:fragment="content">
-	<h4>생산 계획</h4>	
+	<h4>생산 계획</h4>
 	
-	<div class="text-end filediv">
-		<div class="text-end mb-2">
-			<button type="button" class="btn btn-outline-primary" style="margin-left: 400px;" data-bs-toggle="modal" data-bs-target="#empModal">
-				계획 등록
-			</button>
-		</div>
-    </div>
+	<div class="card">
+		<div class="card-body">
+	    	<div class="row g-3 mb-4">
+	        	<div class="col-md-3">
+	        		<select id="mpStatus" name="" class="form-select">
+						<option>상태</option>
+						<option value="등록">등록</option>
+						<option value="생산중">생산중</option>
+						<option value="완료">완료</option>
+						<option value="대기중">대기중</option>
+						<option value="중단">중단</option>
+						<option value="종료">종료</option>
+	            	</select>
+	            </div>
+	            <div class="col-md-3">	
+	                <input type="text" class="form-control" placeholder="수주주문번호를 입력해주세요.">  
+	            </div>
+	            <div class="col-md-2 d-flex align-items-end">
+	            	<button type="button" class="btn btn-outline-secondary">
+		            	<i class="bi bi-search"></i>
+		            </button>
+	            </div>    
+	            <div class="text-end mb-2">
+		            <button type="button" class="btn btn-outline-secondary">저장</button>
+		            <button type="button" class="btn btn-outline-secondary">삭제</button>
+		            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">계획 등록</button>
+	            </div>
+	        </div>		
+	    </div>
+
+		<div id="mfgPlanGrid"></div>
+	</div>
 	
-	<div id="mfgPlanGrid"></div>
+	<!--  모달 창 시작 -->
+	<div class="modal fade" id="mfgPlanModal" tabindex="-1" aria-labelledby="mfgPlanModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="mfgModalLabel">상품 등록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <form action="mfgPlanRegi" method="post">
+	                <div class="modal-body">
+						<label for="soCode">수주주문번호</label>
+	                    <div class="form-group">
+	                        <input type="text" id="soCode" class="form-control" name="" placeholder="수주주문번호 입력" required>
+	                    </div>
+						<label for="empId">등록직원사번</label>
+						<div class="form-group" >
+                        	<input type="text" id="empId" class="form-control" name="" placeholder="사번 입력" required>
+                    	</div>
+                    	<label for="mpStatus">생산 계획 상태</label>
+                    	<div class="form-group" required>
+	                        <select id="mpStatus" name="" class="form-select">
+								<option>상태</option>
+								<option value="등록">등록</option>
+								<option value="생산중">생산중</option>
+								<option value="완료">완료</option>
+								<option value="대기중">대기중</option>
+								<option value="중단">중단</option>
+								<option value="종료">종료</option>
+	                       </select>
+                    	</div>
+                    	<label for="mpPriority">우선순위</label>
+                    	<div class="form-group" required>
+	                        <select id="mpPriority" name="" class="form-select">
+								<option>우선순위</option>
+								<option value="상">상</option>
+								<option value="중">중</option>
+								<option value="하">하</option>
+	                       </select>
+                    	</div>
+                    	<label for="soDueDate">납품 기한</label>
+                    	<div class="form-group" required>
+							<input type="date" id="soDueDate" class="form-control" name="" required>
+                    	</div> 
+                    	<label for="mpStartDate">생산 시작 예정일</label>
+                    	<div class="form-group" required>
+							<input type="date" id="mpStartDate" class="form-control" name="" required>
+                    	</div>
+                    	<label for="mpEndDate">생산 완료 예정일</label>
+                    	<div class="form-group" required>
+							<input type="date" id="mpEndDate" class="form-control" name="" required>
+                    	</div>                      	                        	                      	
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                    <button type="submit" class="btn btn-primary">등록</button>
+	                </div>
+	            </form>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
+	
 	
 	<script th:inline="javascript">
 	
-	//================================== 그리드 상단 상품 부분 ================================= 
+	//================================== 그리드 부분 ================================= 
 	let gridData = /*[[${mfgPlanList}]]*/ [];
 	
 	let grid = new tui.Grid({

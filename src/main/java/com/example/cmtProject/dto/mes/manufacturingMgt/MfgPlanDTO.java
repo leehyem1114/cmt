@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class MfgPlanDTO {
 
     private Long mpNo;              // 생산 계획 번호
-    private Long soNo;              // 수주 번호
+    private String soNo;            // 수주 번호
     private String empId;           // 등록 직원 사번
     private String mpStatus;        // 생산 계획 상태
     private String mpPriority;      // 우선순위
