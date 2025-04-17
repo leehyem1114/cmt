@@ -1,5 +1,6 @@
 package com.example.cmtProject.controller.erp.employees;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.example.cmtProject.dto.comm.CommonCodeDetailNameDTO;
 import com.example.cmtProject.dto.erp.employees.EmpCountDTO;
@@ -30,6 +33,7 @@ import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 import com.example.cmtProject.service.comm.CommonService;
 import com.example.cmtProject.service.erp.attendanceMgt.LeaveService;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
+import com.example.cmtProject.util.PdfGenerator;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +46,13 @@ public class EmployeesController {
 	@Autowired private CommonService commonService;
 	@Autowired private EmployeesRepository employeesRepository;
 	@Autowired private LeaveService leaveService;
+	@Autowired private SpringTemplateEngine templateEngine;
 
 	//공통코드 DetailName 불러오는 메서드
 	public static void commonCodeName(Model model , CommonService commonService) {
 		
 		List<String> groupCodes = commonService.getAllGroupCodes();
-		System.out.println("그룹코드 리스트 :::::"+groupCodes);
+//		System.out.println("그룹코드 리스트 :::::"+groupCo des);
 //		String[] groupCodes = {"GENDER","DEPT","EDUCATION","EMP_STATUS","EMP_TYPE","MARITAL","PARKING","POSITION","USER_ROLE"};
 		//공통코드 추가시 "NEW_CODE" 추가
 		
@@ -80,8 +85,6 @@ public class EmployeesController {
 		model.addAttribute("emp",emp);
 		
 		log.info("emp:=========================="+ emp);
-		
-		System.out.println("~~~=====================DB값 조회"+emp); // deptNo=20, deptName=개발, positionNo=null, deptPosition=대리
 		 //공통코드 가져오기
 		commonCodeName(model, commonService);
 		
@@ -113,8 +116,6 @@ public class EmployeesController {
 	    	log.info("constroller의 result:" + result);
 	    	return "success";
 	    }
-	    System.out.println("바뀐 사원정보~~~~~~~~~~"+ result);
-	    
 	    return "fail";
 	}
 	
@@ -127,7 +128,7 @@ public class EmployeesController {
 		//사원ID 자동생성
 		String empCode = makeEmpCode();
 		model.addAttribute("empCode",empCode);
-		System.out.println(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
+		log.info(">>>>>>>>>>>>자동 생성된 사원번호" + empCode);
 
 		
 		List<EmpListPreviewDTO> empList = empService.getEmpList();
@@ -146,10 +147,11 @@ public class EmployeesController {
 	public String searchDept(@ModelAttribute searchEmpDTO searchEmpDTO,Model model)throws Exception {
 		commonCodeName(model, commonService);
 		
-		List<searchEmpDTO> searchDTO = empService.getSearchDept(searchEmpDTO);
+		 List<searchEmpDTO> emplist = empService.getSearchDept(searchEmpDTO);
+		model.addAttribute("emplist", emplist);
 		
-		model.addAttribute("emplist",searchDTO);
-		System.out.println(">>>>>>>>"+searchDTO);
+		model.addAttribute("searchEmpDTO",searchEmpDTO);
+		System.out.println(">>>>>>>>"+searchEmpDTO);
 		
 		return "erp/employees/emplist";
 	}
@@ -211,7 +213,7 @@ public class EmployeesController {
 	@PostMapping("/checkId")
 	@ResponseBody
 	public boolean checkId(@RequestParam("empId")String empId) {
-		 System.out.println("넘어온 empId >>> " + empId);
+		log.info("넘어온 empId >>> " + empId);
 		return empService.checkId(empId);
 	}
 	
@@ -261,6 +263,24 @@ public class EmployeesController {
 		return empService.getMonthlyStatus();
 	}
 	
+	//사원 pdf출력
+	@GetMapping("/empPrint/{empId}")
+	public String empPrint(@PathVariable("empId") String empId, Model model,EmpRegistDTO empRegistDTO) throws Exception {
+		EmpRegistDTO empList = empService.getEmpDetail(empId);
+		Map<String, Object> data = new HashMap<>();
+		data.put("emp", empList);
+		data.put("today", LocalDate.now());
+
+		
+		String html = parseThymeleafToHtml(data); // 위에서 만든 메서드
+		new PdfGenerator().generatePdf(html, "D:/pdfs/empslip.pdf");
+		model.addAttribute("emp", empList); 
+		
+		File pdfFile = new File("D:/pdfs/empPdf.pdf"); //util폴더에서 pdfGenerator 경로지정 필수
+		
+		return "pdf/empPdf";
+	}
+	
 	
 	// 객체 -> JSON 변환 샘플
 //	@Autowired
@@ -286,4 +306,12 @@ public class EmployeesController {
 		return today + formatted;
 	}
 	
+	public String parseThymeleafToHtml(Map<String, Object> data) {
+	    Context context = new Context();
+	    context.setVariables(data);
+	    
+	    String html = templateEngine.process("pdf/empPdf", context);
+	    
+	    return html;  // html 파일 경로
+	}
 }

@@ -12,9 +12,9 @@
 	<!-- pagination -->
 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 			
-	<!-- toast 부트스트랩 기본 -->
-	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" />
-	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
+<!-- 	<!-- toast 부트스트랩 기본 --> -->
+<!-- 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" /> -->
+<!-- 	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script> -->
 		
 	<title>CMT</title>
 	<style>
@@ -394,7 +394,6 @@
 			let rk = evValue.rowKey;
 			let rowData = grid.getRow(rk);
 			let sono = rowData.soNo;
-			console.log("sono:"+sono);
 			
 			//console.log(ev.changes[0]); 
 			//{rowKey: 5, columnName: 'empId', value: '930216', prevValue: '921114'}
@@ -404,9 +403,6 @@
 				columnName : evValue.columnName,
 				value : evValue.value
 			};
-			
-			console.log(sendData);
-			//{soNo: 445, columnName: 'soStatus', value: 'SO_INPRODUCTION'}
 			
 			$.ajax({
 				url: "/sales/soeditexe",

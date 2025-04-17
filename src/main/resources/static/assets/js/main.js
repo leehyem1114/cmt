@@ -21,6 +21,7 @@ function j(t,e,o,i){
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+	
 	// 오늘 날짜를 "yyyy년 MM월 dd일 (요일)" 형식으로 포맷
 	function formatDateWithDay(date) {
 	    const year = date.getFullYear();

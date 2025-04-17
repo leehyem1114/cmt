@@ -1,27 +1,49 @@
-<!DOCTYPE html>
-<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
 <html xmlns:th="http://www.thymeleaf.org" 
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/layout}"> 
-<head>
-	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+      layout:decorate="~{layouts/layout}">
+
+	  
+	  
+	  
+<th:block layout:fragment="css">
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.css">
+
+    <style>
+        /* 기존 CSS 스타일들 여기 */
+    </style>
+</th:block>
+
+
+
+
+<div layout:fragment="content">
+    <!-- 기존 form, 버튼, 그리드 등 다 여기 -->
     
-    <!-- 기본 메타 정보 -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>페이지 제목 입력</title>
-	
-</head>
-<body>
-    
-    <div layout:fragment="content">
-     	<!-- 내용 입럭 -->
-    </div>
     
     
-    <th:block layout:fragment="script">
-       
-    </th:block>
-</body>
+    
+    
+    
+</div>
+
+
+
+
+
+<th:block layout:fragment="script">
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+    <script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script>
+    <script src="https://code.jquery.com/jquery.min.js"></script>
+    <script>
+        // 기존 JavaScript 코드
+    </script>
+</th:block>
+
+
+
+
+
+
 </html>

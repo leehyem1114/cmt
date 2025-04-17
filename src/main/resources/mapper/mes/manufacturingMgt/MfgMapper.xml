@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgMapper">
+
+	<select id="getMfgPlanTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		SELECT
+			MP.MP_NO,
+		    MP.SO_CODE,
+		    MP.EMP_ID,
+		    MP.MP_STATUS,
+		    MP.MP_PRIORITY,
+		    MP.MP_CREATED_AT,
+		    MP.MP_UPDATED_AT,
+		    MP.MP_START_DATE,
+		    MP.MP_END_DATE,
+	
+		    E.EMP_NAME AS empName
+		FROM MFG_PLANS MP
+		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
+		ORDER BY MP.MP_NO DESC
+	</select>
+
+	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
+		SELECT
+			MS.MS_NO,
+		    MP.MP_NO,
+		    MS.EMP_ID,
+		    MS.MS_STATUS,
+		    MS.MS_PRIORITY,
+		    MS.PDT_CODE,
+		    MS.PRC_CODE,
+		    MS.ALLOCATED_QTY,
+		    MS.MS_CREATED_AT,
+		    MS.MS_UPDATED_AT,
+		    MS.MS_START_DATE,
+		    MS.MS_END_DATE,
+	
+		    E.EMP_NAME AS empName
+		FROM MFG_SCHEDULES MS
+		LEFT JOIN MFG_PLANS MP ON MS.MP_NO = MP.MP_NO
+		LEFT JOIN MATERIAL_INVENTORY MI ON MS.ALLOCATED_QTY = MI.ALLOCATED_QTY											 
+		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
+		ORDER BY MS.MS_NO DESC	
+	</select>
+
+</mapper>

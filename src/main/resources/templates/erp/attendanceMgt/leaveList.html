@@ -158,7 +158,7 @@
 
 
 
-	</div>
+
 
 
 
@@ -174,11 +174,13 @@
 	
 
 	
-	
-	// 시작일 DatePicker
+	document.addEventListener('DOMContentLoaded', function () {
+	const oneMonthAgo = new Date();
+	  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+	  // 시작일 DatePicker
 	  const startPicker = new tui.DatePicker('#startDateWrapper', {
 		language: 'ko',  
-	    date: new Date(),
+	    date: oneMonthAgo,
 	    input: {
 	      element: '#startDate',
 	      format: 'yyyy-MM-dd'
@@ -194,6 +196,7 @@
 	      format: 'yyyy-MM-dd'
 	    }
 	  });
+	});
 	  
 	
 	
@@ -224,6 +227,7 @@
   
   console.log(data1);
   
+  document.addEventListener('DOMContentLoaded', function () {
   const grid = new tui.Grid({
    el: document.getElementById('gridLeaveHome'),
    data: data1,
@@ -380,6 +384,7 @@
      ],
             
 	});
+
   
   
   
@@ -492,6 +497,7 @@
 		  
 		  console.log(data2);
 		  
+		  
 		  const grid2 = new tui.Grid({
 		   el: document.getElementById('gridUsedLeftLeave'),
 		   data: data2,
@@ -541,6 +547,7 @@
 		     ],
 		            
 			});
+  });
 		  
 		  
 		  
@@ -630,8 +637,6 @@
 
 	
 	</script> 
-	
-
 	</th:block>
 </body>
 

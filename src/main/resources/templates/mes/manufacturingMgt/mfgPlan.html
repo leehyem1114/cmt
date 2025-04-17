@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+	<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+	<title>CMT</title>
+</head>
+<body>
+	<div layout:fragment="content">
+	<h4>생산 계획</h4>
+	
+	<div class="card">
+		<div class="card-body">
+	    	<div class="row g-3 mb-4">
+	        	<div class="col-md-3">
+	        		<select id="mpStatus" name="" class="form-select">
+						<option>상태</option>
+						<option value="등록">등록</option>
+						<option value="생산중">생산중</option>
+						<option value="완료">완료</option>
+						<option value="대기중">대기중</option>
+						<option value="중단">중단</option>
+						<option value="종료">종료</option>
+	            	</select>
+	            </div>
+	            <div class="col-md-3">	
+	                <input type="text" class="form-control" placeholder="수주주문번호를 입력해주세요.">  
+	            </div>
+	            <div class="col-md-2 d-flex align-items-end">
+	            	<button type="button" class="btn btn-outline-secondary">
+		            	<i class="bi bi-search"></i>
+		            </button>
+	            </div>    
+	            <div class="text-end mb-2">
+		            <button type="button" class="btn btn-outline-secondary">저장</button>
+		            <button type="button" class="btn btn-outline-secondary">삭제</button>
+		            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">계획 등록</button>
+	            </div>
+	        </div>		
+	    </div>
+
+		<div id="mfgPlanGrid"></div>
+	</div>
+	
+	<!--  모달 창 시작 -->
+	<div class="modal fade" id="mfgPlanModal" tabindex="-1" aria-labelledby="mfgPlanModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="mfgModalLabel">상품 등록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	            	<div id="soGrid"></div>
+				</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                <button type="button" id="mfgPlanRegiBtn" class="btn btn-primary">등록</button>
+		        </div>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
+
+	<script th:inline="javascript">
+	
+	//================================== 그리드 부분 ================================= 
+	let gridData = /*[[${mpList}]]*/ [];
+	
+	let grid1 = new tui.Grid({
+        el: document.getElementById('mfgPlanGrid'), 
+		data: gridData,
+        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+		//selectionUnit: 'row', //행 단위선택
+		scrollX: true,
+        scrollY: true,
+		//width: 1600,  // 전체 너비 지정
+		//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+		pageOptions: {
+		   useClient: true,   // 클라이언트 사이드 페이징 사용
+		   perPage: 10        // 페이지당 행 수
+		 },
+        columns: [
+			{
+				header: '생산계획번호',
+				name: 'mpNo',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+           {
+                header: '수주번호',
+                name: 'soCode',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+			{
+                header: '등록 직원명',
+                name: 'empName',
+				width: 200,
+				fontSize: '40',
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '우선순위',
+                name: 'mpPriority',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: "center",
+				editor: "text"
+            },
+            {
+				header: '상태',
+                name: 'mpStatus',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '생산 시작 예정일',
+                name: 'mpStartDate', 
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '생산 완료 예정일',
+                name: 'mpEndDate',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '등록일자',
+                name: 'mpCreatedAt',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+			{
+                header: '수정일자',
+                name: 'mpUpdatedAt',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            }
+        ], // 열 설정
+		autoEdit: true,
+		editingEvent: 'dblclick' 
+    });
+	
+	let grid2 = null;
+	
+	document.getElementById('mfgPlanModal').addEventListener('shown.bs.modal', () => {
+		if (!grid2) {
+			grid2 = new tui.Grid({
+				el: document.getElementById('soGrid'), 
+				data : /*[[${soList}]]*/ [],
+				rowHeaders: ['checkbox'],
+				pageOptions: {
+					useClient: true,
+					perPage: 5
+				},
+				columns: [
+					{
+						header: '수주주문번호',
+						name: 'soCode',
+						align: "center"
+					},
+					{
+						header: '제품코드',
+						name: 'pdtCode',
+						align: "center"
+					},
+					{
+						header: '제품명',
+						name: 'pdtName', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '주문단위',
+						name: 'bomUnit', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '거래처명',
+						name: 'cltName', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '납품기한',
+						name: 'soDueDate', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '우선순위',
+						name: 'mpPriority', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '생산 시작 예정일',
+						name: 'mpStartDate', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '생산 완료 예정일',
+						name: 'mpEndDate', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '재고 조회',
+						name: 'pdtQty', 
+						sortable: true,
+						align: "center"
+					}
+				]
+			});
+		}
+	});	
+		
+	/*
+	grid.on('onGridUpdated', (ev) => {
+		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
+	    grid.refreshLayout();
+	});*/
+	
+	//상품 계획 등록 시작 -------------------------------------------
+	$('#mfgPlanRegiBtn').on('click', function () {
+		const checkedRows = grid2.getCheckedRows();
+		const mpRegiList = checkedRows.map(row => ({
+			soCode: row.soCode,
+			pdtCode: row.pdtCode,
+			
+		}));
+
+		$.ajax({
+    		type: 'POST',
+    		url: '/mfg/mfgPlanRegi',
+            contentType: 'application/json',
+    		data: JSON.stringify(mpRegiList),
+    		success: function (res) {
+				
+				if(res === 'fail'){
+					Swal.fire({
+					  icon: "error",
+					  title: "입력하지 않은 항목이 있습니다.",
+					});
+				}
+				
+				if(res === 'success'){
+					Swal.fire({
+					  icon: "success",
+					  title: "생산 계획이 등록되었습니다.",
+					});
+					
+					location.reload(); // or 특정 그리드/뷰 갱신
+				}
+        		
+    		},
+    		error: function () {
+				Swal.fire({
+				  icon: "error",
+				  title: "생산 계획 등록 실패!",
+				});
+    		}
+		});
+	});
+	//상품 계획 등록 끝---------------------------------------------------------	
+	
+	
+	</script>
+	
+	</div>
+</body>
+</html>
