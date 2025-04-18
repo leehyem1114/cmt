@@ -37,7 +37,7 @@
 		FROM SALES_ORDER SO
 		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
 		LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
-	</select>
+	</select>  
 
 	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
 		SELECT
