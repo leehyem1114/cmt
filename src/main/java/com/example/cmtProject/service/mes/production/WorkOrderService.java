@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.mapper.mes.production.WorkOrderMapper;
 
@@ -14,5 +15,13 @@ public class WorkOrderService {
 	//작업지시 리스트
 	public List<WorkOrderDTO> getOrderList() {
 		return orderMapper.selectOrderList();
+	}
+	//제조계획
+	public List<MfgScheduleDTO> getPlanList() {
+		return orderMapper.selectPlanList();
+	}
+	public void registMsPlan(WorkOrderDTO workOrderDTO) {
+		orderMapper.insertMsPlan(workOrderDTO);
+		
 	}
 }

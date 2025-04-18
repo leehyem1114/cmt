@@ -14,8 +14,10 @@ import lombok.NoArgsConstructor;
 public class MfgScheduleDTO {
 
     private Long msNo;             // 제조 계획 번호
+    private String msCode;             // 제조 계획 코드
     private Long mpNo;             // 생산 계획 번호
     private String pdtCode;        // 제품 코드
+    private String pdtName;        // 제품 이름
     private String prcCode; 	   // 공정 코드
     private String empId;          // 등록 직원 사번
     private String empName; 	   // 등록 직원명
