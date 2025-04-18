@@ -65,7 +65,7 @@
 			      scrollY: true,
 			      columns: [
 			    	{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center'},
-			        { header: '계획번호', name: 'workOrderCode',sortable: true,align: 'center' },
+			        { header: '계획코드', name: 'woCode',sortable: true,align: 'center' },
 			        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
 			        { header: '품목', name: 'pdtName' ,align: 'center'},
 			        { header: '수량', name: 'orderQty' ,align: 'center'},
@@ -73,8 +73,8 @@
 			        { header: '작업담당자', name: '' ,align: 'center'},
 			        { header: '라인', name: '' ,align: 'center'},
 			        { header: '공정 상태', name: '' ,align: 'center'},
-			        { header: '작업 시작일', name: 'workStartDate',sortable: true,align: 'center' },
-			        { header: '작업 종료일', name: 'workEndDate' ,align: 'center'}
+			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
+			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'}
 			      ]
 			    });
 		  </script>
@@ -88,7 +88,7 @@
 		  
 		  
 			<div class="card-header">
-			    <h5 class="card-title"><i class="fa-solid fa-bars"></i> 자재</h5>
+			    <h5 class="card-title"><i class="fa-solid fa-bars"></i> 자재 / 삭제 가능성</h5>
 			</div>
 			    <div id="grid2" style="height: 400px;"></div>
 				<script th:inline="javascript">
@@ -125,22 +125,15 @@
 	    <div class="modal-dialog modal-dialog-centered modal-xl">
 	        <div class="modal-content">
 	            <div class="modal-header">
-	                <h5 class="modal-title" id="exampleModalCenterTitle"><i class="fa-solid fa-bars"></i> 생산 계획 리스트가 뿌려짐</h5>
+	                <h5 class="modal-title" id="exampleModalCenterTitle"><i class="fa-solid fa-bars"></i> 생산 계획?제조계획?리스트</h5>
 	            </div>
 	            <div class="modal-body">
 	                <p>생산계획>제조계획수립>제조작업 지시서</p>
 	                <p>그러면?제조작업 지시서를 받아서 조회 + 작업지시로 전환해야함</p>
 	                <p>계획중 하나를 클릭하면(작업지시 등록) work_order테이블에 저장 > 작업지시 그리드에 '대기중'으로 올라감</p>
-	                <h5 class="modal-title" id="exampleModalCenterTitle">지금은 더미데이터 / 제조작업 지시서에서 받아와야함</h5>
 	                <div id="grid3" ></div>
 					<script th:inline="javascript">
-					const modal = document.getElementById('workModal');
-					modal.addEventListener('shown.bs.modal', function () {
-						if (grid) {
-						    grid.destroy(); //이전 그리드 제거
-						  }
-						
-						const gridData3 = /*[[${orderList}]]*/ []; // 이건 제조작업 지시서에서 받아와야함!! 지금은 임시
+						const gridData3 = /*[[${planList}]]*/ []; //생산계획 리스트
 						
 						const grid3 = new tui.Grid({
 						  el: document.getElementById('grid3'),
@@ -149,23 +142,37 @@
 						  scrollX: false,
 						  scrollY: true,
 						  columns: [
-					        { header: '계획번호', name: 'workOrderCode',sortable: true,align: 'center' },
+					        { header: '계획코드', name: 'msCode',sortable: true,align: 'center' },
 					        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
 					        { header: '품목', name: 'pdtName' ,align: 'center'},
-					        { header: '수량', name: 'orderQty' ,align: 'center'},
-					        { header: '생산 시작 예정일', name: '',sortable: true,align: 'center' },
-					        { header: '생산 완료 목표일', name: '' ,align: 'center'}
+					        { header: '계획 수량', name: 'allocatedQty' ,align: 'center'},
+					        { header: '생산 시작 예정일', name: 'msStartDate',sortable: true,align: 'center' },
+					        { header: '생산 완료 목표일', name: 'msEndDate' ,align: 'center'}
 						  ]
-						})
-					});
+						});
+						
+						grid3.on('click', (ev) => {
+						  const rowKey = ev.rowKey;
+
+						  if (typeof rowKey !== 'undefined') {
+						    const isChecked = grid3.getCheckedRowKeys().includes(rowKey);
+
+						    if (!isChecked) {
+						      grid3.check(rowKey);
+						    } else {
+						      grid3.uncheck(rowKey);
+						    }
+						  }
+						});
+
 					</script>
 	            </div>
 	            <div class="modal-footer">
 	                <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
 	                    <span class="d-none d-sm-block">닫기</span>
 	                </button>
-	                <button type="button" class="btn btn-primary ms-1" data-bs-dismiss="modal">
-	                    <span class="d-none d-sm-block">작업 지시 등록 <i class="fa-regular fa-circle-check"></i></span>
+	                <button type="button" class="btn btn-primary ms-1" data-bs-dismiss="modal" onclick="regiWorkOrderBtn()">
+	                    <span class="d-none d-sm-block" id="regiWorkOrder" name="regiWorkOrder" >작업 지시 등록 <i class="fa-regular fa-circle-check"></i></span>
 	                </button>
 	            </div>
 	        </div>
@@ -174,5 +181,33 @@
 	
 
 </div> <!-- /layout:fragment -->
+<th:block layout:fragment="script">
+	<script type="text/javascript">
+		function regiWorkOrderBtn(){
+			alert("버튼클릭댐");
+			const selectedRows = grid3.getCheckedRows();
+			
+			const data = { ...selectedRows[0] };
+
+			
+			console.log("보낼 데이터", data);
+			
+			$.ajax({
+				url : "/workOrder/regist",
+				method : "POST",
+				contentType: "application/json",
+				data: JSON.stringify(data),
+// 				data : {data},
+				success : function (response){
+					alert(response);
+				},
+				error : function (error){
+					console.log(error);
+				}
+			});
+		}
+	
+	</script>
+</th:block>
 </body>
 </html>

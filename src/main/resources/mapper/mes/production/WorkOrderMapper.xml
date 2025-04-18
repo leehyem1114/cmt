@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력 --> 
+<mapper namespace="com.example.cmtProject.mapper.mes.production.WorkOrderMapper">
+	<!-- 작업지시 목록 -->
+	<select id="selectOrderList" resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
+		SELECT
+			  W.WO_NO
+			, W.WO_CODE
+			, W.PDT_CODE
+			, W.ORDER_DATE
+			, W.ORDER_QTY
+			, W.STATUS
+			, W.DUE_DATE
+			, W.COMMENTS
+			, W.USE_YN
+			, W.WO_START_DATE
+ 			, W.WO_END_DATE  
+         --   , P.PDT_NAME 
+		  FROM WORK_ORDER W 
+		         --  JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
+		 ORDER BY WORK_ORDER_NO DESC
+	</select>
+	
+	<select id="selectPlanList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
+		SELECT 
+		    S.MS_NO
+		    , S.MS_CODE
+		    , S.PDT_CODE
+		    , P.PDT_NAME
+		    , S.ALLOCATED_QTY
+		    , S.MS_START_DATE
+		    , S.MS_END_DATE
+		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
+		ORDER BY S.MS_NO DESC
+	</select>
+	
+	<insert id="insertMsPlan"  parameterType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
+		INSERT INTO WORK_ORDER(
+		 	WO_NO
+			 , WO_CODE
+			 , PDT_CODE
+			 , PDT_NAME
+			 , WO_QTY
+			 , EMP_ID
+			 , LINE_CODE
+			 , PRC_CODE
+			 , WORK_START_DATE
+			 , WORK_END_DATE
+		) VALUES (
+				WORK_ORDER_SEQ.NEXTVAL
+			, #{msCode, jdbcType=VARCHAR}
+			, #{pdtCode, jdbcType=VARCHAR}
+			, #{pdtName, jdbcType=VARCHAR}
+			, #{allocatedQty, jdbcType=VARCHAR}
+			, #{empId, jdbcType=VARCHAR}
+			, #{lineCode, jdbcType=VARCHAR}
+			, #{prcCode, jdbcType=VARCHAR}
+			, #{msStartDate, jdbcType=DATE}
+<!-- 			, #{msEndDate, jdbcType=DATE} -->
+			, NULL
+		)
+		
+		
+		
+	
+	
+	</insert>
+	
+</mapper>
