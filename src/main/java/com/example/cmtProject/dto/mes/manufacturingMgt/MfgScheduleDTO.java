@@ -17,6 +17,7 @@ public class MfgScheduleDTO {
     private String msCode;		   // 제조 계획 코드
     private String mpCode;         // 생산 계획 코드
     private String pdtCode;        // 제품 코드
+    private String pdtName;        // 제품 이름
     private String prcCode; 	   // 공정 코드
     private String staffId;		   // 담당 작업자 사번
     private String staffName;	   // 담당 작업자 사번

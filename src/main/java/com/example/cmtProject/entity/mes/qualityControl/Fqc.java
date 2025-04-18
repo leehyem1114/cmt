@@ -39,8 +39,8 @@ public class Fqc {
     @Column(name = "QCM_NO", nullable = false)
     private Long qcmNo;
 
-    @Column(name = "PDT_NAME", nullable = false)
-    private String pdtName;
+    @Column(name = "PDT_CODE", nullable = false)
+    private String pdtCode;
 
     @Column(name = "FQC_TIME")
     private LocalDateTime fqcTime;
@@ -60,8 +60,8 @@ public class Fqc {
     @Column(name = "FQC_INSPECTION_RESULT", length = 1)
     private String fqcInspectionResult; // 'P' / 'F'
 
-    @Column(name = "WHS_NAME")
-    private String whsName;
+    @Column(name = "WHS_CODE")
+    private String whsCode;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;

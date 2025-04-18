@@ -31,7 +31,7 @@ public class ProcessInfo {
 	private String prcTypeName;
 
 	@Column(name = "PRC_PRIORITY")
-	private int prcPriority; 
+	private String prcPriority; 
 	
 	@Column(name = "CREATE_DATE")
 	private LocalDate createDate;

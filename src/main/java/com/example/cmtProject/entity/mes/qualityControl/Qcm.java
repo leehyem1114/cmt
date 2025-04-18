@@ -2,7 +2,6 @@ package com.example.cmtProject.entity.mes.qualityControl;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import groovy.transform.builder.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -11,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -34,11 +34,11 @@ public class Qcm {
     @Column(name = "QCM_NAME", nullable = false)
     private String qcmName;
 
-    @Column(name = "MTL_NAME")
-    private String mtlName;
+    @Column(name = "MTL_CODE")
+    private String mtlCode;
 
-    @Column(name = "PDT_NAME")
-    private String pdtName;
+    @Column(name = "PDT_CODE")
+    private String pdtCode;
     
     @Column(name = "QCM_TARGET_VALUE", nullable = false)
     private Double qcmTargetValue;
@@ -57,4 +57,7 @@ public class Qcm {
 
     @Column(name = "QCM_METHOD")
     private String qcmMethod;
+
+    
+    
 }
