@@ -17,7 +17,7 @@ public class FqcDTO {
     private String fqcCode;           // 출고 검사 코드
     private String empId;             // 사용자 ID
     private String qcmName;              // 출고 검사 기준 번호
-    private String pdtName;               // 완제품 NO
+    private String pdtCode;
     private LocalDateTime fqcTime;    // 검사 시간
     private Double fqcMeasuredValue;  // 측정값
     private String qcmUnitWeight;   // 단위 (ex: g)
@@ -26,5 +26,9 @@ public class FqcDTO {
     private String fqcInspectionResult; // 합격 여부 (P/F)
     private String whsName;               // 입고될 창고
     private String lotNo;             // LOT 번호
+    
+    
+    // join을 위한 DTO
+    private String pdtName;               // 완제품 NO
 
 }

@@ -39,8 +39,8 @@ public class Iqc {
     @Column(name = "QCM_NO", nullable = false)
     private Long qcmNo;
 
-    @Column(name = "MTL_NAME", nullable = false)
-    private String mtlName;
+    @Column(name = "MTL_CODE", nullable = false)
+    private String mtlCode;
 
     @Column(name = "IQC_TIME")
     private LocalDateTime iqcTime;
@@ -60,8 +60,8 @@ public class Iqc {
     @Column(name = "IQC_INSPECTION_RESULT", length = 1)
     private String iqcInspectionResult; // 'P' / 'F'
 
-    @Column(name = "WHS_NAME")
-    private String whsName;
+    @Column(name = "WHS_CODE")
+    private String whsCode;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;
