@@ -21,10 +21,12 @@ import lombok.NoArgsConstructor;
 public class MfgPlan { // 생산 계획
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MFG_PLANS_MP_NO")
-    @SequenceGenerator(name = "SEQ_MFG_PLANS_MP_NO", sequenceName = "SEQ_MFG_PLANS_MP_NO")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "MP_NO")
 	private Long mpNo;  // 생산 계획 번호
+	
+    @Column(name = "MP_CODE")
+	private String mpCode;  // 생산 계획 코드
 	
     @Column(name = "SO_CODE")
 	private String soCode;  // 수주 코드
