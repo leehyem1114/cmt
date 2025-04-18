@@ -39,7 +39,7 @@
 		LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
 	</select>
 
-	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
+	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
 		SELECT
 			MS.MS_NO,
 			MS.MS_CODE,
