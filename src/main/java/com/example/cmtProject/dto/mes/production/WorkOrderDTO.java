@@ -12,12 +12,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Builder
 public class WorkOrderDTO {
 
-    private Long workOrderNo;           // 작업지시 번호
+    private Long woNo;           // 작업지시 번호
     private String woCode;       // 작업지시 코드
     private String pdtCode;             // 제품 코드
     private String pdtName;             // 제품 이름
     private LocalDate orderDate;        // 지시 날짜
-    private String orderQty;            // 지시 수량
+    private String WoQty;            // 지시 수량
     private String status;              // 진행 상태
     private LocalDate dueDate;          // 납기일
     private String comments;            // 비고
@@ -36,6 +36,8 @@ public class WorkOrderDTO {
     private LocalDate msStartDate;
     private LocalDate msEndDate;
     private String empId;
+    private String empName;
+    private String msStatus;
 
     
     
