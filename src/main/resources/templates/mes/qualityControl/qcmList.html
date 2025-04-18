@@ -9,8 +9,13 @@
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    
+	    <!-- xlsx.js (필수 의존성) -->
+		<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>-->
+		<!-- 최신 xlsx 스크립트 CDN -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 	   
-	    <title>근무 시간</title>
+	    <title>품질 정보</title>
 
 <style>
   .tui-datepicker {
@@ -18,6 +23,11 @@
     position: absolute !important;
   }
 </style>
+
+<style>
+	.btn-upload { background-color: #007bff; color: white; }
+	.btn-download { background-color: #28a745; color: white; } 
+</style>	
 
 
 </head>
@@ -35,34 +45,67 @@
 	<h3>품질 정보</h3>
 	
 	
+
 	
 	
 	
-	<!-- 전체 한 줄, 버튼 오른쪽 -->
-	<div style="display: flex; align-items: center; gap: 10px; width: 100%;">
 	
-	  <!-- 왼쪽: 검색창 + 날짜 -->
-	  <div style="display: flex; align-items: center; gap: 10px;">
-	    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
 	
-	    <button id="dateSearchBtn" class="btn btn-primary">검색</button>
-	  </div>
-	
-	<!-- 오른쪽: 버튼 묶음 (이게 flex item이자 margin-left: auto 적용 대상!) -->
-	<div class="btn-group-custom" style="margin-left: auto; display: flex; gap: 10px;">
-	<button type="button" 
-		            class="btn btn-lg btn-danger" 
-		            onclick="deleteQcm()" 
-		            sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">삭제</button>
-	</div>
-	</div>
-	<br>
+<!-- 전체 한 줄 정렬 -->
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%">
+
+  <!-- 왼쪽: 검색 + 파일 + 엑셀 -->
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
+    <button id="dateSearchBtn" class="btn btn-primary">검색</button>
+
+    <!-- 파일 업로드 -->
+    <input type="file" id="fileUpload" hidden>
+    <input type="file" class="form-control" id="fileInput" accept=".xlsx" style="width: 300px;">
+
+    <button class="btn btn-upload" id="ExcelUpBtn">엑셀 업로드</button>
+    <button class="btn btn-download" id="ExcelDownBtn">엑셀 다운로드</button>
+  </div>
+
+  <!-- 오른쪽: 등록/삭제 -->
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <button type="button" class="btn btn-outline-primary" id="registerQcm">품질 정보 등록</button>
+    <button type="button" class="btn btn-outline-danger" onclick="deleteQcm()" sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">삭제</button>
+  </div>
+
+</div>
+
+<br>
 	
 	<div id="gridTop"></div>
-    	
-    
+	
+	
+	
+	
+	
+	
+	
+
 
 	    <script th:inline="javascript">
+	    
+	    const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
+	    
+	    let isAdmin = userRole === 'ROLE_ADMIN';
+	    
+	    
+	    let materialList = /*[[${materialsList}]]*/ [];
+		let productList = /*[[${productsList}]]*/ [];
+		let unitLengthList = /*[[${unitLengthList}]]*/ [];
+		let unitWeightList = /*[[${unitWeightList}]]*/ [];
+		
+		
+		let materialSelected = materialList.map(item => ({text: item.mtlName, label: item.mtlName, value: item.mtlName}));
+		let productSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtName}));
+		let unitLengthSelected = unitLengthList.map(item => ({text: item.cmnDetailName, label: item.cmnDetailName, value: item.cmnDetailName}));
+		let unitWeightSelected = unitWeightList.map(item => ({text: item.cmnDetailName, label: item.cmnDetailName, value: item.cmnDetailName}));
+		
+	    
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
             data: /*[[${qcmList}]]*/ [],
@@ -94,21 +137,51 @@
               	  sortable: true, 
               	  filter: 'text', 
               	  width: 150,
-              	  align: "center" 
+              	  align: "center",
+           		  ...(isAdmin && {
+  	           		editor: {
+  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+  	           	    }
+  	           	  }),
+  	           	  formatter: ({ value }) => value // 그대로 출력
               	},
             	{ 
                	  header: '원자재', 
                	  name: 'mtlName', 
                	  sortable: true, 
                	  filter: 'text',
-               	  align: "center"
+               	  align: "center",
+               	  ...(isAdmin && {
+               		editor: {
+    					type: 'select',
+    					options: {
+    						listItems: materialSelected 
+    					}
+    				}
+               	  }),
+    				formatter: ({ value }) => {
+    			    	const matValue = materialSelected.find(item => item.value === value);
+    			    	return matValue ? matValue.label : value; 
+    			    }
             	},
             	{ 
             	  header: '완제품', 
             	  name: 'pdtName', 
             	  sortable: true, 
             	  filter: 'text',
-           		  align: "center"
+           		  align: "center",
+           		  ...(isAdmin && {
+					editor: {
+						type: 'select',
+						options: {
+							listItems: productSelected 
+						}
+					}
+           		  }),
+					formatter: ({ value }) => {
+				    	const pdtValue = productSelected.find(item => item.value === value);
+				    	return pdtValue ? pdtValue.label : value; 
+				    }
            		},
             	{ 
             	  header: '목표값', 
@@ -116,31 +189,61 @@
             	  sortable: true, 
             	  filter: 'text',
             	  width: 100,
-           		  align: "center"
-           		},
+           		  align: "center",
+           		  ...(isAdmin && {
+	           		editor: {
+	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+	           	    }
+	           	  }),
+	           	  formatter: ({ value }) => value // 그대로 출력
+	           	},
             	{ 
            	      header: '상한값', 
            		  name: 'qcmMaxValue', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 100,
-           		  align: "center"
-            	},
+           		  align: "center",
+           		  ...(isAdmin && {
+  	           		editor: {
+  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+  	           	    }
+  	           	  }),
+  	           	  formatter: ({ value }) => value // 그대로 출력
+  	           	},
             	{ 
            	      header: '하한값', 
            		  name: 'qcmMinValue', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 100,
-           		  align: "center"
-              	},
+           		  align: "center",
+           		  ...(isAdmin && {
+  	           		editor: {
+  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+  	           	    }
+  	           	  }),
+  	           	  formatter: ({ value }) => value // 그대로 출력
+  	           	},
             	{ 
            	      header: '단위(무게)', 
            		  name: 'qcmUnitWeight', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 100,
-           		  align: "center"
+           		  align: "center",
+           		  ...(isAdmin && {
+  					editor: {
+  						type: 'select',
+  						options: {
+  							listItems: unitWeightSelected 
+  						}
+  					}
+             		  }),
+  					formatter: ({ value }) => {
+  				    	const unwValue = unitWeightSelected.find(item => item.value === value);
+  				    	return unwValue ? unwValue.label : value; 
+  				    }
               	},
             	{ 
            	      header: '단위(길이)', 
@@ -148,7 +251,19 @@
            		  sortable: true, 
            		  filter: 'text',
            		  width: 100,
-           		  align: "center"
+           		  align: "center",
+           		  ...(isAdmin && {
+   					editor: {
+   						type: 'select',
+   						options: {
+   							listItems: unitLengthSelected 
+   						}
+   					}
+              		  }),
+   					formatter: ({ value }) => {
+   				    	const unlValue = unitLengthSelected.find(item => item.value === value);
+   				    	return unlValue ? unlValue.label : value; 
+   				    }
               	},
             	{ 
            	      header: '검사방법', 
@@ -156,15 +271,49 @@
            		  sortable: true, 
            		  filter: 'text',
            		  width: 150,
-           		  align: "center"
-              	}
+           		  align: "center",
+           		  ...(isAdmin && {
+  	           		editor: {
+  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+  	           	    }
+  	           	  }),
+  	           	  formatter: ({ value }) => value // 그대로 출력
+            	}
             ],
-            
-            
-            
-
-              
+            autoEdit: true,
+    		editingEvent: 'dblclick'     
           });
+	    
+
+			
+		//수정
+		grid.on('afterChange', (ev) => {
+			
+			let evValue = ev.changes[0];
+			let rk = evValue.rowKey;
+			let rowData = grid.getRow(rk);
+			let qcmNo = rowData.qcmNo;
+			
+			let sendData = {
+				qcmNo : qcmNo,
+				columnName : evValue.columnName,
+				value : evValue.value
+			};
+			
+			$.ajax({
+				url: "/qcm/edit",
+				type: "POST",
+				data: sendData,
+				success: function(result) {
+					console.log(result);
+				},
+				error: function(errorResult) {
+					grid.restore(); // 이전 상태로 롤백
+				}
+			});
+	    });
+	    
+	    
 	    
 	    
 	    // 행 아무곳이나 클릭하면 체크박스 활성화
@@ -192,9 +341,13 @@
         });
         
         
-        async function deleteWorkTimes() {
+        
+        
+        
+        
+        async function deleteQcm() {
   		  const checkedRows = grid.getCheckedRows();
-  		  const ids = checkedRows.map(row => row.wktNo);
+  		  const ids = checkedRows.map(row => row.qcmNo);
 
   		  if (ids.length === 0) {
   		    await Swal.fire({
@@ -220,10 +373,14 @@
   		    });
   		    return;
   		  }
+  		  
+  		  
+  		  
+  		  
 
   		  // 삭제 API 요청
   		  try {
-  		    const response = await fetch('/worktimes/delete', {
+  		    const response = await fetch('/qcm/delete', {
   		      method: 'POST',
   		      headers: {
   		        'Content-Type': 'application/json'
@@ -254,6 +411,131 @@
   		    });
   		  }
   		}
+        
+        
+        
+        
+        
+      //그리드 -> 엑셀 파일로 다운로드
+    	document.getElementById('ExcelDownBtn').addEventListener('click', function () {
+    	    
+    		//현재 그리드 데이터 가져오기
+    		const gridData = grid.getData();
+    		
+    		//현재 그리드의 컬럼 값 가져오기
+    	    const columns = grid.getColumns();
+
+    		//컬럼을 header와 name으로 분리
+    	    const header = columns.map(col => col.header);
+    	    const keys = columns.map(col => col.name);
+
+    		//header만큼 배열 생성
+    	    const exportData = [header];
+
+    		//row값을 데이터에 저장
+    	    gridData.forEach(row => {
+    	        const rowData = keys.map(key => row[key]);
+    	        exportData.push(rowData);
+    	    });
+
+    		//CDN 이용
+    	    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+    	    const workbook = XLSX.utils.book_new();
+
+    	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    	    XLSX.writeFile(workbook, 'QCM-grid-data.xlsx');
+    	});
+    	
+    	let file;
+    	let reader;
+    	
+    	//파일이 선택시 실행
+    	document.getElementById('fileInput').addEventListener('change', function (e) {	
+    		
+    	    file = e.target.files[0];
+    	    reader = new FileReader();
+    		
+    		if (!file) {
+    			Swal.fire({
+    	            icon: 'warning',
+    	            title: '파일 없음',
+    	            text: '파일을 선택해 주세요.',
+    	            confirmButtonText: '확인'
+    	        });
+    	        return;
+    		}
+    	});
+
+    	//버튼 클릭 시 선택된 엑셀 파일을 그리드에 출력
+    	document.getElementById('ExcelUpBtn').addEventListener('click', function (e) {
+    		
+    		if (!file) {
+    			document.getElementById('fileInput').click();
+    	        return;
+    	    }
+    		
+    		reader.onload = function (event) {
+    			const data = new Uint8Array(event.target.result);
+    		    const workbook = XLSX.read(data, { type: 'array' });
+
+    			const firstSheetName = workbook.SheetNames[0];
+    		    const worksheet = workbook.Sheets[firstSheetName];
+
+    			console.log(worksheet);
+    			
+    			worksheet["A1"] = { t: "s", v: "qcmNo", r:"<t>qcmNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmNo', w: 'qcmNo'};
+    			worksheet["B1"] = { t: "s", v: "qcmCode", r:"<t>qcmCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmCode', w: 'qcmCode'};
+    			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName'};
+    			worksheet["D1"] = { t: "s", v: "mtlName", r:"<t>mtlNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName'};
+    			worksheet["E1"] = { t: "s", v: "pdtName", r:"<t>pdtNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName'};
+    			worksheet["F1"] = { t: "s", v: "qcmTargetValue", r:"<t>qcmTargetValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmTargetValue', w: 'qcmTargetValue'};
+    			worksheet["G1"] = { t: "s", v: "qcmMaxValue", r:"<t>qcmMaxValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMaxValue', w: 'qcmMaxValue'};
+    			worksheet["H1"] = { t: "s", v: "qcmMinValue", r:"<t>qcmMinValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMinValue', w: 'qcmMinValue'};
+    			worksheet["I1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight'};
+    			worksheet["J1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength'};
+    			worksheet["K1"] = { t: "s", v: "qcmMethod", r:"<t>qcmMethod</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMethod', w: 'qcmMethod'};
+
+    			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+    			// TUI Grid에 반영
+    			grid.resetData(jsonData);
+    	   
+    	   	
+    			// 바로 서버에 저장 요청
+    			fetch('/qcm/saveExcelData', {
+    			    method: 'POST',
+    			    headers: {
+    			        'Content-Type': 'application/json'
+    			    },
+    			    body: JSON.stringify(jsonData)
+    			})
+    			.then(res => {
+    			    if (!res.ok) throw new Error("저장 실패");
+    			    return res.text();
+    			})
+    			.then(data => {
+    			    Swal.fire({
+    			        icon: 'success',
+    			        title: '업로드 완료',
+    			        text: '엑셀 업로드 및 저장이 완료되었습니다.',
+    			        confirmButtonText: '확인'
+    			    });
+    			})
+    			.catch(err => {
+    			    console.error(err);
+    			    Swal.fire({
+    			        icon: 'error',
+    			        title: '저장 오류',
+    			        text: '엑셀 저장 중 오류가 발생했습니다.',
+    			        confirmButtonText: '닫기'
+    			    });
+    			});
+    			
+    			};
+
+    		reader.readAsArrayBuffer(file);
+    		
+    	});	
 
         
         
