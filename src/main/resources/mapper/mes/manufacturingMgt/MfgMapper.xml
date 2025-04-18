@@ -8,6 +8,7 @@
 	<select id="getMfgPlanTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
 		SELECT
 			MP.MP_NO,
+			MP.MP_CODE,
 		    MP.SO_CODE,
 		    MP.EMP_ID,
 		    MP.MP_STATUS,
@@ -23,11 +24,26 @@
 		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
 		ORDER BY MP.MP_NO DESC
 	</select>
+	
+	<select id="getSoList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO">
+		SELECT
+			SO.SO_CODE AS soCode,
+			SO.SO_QUANTITY AS soQuantity,
+			SO.QTY_UNIT AS qtyUnit,
+			SO.SO_DUE_DATE AS soDueDate,
+			SO.PDT_CODE AS pdtCode,
+			P.PDT_NAME AS pdtName,
+			C.CLT_NAME AS cltName
+		FROM SALES_ORDER SO
+		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
+		LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
+	</select>
 
 	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
 		SELECT
 			MS.MS_NO,
-		    MP.MP_NO,
+			MS.MS_CODE,
+		    MP.MP_CODE,
 		    MS.EMP_ID,
 		    MS.MS_STATUS,
 		    MS.MS_PRIORITY,
@@ -41,10 +57,14 @@
 	
 		    E.EMP_NAME AS empName
 		FROM MFG_SCHEDULES MS
-		LEFT JOIN MFG_PLANS MP ON MS.MP_NO = MP.MP_NO
+		LEFT JOIN MFG_PLANS MP ON MS.MP_CODE = MP.MP_CODE
 		LEFT JOIN MATERIAL_INVENTORY MI ON MS.ALLOCATED_QTY = MI.ALLOCATED_QTY											 
 		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
 		ORDER BY MS.MS_NO DESC	
+	</select>
+	
+	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+	
 	</select>
 
 </mapper>
