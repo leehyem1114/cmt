@@ -40,11 +40,27 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 	@PostMapping("/workOrder/regist")
 	@ResponseBody
 	public String regiWorkOrderLsit(@RequestBody WorkOrderDTO workOrderDTO) {
+		//작업지시 등록
 		orderService.registMsPlan(workOrderDTO);
+		//제조계획상태 업데이트
+		orderService.updateMfgStatus(workOrderDTO.getMsNo());
 		log.info("받은 데이터" + workOrderDTO);
-		
 		return "리스트 업뎃 완";
 	}
 	
+	//공정현황**********************************
+	@GetMapping("/process")
+	public String process(Model model) {
+		List<WorkOrderDTO> orderList = orderService.getOrderList();
+		model.addAttribute("orderList",orderList);
+		return"mes/production/processList";
+	}
+	//작업시작 버튼 = 날짜 업데이트&진행중
+	@PostMapping("/workOrder/start")
+	@ResponseBody
+	public String workOrderStart(@RequestBody WorkOrderDTO workOrderDTO) {
+		orderService.startWork(workOrderDTO.getWoNo());
+		return "날짜 업데이트";
+	}
 	
 }
