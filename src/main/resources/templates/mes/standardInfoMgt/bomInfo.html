@@ -97,6 +97,7 @@
 						<option>상품유형</option>
 						<option value="완제품">완제품</option>
 						<option value="반제품">반제품</option>
+						<option value="원자재">원자재</option>
                        </select>
                     </div>
 	                </div>
@@ -364,8 +365,6 @@
 	//================================== 그리드 하단 bom 부분 =================================
 	
 	let gridData2 = /*[[${bomList}]]*/ [];
-	let materialsList = /*[[${materialsList}]]*/ [];
-	let mtlListSelected = materialsList.map(item => ({text: item.mtlName, label: item.mtlName, value: item.mtlCode}));
 	let processList = /*[[${processList}]]*/ [];
 	let prcSelected = processList.map(item => ({text: item.prcTypeName, label: item.prcTypeName, value: item.prcTypeCode}))
 
@@ -393,39 +392,29 @@
 				align: "center" 
             },
            {
-                header: '제품 코드',
-                name: 'PDT_CODE',
+                header: '부모 코드',
+                name: 'PARENT_PDT_CODE',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
-			/*{
-                header: '상품 이름',
-                name: 'PDT_NAME',
+			{
+                header: '자식 코드',
+                name: 'CHILD_ITEM_CODE',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
-            },*/
+            },
 			{
-                header: '원자재 이름',
-                name: 'MTL_NAME',
+                header: '코드 유형',
+                name: 'ITEM_TYPE',
 				width: 200,
 				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: {
-					type: 'select',
-					options: {
-						listItems: mtlListSelected 
-					}
-				},
-				formatter: ({ value }) => {
-			    	const mtlValue = mtlListSelected.find(item => item.value === value);
-			    	return mtlValue ? mtlValue.label : value; 
-			    }
             },
 			{
                 header: '투입수량',
@@ -447,7 +436,7 @@
             },
 			{
                 header: '투입공정 단계',
-                name: 'PRC_TYPE_NAME',
+                name: 'BOM_PRC_TYPE',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -462,7 +451,22 @@
 			    	const prc = prcSelected.find(item => item.value === value);
 			    	return prc ? prc.label : value; 
 			    }
-            }
+            },
+			{
+				header: '입력 날짜',
+	            name: 'BOM_DATE',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+		           type: 'datePicker',
+		           options: {
+		             format: 'yyyy-MM-dd',  
+		             language: 'ko'
+		           }
+		        }
+			},
         ], // 열 설정
 		autoEdit: true,
 		editingEvent: 'dblclick' 
@@ -638,7 +642,7 @@
 							data: JSON.stringify(gridArray),
 							success: function(result){
 								if(result === "SUCCESS"){
-									alert("success");
+									//alert("success");
 									location.reload();
 								}
 							},

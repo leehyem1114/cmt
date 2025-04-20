@@ -9,10 +9,10 @@
 	<select id="getBomInfoTotalList" resultType="com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO">
 		SELECT * 
 		  FROM BOM B 
-		  LEFT JOIN PRODUCTS PR ON B.PDT_CODE = PR.PDT_CODE
-		  LEFT JOIN MATERIALS M ON B.MTL_CODE = M.MTL_CODE
+		  LEFT JOIN PRODUCTS PR ON B.PARENT_PDT_CODE = PR.PDT_CODE
+		  LEFT JOIN MATERIALS M ON PR.MTL_TYPE_CODE = M.MTL_CODE
 		  LEFT JOIN PROCESS_INFO P ON B.BOM_PRC_TYPE = P.PRC_TYPE_CODE
-		 WHERE B.PDT_CODE = #{pdtCode} 
+		 WHERE B.PARENT_PDT_CODE = #{pdtCode}
 		 AND B.USE_YN = 'Y'
 		 ORDER BY BOM_NO
 	</select>  
@@ -21,9 +21,6 @@
     <update id="bomMainUpdate" parameterType="com.example.cmtProject.dto.mes.standardInfoMgt.BomEditDTO">
     UPDATE BOM
     <set>
-        <if test="columnName == 'MTL_NAME'">
-            MTL_CODE = #{value}
-        </if>
         <if test="columnName == 'BOM_QTY'">
             BOM_QTY = CAST(#{value} AS NUMBER)
         </if>
@@ -36,11 +33,11 @@
         <if test="columnName == 'USE_YN'">
             USE_YN = #{value}
         </if>
-         <if test="columnName == 'PRC_TYPE_NAME'">
+         <if test="columnName == 'BOM_PRC_TYPE'">
             BOM_PRC_TYPE = #{value}
         </if>
     </set>
     WHERE BOM_NO = #{BomNo}
 	</update>
-	
+
 </mapper>

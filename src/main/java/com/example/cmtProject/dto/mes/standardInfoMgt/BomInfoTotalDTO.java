@@ -12,14 +12,17 @@ import lombok.NoArgsConstructor;
 public class BomInfoTotalDTO {
 	
 	//BOM
-    private Long bomNo; 		// BOM 고유번호
-    private String pdtCode; 	// 완성품 코드
-    private String mtlCode; 	// 원자재 코드
-    private int bomQty; 		// 투입 수량
+	private Long bomNo; 		// BOM 고유번호
+	private int bomLevel; 		// 재귀시 순서
+    private String parentPdtCode; 	// 부모 코드
+    private String childItemCode; 	// 자식 코드
+    private String itemType; 	//코드 유형(RAW_MATERIAL / SEMI_FINISHED)
+    private String bomQty; 		// 투입 수량
     private String bomUnit; 	// 투입 단위 (예: EA, TON)
     private String bomPrcType; 	// 투입 공정 단계 (예: PR, WE, PA, SA)
+    private LocalDate bomDate;  // 입력 날짜
     private String comments; 	// 비고
-    private char useYN; 		// 사용 여부
+    private String useYN; 		// 사용 여부
     
     //Products
     private Long pdtNo;

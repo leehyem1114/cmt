@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+	<!-- 최신 xlsx 스크립트 CDN -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+</head>
+<body>
+	<div layout:fragment="content">
+	<div class="card">
+	    <div class="card-header">
+	        <h5 class="card-title">생산</h5>
+	    </div>
+	    <div class="card-body">
+	        <ul class="nav nav-tabs" id="myTab" role="tablist">
+	            <li class="nav-item" role="presentation">
+	                <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">자재투입</a>
+	            </li>
+	            <li class="nav-item" role="presentation">
+	                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false" tabindex="-1">공정 시작</a>
+	            </li>
+	            <li class="nav-item" role="presentation">
+	                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false" tabindex="-1">검사 공정 진행</a>
+	            </li>
+	        </ul><!-- /nav nav-tabs -->
+	        <div class="tab-content" id="myTabContent">
+	            <div class="tab-pane fade active show" id="home" role="tabpanel" aria-labelledby="home-tab">
+	                <p class="my-2">생산 그리드 넣는곳
+	            </div>
+	            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+	                <p class="mt-2">프레스 - 용접 - 도장 - 조립</p>
+	                <p class="mt-2">프레스 (표)</p>
+	                <p class="mt-2">라인1</p>
+	                <p class="mt-2">라인2</p>
+	                <p class="mt-2">용접 (표)</p>
+	                <p class="mt-2">라인1</p>
+	                <p class="mt-2">라인2</p>
+	            </div>
+	            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+	                <p class="mt-2">검사공정 진행</p>
+	            </div>
+	        </div><!-- /tab-content -->
+	    </div><!-- /card-body -->
+	</div><!-- /card -->
+	</div> <!-- /layout:fragment="content" -->
+
+
+
+
+
+
+
+
+
+</body>
+</html>
