@@ -78,13 +78,7 @@
 	    background-color:aliceblue !important;
 	    color: white;
 	 }
-	
-    .searchBtn { background:dodgerblue; color: white; }
-    .requestBtn { background: purple; color: white; }
-    .completeBtn { background: green; color: white; }
-    .cancelBtn { background: red; color: white; }
-    .excelBtn { background: darkblue; color: white; }
-    .helpBtn { background: orange; color: white; }
+
 	</style>
 </head>
 
@@ -93,14 +87,13 @@
 		<div class="button-container">
 			<div><h2>발주조회</h2></div>
 			<div>
-			<button type="button" class="completeBtn" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
-			<button type="button" class="searchBtn" id="searchBtn">🔍 검색</button>
-			<button type="button" class="requestBtn" onclick="poRegisterOpenWindows()">📃 신규</button>
-			<button type="button" class="excelBtn" id="delBtn" onclick="poDelOpenWindows()">❎ 삭제</button>
+			<button type="button" class="btn btn-primary" onclick="location.reload()" id="completeBtn">✏️현재 수정 모드</button>
+			<button type="button" class="btn btn-primary" id="searchBtn">🔍 검색</button>
+			<button type="button" class="btn btn-primary" onclick="poRegisterOpenWindows()">📃 신규</button>
+			<button type="button" class="btn btn-primary" id="delBtn" onclick="poDelOpenWindows()">❎ 삭제</button>
 			
 	        <!-- <button class="cancelBtn" onclick="poEditOpenWindows()">✏️ 수정</button> 
 				수정버튼을 눌러서 페이지를 넘기지 않고 자체에서 바로 수정을 함 -->
-	        <button class="helpBtn">❓ HELP</button>
 			</div>
 	    </div>
 		

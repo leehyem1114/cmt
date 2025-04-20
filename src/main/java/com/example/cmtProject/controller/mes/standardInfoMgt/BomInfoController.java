@@ -188,9 +188,9 @@ public class BomInfoController {
 			    .map(b -> {
 			        Map<String, Object> map = new HashMap<>();
 			        map.put("BOM_NO", b.getBomNo());
-			        map.put("PDT_CODE", b.getPdtCode());
+			        map.put("PARENT_PDT_CODE", b.getParentPdtCode());
+			        map.put("CHILD_ITEM_CODE", b.getChildItemCode());
 					map.put("PDT_NAME", b.getPdtName()); 
-					map.put("MTL_CODE", b.getMtlCode());
 					map.put("MTL_NAME", b.getMtlName());  
 					map.put("BOM_QTY", b.getBomQty());
 					map.put("BOM_UNIT", b.getBomUnit()); 

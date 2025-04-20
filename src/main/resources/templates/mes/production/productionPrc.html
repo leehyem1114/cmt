@@ -66,21 +66,22 @@
 	
 	<!-- ------------------- 하단 공정 현황 시작 ---------------------------- -->
 	<h4>공정현황</h4>
-	
+	<br>
 	<div class="container-fluid">
-	  <div class="row">
-	    <!-- 왼쪽 그리드 (6칸 = 50%) -->
-	    <div class="col-md-6 border-end">
-			<ul class="bom-tree">
-			  
-			</ul>
-	    </div>
+	  	<div class="row">
+			
+	    	<!-- 왼쪽 그리드 -->
+		    <div class="col-md-4 border-end">
+				<ul id="bom-tree"></ul>
+		    </div>
 
-	    <!-- 오른쪽 그리드 (6칸 = 50%) -->
-	    <div class="col-md-6">
-	      <div id="prcGrid"></div>	
-	    </div>
-	  </div>
+		    <!-- 오른쪽 그리드 -->
+		    <div class="col-md-8">
+				<button class="btn btn-primary btn-m" id="regeWork">다음 공정</button>
+				<br>
+	      		<div id="prcGrid"></div>	
+	    	</div>
+	 	</div>
 	</div>
 	<!-- ------------------- 하단 공정 현황 끝---------------------------- -->
 	
@@ -153,6 +154,7 @@
 		let pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정 
 		let woGridData; //상단 그리드에 입력될 데이터를 전역으로 설정
 		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
+		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
 		
 		$(document).ready(function(){
 			
@@ -182,7 +184,7 @@
 				});//$.ajax
 			});//$("#woCodeSelected").on('change', function(){
 				
-			//======================================= 모달 시작 버튼 ================================================	
+			//======================================= 모달 하단의 시작 버튼 ================================================	
 			$("#modalStartBtn").on('click', function(){
 					
 				//셀렉트 박스에 선택된 값이 없는 경우 return
@@ -202,8 +204,18 @@
 					type: 'GET',
 					data: {data: pdtCode},
 					success : function(response){
-						console.log(response)
+						woGridData = response;
 						woGrid.resetData(response);
+						
+						//PARENT_PDT_CODE와 CHILD_ITEM_CODE로 배열 생성
+						bomList = response.map(item => ({
+				            parent: item.PARENT_PDT_CODE,
+				            child: item.CHILD_ITEM_CODE
+				        }));
+						
+						//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
+						//bomList는 전역으로 선언해서 makeTree에서 바로 사용
+						makeTree();
 					},
 					error : function(error){
 						console.log("error:" + error)
@@ -295,104 +307,119 @@
 			autoEdit: true,
 			editingEvent: 'dblclick' 
 	    });
-	    
-		let selectedEv = null;
-		
-		//클릭시 제품 선택 값의 BOM을 하단 그리드에 출력
-		grid.on('click', ev => {
-			if(selectedEv !== null){
-				grid.removeRowClassName(selectedEv.rowKey, 'selecedRowClass');
-			}
-			
-			selectedEv = ev;
-			grid.addRowClassName(selectedEv.rowKey, 'selecedRowClass');
-			
-			//클릭해서 하단 BOM에 선택된 상품 정보 출력
-			let evValue = ev;
 
-			let rk = evValue.rowKey;
-			let rowData = grid.getRow(rk);
-			let pdtCode = rowData.pdtCode;
-			console.log(pdtCode)
-			//상품 그리드에서 선택된 제품에 해당하는 BOM 데이터 불러오기
-			$.ajax({
-			url: '/bom/bom-selected', 
-	        type: 'GET',
-	        data: { pdtCode: pdtCode },
-	        success: function (bomData) {
-		
-				/*
-				데이터와 컬럼 분리
-				for (let col of bomData.COLUMNS) {
-					col.name = col.NAME
-					col.header = col.HEADER
-					col.editor = 'text'
-					delete col.NAME
-					delete col.HEADER
-				}
-				 
-		        bomGrid.setColumns(bomData.COLUMNS);
-				bomGrid.resetData(bomData.DATA); */
-				 
-				bomGrid.resetData(bomData);
-	        },
-	        error: function (err) {
-	        	console.error("BOM 데이터 로딩 실패", err);
-	        	}
-			});
-		});	
 			
-		//======================================= 하단 그리드 ================================================
+		//======================================= 하단 왼쪽 트리 ================================================
 	
-		const bomList = [
-		  { parent: "WIP009", child: "MTL-009" },
-		  { parent: "WIP009", child: "WIP004" },
-		  { parent: "WIP004", child: "MTL-005" },
-		  { parent: "WIP009", child: "WIP005" },
-		  { parent: "WIP005", child: "MTL-006" }
-		];
-		
-		const path1 = traceBomUpward("MTL-005", bomList);
-		console.log(path1); // ["WIP009", "WIP004", "MTL-005"]
-		
-		
-		function traceBomUpward(target, bomList) {
-		  const path = [target];
-		  let current = target;
+		function makeTree(){
+			
+			const rootCode = pdtCode; //pdtCode 전역으로 선언
+			
+			//마지막 부모 태그 생성, bomList 전역으로 선언
+			const treeHtml = `<li>${rootCode} <button class='btn btn-outline-primary btn-sm' onclick="createLot('${rootCode}')">LOT 생성</button>` +
+			                 buildBomTree(rootCode, bomList) +
+			                 '</li>';
 
-		  while (true) {
-		    const parentEntry = bomList.find(rel => rel.child === current);
-		    if (parentEntry) {
-		      path.unshift(parentEntry.parent); // 부모를 앞으로 추가
-		      current = parentEntry.parent;
-		    } else {
-		      break;
-		    }
-		  }
-
-		  return path;
+			$('#bom-tree').html(treeHtml);
+					
 		}
 		
+		//재귀로 tree구성
 		function buildBomTree(root, bomList) {
-		  const children = bomList.filter(rel => rel.parent === root).map(rel => rel.child);
-		  if (children.length === 0) return '';
+			
+			//root와 일치하는 부모코드에 해당하는 자식들만 children배열 생성
+			const children = bomList.filter(rel => rel.parent === root).map(rel => rel.child);
+		  	if (children.length === 0) return '';
 
-		  let html = '<ul>';
-		  for (let child of children) {
-		    html += `<li>${child} <button onclick="createLot('${child}')">LOT 생성</button>`;
-		    html += buildBomTree(child, bomList); // 재귀적으로 자식 노드 탐색
-		    html += '</li>';
-		  }
-		  html += '</ul>';
-		  return html;
+			//자식에 해당하는 태그 생성
+		  	let html = '<ul>';
+		  	for (let child of children) {
+		    	html += `<li>${child} <button class='btn btn-outline-primary btn-sm' onclick="createLot('${child}')">LOT 생성</button>`;
+		    	html += buildBomTree(child, bomList); // 재귀적으로 자식 노드 탐색
+		    	html += '</li>';
+		  	}
+		  	html += '</ul>';
+		  	return html;
 		}
-		
-		const rootCode = 'WIP009';
-		const treeHtml = `<li>${rootCode} <button onclick="createLot('${rootCode}')">LOT 생성</button>` +
-		                 buildBomTree(rootCode, bomList) +
-		                 '</li>';
 
-		$('.bom-tree').html(treeHtml);
+		//======================================= 하단 오른쪽 그리드 ================================================
+		
+		
+		let prcGrid = new tui.Grid({
+	        el: document.getElementById('prcGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: '레벨',
+					name: 'BOM_LEVEL',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	           {
+	                header: '부모 코드',
+	                name: 'PARENT_PDT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '자식 코드',
+	                name: 'CHILD_ITEM_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '코드 유형',
+	                name: 'ITEM_TYPE',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '공정 단계',
+	                name: 'BOM_PRC_TYPE',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '수량',
+	                name: 'BOM_QTY',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '비고',
+	                name: 'COMMENTS',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
 	
 	</script>
 	</div> <!-- /layout:fragment -->		
