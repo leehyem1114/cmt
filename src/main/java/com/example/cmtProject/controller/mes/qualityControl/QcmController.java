@@ -56,7 +56,7 @@ public class QcmController {
 	
 	
 	@GetMapping("quality-info")
-	public String getMethodName(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+	public String getQcmInfo(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
 		
 		if (principalDetails == null) {
             return "redirect:/login"; // 로그인 페이지로 리다이렉트
@@ -98,10 +98,8 @@ public class QcmController {
 	public void qcmEditexep(@ModelAttribute QcmDTO qcmDTO) throws JsonMappingException, JsonProcessingException {
 		log.info("" + qcmDTO);
 		if(!qcmDTO.getQcmCode().equals(qcmService.existsByQcmCode(qcmDTO.getQcmNo()))) {
-			log.info("@@@@@@@인서트 실행");
 			qcmService.qcmInsert(qcmDTO);
-		} else {
-			log.info("@@@@@@@업데이트 실행");			
+		} else {			
 			qcmService.qcmUpdate(qcmDTO); 
 		}
 	}

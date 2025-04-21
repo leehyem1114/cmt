@@ -14,21 +14,27 @@ import lombok.NoArgsConstructor;
 public class IqcDTO {
 	
 	private Long iqcNo;                 // 입고 검사 NO
-    private String iqcCode;            // 입고 검사 코드
-    private String empId;              // 사용자 ID
-    private String qcmName;               // 입고 검사 기준 번호
-    private String mtlCode;				// 원자재 코드
-    private LocalDateTime iqcTime;     // 검사 시간
-    private Double iqcMeasuredValue;   // 측정값
-    private String qcmUnitWeight;   // 단위 (ex: g)
-    private String qcmUnitLength;   // 단위 (ex: mm)
+    private String iqcCode;             // 입고 검사 코드
+    private String empId;               // 사용자 ID
+    private String empName;               // 사용자 ID
+    private String qcmName;             // 입고 검사 기준 번호
+    private String mtlName;			    // 원자재 코드
+    private LocalDateTime iqcStartTime; // 검사 시작 시간
+    private LocalDateTime iqcEndTime;   // 검사 종료 시간    
+    private Double iqcMeasuredWeightValue;    // 측정값
+    private Double iqcMeasuredLengthValue;    // 측정값
+    private String qcmUnitWeight;       // 단위 (ex: g)
+    private String qcmUnitLength;       // 단위 (ex: mm)
     private String iqcInspectionStatus; // 검사 상태 (검사전/검사중/검사완료)
     private String iqcInspectionResult; // 합격 여부 (P/F)
-    private String whsName;                // 입고될 창고
-    private String lotNo;              // LOT번호
+    private String whsName;             // 입고될 창고
+    private String lotNo;               // LOT번호
+    private String iqcRemarks;
     
     
     // join을 위한 DTO
-    private String mtlName;                // 원자재 NAME
+    private String mtlCode;             // 원자재 코드
+    private String whsCode;				// 창고 코드
+    private Long qcmNo;				// qcmNO
 
 }

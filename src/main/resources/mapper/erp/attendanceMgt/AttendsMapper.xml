@@ -155,8 +155,7 @@
     SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
     FROM ATTENDS
     WHERE EMP_NO = #{empNo}
-      AND TRUNC(ATD_DATE) = #{date}
-      AND ATD_STATUS != 'ATS004'  <!-- ❗ 이미 결근이면 insert 안 하도록 -->
+      AND ATD_DATE = #{date}
 	</select>
 	
 	

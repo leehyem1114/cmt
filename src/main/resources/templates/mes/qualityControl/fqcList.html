@@ -57,6 +57,25 @@
   <!-- 왼쪽: 검색 + 파일 + 엑셀 -->
   <div style="display: flex; align-items: center; gap: 10px;">
     <input type="text" id="searchInput" placeholder="검색어를 입력하세요" class="form-control" style="width: 200px;" />
+    
+    <label for="startDate">시작일:</label>
+	    <div style="position: relative;">
+	      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+	        <input type="text" id="startDate" aria-label="Start Date">
+	        <span class="tui-ico-date"></span>
+	      </div> 
+	      <div id="startDateWrapper" style="margin-top: -1px;"></div>
+	    </div>
+	
+	    <label for="endDate">종료일:</label>
+	    <div style="position: relative;">
+	      <div class="tui-datepicker-input tui-datetime-input tui-has-focus">
+	        <input type="text" id="endDate" aria-label="End Date">
+	        <span class="tui-ico-date"></span>
+	      </div>
+	      <div id="endDateWrapper" style="margin-top: -1px;"></div>
+	    </div>
+    
     <button id="dateSearchBtn" class="btn btn-primary">검색</button>
 
     <!-- 파일 업로드 -->
@@ -69,8 +88,7 @@
 
   <!-- 오른쪽: 등록/삭제 -->
   <div style="display: flex; align-items: center; gap: 10px;">
-    <button type="button" class="btn btn-outline-primary" onclick="addEditableRow()">품질 정보 등록</button>
-    <button type="button" class="btn btn-outline-danger" onclick="deleteQcm()" sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">삭제</button>
+    <button type="button" class="btn btn-outline-danger" onclick="deleteFqc()" sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">삭제</button>
   </div>
 
 </div>
@@ -89,55 +107,32 @@
 
 	    <script th:inline="javascript">
 	    
-	    const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
-	    
-	    let isAdmin = userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MANAGER';
-	    
-	    
-	    let materialList = /*[[${materialsList}]]*/ [];
-		let productList = /*[[${productsList}]]*/ [];
-		let unitLengthList = /*[[${unitLengthList}]]*/ [];
-		let unitWeightList = /*[[${unitWeightList}]]*/ [];
+	    const oneMonthAgo = new Date();
+		  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+		  // 시작일 DatePicker
+		  const startPicker = new tui.DatePicker('#startDateWrapper', {
+			language: 'ko',  
+		    date: oneMonthAgo,
+		    input: {
+		      element: '#startDate',
+		      format: 'yyyy-MM-dd'
+		    }
+		  });
 		
-		
-		let materialSelected = [
-		    { text: '', label: '', value: '' },  // ✅ null 선택지
-		    ...materialList.map(item => ({
-		        text: item.mtlName,
-		        label: item.mtlName,
-		        value: item.mtlName
-		    }))
-		];
-		let productSelected = [
-		    { text: '', label: '', value: '' },
-		    ...productList.map(item => ({
-		        text: item.pdtName,
-		        label: item.pdtName,
-		        value: item.pdtName
-		    }))
-		];
-
-		let unitLengthSelected = [
-		    { text: '', label: '', value: '' },
-		    ...unitLengthList.map(item => ({
-		        text: item.cmnDetailName,
-		        label: item.cmnDetailName,
-		        value: item.cmnDetailName
-		    }))
-		];
-
-		let unitWeightSelected = [
-		    { text: '', label: '', value: '' },
-		    ...unitWeightList.map(item => ({
-		        text: item.cmnDetailName,
-		        label: item.cmnDetailName,
-		        value: item.cmnDetailName
-		    }))
-		];
+		  // 종료일 DatePicker
+		  const endPicker = new tui.DatePicker('#endDateWrapper', {
+			language: 'ko',  
+		    date: new Date(),
+		    input: {
+		      element: '#endDate',
+		      format: 'yyyy-MM-dd'
+		    }
+		  });
 	    
+
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
-            data: /*[[${qcmList}]]*/ [],
+            data: /*[[${fqcList}]]*/ [],
             rowHeaders: ['checkbox'],
             pageOptions: {
     	        useClient: true,  // 서버 사이드 페이징 활성화
@@ -146,130 +141,60 @@
             columns: [
             	{ 
                   header: 'NO', 
-            	  name: 'qcmNo', 
+            	  name: 'fqcNo', 
             	  sortable: true, 
             	  filter: 'text', 
             	  align: "center",
             	  hidden: true
             	},
             	{ 
-                  header: '검사 코드', 
-            	  name: 'qcmCode', 
+           	      header: 'LOT', 
+           		  name: 'lotNo', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  align: "center",
+           		  width: 150,
+              	},
+            	{ 
+                  header: '출고 검사 코드', 
+            	  name: 'fqcCode', 
             	  sortable: true, 
             	  filter: 'text', 
-            	  width: 150,
+            	  width: 100,
             	  align: "center" 
-            	},
+            	},       	
             	{ 
-                  header: '검사명', 
+                  header: '검사이름', 
               	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
-              	  width: 150,
+              	  width: 100,
               	  align: "center",
-           		  ...(isAdmin && {
-  	           		editor: {
-  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
-  	           	    }
-  	           	  }),
-  	           	  formatter: ({ value }) => value // 그대로 출력
               	},
+              	{ 
+                  header: '검수자', 
+               	  name: 'empName', 
+               	  sortable: true, 
+               	  filter: 'text', 
+               	  width: 100,
+               	  align: "center",
+               	},       
             	{ 
-               	  header: '원자재', 
-               	  name: 'mtlName', 
+               	  header: '완제품', 
+               	  name: 'pdtName', 
                	  sortable: true, 
                	  filter: 'text',
+                  width: 200,
                	  align: "center",
-               	  ...(isAdmin && {
-               		editor: {
-    					type: 'select',
-    					options: {
-    						listItems: materialSelected 
-    					}
-    				}
-               	  }),
-    				formatter: ({ value }) => {
-    			    	const matValue = materialSelected.find(item => item.value === value);
-    			    	return matValue ? matValue.label : value; 
-    			    }
             	},
             	{ 
-                  header: '원자재CODE', 
-              	  name: 'mtlCode', 
-              	  sortable: true, 
-              	  filter: 'text', 
-              	  align: "center",
-              	  hidden: true
-              	},
-            	{ 
-            	  header: '반제품 및 완제품', 
-            	  name: 'pdtName', 
-            	  sortable: true, 
-            	  filter: 'text',
-           		  align: "center",
-           		  ...(isAdmin && {
-					editor: {
-						type: 'select',
-						options: {
-							listItems: productSelected 
-						}
-					}
-           		  }),
-					formatter: ({ value }) => {
-				    	const pdtValue = productSelected.find(item => item.value === value);
-				    	return pdtValue ? pdtValue.label : value; 
-				    }
-           		},
-           		{ 
-                  header: '완재품CODE', 
-              	  name: 'pdtCode', 
-              	  sortable: true, 
-              	  filter: 'text', 
-              	  align: "center",
-              	  hidden: true
-              	},
-            	{ 
-            	  header: '목표값', 
-            	  name: 'qcmTargetValue', 
+            	  header: '무게 측정값', 
+            	  name: 'fqcMeasuredWeightValue', 
             	  sortable: true, 
             	  filter: 'text',
             	  width: 100,
-           		  align: "center",
-           		  ...(isAdmin && {
-	           		editor: {
-	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
-	           	    }
-	           	  }),
-	           	  formatter: ({ value }) => value // 그대로 출력
-	           	},
-            	{ 
-           	      header: '상한값', 
-           		  name: 'qcmMaxValue', 
-           		  sortable: true, 
-           		  filter: 'text',
-           		  width: 100,
-           		  align: "center",
-           		  ...(isAdmin && {
-  	           		editor: {
-  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
-  	           	    }
-  	           	  }),
-  	           	  formatter: ({ value }) => value // 그대로 출력
-  	           	},
-            	{ 
-           	      header: '하한값', 
-           		  name: 'qcmMinValue', 
-           		  sortable: true, 
-           		  filter: 'text',
-           		  width: 100,
-           		  align: "center",
-           		  ...(isAdmin && {
-  	           		editor: {
-  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
-  	           	    }
-  	           	  }),
-  	           	  formatter: ({ value }) => value // 그대로 출력
-  	           	},
+           		  align: "center",  
+            	},
             	{ 
            	      header: '단위(무게)', 
            		  name: 'qcmUnitWeight', 
@@ -277,19 +202,15 @@
            		  filter: 'text',
            		  width: 100,
            		  align: "center",
-           		  ...(isAdmin && {
-  					editor: {
-  						type: 'select',
-  						options: {
-  							listItems: unitWeightSelected 
-  						}
-  					}
-             		  }),
-  					formatter: ({ value }) => {
-  				    	const unwValue = unitWeightSelected.find(item => item.value === value);
-  				    	return unwValue ? unwValue.label : value; 
-  				    }
               	},
+            	{
+           	      header: '길이 측정값', 
+           		  name: 'fqcMeasuredLengthValue', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 100,
+           		  align: "center",
+	    		},
             	{ 
            	      header: '단위(길이)', 
            		  name: 'qcmUnitLength', 
@@ -297,77 +218,43 @@
            		  filter: 'text',
            		  width: 100,
            		  align: "center",
-           		  ...(isAdmin && {
-   					editor: {
-   						type: 'select',
-   						options: {
-   							listItems: unitLengthSelected 
-   						}
-   					}
-              		  }),
-   					formatter: ({ value }) => {
-   				    	const unlValue = unitLengthSelected.find(item => item.value === value);
-   				    	return unlValue ? unlValue.label : value; 
-   				    }
               	},
-            	{ 
-           	      header: '검사방법', 
-           		  name: 'qcmMethod', 
+	    		{ 
+           	      header: '검사 시작 시간', 
+           		  name: 'fqcStartTime', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 200,
+           		  align: "center",
+              	},
+	    		{ 
+           	      header: '검사 종료 시간', 
+           		  name: 'fqcEndTime', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 200,
+           		  align: "center",
+              	},
+	    		{ 
+           	      header: '출고 창고', 
+           		  name: 'whsName', 
+           		  sortable: true, 
+           		  filter: 'text',
+           		  width: 100,
+           		  align: "center",
+              	},
+	    		{ 
+           	      header: '비고', 
+           		  name: 'fqcRemarks', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 150,
            		  align: "center",
-           		  ...(isAdmin && {
-  	           		editor: {
-  	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
-  	           	    }
-  	           	  }),
-  	           	  formatter: ({ value }) => value // 그대로 출력
-            	}
-            ],
-            autoEdit: true,
-    		editingEvent: 'dblclick'     
+              	}
+            ],  
           });
 	    
 
-			
-		//수정
-		grid.on('afterChange', (ev) => {
-			
-			let evValue = ev.changes[0];
-		    let rk = evValue.rowKey;
-		    let rowData = grid.getRow(rk);
-			
-		    let sendData = {
-	            qcmNo: rowData.qcmNo,
-	            columnName: evValue.columnName,
-	            value: evValue.value,
-	            qcmCode: rowData.qcmCode,
-	            qcmName: rowData.qcmName,
-	            mtlName: rowData.mtlName,
-	            mtlCode: rowData.mtlCode,
-	            pdtName: rowData.pdtName,
-	            pdtCode: rowData.pdtCode,
-	            qcmTargetValue: rowData.qcmTargetValue,
-	            qcmMaxValue: rowData.qcmMaxValue,
-	            qcmMinValue: rowData.qcmMinValue,
-	            qcmUnitWeight: rowData.qcmUnitWeight,
-	            qcmUnitLength: rowData.qcmUnitLength,
-	            qcmMethod: rowData.qcmMethod
-	        };
-
-			$.ajax({
-				url: "/qcm/edit",
-				type: "POST",
-				data: sendData,
-				success: function(result) {
-					console.log(result);
-				},
-				error: function(errorResult) {
-					grid.restore(); // 이전 상태로 롤백
-				}
-			});
-	    });
 	    
 	    
 	    
@@ -382,28 +269,13 @@
 	    	    grid.uncheck(rowKey);
 	    	  }
 	    	});
-	    
-        /* 이벤트 리스너 추가 */
-        grid.on('check', ev => {
-            console.log('체크됨!', ev);
-        });
-
-        grid.on('uncheck', ev => {
-            console.log('체크 해제됨!', ev);
-        });
-
-        grid.on('focusChange', ev => {
-            console.log('포커스 변경됨!', ev);
-        });
         
         
         
         
-        
-        
-        async function deleteQcm() {
+        async function deleteFqc() {
   		  const checkedRows = grid.getCheckedRows();
-  		  const ids = checkedRows.map(row => row.qcmNo);
+  		  const ids = checkedRows.map(row => row.fqcNo);
 
   		  if (ids.length === 0) {
   		    await Swal.fire({
@@ -430,13 +302,10 @@
   		    return;
   		  }
   		  
-  		  
-  		  
-  		  
 
   		  // 삭제 API 요청
   		  try {
-  		    const response = await fetch('/qcm/delete', {
+  		    const response = await fetch('/fqc/delete', {
   		      method: 'POST',
   		      headers: {
   		        'Content-Type': 'application/json'
@@ -499,7 +368,7 @@
     	    const workbook = XLSX.utils.book_new();
 
     	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    	    XLSX.writeFile(workbook, 'QCM-grid-data.xlsx');
+    	    XLSX.writeFile(workbook, 'FQC-grid-data.xlsx');
     	});
     	
     	let file;
@@ -539,19 +408,20 @@
 
     			console.log(worksheet);
     			
-    			worksheet["A1"] = { t: "s", v: "qcmNo", r:"<t>qcmNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmNo', w: 'qcmNo'};
-    			worksheet["B1"] = { t: "s", v: "qcmCode", r:"<t>qcmCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmCode', w: 'qcmCode'};
-    			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName'};
-    			worksheet["D1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName'};
-    			worksheet["E1"] = { t: "s", v: "mtlCode", r:"<t>mtlCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlCode', w: 'mtlCode'};  // ✅ 추가
-    			worksheet["F1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName'};
-    			worksheet["G1"] = { t: "s", v: "pdtCode", r:"<t>pdtCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtCode', w: 'pdtCode'};  // ✅ 추가
-    			worksheet["H1"] = { t: "s", v: "qcmTargetValue", r:"<t>qcmTargetValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmTargetValue', w: 'qcmTargetValue'};
-    			worksheet["I1"] = { t: "s", v: "qcmMaxValue", r:"<t>qcmMaxValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMaxValue', w: 'qcmMaxValue'};
-    			worksheet["J1"] = { t: "s", v: "qcmMinValue", r:"<t>qcmMinValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMinValue', w: 'qcmMinValue'};
-    			worksheet["K1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight'};
-    			worksheet["L1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength'};
-    			worksheet["M1"] = { t: "s", v: "qcmMethod", r:"<t>qcmMethod</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMethod', w: 'qcmMethod'};
+    			worksheet["A1"] = { t: "s", v: "fqcNo", r:"<t>fqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcNo', w: 'fqcNo' };
+    			worksheet["B1"] = { t: "s", v: "lotNo", r:"<t>lotNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'lotNo', w: 'lotNo' };
+    			worksheet["C1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
+    			worksheet["D1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["E1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["F1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+    			worksheet["G1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
+    			worksheet["H1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["I1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
+    			worksheet["J1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["K1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
+    			worksheet["L1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
+    			worksheet["M1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["N1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
@@ -560,7 +430,7 @@
     	   
     	   	
     			// 바로 서버에 저장 요청
-    			fetch('/qcm/saveExcelData', {
+    			fetch('/fqc/saveExcelData', {
     			    method: 'POST',
     			    headers: {
     			        'Content-Type': 'application/json'
@@ -595,45 +465,7 @@
     		
     	});	
     	
-    	
-    	
-    	
-    	function addEditableRow() {
-    	    const data = grid.getData();
 
-    	    // qcmNo에서 숫자만 추출해서 최대값 구하기
-    	    const maxNo = data.reduce((max, row) => {
-			    const num = parseInt(String(row.qcmNo || '').replace(/\D/g, ''), 10);
-			    return isNaN(num) ? max : Math.max(max, num);
-			}, 0);
-
-    	    const newNo = maxNo + 1;
-    	    const newQcmNo = 'QCM' + newNo.toString().padStart(3, '0'); // QCM001, QCM002, ...
-
-    	    grid.prependRow({
-    	    	qcmNo: newNo,
-    	        qcmCode: newQcmNo,
-    	        qcmName: '',
-    	        mltName: '',
-    	        mltCode: '',
-    	        pdtName: '',
-    	        pdtCode: '',
-    	        qcmTargetValue: '0',
-    	        qcmMaxValue: '0',
-    	        qcmMinValue: '0',
-    	        qcmUnitLength: '',
-    	        qcmUnitWeight: '',
-    	        qcmMethod: ''
-    	    });
-    	
-    	// 새로 추가한 행 index
-	    const lastIndex = grid.getRowCount() - 1;
-    	
-    	// 포커스 및 편집 시작
-	    grid.focusAt(lastIndex, 'qcmName');
-	    grid.startEditing(lastIndex, 'qcmName');
-
-    	};
         
         
         
@@ -670,8 +502,8 @@
   		    endDate.setHours(23, 59, 59, 999);
 
   		    filtered = filtered.filter(row => {
-  		      const attendDate = new Date(row.attendDate);
-  		      return attendDate >= startDate && attendDate <= endDate;
+  		      const fqcDate = new Date(row.fqcStartDate);
+  		      return fqcStartDate >= startDate && fqcStartDate <= endDate;
   		    });
   		  }
 

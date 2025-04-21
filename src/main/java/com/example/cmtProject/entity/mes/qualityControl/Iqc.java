@@ -35,18 +35,33 @@ public class Iqc {
 
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
+    
+    @Column(name = "EMP_NAME")
+    private String empName;
 
-    @Column(name = "QCM_NO", nullable = false)
+    @Column(name = "QCM_NO")
     private Long qcmNo;
 
-    @Column(name = "MTL_CODE", nullable = false)
+    @Column(name = "QCM_NAME")
+    private String qcmName;
+
+    @Column(name = "MTL_CODE")
     private String mtlCode;
+    
+    @Column(name = "MTL_NAME")
+    private String mtlName;
 
-    @Column(name = "IQC_TIME")
-    private LocalDateTime iqcTime;
+    @Column(name = "IQC_START_TIME")
+    private LocalDateTime iqcStartTime;
 
-    @Column(name = "IQC_MEASURED_VALUE")
-    private Double iqcMeasuredValue;
+    @Column(name = "IQC_END_TIME")
+    private LocalDateTime iqcEndTime;
+
+    @Column(name = "IQC_MEASURED_WEIGHT_VALUE")
+    private Double iqcMeasuredWeightValue;
+
+    @Column(name = "IQC_MEASURED_LENGTH_VALUE")
+    private Double iqcMeasuredLengthValue;
     
     @Column(name = "QCM_UNIT_LENGTH")
     private String qcmUnitLength;
@@ -62,8 +77,14 @@ public class Iqc {
 
     @Column(name = "WHS_CODE")
     private String whsCode;
+    
+    @Column(name = "WHS_NAME")
+    private String whsName;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;
+    
+    @Column(name = "IQC_REMARKS")
+    private String iqcRemarks;
 
 }

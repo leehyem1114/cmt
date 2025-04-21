@@ -37,8 +37,14 @@ public class Qcm {
     @Column(name = "MTL_CODE")
     private String mtlCode;
 
+    @Column(name = "MTL_NAME")
+    private String mtlName;
+
     @Column(name = "PDT_CODE")
     private String pdtCode;
+
+    @Column(name = "PDT_NAME")
+    private String pdtName;
     
     @Column(name = "QCM_TARGET_VALUE", nullable = false)
     private Double qcmTargetValue;

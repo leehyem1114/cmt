@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+
+<mapper namespace="com.example.cmtProject.mapper.mes.qualityControl.IqcMapper">
+
+	<select id="getAllIqc" resultType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
+	SELECT 
+        I.IQC_NO,
+        I.IQC_CODE,
+        E.EMP_NAME,
+        I.QCM_NAME,
+        I.MTL_NAME,
+        I.IQC_START_TIME,
+        I.IQC_END_TIME,
+        I.IQC_MEASURED_WEIGHT_VALUE,
+        I.IQC_MEASURED_LENGTH_VALUE,
+        C_UNIT_LENGTH.CMN_DETAIL_NAME AS QCM_UNIT_LENGTH,
+		C_UNIT_WEIGHT.CMN_DETAIL_NAME AS QCM_UNIT_WEIGHT,
+        I.WHS_NAME,
+        I.LOT_NO,
+        I.IQC_REMARKS
+    FROM IQC I
+    LEFT JOIN COMMONCODE_DETAIL C_UNIT_LENGTH ON C_UNIT_LENGTH.CMN_DETAIL_NAME = i.QCM_UNIT_LENGTH
+	LEFT JOIN COMMONCODE_DETAIL C_UNIT_WEIGHT ON C_UNIT_WEIGHT.CMN_DETAIL_NAME = i.QCM_UNIT_WEIGHT	
+	JOIN EMPLOYEES E ON E.EMP_ID = I.EMP_ID
+    ORDER BY IQC_NO DESC
+	</select>
+	
+	
+	
+	
+	<!-- 엑셀 데이터 업데이트 -->
+	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
+		UPDATE IQC
+	    SET
+	        LOT_NO                     = #{lotNo},
+	        IQC_CODE                   = #{iqcCode},
+	        QCM_NAME                   = #{qcmName},
+	        EMP_NAME                   = #{empName}, 
+	        MTL_NAME                   = #{mtlName},
+	        IQC_MEASURED_WEIGHT_VALUE  = #{iqcMeasuredWeightValue},
+	        QCM_UNIT_WEIGHT            = #{qcmUnitWeight},
+	        IQC_MEASURED_LENGTH_VALUE  = #{iqcMeasuredLengthValue},
+	        QCM_UNIT_LENGTH            = #{qcmUnitLength},
+	        IQC_START_TIME             = #{iqcStartTime},
+	        IQC_END_TIME               = #{iqcEndTime},
+	        WHS_NAME                   = #{whsName},
+	        IQC_REMARKS                = #{iqcRemarks}
+	    WHERE IQC_NO = #{iqcNo}
+	</update>
+
+
+</mapper>
