@@ -61,4 +61,16 @@ public class ProductionPrcController {
 		return selectPdtCodeList;
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

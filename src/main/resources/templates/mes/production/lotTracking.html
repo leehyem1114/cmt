@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+	<!-- 최신 xlsx 스크립트 CDN -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+	
+	<!-- 토스트 ui css -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui-tree/latest/tui-tree.css" />
+	<!-- 토스트 ui js -->
+	<script src="https://uicdn.toast.com/tui-code-snippet/latest/tui-code-snippet.js"></script>
+	<script src="https://uicdn.toast.com/tui-tree/latest/tui-tree.js"></script>
+	<style>
+	  #tree {
+	    height: 200px;
+	    overflow-x: auto;
+  		overflow-y: auto;
+  		white-space: nowrap;
+	  }
+	  .tui-tree-wrap {
+		  width: max-content !important; /* <- 핵심 */
+		  min-width: 100%;
+		}
+		
+	.tui-tree-content-wrapper {
+	  display: inline-block !important;
+	  white-space: nowrap !important;
+	  width: auto !important;
+	}
+	  .tui-tree-text {
+	  	overflow: visible !important;
+	    text-overflow: unset;
+	  	white-space: nowrap ;
+	    font-size: 16px ;
+	    display: inline-block;
+	  }
+	</style>
+</head>
+<body>
+<div layout:fragment="content">
+
+	<h3>Lot 추적</h3>
+	
+	<div class="card">
+		    <div class="card-header">
+		        <h5 class="card-title"><i class="fa-solid fa-arrow-down-wide-short"></i> LOT 추적</h5>
+		    </div>
+		    <div class="card-body"> <!-- 여기에 내용작성 -->
+		    
+			<div class="row mb-3"> <!-- 검색박스 -->
+		        <div class="col-md-3">
+		            <input type="month" class="form-control" placeholder="등록월">
+		        </div>
+		        <div class="col-md-4">
+		            <div class="input-group">
+		                <input type="text" class="form-control" placeholder="LOT 번호 또는 제품명으로 검색">
+<!-- 		                <button class="btn btn-outline-secondary" type="button"> -->
+<!-- 		                    <i class="bi bi-search"></i> -->
+<!-- 		                </button> -->
+		            </div>
+		        </div>
+	            <div class="col-md-2">
+	                <select class="form-select" >
+	                	<option>전체 공정</option>
+	                	<option>PR(프레스)</option>
+						<option>WE(용접)</option>
+						<option>PA(도장)</option>
+						<option>AS(조립)</option>
+	                </select>
+	            </div>
+	            <div class="col-md-2">
+	                <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 검색 </button>
+	                <button class="btn btn-outline-secondary"><i class="fa-solid fa-arrows-rotate"></i> 초기화</button>
+	            </div>
+		    </div><!-- /검색박스 -->
+		    
+		    
+		    <div id="tree" class="tui-tree-wrap"></div> <!-- @@@@@메인트리 -->
+		    </div><!-- /card-body -->
+		    
+		    
+		    <div class="card">
+	    <div class="card-header">
+	        <h5 class="card-title">LOT 상세</h5>
+	    </div>
+	    <div class="card-body">
+	        <ul class="nav nav-tabs" id="myTab" role="tablist">
+	            <li class="nav-item" role="presentation">
+	                <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true"><i class="fa-solid fa-arrow-down-wide-short"></i> 계층 구조</a>
+	            </li>
+	            <li class="nav-item" role="presentation">
+	                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false" tabindex="-1"><i class="fa-solid fa-gears"></i> 공정 이력</a>
+	            </li>
+	            <li class="nav-item" role="presentation">
+	                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false" tabindex="-1"><i class="fa-solid fa-clipboard-check"></i> 품질 이력</a>
+	            </li>
+	        </ul><!-- /nav nav-tabs -->
+	        <div class="tab-content" id="myTabContent">
+	            <div class="tab-pane fade active show" id="home" role="tabpanel" aria-labelledby="home-tab">
+	            <div class="card"><!-- 공정상세 -->
+		            <div id="lotNotice" style="font-weight: bold; margin-bottom: 100px; text-align: center; margin-top : 100px; font-size: 20px;">
+					  <i class="fa-solid fa-circle-exclamation"></i> LOT을 선택하여 상세 정보를 확인하세요.
+					</div>
+	            
+	            
+                    <div class="card-content">
+                        <div class="card-body">
+                            <form class="form"  action="/production/lotTracking" id="lotDetailForm" style="display:none">
+                        		<i class="fa-regular fa-folder-open"></i> LOT CODE<h4 class="card-title" id="lotCode"></h4>
+                                <div class="row">
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-group">
+                                            <label for="first-name-column">제품명</label>
+                                            <input type="text" id="pdtName" class="form-control" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-group">
+                                            <label for="last-name-column">공정</label>
+                                            <input type="text" id="prcType" class="form-control" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-group">
+                                            <label for="city-column">시작 시간</label>
+                                            <input type="text" id="startTime" class="form-control" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-group">
+                                            <label for="country-floating">종료 시간</label>
+                                            <input type="text" id="finishTime" class="form-control" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-group">
+                                            <label for="company-column">작업 지시 코드</label>
+                                            <input type="text" id="woCode" class="form-control"  >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-12">
+                                        <div class="form-group">
+                                            <label for="email-id-column">작업자</label>
+                                            <input type="text" id="empName" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div> <!-- /공정상세 -->
+<!-- 	                <div id="detailTree" class="tui-tree-wrap"></div> 상세 tree -->
+	                
+	                
+	            </div>
+	            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab"> <!-- 공정이력 -->
+	                <div id="grid" style="height: 400px;"></div>
+				    <script th:inline="javascript">
+				    	const gridData = /*[[${orderList}]]*/ [];
+				    	gridData.forEach((list, index) => list.rowNum = index + 1); //row번호
+				    	
+					    const grid = new tui.Grid({
+					      el: document.getElementById('grid'),
+					      data: gridData,
+					      rowHeaders: ['checkbox'],
+					      scrollX: false,
+					      scrollY: true,
+					      columns: [
+					    	{ header: 'No.', name: 'rowNum', sortable: true,align: 'center'},
+					        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
+					        { header: '품목', name: 'pdtName' ,align: 'center'},
+					        { header: '수량', name: 'woQty' ,align: 'center'},
+					        { header: '라인', name: 'lineCode' ,align: 'center'},
+					        { header: '공정', name: 'prcCode' ,align: 'center'},
+					        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
+					        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'},
+					        { header: '작업담당자', name: 'empName' ,align: 'center'}
+					      ]
+					    });
+				  </script>
+	            </div><!-- 공정이력 -->
+	            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+	                <p class="mt-2">검사공정 진행</p>
+	            </div>
+	        </div><!-- /tab-content -->
+	    </div><!-- /card-body -->
+	</div><!-- /card -->
+		    
+	</div><!-- /card -->
+
+	
+
+</div> <!-- /layout:fragment -->
+
+<th:block layout:fragment="script">
+	<script th:inline="javascript">
+		const orderList = /*[[${orderList}]]*/ [];
+	
+		const treeData = orderList.map(order => ({
+		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">${order.lotCode} - ${order.pdtName}</span>`,
+		    children: [
+		    	{
+		            text: `<span class="lot-node" data-lot-no="${order.lotNo}">자식 lot: ${order.childLotCode} ${order.pdtName}</span>`
+		        }
+		    ]
+		}));
+	
+		document.addEventListener('DOMContentLoaded', function () {
+			const tree = new tui.Tree('#tree', {
+			    data: treeData,
+			    nodeDefaultState: 'opened',
+			    nodeTextTemplate: function(node) {
+			        return node.text;
+			    }
+			});
+	
+			$('#tree').on('click', '.lot-node', function() {
+			    const lotNo = $(this).data('lot-no');
+			    console.log("클릭된 LOT NO:", lotNo);
+			    
+		        // AJAX 요청
+		        $.ajax({
+		            url: '/production/lotDetail',
+		            method: 'GET',
+		            data: { lotNo: lotNo },
+		            success: function (response) {
+		            	console.log("서버 응답", response);
+		            	
+		            	$('#lotNotice').hide();
+		                $('#lotDetailForm').show();
+		                 
+		                 
+		            	$('#lotCode').text(response.LOT_CODE);
+		                $('#pdtName').val(response.PDT_NAME);
+		                $('#prcType').val(response.PRC_TYPE);
+		                $('#startTime').val(response.START_TIME);
+		                $('#finishTime').val(response.FINISH_TIME);
+		                $('#woCode').val(response.WO_CODE);
+		                $('#empName').val(response.EMP_NAME);
+		                $('#workOrderStatus').val(response.WORK_ORDER_STATUS);
+		            },
+		            error: function (error) {
+		                alert("서버 오류: " + error.responseText);
+		            }
+		        });
+		    });
+		});
+
+</script>
+</th:block>
+</body>
+</html>

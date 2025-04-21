@@ -95,4 +95,25 @@
 	     WHERE WO_NO = #{woNo}
 	</update>
 	
+	<!-- 로트번호로 단일제품 정보 들고오기 -->
+	<select id="selectLotNoDetail" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		SELECT 
+		    L.*, 
+		    W.PDT_NAME,
+		    E.EMP_NAME
+		FROM 
+		    LOT L
+		JOIN 
+		    WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+		LEFT JOIN 
+		    EMPLOYEES E ON W.EMP_ID = E.EMP_ID
+		WHERE 
+		    L.LOT_NO = #{lotNo}
+	</select>
+	
+	<!-- 로트번호 뿌리기 -->
+	<select id="selectLotDetail" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		SELECT L.*,W.PDT_NAME
+		FROM LOT L JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+	</select>
 </mapper>
