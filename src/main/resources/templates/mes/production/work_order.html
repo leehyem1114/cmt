@@ -63,6 +63,7 @@
 			      rowHeaders: ['checkbox'],
 			      scrollX: false,
 			      scrollY: true,
+			      bodyHeight: 300,
 			      columns: [
 			    	{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center'},
 			        { header: '계획코드', name: 'woCode',sortable: true,align: 'center' },
@@ -73,7 +74,7 @@
 			        { header: '작업담당자', name: 'empName' ,align: 'center'},
 // 			        { header: '라인', name: 'lineCode' ,align: 'center'},
 			        { header: '공정', name: 'prcCode' ,align: 'center'},
-			        { header: '공정 상태', name: 'status' ,align: 'center'},
+			        { header: '공정 상태', name: 'woStatusName' ,align: 'center'},
 			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
 			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'}
 			      ]
@@ -102,6 +103,7 @@
 					  rowHeaders: ['checkbox' , 'rowNum'],
 					  scrollX: false,
 					  scrollY: true,
+					  bodyHeight: 300,
 					  columns: [
 // 						{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center'},
 					    { header: '자재명', name: '' , sortable: true,align: 'center'},
@@ -126,12 +128,10 @@
 	    <div class="modal-dialog modal-dialog-centered modal-xl">
 	        <div class="modal-content">
 	            <div class="modal-header">
-	                <h5 class="modal-title" id="exampleModalCenterTitle"><i class="fa-solid fa-bars"></i> 생산 계획?제조계획?리스트</h5>
+	                <h5 class="modal-title" id="exampleModalCenterTitle"><i class="fa-solid fa-bars"></i> 제조 계획 목록</h5>
 	            </div>
 	            <div class="modal-body">
-	                <p>생산계획>제조계획수립>제조작업 지시서</p>
-	                <p>그러면?제조작업 지시서를 받아서 조회 + 작업지시로 전환해야함</p>
-	                <p>계획중 하나를 클릭하면(작업지시 등록) work_order테이블에 저장 > 작업지시 그리드에 '대기중'으로 올라감</p>
+	                <p>등록완료된 제조계획이 보여집니다.</p>
 	                <div id="grid3" ></div>
 					<script th:inline="javascript">
 						const gridData3 = /*[[${planList}]]*/ []; //생산계획 리스트
@@ -142,6 +142,7 @@
 						  rowHeaders: ['checkbox'],
 						  scrollX: false,
 						  scrollY: true,
+						 
 						  columns: [
 					        { header: '계획코드', name: 'msCode',sortable: true,align: 'center' },
 					        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
@@ -172,7 +173,7 @@
 	                <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
 	                    <span class="d-none d-sm-block">닫기</span>
 	                </button>
-	                <button type="button" class="btn btn-primary ms-1" data-bs-dismiss="modal" onclick="regiWorkOrderBtn()">
+	                <button type="button" class="btn btn-primary ms-1" onclick="regiWorkOrderBtn()">
 	                    <span class="d-none d-sm-block" id="regiWorkOrder" name="regiWorkOrder" >작업 지시 등록 <i class="fa-regular fa-circle-check"></i></span>
 	                </button>
 	            </div>
@@ -185,10 +186,10 @@
 <th:block layout:fragment="script">
 	<script type="text/javascript">
 		function regiWorkOrderBtn(){
-			alert("버튼클릭댐");
 			const selectedRows = grid3.getCheckedRows();
 			
-			const data = { ...selectedRows[0] };
+			const data = { ...selectedRows[0] }; //1개 row
+// 			const data = selectedRows
 
 			
 			console.log("보낼 데이터>>>", data);
@@ -201,13 +202,32 @@
 // 				data : {data},
 				success : function (response){
 					alert(response);
-					location.reload();
+					grid3.removeCheckedRows();
+// 					location.reload();
+
+					$.ajax({
+					    url: "/workOrder/data",
+					    method: "GET",
+					    success: function(newData) {
+					        grid.resetData(newData);
+					    }
+					});
 				},
 				error : function (error){
 					console.log(error);
 				}
 			});
 		}
+		
+		$(document).ready(function() {
+		    $('#workModal').on('shown.bs.modal', function () {
+		        grid3.refreshLayout();
+		    });
+
+		    $('#workModal').on('hidden.bs.modal', function () {
+		        location.reload();
+		    });
+		});
 		
 		function workStar(){
 			alert("작업시작 버튼 클릭");
