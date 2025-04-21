@@ -15,9 +15,11 @@ public interface WorkOrderMapper {
 	List<MfgScheduleDTO> selectPlanList();
 	//제조계획 -> 작업지시 insert
 	void insertMsPlan(WorkOrderDTO workOrderDTO);
-	//제조계획상태 변경
-	void updateMfgStatus(String msCode);
 	//작업시작 버튼 = 날짜 업데이트&진행중
 	void updateWorkStartTime(Long workOrderNo);
+	
+	//제조계획상태 변경 & 제조계획 delete
+	void updateMfgStatus(String msCode);
+	void deleteMfgList(String msCode);
 
 }
