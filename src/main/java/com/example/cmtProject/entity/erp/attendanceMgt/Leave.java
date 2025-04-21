@@ -1,5 +1,6 @@
 package com.example.cmtProject.entity.erp.attendanceMgt;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -37,10 +38,10 @@ public class Leave {
     private String levType; // 휴가 유형
 
     @Column(name = "LEV_START_DATE")
-    private LocalDateTime levStartDate; // 휴가 시작일
+    private LocalDate levStartDate; // 휴가 시작일
     
     @Column(name = "LEV_END_DATE")
-    private LocalDateTime levEndDate; // 휴가 종료일
+    private LocalDate levEndDate; // 휴가 종료일
     
     @Column(name = "LEV_DAYS")
     private Double levDays; // 휴가 신청 일수
@@ -93,7 +94,7 @@ public class Leave {
     }
     
     @Builder
-	public Leave(Long levNo, String empId,String levType, LocalDateTime levStartDate, LocalDateTime levEndDate,
+	public Leave(Long levNo, String empId,String levType, LocalDate levStartDate, LocalDate levEndDate,
 			Double levDays, Double levUsedDays, Double levLeftDays, String levReason, LocalDateTime levReqDate, String levApprovalStatus, String levApprover,
 			LocalDateTime levApprovalDate, String levRemarks, String docId) {
 		this.levNo = levNo;

@@ -22,11 +22,20 @@ public class QcmService {
 	public List<QcmDTO> getAllQcm() {
 		return qcmMapper.getAllQcm();
 	}
-
+	
 	@Transactional
-	public int qcmUpdate(QcmDTO qcmDTO) {
+	public void qcmUpdate(QcmDTO qcmDTO) {
+		qcmMapper.qcmUpdate(qcmDTO);
+	}
+	
+	@Transactional
+	public void qcmInsert(QcmDTO qcmDTO) {
+		qcmMapper.qcmInsert(qcmDTO);
 		
-		return qcmMapper.qcmUpdate(qcmDTO);
+	}
+	
+	public String existsByQcmCode(Long qcmNo) {
+		return qcmMapper.existsByQcmCode(qcmNo);
 	}
 
 	@Transactional
@@ -40,9 +49,14 @@ public class QcmService {
 	}
 
 	@Transactional
-	public int saveExcelData(QcmDTO dto) {
-		return qcmMapper.saveExcelData(dto);
+	public void saveExcelData(QcmDTO dto) {
+		qcmMapper.saveExcelData(dto);
 		
 	}
+
+	
+
+	
+	
 
 }

@@ -1,5 +1,7 @@
 package com.example.cmtProject.service.erp.attendanceMgt;
 
+import java.sql.Date;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,22 +19,24 @@ import com.example.cmtProject.dto.erp.attendanceMgt.WorkTemplateDTO;
 import com.example.cmtProject.entity.erp.attendanceMgt.Attend;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.erp.attendanceMgt.AttendsMapper;
+import com.example.cmtProject.mapper.erp.attendanceMgt.LeaveMapper;
 import com.example.cmtProject.mapper.erp.attendanceMgt.WorkTimeMapper;
 import com.example.cmtProject.repository.erp.attendanceMgt.AttendRepository;
 import com.example.cmtProject.repository.erp.employees.EmployeesRepository;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 @Service
 public class AttendService {
 
 	private static final Logger logger = LoggerFactory.getLogger(AttendService.class);
 
-
-	@Autowired
-    private AttendRepository attendRepository;
     @Autowired
     private AttendsMapper attendsMapper;
     @Autowired
     private WorkTimeMapper workTimeMapper;
+    @Autowired
+    private LeaveMapper leavesMapper;
     
     // 모든 출결 정보 조회
     public List<AttendDTO> getAllAttends() {
@@ -53,27 +57,55 @@ public class AttendService {
     // 출근 정보 저장
     @Transactional
     public void saveAttend(AttendDTO dto, Employees employee) {
-    	
-    	LocalDateTime workTemplateByEmpNo = workTimeMapper.getWorkTemplateByEmpNo(employee.getEmpNo());
-    	
-    	if (workTemplateByEmpNo.isBefore(LocalDateTime.now())) {
-    	    dto.setAtdStatus("ATS002");
-    	}
-    	if (workTemplateByEmpNo.isAfter(LocalDateTime.now())) {
-    	    dto.setAtdStatus("ATS001");
-    	}
-    	
-    	AttendDTO newDto = AttendDTO.builder()
-        		.empNo(employee.getEmpNo())
-                .empName(employee.getEmpName()) // 사원 이름 자동으로 설정
-                .atdDate(LocalDateTime.now()) // 출근 처리 시 현재 날짜 설정
-                .atdStatus(dto.getAtdStatus() != null ? dto.getAtdStatus() : "ATS001") // 출근 상태 기본 NORMAL
-                .atdType(dto.getAtdType() != null ? dto.getAtdType() : "ATT001") // 출근 유형 기본 NORMAL
-                .atdRemarks(dto.getAtdRemarks())
-                .build();
         
-        attendsMapper.insertAttend(newDto, employee);
+    	LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+
+        // 1. 정상/지각 판단
+        LocalDateTime workTemplate = workTimeMapper.getWorkTemplateByEmpNo(employee.getEmpNo());
+        if (workTemplate.isBefore(now)) {
+            dto.setAtdStatus("ATS002"); // 지각
         }
+        if (workTemplate.isAfter(now)) {
+            dto.setAtdStatus("ATS001"); // 정상
+        }
+
+        // 2. 출근 insert
+        AttendDTO newDto = AttendDTO.builder()
+            .empNo(employee.getEmpNo())
+            .empName(employee.getEmpName())
+            .atdDate(now)
+            .atdStatus(dto.getAtdStatus() != null ? dto.getAtdStatus() : "ATS001")
+            .atdType(dto.getAtdType() != null ? dto.getAtdType() : "ATT001")
+            .atdRemarks(dto.getAtdRemarks())
+            .build();
+
+        attendsMapper.insertAttend(newDto, employee);
+
+        // 3. 최근 60일 자동 결근/휴가 처리
+        for (int i = 1; i <= 30; i++) {
+            LocalDate checkDate = today.minusDays(i);
+            DayOfWeek dow = checkDate.getDayOfWeek();
+            if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) continue;
+
+            boolean attended = attendsMapper.existsAttendStatus(employee.getEmpNo(), checkDate);
+            if (attended) continue;
+
+            boolean isOnLeave = leavesMapper.isOnLeave(employee.getEmpId(), checkDate);
+
+            AttendDTO autoDto = AttendDTO.builder()
+                .empNo(employee.getEmpNo())
+                .empName(employee.getEmpName())
+                .atdDate(checkDate.atStartOfDay())
+                .atdType(isOnLeave ? "ATT002" : "ATT005")     // ATT002 = 휴가, ATT005 = 결근
+                .atdStatus(isOnLeave ? "ATS005" : "ATS004")   // ATS005 = 휴가 상태, ATS004 = 결근 상태
+                .atdRemarks(isOnLeave ? "자동 휴가 처리" : "자동 결근 처리")
+                .build();
+
+            attendsMapper.insertAttend(autoDto, employee);
+        }
+    }
+    
     
     // 퇴근 정보 저장
     @Transactional
