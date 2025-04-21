@@ -36,7 +36,7 @@
 <!--  	부서명 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
 		
-		ORDER BY A.ATD_NO DESC
+		ORDER BY A.ATD_DATE DESC
 		
 	</select>
 	
@@ -69,7 +69,7 @@
 <!--  	부서명 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
 		WHERE E.DEPT_NO = #{deptNo}
-		ORDER BY A.ATD_NO DESC
+		ORDER BY A.ATD_DATE DESC
 	</select>
 	
 	<!-- 유저 개인 출결 정보 조회 -->
@@ -101,7 +101,7 @@
 <!--  	부서명 커먼코드 조인 -->
 		JOIN COMMONCODE_DETAIL C_DEPT ON TO_CHAR(E.DEPT_NO) = C_DEPT.CMN_DETAIL_CODE
 		WHERE A.EMP_NO = #{empNo}
-		ORDER BY A.ATD_NO DESC
+		ORDER BY A.ATD_DATE DESC
 	</select>
     
     <!-- 오늘 출근 했는지 조회 -->
@@ -149,5 +149,15 @@
 		INSERT INTO ATTENDS(EMP_NO, EMP_NAME, ATD_DATE, ATD_STATUS, ATD_TYPE)
 		VALUES(#{emp.empNo}, #{emp.empName}, #{dto.atdDate, jdbcType=TIMESTAMP}, #{dto.atdStatus, jdbcType=VARCHAR}, #{dto.atdType})
 	</insert>
+	
+	<!-- 결근 체크 -->
+	<select id="existsAttendStatus" resultType="boolean">
+    SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+    FROM ATTENDS
+    WHERE EMP_NO = #{empNo}
+      AND TRUNC(ATD_DATE) = #{date}
+      AND ATD_STATUS != 'ATS004'  <!-- ❗ 이미 결근이면 insert 안 하도록 -->
+	</select>
+	
 	
 </mapper>

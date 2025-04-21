@@ -1,5 +1,6 @@
 package com.example.cmtProject.mapper.erp.attendanceMgt;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,6 +42,10 @@ public interface AttendsMapper {
                           @Param("atdType") String atdType);
 
 	void insertAttend(@Param("dto") AttendDTO dto, @Param("emp") Employees emp);
+
+	// 결근 체크
+	boolean existsAttendStatus(@Param("empNo") Long empNo,
+            				   @Param("date") LocalDate checkDate);
 	
 
 }
