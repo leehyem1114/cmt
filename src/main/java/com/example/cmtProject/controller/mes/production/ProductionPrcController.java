@@ -101,7 +101,7 @@ public class ProductionPrcController {
 		
 		return selectPdtCodeList;
 	}
-	
+
 	private String makeLotCode(String code) {
 		/*
 		LocalDate todayDate = LocalDate.now();
@@ -116,5 +116,6 @@ public class ProductionPrcController {
 		return "";
 				
 	}
+
 	
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
+import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.mapper.mes.production.WorkOrderMapper;
 
@@ -41,6 +42,20 @@ public class WorkOrderService {
 	//작업지시 등록시 제거됨
 	private void deleteMfgList(String msCode) {
 		orderMapper.deleteMfgList(msCode);
+	}
+	
+	//로트번호로 단일제품정보 들고오기
+	public WorkOrderDTO getProductDetail(String lotNo) {
+		return orderMapper.selectProductDetail(lotNo);
+	}
+	
+	//lot + workOrder 테이블
+	public List<LotDTO> getLotDetail() {
+		return orderMapper.selectLotDetail();
+	}
+	//lotNo로 상품 상세정보 들고오기
+	public LotDTO getLotNoDetail(Long lotNo) {
+		return orderMapper.selectLotNoDetail(lotNo);
 	}
 	
 }
