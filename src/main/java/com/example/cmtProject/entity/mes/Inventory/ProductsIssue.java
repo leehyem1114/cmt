@@ -18,13 +18,13 @@ import lombok.NoArgsConstructor;
 public class ProductsIssue {
 
 	@Id
-    @Column(name = "ISSUE_NO")
+    @Column(name = "ISSUE_NO",precision = 19, scale = 0)
     private Long issueNo; //출고 관리번호
 
     @Column(name = "ISSUE_CODE", length = 50)
     private String issueCode; //출고 코드
 
-    @Column(name = "PDT_NO", nullable = false)
+    @Column(name = "PDT_NO",precision = 19, scale = 0, nullable = false)
     private Long pdtNo; //제품번호
 
 //    @Column(name = "REQUEST_DEPT", length = 50)

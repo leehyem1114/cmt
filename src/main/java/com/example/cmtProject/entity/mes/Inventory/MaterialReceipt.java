@@ -18,16 +18,16 @@ import lombok.NoArgsConstructor;
 public class MaterialReceipt {
 	
     @Id
-    @Column(name = "RECEIPT_NO")
+    @Column(name = "RECEIPT_NO",precision = 19, scale = 0)
     private Long receiptNo; // 입고 관리번호
 
     @Column(name = "RECEIPT_CODE", length = 50)
     private String receiptCode; // 입고코드
 
-    @Column(name = "PO_NO")
+    @Column(name = "PO_NO", precision = 19, scale = 0)
     private Long poNo; //발주 번호
 
-    @Column(name = "MTL_NO", nullable = false)
+    @Column(name = "MTL_NO",precision = 19, scale = 0, nullable = false)
     private Long mtlNo; //자재번호
 
     @Column(name = "RECEIVED_QTY", length = 50)
