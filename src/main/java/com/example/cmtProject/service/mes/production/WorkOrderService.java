@@ -28,13 +28,20 @@ public class WorkOrderService {
 		orderMapper.insertMsPlan(workOrderDTO); // 작업지시 등록
 		updateMfgStatus(workOrderDTO.getMsCode()); // 제조계획 상태 변경
 	}
-	public void updateMfgStatus(String msCode) {
-		orderMapper.updateMfgStatus(msCode);
-	}
 	//작업시작 버튼 = 날짜 업데이트&진행중
 	public void startWork(Long workOrderNo) {
 		orderMapper.updateWorkStartTime(workOrderNo);
 		
+	}
+
+	@Transactional
+	public void updateMfgStatus(String msCode) {
+		orderMapper.updateMfgStatus(msCode);// 제조계획 상태 변경
+		deleteMfgList(msCode); //제조계획 리스트에서 제거 
+	}
+	//작업지시 등록시 제거됨
+	private void deleteMfgList(String msCode) {
+		orderMapper.deleteMfgList(msCode);
 	}
 	
 	//로트번호로 단일제품정보 들고오기

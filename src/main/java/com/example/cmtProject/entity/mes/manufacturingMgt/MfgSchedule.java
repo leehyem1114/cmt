@@ -39,6 +39,9 @@ public class MfgSchedule { // 제조 계획
 
     @Column(name = "EMP_ID")
 	private String empId;  // 등록 직원 사번
+    
+    @Column(name = "STAFF_ID")
+	private String staffId;  // 담당 직원 사번
 
     @Column(name = "ALLOCATED_QTY")
 	private Long allocatedQty;  // 계획 수량
@@ -55,10 +58,10 @@ public class MfgSchedule { // 제조 계획
     @Column(name = "MS_UPDATED_AT")
 	private LocalDate msUpdatedAt;  // 수정일자
 
-    @Column(name = "MS_START_DATE")
-	private LocalDate msStartDate;  // 제조 시작 예정일
+    @Column(name = "MS_START_TIME")
+	private LocalDate msStartTime;  // 제조 시작 예정일시
     
-    @Column(name = "MS_END_DATE")
-	private LocalDate msEndDate;  // 제조 종료 예정일
+    @Column(name = "MS_END_TIME")
+	private LocalDate msEndTime;  // 제조 종료 예정일시
     
 }

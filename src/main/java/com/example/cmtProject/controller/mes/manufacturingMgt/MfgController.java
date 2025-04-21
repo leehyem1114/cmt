@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -61,8 +62,8 @@ public class MfgController {
 	}
 	
 	// 생산 계획 등록 조회
-	@GetMapping("/mfgPlanRegi")
-	public String mfgPlanRegi(Model model) {
+	@GetMapping("/mfgPlanRegiList")
+	public String mfgPlanRegiList(Model model) {
 		List<MfgPlanSalesOrderDTO> soList = mfgService.getSoList();
 		model.addAttribute("soList", soList);
 		
@@ -71,7 +72,16 @@ public class MfgController {
 	    return "mes/manufacturingMgt/mfgPlan";
 	}
 	
-	// 완제품 재고 조회
+	// 생산 계획 등록
+	@PostMapping("/mfgPlanRegi")
+	@ResponseBody
+	public String mfgPlanRegi(@RequestBody MfgSchedulePlanDTO mfgSchedulePlanDTO) {
+		mfgService.registMpPlan(mfgSchedulePlanDTO);
+		
+		return "success";
+	}
+	
+	// 원자재 재고 조회
 //	@GetMapping("/selectCurrentQty")
 //	@ResponseBody
 //	public boolean selectCurrentQty(@RequestParam("pdtCode") String pdtCode,@RequestParam("soQuantity") Long soQuantity) {

@@ -37,15 +37,23 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		return"mes/production/work_order";
 	}
 	
+	//작업지시 데이터만 JSON으로 내려주는 API
+	@GetMapping("/workOrder/data")
+	@ResponseBody
+	public List<WorkOrderDTO> getWorkOrderData() {
+	    return orderService.getOrderList();
+	}
+	
 	@PostMapping("/workOrder/regist")
 	@ResponseBody
 	public String regiWorkOrderLsit(@RequestBody WorkOrderDTO workOrderDTO) {
 		//작업지시 등록
 		orderService.registMsPlan(workOrderDTO);
-		//제조계획상태 업데이트
+		//제조계획상태 업데이트 &제조 계획리스트에서 삭제
 		orderService.updateMfgStatus(workOrderDTO.getMsNo());
+		
 		log.info("받은 데이터" + workOrderDTO);
-		return "리스트 업뎃 완";
+		return "작업지시 추가 완료";
 	}
 	
 	//공정현황**********************************

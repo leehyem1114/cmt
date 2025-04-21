@@ -2,6 +2,9 @@ package com.example.cmtProject.dto.mes.production;
 
 import java.time.LocalDate;
 
+import java.time.LocalTime;
+
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
@@ -14,6 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class LotDTO {
+
 
     private Long lotNo;
     private String lotCode;
@@ -54,5 +58,8 @@ public class LotDTO {
     private String empName;
     private String msStatus;
     
-    
+ 
+
+	 	
 }
+

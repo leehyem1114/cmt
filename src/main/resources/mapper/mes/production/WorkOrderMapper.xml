@@ -15,7 +15,8 @@
 			, W.PRC_CODE
 			, W.ORDER_DATE
 			, W.WO_QTY
-		--	, S.MS_STATUS
+			, S.WO_STATUS_CODE
+			, S.WO_STATUS_NAME
 			, W.STATUS
 			, W.DUE_DATE
 			, W.COMMENTS
@@ -28,7 +29,7 @@
 		  FROM WORK_ORDER W 
 		           JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
 		           JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
-		        --   JOIN MFG_SCHEDULES S ON W.WO_CODE = S.MS_CODE
+		           JOIN WORK_ORDER_STATUS S ON W.WO_STATUS_CODE = S.WO_STATUS_CODE
 		 ORDER BY WORK_ORDER_NO DESC
 	</select>
 	<!-- 제조계획 리스트 - 모달 -->
@@ -50,7 +51,7 @@
 		    , S.MS_QTY
 		    , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
-		WHERE  MS_STATUS != '대기중'
+		WHERE  MS_STATUS != '대기'
 		ORDER BY S.MS_NO DESC
 	</select>
 	<!-- 제조계획리스트 -> workOrder 테이블에 insert -->
@@ -66,7 +67,7 @@
 			 , PRC_CODE
 			 , WORK_START_DATE
 			 , WORK_END_DATE
-			 , STATUS -- 공정상태
+			 , WO_STATUS_CODE -- 공정상태
 		) VALUES (
 				WORK_ORDER_SEQ.NEXTVAL
 			, #{msCode, jdbcType=VARCHAR}
@@ -84,14 +85,23 @@
 	</insert>
 	<update id="updateMfgStatus">
 		UPDATE WORK_ORDER
-		SET STATUS = '대기중'
+		SET WO_STATUS_CODE = (
+	        SELECT WO_STATUS_CODE FROM WORK_ORDER_STATUS WHERE WO_STATUS_CODE = 'SB'
+	    )
 		WHERE WO_CODE = #{msCode}
 	</update>
+	
+	<delete id="deleteMfgList">
+		DELETE FROM MFG_SCHEDULES 
+		WHERE MS_CODE = #{msCode}
+	</delete>
+	
+	
 	<!-- 작업시작 버튼 = 날짜 업데이트&진행중 -->
 	<update id="updateWorkStartTime">
 		 UPDATE WORK_ORDER
 	     SET WO_START_DATE = SYSDATE 
-	    	 , STATUS = '진행중'
+	    	 , WO_STATUS_CODE = 'RN' 
 	     WHERE WO_NO = #{woNo}
 	</update>
 	

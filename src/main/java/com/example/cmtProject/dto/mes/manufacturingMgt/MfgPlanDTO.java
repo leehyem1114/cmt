@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MfgPlanDTO {
+public class MfgPlanDTO { // 생산 계획 DTO
 
     private Long mpNo;              // 생산 계획 번호
     private String mpCode;			// 생산 계획 코드

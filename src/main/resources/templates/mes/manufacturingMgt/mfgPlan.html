@@ -69,15 +69,14 @@
 	//================================== 그리드 부분 ================================= 
 	let mpList = /*[[${mpList}]]*/ [];
 	
+	
+	
 	let grid1 = new tui.Grid({
         el: document.getElementById('mfgPlanGrid'), 
 		data: mpList,
-        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
-		//selectionUnit: 'row', //행 단위선택
+        rowHeaders: ['checkbox'],
 		scrollX: true,
         scrollY: true,
-		//width: 1600,  // 전체 너비 지정
-		//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
 		pageOptions: {
 		   useClient: true,   // 클라이언트 사이드 페이징 사용
 		   perPage: 10        // 페이지당 행 수
@@ -100,7 +99,7 @@
 				align: "center" 
             },
            {
-                header: '수주번호',
+                header: '수주코드',
                 name: 'soCode',
 				width: 200,
 				sortable: true, 
@@ -135,6 +134,24 @@
 				align: 'center',
 				editor: "text"
             },
+            {
+				header: '우선순위',
+                name: 'mpPriority',
+				width: 200,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: {
+					type: "select",
+					options: {
+						listItems: [
+							{ text: '높음', value: '높음' },
+							{ text: '일반', value: '일반' },
+							{ text: '낮음', value: '낮음' }
+						]	
+					}
+				}
+            },
 			{
                 header: '생산 시작 예정일',
                 name: 'mpStartDate', 
@@ -142,7 +159,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             },
 			{
                 header: '생산 완료 예정일',
@@ -151,7 +173,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             },
 			{
                 header: '등록일자',
@@ -160,7 +187,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             },
 			{
                 header: '수정일자',
@@ -169,9 +201,14 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             }
-        ], // 열 설정
+        ], 
 		autoEdit: true,
 		editingEvent: 'dblclick' 
     });
@@ -211,13 +248,13 @@
 					},
 					{
 						header: '주문수량',
-						name: 'soQuantity',
+						name: 'soQty',
 						sortable: true,
 						align: "center"
 					},
 					{
 						header: '주문단위',
-						name: 'qtyUnit',
+						name: 'qtyUnitName',
 						sortable: true,
 						align: "center"
 					},
@@ -243,19 +280,41 @@
 						header: '우선순위',
 						name: 'mpPriority', 
 						sortable: true,
-						align: "center"
-					},
+						align: "center",
+						editor: {
+							type: "select",
+							options: {
+								listItems: [
+									{ text: '높음', value: '높음' },
+									{ text: '일반', value: '일반' },
+									{ text: '낮음', value: '낮음' }
+								]	
+							}
+						}
+		            },
 					{
 						header: '생산 시작 예정일',
 						name: 'mpStartDate', 
 						sortable: true,
-						align: "center"
-					},
+						align: "center",
+						editor: {
+							type: 'datePicker',
+							options: {
+								format: 'yyyy-MM-dd'
+							}
+						}
+		            },
 					{
 						header: '생산 완료 예정일',
 						name: 'mpEndDate', 
 						sortable: true,
-						align: "center"
+						align: "center",
+						editor: {
+							type: 'datePicker',
+							options: {
+								format: 'yyyy-MM-dd'
+							}
+						}
 					},
 					{
 						header: '재고 조회',
@@ -275,12 +334,32 @@
 			});
 		}
 		
+		grid2.on('afterChange', (ev) => {
+		    ev.changes.forEach(change => {
+		        if (change.columnName === 'mpStartDate') {
+		            const rowKey = change.rowKey;
+		            const mpStartDateStr = change.value; // 입력된 생산 시작 예정일 (문자열)
+		            const leadTimeHours = grid2.getValue(rowKey, 'leadTime'); // 소요시간 가져오기
+		            
+		            if (startDateStr && leadTimeHours) {
+		                const mpStartDate = new Date(mpStartDateStr);
+		                const leadTimeDays = Math.ceil(leadTimeHours / 24); // 소요시간을 24로 나누어 일 수 계산
+		                mpStartDate.setDate(mpStartDate.getDate() + leadTimeDays); // 날짜 더하기
+
+		                const mpEndDateStr = mpStartDate.toISOString().split('T')[0]; // yyyy-MM-dd 포맷
+		                grid2.setValue(rowKey, 'mpEndDate', mpEndDateStr); // 종료일 업데이트
+		            }
+		        }
+		    });
+		});
+		
+		
 		grid2.on('click', (ev) => {
 		    if (ev.columnName === 'selectPdtQty') {
 		        const rowData = grid2.getRow(ev.rowKey);
 		        
 		        $.ajax({
-		            url: '/mfg/soList',
+		            url: '/mfg/selectCurrentQty',
 		            type: 'GET',
 		            data: {
 		            	pdtCode: rowData.pdtCode,
@@ -312,11 +391,31 @@
 	//상품 계획 등록 시작 -------------------------------------------
 	$('#mfgPlanRegiBtn').on('click', function () {
 		const checkedRows = grid2.getCheckedRows();
-		const mpRegiList = checkedRows.map(row => ({
+		const row = checkedRows[0];
+		const data = {
 			soCode: row.soCode,
 			pdtCode: row.pdtCode,
-			
-		}));
+			mpPriority: row.mpPriority || "일반",
+			mpStartDate: row.mpStartDate,
+			mpEndDate: row.mpEndDate,
+			mpStatus: row.mpStatus || "등록",
+			//empId: row.empId,
+			//mpCreatedAt: row.mpCreatedAt
+		};
+		
+		$.ajax({
+			url: "/mfg/mfgPlanRegi",
+			method : "POST",
+			contentType: "application/json",
+			data: JSON.stringify(data),
+			success : function (response){
+				alert(response);
+				location.reload();
+			},
+			error : function (error){
+				console.log(error);
+			}
+		})
 
 		
 	});

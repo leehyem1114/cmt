@@ -198,11 +198,15 @@
 				}
 				
 				//셀렉트 박스가 선택되었다면 pdtCode에 값이 있을 수밖에 없다.
+				//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
 				//pdtCode로 BOM 재귀 호출
 				$.ajax({
 					url: '/production/pdtCodeSelected',
 					type: 'GET',
-					data: {data: pdtCode},
+					data: {
+						'pdtCode' : pdtCode,
+						'woCode' : woCode
+						},
 					success : function(response){
 						woGridData = response;
 						woGrid.resetData(response);

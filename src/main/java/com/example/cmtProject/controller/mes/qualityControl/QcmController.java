@@ -21,13 +21,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.comm.CommonCodeDetailDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
-import com.example.cmtProject.dto.mes.standardInfoMgt.BomEditDTO;
-import com.example.cmtProject.entity.comm.CommoncodeDetail;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
-import com.example.cmtProject.entity.mes.qualityControl.Qcm;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Materials;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
+import com.example.cmtProject.mapper.mes.qualityControl.QcmMapper;
 import com.example.cmtProject.repository.erp.saleMgt.MaterialsOrderRepository;
 import com.example.cmtProject.repository.mes.qualityControl.QcmRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
@@ -97,11 +95,15 @@ public class QcmController {
 	//BOM 그리드에서 바로 수정
 	@ResponseBody
 	@PostMapping("/edit")
-	public int qcmEditexep(@ModelAttribute QcmDTO qcmDTO) throws JsonMappingException, JsonProcessingException {
+	public void qcmEditexep(@ModelAttribute QcmDTO qcmDTO) throws JsonMappingException, JsonProcessingException {
 		log.info("" + qcmDTO);
-		int resultEdit = qcmService.qcmUpdate(qcmDTO); 
-		
-		return resultEdit;
+		if(!qcmDTO.getQcmCode().equals(qcmService.existsByQcmCode(qcmDTO.getQcmNo()))) {
+			log.info("@@@@@@@인서트 실행");
+			qcmService.qcmInsert(qcmDTO);
+		} else {
+			log.info("@@@@@@@업데이트 실행");			
+			qcmService.qcmUpdate(qcmDTO); 
+		}
 	}
 	
 	// 삭제 메서드

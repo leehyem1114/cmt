@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MfgPlanSalesOrderDTO {
+public class MfgPlanSalesOrderDTO { // 생산 계획 등록 시 수주 목록 DTO
 
 	private String soCode; // 수주코드
 	private String pdtCode; // 제품코드
 	private String pdtName; // 제품명
-	private Long soQuantity; // 주문량
-	private String qtyUnit; // 주문단위
+	private Long soQty; // 주문량
+	private String qtyUnitName; // 주문단위명
 	private Long leadTime;  // 소요시간
 	private String cltName; // 거래처명
 	private LocalDate soDueDate; // 납품기한

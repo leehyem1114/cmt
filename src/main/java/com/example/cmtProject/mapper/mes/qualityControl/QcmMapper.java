@@ -11,13 +11,23 @@ import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 public interface QcmMapper {
 
 	List<QcmDTO> getAllQcm();
-
-	int qcmUpdate(QcmDTO qcmDTO);
+	
+	void qcmUpdate(QcmDTO qcmDTO);
+	
+	void qcmInsert(QcmDTO qcmDTO);
+	
+	String existsByQcmCode(Long qcmNO);
 
 	List<CommonCodeDetailDTO> getUnitLengthList();
 
 	List<CommonCodeDetailDTO> getUnitWeightList();
 
-	int saveExcelData(QcmDTO dto);
+	void saveExcelData(QcmDTO dto);
+
+
+
+	
+
+
 
 }
