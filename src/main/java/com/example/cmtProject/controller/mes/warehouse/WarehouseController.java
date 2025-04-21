@@ -39,20 +39,21 @@ public class WarehouseController {
         
         Map<String,Object> findMap = new HashMap<>();
         List<Map<String, Object>> wareHouseList = whs.warehouseList(findMap);
+        model.addAttribute("wareHouseList",wareHouseList);
         
-        // 타임스탬프 객체 처리를 위해 직렬화 가능한 형태로 변환
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-            String jsonString = mapper.writeValueAsString(wareHouseList);
-            List<Map<String, Object>> sanitizedList = mapper.readValue(jsonString, 
-                    mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
-            model.addAttribute("wareHouseList", sanitizedList);
-        } catch (Exception e) {
-            log.error("데이터 변환 중 오류 발생: ", e);
-            model.addAttribute("wareHouseList", new HashMap<>());
-        }
-        
+//        // 타임스탬프 객체 처리를 위해 직렬화 가능한 형태로 변환
+//        try {
+//            ObjectMapper mapper = new ObjectMapper();
+//            mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+//            String jsonString = mapper.writeValueAsString(wareHouseList);
+//            List<Map<String, Object>> sanitizedList = mapper.readValue(jsonString, 
+//                    mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+//            model.addAttribute("wareHouseList", sanitizedList);
+//        } catch (Exception e) {
+//            log.error("데이터 변환 중 오류 발생: ", e);
+//            model.addAttribute("wareHouseList", new HashMap<>());
+//        }
+//        
         return PathConstants.VIEW_WAREHOUSE_VIEW;
     }
     

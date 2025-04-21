@@ -112,16 +112,16 @@
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
     <div layout:fragment="content">
-        <h3>창고 관리</h3>
+        <h3>원자재 관리</h3>
         
-        <!-- 창고 정보 섹션 -->
+        <!--원자재 정보 섹션 -->
         <section class="section">
             <div class="row" id="basic-table">
-                <!-- 창고 정보 그리드 카드 -->
+                <!-- 원자재 정보 그리드 카드 -->
                 <div class="col-12 col-md-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="card-title">창고정보</h4>
+                            <h4 class="card-title">원자재 재고현황</h4>
                             
                             <!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
                             <div class="top-input-group">
@@ -171,10 +171,10 @@
     <th:block layout:fragment="script">
         <script th:inline="javascript">
             // Thymeleaf 데이터를 전역 변수로 설정
-            window.wareHouseList = /*[[${wareHouseList}]]*/[];
-            console.log("wareHouseList 데이터:", window.wareHouseList);
+            window.mInventory = /*[[${mInventoryList}]]*/[];
+            console.log("mInventoryList 데이터:", window.mInventoryList);
         </script>
-        <script src="/js/wareHouse/wareHouseManager.js"></script>
+        <script src="/js/inventory/mInventoryManager.js"></script>
         <script src="/js/commonJs/ExcelUtil.js"></script>
         <script src="/js/commonJs/GridSearchUtil.js"></script>
     </th:block>
