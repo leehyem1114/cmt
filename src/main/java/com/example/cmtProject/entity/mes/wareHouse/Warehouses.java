@@ -17,7 +17,7 @@ public class Warehouses {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_WAREHOUSES_WHS_NO")
 	@SequenceGenerator(name = "SEQ_WAREHOUSES_WHS_NO", sequenceName = "SEQ_WAREHOUSES_WHS_NO", allocationSize = 1)
-	@Column(name = "WHS_NO", nullable = false)
+	@Column(name = "WHS_NO",precision = 19, scale = 0, nullable = false)
 	private Long whsNo; //창고 번호(PK)
 
     @Column(name = "WHS_CODE", nullable = false, length = 50, unique = true)
