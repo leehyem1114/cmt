@@ -44,7 +44,8 @@ public class PathConstants {
     public static final String VIEW_FORM_LIST = "erp/eapproval/docFormList";
     public static final String VIEW_FORM_EDIT = "erp/eapproval/docFormEdit";
     public static final String VIEW_FORM_VIEW = "erp/eapproval/docFormView";
-    public static final String VIEW_WAREHOUEW_VIEW ="mes/wareHouse/wareHouseList";
+    public static final String VIEW_WAREHOUSE_VIEW = "mes/wareHouse/wareHouseList";
+
     
     // 리다이렉트 경로
     public static final String REDIRECT_DOCUMENT_LIST = "redirect:" + APPROVAL_BASE + DOCUMENT_LIST;
