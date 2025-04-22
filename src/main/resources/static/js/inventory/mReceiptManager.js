@@ -12,7 +12,7 @@ const WareHouseManager = (function() {
     // =============================
 
     // 그리드 인스턴스 참조
-    let mInventoryGrid;
+    let mReceiptGrid;
 
     // API URL 상수 정의
     const API_URLS = {
@@ -64,15 +64,15 @@ const WareHouseManager = (function() {
         try {
             // UIUtil을 사용하여 이벤트 리스너 등록
             await UIUtil.registerEventListeners({
-                'mInventoryAppendBtn': appendRow,              // 행 추가 버튼
-                'mInventorySaveBtn': saveData,                 // 데이터 저장 버튼
-                'mInventoryDeleteBtn': deleteRows,             // 데이터 삭제 버튼
-                'mInventorySearchBtn': searchData              // 데이터 검색 버튼
+                'mReceiptAppendBtn': appendRow,              // 행 추가 버튼
+                'mReceiptSaveBtn': saveData,                 // 데이터 저장 버튼
+                'mReceiptDeleteBtn': deleteRows,             // 데이터 삭제 버튼
+                'mReceiptSearchBtn': searchData              // 데이터 검색 버튼
                 // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
             });
 
             // 엔터키 검색 이벤트 등록
-            await UIUtil.bindEnterKeySearch('mInventoryInput', searchData);
+            await UIUtil.bindEnterKeySearch('mReceiptInput', searchData);
         } catch (error) {
             console.error('이벤트 리스너 등록 중 오류:', error);
             throw error;
@@ -89,8 +89,8 @@ const WareHouseManager = (function() {
             
             // 그리드 검색 설정
             GridSearchUtil.setupGridSearch({
-                gridId: 'mInventoryGrid',
-                searchInputId: 'mInventoryInput',
+                gridId: 'mReceiptGrid',
+                searchInputId: 'mReceiptInput',
                 autoSearch: true, // 입력 시 자동 검색
                 beforeSearch: function() {
                     console.log('그리드 검색 시작');
@@ -115,8 +115,8 @@ const WareHouseManager = (function() {
             
             // 엑셀 다운로드 버튼 설정 - HTML에 버튼 추가 필요
             ExcelUtil.setupExcelDownloadButton({
-                buttonId: 'mInventoryExcelDownBtn', 
-                gridId: 'mInventoryGrid',
+                buttonId: 'mReceiptExcelDownBtn', 
+                gridId: 'mReceiptGrid',
                 fileName: 'warehouse-data.xlsx',
                 sheetName: '창고정보',
                 beforeDownload: function() {
@@ -130,9 +130,9 @@ const WareHouseManager = (function() {
             
             // 엑셀 업로드 버튼 설정 - HTML에 입력필드와 버튼 추가 필요
             ExcelUtil.setupExcelUploadButton({
-                fileInputId: 'mInventoryFileInput', 
-                uploadButtonId: 'mInventoryExcelUpBtn', 
-                gridId: 'mInventoryGrid',
+                fileInputId: 'mReceiptFileInput', 
+                uploadButtonId: 'mReceiptExcelUpBtn', 
+                gridId: 'mReceiptGrid',
                 apiUrl: API_URLS.EXCEL.UPLOAD,
                 headerMapping: {
                     '창고코드': 'WHS_CODE',
@@ -153,7 +153,7 @@ const WareHouseManager = (function() {
                     console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
                     if (saveResult) {
                         // 그리드 원본 데이터 업데이트
-                        GridSearchUtil.updateOriginalData('mInventoryGrid', data);
+                        GridSearchUtil.updateOriginalData('mReceiptGrid', data);
                     }
                 }
             });
@@ -175,9 +175,9 @@ const WareHouseManager = (function() {
             console.log('그리드 초기화를 시작합니다.');
 
             // DOM 요소 존재 확인
-            const gridElement = document.getElementById('mInventoryGrid');
+            const gridElement = document.getElementById('mReceiptGrid');
             if (!gridElement) {
-                throw new Error('mInventoryGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+                throw new Error('mReceiptGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
             }
 
             // 서버에서 받은 데이터 활용
@@ -185,44 +185,63 @@ const WareHouseManager = (function() {
             console.log('초기 데이터:', gridData.length, '건');
 
             // 그리드 생성 - GridUtil 사용
-            mInventoryGrid = GridUtil.registerGrid({
-                id: 'mInventoryGrid',
+            mReceiptGrid = GridUtil.registerGrid({
+                id: 'mReceiptGrid',
                 columns: [
                     {
-                        header: '자재번호',
+                        header: '입고번호',
+                        name: 'RECEIPT_CODE',
+                        editor: 'text'
+                    },
+                    {
+                        header: '발주번호',
+                        name: 'PO_NO',
+                        editor: 'text'
+                    },
+                    {
+                        header: '자재 번호',
                         name: 'MTL_NO',
                         editor: 'text'
                     },
                     {
-                        header: '창고코드',
-                        name: 'WAREHOUSE_CODE',
+                        header: 'LOT 번호',
+                        name: 'LOT_NO',
                         editor: 'text'
                     },
                     {
-                        header: '위치 코드',
+                        header: '자재 명 어디서 가져올까..',
                         name: 'LOCATION_CODE',
                         editor: 'text'
                     },
                     {
-                        header: '현재 수량(총수량)',
-                        name: 'CURRENT_QTY',
-                        editor: 'text'
-                    },
-                    {
-                        header: '계획 수량',
-                        name: 'ALLOCATED_QTY',
-                        editor: 'text'
-                    },
-                    {
-                        header: '가용 수량',
-                        name: 'AVAILABLE_QTY',
+                        header: '입고일',
+                        name: 'RECEIPT_DATE',
                         editor: 'text',
-						formatter: function({ value }) {
-						  const isLow = value <= 100;
-						  const style  = isLow ? 'color:red; font-weight:bold;' : 'color:black;';
-
-						  return `<span style="${style}">${value}</span>`;
-						}
+                    },
+                    {
+                        header: '입고 수량',
+                        name: 'RECEIVED_QTY',
+                        editor: 'text'
+                    },
+                    {
+                        header: '입고 상태',
+                        name: 'RECEIPT_STATUS',
+                        editor: 'text',
+                    },
+                    {
+                        header: '창고 코드',
+                        name: 'WAREHOUSE_CODE',
+                        editor: 'text',
+                    },
+                    {
+                        header: '위치 코드',
+                        name: 'LOCATION_CODE',
+                        editor: 'text',
+                    },
+                    {
+                        header: '입고 담당자',
+                        name: 'RECEIVER',
+                        editor: 'text',
                     },
                     {
                         header: '타입',
@@ -246,22 +265,22 @@ const WareHouseManager = (function() {
             });
             
             // 편집 완료 이벤트 처리 - 변경된 행 추적
-            mInventoryGrid.on('editingFinish', function(ev) {
+            mReceiptGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
-                const row = mInventoryGrid.getRow(rowKey);
+                const row = mReceiptGrid.getRow(rowKey);
                 
                 // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
                 if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
-                    mInventoryGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+                    mReceiptGrid.setValue(rowKey, 'ROW_TYPE', 'update');
                     console.log(`행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
                 }
             });
 
             // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
-            GridUtil.setupKeyColumnControl('mInventoryGrid', 'WHS_CODE');
+            GridUtil.setupKeyColumnControl('mReceiptGrid', 'WHS_CODE');
             
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
-            GridSearchUtil.updateOriginalData('mInventoryGrid', gridData);
+            GridSearchUtil.updateOriginalData('mReceiptGrid', gridData);
 
             console.log('그리드 초기화가 완료되었습니다.');
         } catch (error) {
@@ -292,7 +311,7 @@ const WareHouseManager = (function() {
             };
 
             // 그리드에 새 행 추가
-            await GridUtil.addNewRow('mInventoryGrid', newRowData, {
+            await GridUtil.addNewRow('mReceiptGrid', newRowData, {
                 at: 0,
                 focus: true
             });
@@ -308,7 +327,7 @@ const WareHouseManager = (function() {
      */
     async function searchData() {
         try {
-            const keyword = document.getElementById('mInventoryInput').value;
+            const keyword = document.getElementById('mReceiptInput').value;
             console.log('데이터 검색 시작. 검색어:', keyword);
 
             // API 호출
@@ -324,12 +343,12 @@ const WareHouseManager = (function() {
             const data = Array.isArray(response) ? response : (response.data || []);
 
             // 그리드 데이터 설정
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('mReceiptGrid');
             if (grid) {
                 grid.resetData(data);
                 
                 // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
-                GridSearchUtil.updateOriginalData('mInventoryGrid', data);
+                GridSearchUtil.updateOriginalData('mReceiptGrid', data);
             }
 
             console.log('데이터 검색 완료. 결과:', data.length, '건');
@@ -353,16 +372,16 @@ const WareHouseManager = (function() {
         try {
             console.log('데이터 저장 시작');
 
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('mReceiptGrid');
             if (!grid) {
-                throw new Error('mInventoryGrid를 찾을 수 없습니다.');
+                throw new Error('mReceiptGrid를 찾을 수 없습니다.');
             }
 
             // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
             grid.blur();
 
             // 변경된 데이터 추출
-            const changes = await GridUtil.extractChangedData('mInventoryGrid');
+            const changes = await GridUtil.extractChangedData('mReceiptGrid');
             const modifiedData = [...changes.insert, ...changes.update];
 
             if (modifiedData.length === 0) {
@@ -432,7 +451,7 @@ const WareHouseManager = (function() {
     async function deleteRows() {
         try {
             // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('mReceiptGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
@@ -453,7 +472,7 @@ const WareHouseManager = (function() {
             }
             
             // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
-            const result = await GridUtil.deleteSelectedRows('mInventoryGrid', {
+            const result = await GridUtil.deleteSelectedRows('mReceiptGrid', {
                 confirmTitle: "삭제 확인",
                 confirmMessage: "선택한 항목을 삭제하시겠습니까?",
                 onBeforeDelete: async () => {
@@ -504,7 +523,7 @@ const WareHouseManager = (function() {
      * @returns {Object} 그리드 인스턴스
      */
     function getGrid() {
-        return mInventoryGrid;
+        return mReceiptGrid;
     }
 
     /**
@@ -513,7 +532,7 @@ const WareHouseManager = (function() {
      */
     async function saveSearchCondition() {
         try {
-            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
+            const searchCondition = document.getElementById('mReceiptInput')?.value || '';
 
             localStorage.setItem('warehouseSearchCondition', searchCondition);
             console.log('검색 조건이 저장되었습니다.');
@@ -543,7 +562,7 @@ const WareHouseManager = (function() {
             }
 
             // 검색 조건 설정
-            const searchInput = document.getElementById('mInventoryInput');
+            const searchInput = document.getElementById('mReceiptInput');
             if (searchInput) {
                 searchInput.value = savedCondition;
             }
@@ -566,11 +585,11 @@ const WareHouseManager = (function() {
      */
     function performLocalSearch() {
         try {
-            const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
+            const keyword = document.getElementById('mReceiptInput').value.toLowerCase();
             
             // 원본 데이터 가져오기
-            GridSearchUtil.resetToOriginalData('mInventoryGrid');
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            GridSearchUtil.resetToOriginalData('mReceiptGrid');
+            const grid = GridUtil.getGrid('mReceiptGrid');
             const originalData = grid.getData();
             
             // 필터링
