@@ -31,7 +31,7 @@ public class Qcm {
     @Column(name = "QCM_CODE", nullable = false)
     private String qcmCode;
 
-    @Column(name = "QCM_NAME", nullable = false)
+    @Column(name = "QCM_NAME")
     private String qcmName;
 
     @Column(name = "MTL_CODE")

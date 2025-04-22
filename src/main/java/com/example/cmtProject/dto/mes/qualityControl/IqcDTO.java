@@ -30,6 +30,7 @@ public class IqcDTO {
     private String whsName;             // 입고될 창고
     private String lotNo;               // LOT번호
     private String iqcRemarks;
+    private String iqcVisiable;			// 삭제 여부
     
     
     // join을 위한 DTO

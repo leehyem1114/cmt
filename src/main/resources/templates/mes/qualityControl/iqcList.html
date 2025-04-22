@@ -15,7 +15,7 @@
 		<!-- 최신 xlsx 스크립트 CDN -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 	   
-	    <title>품질 정보</title>
+	    <title>입고 검사</title>
 
 <style>
   .tui-datepicker {
@@ -42,7 +42,7 @@
 <!--			<div th:text="${soModel}"></div>-->
 <!--		</th:block>-->
 <!-- 그리드 top 시작 -->
-	<h3>품질 정보</h3>
+	<h3>입고 검사 목록</h3>
 	
 	
 
@@ -98,6 +98,13 @@
 	<div id="gridTop"></div>
 	
 	
+	<!-- 상세 정보 영역 -->
+	<div id="iqcDetailWrapper" style="margin-top: 20px; border: 1px solid #ddd; padding: 15px;">
+	  <h3>상세 정보</h3>
+	  <div id="iqcDetailContent">입고 검사항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
+	</div>
+	
+	
 	
 	
 	
@@ -147,14 +154,44 @@
             	  align: "center",
             	  hidden: true
             	},
-            	{ 
-           	      header: 'LOT', 
-           		  name: 'lotNo', 
-           		  sortable: true, 
-           		  filter: 'text',
-           		  align: "center",
-           		  width: 150,
-              	},
+            	{
+           		  header: '작업 상태',
+           		  name: 'iqcInspectionStatus',
+           		  align: 'center',
+           		  width: 80,
+           		  formatter: ({ value }) => {
+           		    let btnClass = 'btn-secondary';
+           		    let btnLabel = value;
+
+           		    if (value === '진행중') {
+           		      btnClass = 'btn-primary';
+           		    } else if (value === '완료') {
+           		      btnClass = 'btn-success';
+           		    }
+
+           		    return `<button class="btn ${btnClass} btn-sm">${btnLabel}</button>`;
+           		  }
+           		},
+           		{
+           		  header: '합격 여부',
+           		  name: 'iqcInspectionResult',
+           		  align: 'center',
+           		  width: 80,
+           		  formatter: ({ value }) => {
+           		    let btnClass = 'btn-secondary';
+           		    let btnLabel = '확인불가';
+
+           		    if (value === 'P') {
+           		      btnClass = 'btn-success';
+           		      btnLabel = '합격';
+           		    } else if (value === 'F') {
+           		      btnClass = 'btn-danger';
+           		      btnLabel = '불합격';
+           		    }
+
+           		    return `<button class="btn ${btnClass} btn-sm"">${btnLabel}</button>`;
+           		  }
+           		},
             	{ 
                   header: '입고 검사 코드', 
             	  name: 'iqcCode', 
@@ -168,7 +205,6 @@
               	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
-              	  width: 100,
               	  align: "center",
               	},
               	{ 
@@ -226,7 +262,21 @@
            		  filter: 'text',
            		  width: 200,
            		  align: "center",
-              	},
+	           		formatter: function({ value }) {
+	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
+	
+	           		    const date = new Date(value);
+	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
+	
+	           		    const year = date.getFullYear();
+	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
+	           		    const day = String(date.getDate()).padStart(2, '0');
+	           		    const hours = String(date.getHours()).padStart(2, '0');
+	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		    
+	           		    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		}
+           		},
 	    		{ 
            	      header: '검사 종료 시간', 
            		  name: 'iqcEndTime', 
@@ -234,6 +284,20 @@
            		  filter: 'text',
            		  width: 200,
            		  align: "center",
+	           		formatter: function({ value }) {
+	           		    if (!value) return ''; // null, undefined, '', 0 모두 걸러짐
+	
+	           		    const date = new Date(value);
+	           		    if (isNaN(date)) return ''; // Invalid Date도 방지
+	
+	           		    const year = date.getFullYear();
+	           		    const month = String(date.getMonth() + 1).padStart(2, '0');
+	           		    const day = String(date.getDate()).padStart(2, '0');
+	           		    const hours = String(date.getHours()).padStart(2, '0');
+	           		    const minutes = String(date.getMinutes()).padStart(2, '0');
+	           		    
+	           		    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+	           		}
               	},
 	    		{ 
            	      header: '입고 창고', 
@@ -248,11 +312,87 @@
            		  name: 'iqcRemarks', 
            		  sortable: true, 
            		  filter: 'text',
-           		  width: 150,
            		  align: "center",
               	}
             ],  
           });
+	    
+	    
+	    
+	    
+	    
+	    
+	    grid.on('click', ev => {
+	    	  const rowKey = ev.rowKey;
+	    	  const rowData = grid.getRow(rowKey);
+	    	  if (!rowData) return;
+	    	  
+	    	  const status = rowData.iqcInspectionStatus;
+	    	  const result = rowData.iqcInspectionResult;
+
+	    	  let color = '#6c757d'; // 기본 회색 (대기)
+	    	  if (status === '진행중') {
+	    	    color = '#0d6efd'; // 파랑
+	    	  } 
+	    	  if (status === '완료') {
+	    	    color = '#198754'; // 초록
+	    	  }
+	    	  if (result === 'P') {
+		    	    color = '#198754'; // 초록
+		      }
+	    	  if (result === 'F') {
+		    	    color = '#dc3545'; // 빨강
+		      }
+
+	    	  const resultLabel = result === 'P' ? '합격'
+	                		    : result === 'F' ? '불합격'
+	                  			: '확인불가';
+
+			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
+			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
+
+	    	  const detailHtml = `
+	    		<div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
+	    		  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+	    		    ${makeDetailItem('작업 상태', statusHtml)}
+	    		    ${makeDetailItem('작업 상태', resultHtml)}
+	    	        ${makeDetailItem('입고 검사 코드', rowData.iqcCode)}
+	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
+	    	        ${makeDetailItem('검수자', rowData.empName)}
+	    	        ${makeDetailItem('원자재', rowData.mtlName)}
+	    	        ${makeDetailItem('무게 측정값', `${rowData.iqcMeasuredWeightValue} ${rowData.qcmUnitWeight}`)}
+	    	        ${makeDetailItem('길이 측정값', `${rowData.iqcMeasuredLengthValue} ${rowData.qcmUnitLength}`)}
+	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.iqcStartTime))}
+	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.iqcEndTime))}
+	    	        ${makeDetailItem('입고 창고', rowData.whsName)}
+	    	        ${makeDetailItem('비고', rowData.iqcRemarks)}
+	    	      </div>
+	    	    </div>
+	    	  `;
+
+	    	  document.getElementById('iqcDetailContent').innerHTML = detailHtml;
+	    	});
+	    function makeDetailItem(label, value) {
+	    	  return `
+	    	    <div style="flex: 1 1 45%; display: flex;">
+	    	      <div style="font-weight: 600; width: 120px;">${label}</div>
+	    	      <div style="flex: 1;">${value ?? '-'}</div>
+	    	    </div>
+	    	  `;
+	    	}
+
+	    	function formatDate(value) {
+	    	  if (!value) return '';
+	    	  const date = new Date(value);
+	    	  if (isNaN(date)) return '';
+	    	  const y = date.getFullYear();
+	    	  const m = String(date.getMonth() + 1).padStart(2, '0');
+	    	  const d = String(date.getDate()).padStart(2, '0');
+	    	  const h = String(date.getHours()).padStart(2, '0');
+	    	  const min = String(date.getMinutes()).padStart(2, '0');
+	    	  return `${y}년 ${m}월 ${d}일 ${h}시 ${min}분`;
+	    	}
+
 	    
 
 	    
@@ -409,19 +549,18 @@
     			console.log(worksheet);
     			
     			worksheet["A1"] = { t: "s", v: "iqcNo", r:"<t>iqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcNo', w: 'iqcNo' };
-    			worksheet["B1"] = { t: "s", v: "lotNo", r:"<t>lotNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'lotNo', w: 'lotNo' };
-    			worksheet["C1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
-    			worksheet["D1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["E1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["F1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName' };
-    			worksheet["G1"] = { t: "s", v: "iqcMeasuredWeightValue", r:"<t>iqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredWeightValue', w: 'iqcMeasuredWeightValue' };
-    			worksheet["H1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["I1"] = { t: "s", v: "iqcMeasuredLengthValue", r:"<t>iqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredLengthValue', w: 'iqcMeasuredLengthValue' };
-    			worksheet["J1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["K1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
-    			worksheet["L1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
-    			worksheet["M1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["N1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
+       			worksheet["B1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
+    			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["D1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["E1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName' };
+    			worksheet["F1"] = { t: "s", v: "iqcMeasuredWeightValue", r:"<t>iqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredWeightValue', w: 'iqcMeasuredWeightValue' };
+    			worksheet["G1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["H1"] = { t: "s", v: "iqcMeasuredLengthValue", r:"<t>iqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredLengthValue', w: 'iqcMeasuredLengthValue' };
+    			worksheet["I1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["J1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
+    			worksheet["K1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
+    			worksheet["L1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["M1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 

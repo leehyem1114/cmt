@@ -86,5 +86,8 @@ public class Iqc {
     
     @Column(name = "IQC_REMARKS")
     private String iqcRemarks;
+    
+    @Column(name = "IQC_VISIABLE")
+    private String iqcVisiable;
 
 }

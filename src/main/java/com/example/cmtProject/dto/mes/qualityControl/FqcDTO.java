@@ -30,6 +30,7 @@ public class FqcDTO {
     private String whsName;               // 입고될 창고
     private String lotNo;             // LOT 번호
     private String fqcRemarks;
+    private String fqcVisiable;			// 삭제 여부
     
     
     // join을 위한 DTO

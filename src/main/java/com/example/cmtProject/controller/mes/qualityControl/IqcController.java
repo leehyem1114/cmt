@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
+import com.example.cmtProject.entity.mes.qualityControl.Iqc;
 import com.example.cmtProject.repository.mes.qualityControl.IqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
 
@@ -110,5 +111,6 @@ public class IqcController {
 	}
 	
 	
+
 
 }

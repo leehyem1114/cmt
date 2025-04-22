@@ -80,6 +80,13 @@
 	<div id="gridTop"></div>
 	
 	
+	<!-- 상세 정보 표시용 -->
+	<div id="qcmDetailWrapper" style="margin-top: 20px; border: 1px solid #ddd; padding: 15px;">
+	  <h3>상세 정보</h3>
+	  <div id="qcmDetailContent">검사 항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
+	</div>
+	
+	
 	
 	
 	
@@ -165,7 +172,6 @@
               	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
-              	  width: 150,
               	  align: "center",
            		  ...(isAdmin && {
   	           		editor: {
@@ -315,7 +321,6 @@
            		  name: 'qcmMethod', 
            		  sortable: true, 
            		  filter: 'text',
-           		  width: 150,
            		  align: "center",
            		  ...(isAdmin && {
   	           		editor: {
@@ -328,6 +333,46 @@
             autoEdit: true,
     		editingEvent: 'dblclick'     
           });
+	    
+	    
+	    
+	    // 아무행이나 클릭했을시 상세정보 출력
+	    grid.on('click', ev => {
+	    	  const rowKey = ev.rowKey;
+	    	  const rowData = grid.getRow(rowKey);
+	    	  if (!rowData) return;
+
+	    	  const detailHtml = `
+	    	    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
+	    	      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+
+	    	        ${makeDetailItem('검사 코드', rowData.qcmCode)}
+	    	        ${makeDetailItem('검사명', rowData.qcmName)}
+	    	        ${makeDetailItem('원자재', rowData.mtlName)}
+	    	        ${makeDetailItem('반제품/완제품', rowData.pdtName)}
+	    	        ${makeDetailItem('목표값', rowData.qcmTargetValue)}
+	    	        ${makeDetailItem('상한값', rowData.qcmMaxValue)}
+	    	        ${makeDetailItem('하한값', rowData.qcmMinValue)}
+	    	        ${makeDetailItem('단위(무게)', rowData.qcmUnitWeight)}
+	    	        ${makeDetailItem('단위(길이)', rowData.qcmUnitLength)}
+	    	        ${makeDetailItem('검사방법', rowData.qcmMethod)}
+
+	    	      </div>
+	    	    </div>
+	    	  `;
+
+	    	  document.getElementById('qcmDetailContent').innerHTML = detailHtml;
+	    	});
+	    function makeDetailItem(label, value) {
+	    	  return `
+	    	    <div style="flex: 1 1 45%; display: flex;">
+	    	      <div style="font-weight: 600; width: 120px;">${label}</div>
+	    	      <div style="flex: 1;">${value ?? '-'}</div>
+	    	    </div>
+	    	  `;
+	    	}
+	    
+	    
 	    
 
 			

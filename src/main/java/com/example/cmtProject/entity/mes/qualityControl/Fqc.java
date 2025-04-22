@@ -87,5 +87,8 @@ public class Fqc {
     @Column(name = "FQC_REMARKS")
     private String fqcRemarks;
     
+    @Column(name = "FQC_VISIABLE")
+    private String fqcVisiable;
+    
 	
 }

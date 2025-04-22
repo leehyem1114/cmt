@@ -15,7 +15,7 @@
 		<!-- 최신 xlsx 스크립트 CDN -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 	   
-	    <title>출고 검사</title>
+	    <title>입고 검사</title>
 
 <style>
   .tui-datepicker {
@@ -42,7 +42,7 @@
 <!--			<div th:text="${soModel}"></div>-->
 <!--		</th:block>-->
 <!-- 그리드 top 시작 -->
-	<h3>출고 검사 목록</h3>
+	<h3>입고 검사</h3>
 	
 	
 
@@ -97,13 +97,6 @@
 	
 	<div id="gridTop"></div>
 	
-	<!-- 상세 정보 영역 -->
-	<div id="detailWrapper" style="margin-top: 20px; border: 1px solid #ddd; padding: 15px;">
-	  <h3>상세 정보</h3>
-	  <div id="detailContent">선택한 행을 클릭하면 여기에 정보가 나옵니다.</div>
-	</div>
-	
-	
 	
 	
 	
@@ -139,13 +132,22 @@
 
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
-            data: /*[[${fqcList}]]*/ [],
+            data: /*[[${iqcInspectionList}]]*/ [],
             rowHeaders: ['checkbox'],
             pageOptions: {
     	        useClient: true,  // 서버 사이드 페이징 활성화
     	        perPage: 20
     	    },
             columns: [
+            	{
+           		  header: '작업',
+           		  name: 'iqcInspectionStatus',
+           		  align: 'center',
+           		  width: 50,
+           		  formatter: () => {
+           		    return `<button class="btn-view" style="padding:4px 8px;">보기</button>`;
+           		  }
+           		},
             	{ 
                   header: 'NO', 
             	  name: 'fqcNo', 
@@ -154,44 +156,6 @@
             	  align: "center",
             	  hidden: true
             	},
-            	{
-           		  header: '작업 상태',
-           		  name: 'fqcInspectionStatus',
-           		  align: 'center',
-           		  width: 80,
-           		  formatter: ({ value }) => {
-           		    let btnClass = 'btn-secondary';
-           		    let btnLabel = value;
-
-           		    if (value === '진행중') {
-           		      btnClass = 'btn-primary';
-           		    } else if (value === '완료') {
-           		      btnClass = 'btn-success';
-           		    }
-
-           		    return `<button class="btn ${btnClass} btn-sm">${btnLabel}</button>`;
-           		  }
-           		},
-           		{
-           		  header: '합격 여부',
-           		  name: 'fqcInspectionResult',
-           		  align: 'center',
-           		  width: 80,
-           		  formatter: ({ value }) => {
-           		    let btnClass = 'btn-secondary';
-           		    let btnLabel = '확인불가';
-
-           		    if (value === 'P') {
-           		      btnClass = 'btn-success';
-           		      btnLabel = '합격';
-           		    } else if (value === 'F') {
-           		      btnClass = 'btn-danger';
-           		      btnLabel = '불합격';
-           		    }
-
-           		    return `<button class="btn ${btnClass} btn-sm"">${btnLabel}</button>`;
-           		  }
-           		},
             	{ 
                   header: '출고 검사 코드', 
             	  name: 'fqcCode', 
@@ -332,84 +296,6 @@
 	    	    grid.uncheck(rowKey);
 	    	  }
 	    	});
-	    
-	    
-	    
-	    // 아무곳이나 클릭하면 상세정보 띄워주기
-	    grid.on('click', ev => {
-	    	  const rowKey = ev.rowKey;
-	    	  const rowData = grid.getRow(rowKey);
-	    	  if (!rowData) return;
-	    	  
-	    	  
-	    	  const status = rowData.fqcInspectionStatus;
-	    	  const result = rowData.fqcInspectionResult;
-
-	    	  let color = '#6c757d'; // 기본 회색 (대기)
-	    	  if (status === '진행중') {
-	    	    color = '#0d6efd'; // 파랑
-	    	  } 
-	    	  if (status === '완료') {
-	    	    color = '#198754'; // 초록
-	    	  }
-	    	  if (result === 'P') {
-		    	    color = '#198754'; // 초록
-		      }
-	    	  if (result === 'F') {
-		    	    color = '#dc3545'; // 빨강
-		      }
-	    	  
-	    	  const resultLabel = result === 'P' ? '합격'
-	                 			: result === 'F' ? '불합격'
-	                  			: '확인불가';
-
-			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
-			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
-	
-	    	  const detailHtml = `
-	    		  <div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
-	    		    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-	    		      ${makeDetailItem('작업 상태', statusHtml)}
-	    		      ${makeDetailItem('작업 상태', resultHtml)}
-	    		      ${makeDetailItem('출고 검사 코드', rowData.fqcCode)}
-	    		      ${makeDetailItem('검사이름', rowData.qcmName)}
-	    		      ${makeDetailItem('검수자', rowData.empName)}
-	    		      ${makeDetailItem('완제품', rowData.pdtName)}
-	    		      ${makeDetailItem('무게 측정값', `${rowData.fqcMeasuredWeightValue} ${rowData.qcmUnitWeight}`)}
-	    		      ${makeDetailItem('길이 측정값', `${rowData.fqcMeasuredLengthValue} ${rowData.qcmUnitLength}`)}
-	    		      ${makeDetailItem('검사 시작', formatDate(rowData.fqcStartTime))}
-	    		      ${makeDetailItem('검사 종료', formatDate(rowData.fqcEndTime))}
-	    		      ${makeDetailItem('출고 창고', rowData.whsName)}
-	    		      ${makeDetailItem('비고', rowData.fqcRemarks)}
-
-	    		    </div>
-	    		  </div>
-	    		`;
-				function makeDetailItem(label, value) {
-				  return `
-				    <div style="flex: 1 1 45%; display: flex;">
-				      <div style="font-weight: 600; width: 120px;">${label}</div>
-				      <div style="flex: 1;">${value ?? '-'}</div>
-				    </div>
-				  `;
-				}
-
-
-	    	  document.getElementById('detailContent').innerHTML = detailHtml;
-	    	});
-	    
-	    // 날짜 포매팅 따로 뺌
-	    function formatDate(value) {
-    	  if (!value) return '';
-    	  const date = new Date(value);
-    	  if (isNaN(date)) return '';
-    	  const y = date.getFullYear();
-    	  const m = String(date.getMonth() + 1).padStart(2, '0');
-    	  const d = String(date.getDate()).padStart(2, '0');
-    	  const h = String(date.getHours()).padStart(2, '0');
-    	  const min = String(date.getMinutes()).padStart(2, '0');
-    	  return `${y}년 ${m}월 ${d}일 ${h}시 ${min}분`;
-    	}
         
         
         
@@ -550,18 +436,19 @@
     			console.log(worksheet);
     			
     			worksheet["A1"] = { t: "s", v: "fqcNo", r:"<t>fqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcNo', w: 'fqcNo' };
-       			worksheet["B1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
-    			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["D1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["E1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
-    			worksheet["F1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
-    			worksheet["G1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["H1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
-    			worksheet["I1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["J1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
-    			worksheet["K1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["L1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["M1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };
+    			worksheet["B1"] = { t: "s", v: "lotNo", r:"<t>lotNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'lotNo', w: 'lotNo' };
+    			worksheet["C1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
+    			worksheet["D1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["E1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["F1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+    			worksheet["G1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
+    			worksheet["H1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["I1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
+    			worksheet["J1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["K1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
+    			worksheet["L1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
+    			worksheet["M1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["N1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 

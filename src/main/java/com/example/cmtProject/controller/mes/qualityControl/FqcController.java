@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
+import com.example.cmtProject.entity.mes.qualityControl.Fqc;
 import com.example.cmtProject.repository.mes.qualityControl.FqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.FqcService;
 
@@ -111,5 +113,6 @@ public class FqcController {
 	}
 	
 	
+
 
 }
