@@ -242,8 +242,10 @@ public class ProductionPrcController {
 		
 		return selectPdtCodeList;
 	}
+
 	
 	private String makeLotCode(String prcType, String todayStr, int orderNum) {
+
 		
 		System.out.println("prcType:" + prcType + " ,todayStr:" + todayStr + " ,orderNum:" + orderNum);
 				
@@ -268,6 +270,7 @@ public class ProductionPrcController {
 		return lot;
 				
 	}
+
 	
 }
 

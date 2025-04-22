@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+
+<mapper namespace="com.example.cmtProject.mapper.mes.qualityControl.FqcMapper">
+
+	<select id="getAllFqc" resultType="com.example.cmtProject.dto.mes.qualityControl.FqcDTO">
+	SELECT 
+        F.FQC_NO,
+        F.FQC_CODE,
+        E.EMP_NAME,
+        F.QCM_NAME,
+        F.PDT_NAME,
+        F.FQC_START_TIME,
+        F.FQC_END_TIME,
+        F.FQC_MEASURED_WEIGHT_VALUE,
+        F.FQC_MEASURED_LENGTH_VALUE,
+        C_UNIT_LENGTH.CMN_DETAIL_NAME AS QCM_UNIT_LENGTH,
+		C_UNIT_WEIGHT.CMN_DETAIL_NAME AS QCM_UNIT_WEIGHT,
+		F.FQC_INSPECTION_STATUS,
+		F.FQC_INSPECTION_RESULT,
+        F.WHS_NAME,
+        F.LOT_NO,
+        F.FQC_REMARKS
+    FROM FQC F
+    LEFT JOIN COMMONCODE_DETAIL C_UNIT_LENGTH ON C_UNIT_LENGTH.CMN_DETAIL_NAME = F.QCM_UNIT_LENGTH
+	LEFT JOIN COMMONCODE_DETAIL C_UNIT_WEIGHT ON C_UNIT_WEIGHT.CMN_DETAIL_NAME = F.QCM_UNIT_WEIGHT	
+	JOIN EMPLOYEES E ON E.EMP_ID = F.EMP_ID
+	WHERE F.FQC_VISIABLE = 'Y'
+    ORDER BY FQC_NO DESC
+	</select>
+	
+	
+	
+	
+	<!-- 엑셀 데이터 업데이트 -->
+	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.FqcDTO">
+		UPDATE FQC
+	    SET
+	        LOT_NO                     = #{lotNo},
+	        FQC_CODE                   = #{fqcCode},
+	        QCM_NAME                   = #{qcmName},
+	        EMP_NAME                   = #{empName}, 
+	        PDT_NAME                   = #{pdtName},
+	        FQC_MEASURED_WEIGHT_VALUE  = #{fqcMeasuredWeightValue},
+	        QCM_UNIT_WEIGHT            = #{qcmUnitWeight},
+	        FQC_MEASURED_LENGTH_VALUE  = #{fqcMeasuredLengthValue},
+	        QCM_UNIT_LENGTH            = #{qcmUnitLength},
+	        FQC_START_TIME             = #{fqcStartTime},
+	        FQC_END_TIME               = #{fqcEndTime},
+	        WHS_NAME                   = #{whsName},
+	        FQC_REMARKS                = #{fqcRemarks}
+	    WHERE FQC_NO = #{fqcNo}
+	</update>
+
+
+</mapper>

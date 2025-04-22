@@ -31,14 +31,20 @@ public class Qcm {
     @Column(name = "QCM_CODE", nullable = false)
     private String qcmCode;
 
-    @Column(name = "QCM_NAME", nullable = false)
+    @Column(name = "QCM_NAME")
     private String qcmName;
 
     @Column(name = "MTL_CODE")
     private String mtlCode;
 
+    @Column(name = "MTL_NAME")
+    private String mtlName;
+
     @Column(name = "PDT_CODE")
     private String pdtCode;
+
+    @Column(name = "PDT_NAME")
+    private String pdtName;
     
     @Column(name = "QCM_TARGET_VALUE", nullable = false)
     private Double qcmTargetValue;

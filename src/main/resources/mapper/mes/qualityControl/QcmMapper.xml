@@ -52,6 +52,9 @@
 	<update id="qcmUpdate" parameterType="com.example.cmtProject.dto.mes.qualityControl.QcmDTO">
 		UPDATE QCM
 	    <set>
+	    	<if test="columnName eq 'qcmName'">
+	            QCM_NAME = #{value}
+	        </if>
 	        <if test="columnName eq 'mtlName'">
 	            MTL_CODE = (
 			        SELECT MTL_CODE
