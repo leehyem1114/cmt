@@ -1,9 +1,7 @@
 package com.example.cmtProject.dto.mes.production;
 
 import java.time.LocalDate;
-
 import java.time.LocalTime;
-
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -18,21 +16,19 @@ import lombok.NoArgsConstructor;
 @Builder
 public class LotDTO {
 
-
-    private Long lotNo;
-    private String lotCode;
-    private String pdtCode;
-    private String pdtName;
+	private Long lotNo;
+	private String childLotCode;
+    private String parentLotCode;
+    private String childPdtCode;
+    private String parentdPdtCode;
     private LocalDate createDate;
     private String prcType;
     private String lineCode;
     private String eqpCode;
     private String woCode;
-    private String childLotCode;
-    private String parentLotCode;
-    private LocalDate startTime;
-    private LocalDate finishTime;
-    private String workOrderStatus;
+    private LocalTime startTime;
+    private LocalTime finishTime;
+    private String woStatusNo;
     private String useYn;
     
     //------------------
@@ -57,9 +53,7 @@ public class LotDTO {
     private String empId;
     private String empName;
     private String msStatus;
-    
- 
-
 	 	
 }
+
 

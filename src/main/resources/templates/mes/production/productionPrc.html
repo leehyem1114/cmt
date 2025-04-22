@@ -197,37 +197,51 @@
 					return;
 				}
 				
+				Swal.fire({
+					title: 'LOT번호가 부여되고 공정이 시작됩니다.',
+				   	text: "이 작업은 되돌릴 수 없습니다!",
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				  if (result.isConfirmed) {
+					$.ajax({
+						url: '/production/pdtCodeSelected',
+						type: 'GET',
+						data: {
+							'pdtCode' : pdtCode,
+							'woCode' : woCode
+							},
+						success : function(response){
+							woGridData = response;
+							woGrid.resetData(response);
+							
+							//PARENT_PDT_CODE와 CHILD_ITEM_CODE로 배열 생성
+							bomList = response.map(item => ({
+					            parent: item.PARENT_PDT_CODE,
+					            child: item.CHILD_ITEM_CODE
+					        }));
+							
+							//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
+							//bomList는 전역으로 선언해서 makeTree에서 바로 사용
+							makeTree();
+						},
+						error : function(error){
+							console.log("error:" + error)
+						}
+					});//$.ajax
+					
+					
+					$('#woModal').modal('hide');
+						
+				  	}//if (result.isConfirmed) {
+				});
+				
 				//셀렉트 박스가 선택되었다면 pdtCode에 값이 있을 수밖에 없다.
 				//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
 				//pdtCode로 BOM 재귀 호출
-				$.ajax({
-					url: '/production/pdtCodeSelected',
-					type: 'GET',
-					data: {
-						'pdtCode' : pdtCode,
-						'woCode' : woCode
-						},
-					success : function(response){
-						woGridData = response;
-						woGrid.resetData(response);
-						
-						//PARENT_PDT_CODE와 CHILD_ITEM_CODE로 배열 생성
-						bomList = response.map(item => ({
-				            parent: item.PARENT_PDT_CODE,
-				            child: item.CHILD_ITEM_CODE
-				        }));
-						
-						//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
-						//bomList는 전역으로 선언해서 makeTree에서 바로 사용
-						makeTree();
-					},
-					error : function(error){
-						console.log("error:" + error)
-					}
-				});//$.ajax
 				
-				
-				$('#woModal').modal('hide');
 				
 			})
 				
