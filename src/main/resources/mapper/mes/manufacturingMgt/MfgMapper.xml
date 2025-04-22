@@ -40,16 +40,71 @@
 		LEFT JOIN COMMONCODE_DETAIL CD ON SO.QTY_UNIT = CD.CMN_DETAIL_CODE
 		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
 		LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
+		WHERE SO_STATUS = 'SO_CONFIRMED'
+		  AND NOT EXISTS (
+	      SELECT 1 FROM MFG_PLANS MP
+	      WHERE MP.SO_CODE = SO.SO_CODE
+	  )	
 	</select>  
-
+	
+	<!-- 제품 BOM 조회 -->
+	<select id="getBomList" resultType="Map">
+		SELECT 
+			B.BOM_NO,
+			B.PARENT_PDT_CODE,
+			B.CHILD_ITEM_CODE,
+			B.ITEM_TYPE,
+			B.BOM_QTY,
+			B.BOM_UNIT,
+			B.BOM_PRC_TYPE,
+			NVL(PRIOR B.BOM_QTY, 1) * B.BOM_QTY AS TOTAL_QTY,
+			<!-- PRIOR B.BOM_QTY * B.BOM_QTY AS totalQty, -->
+			3 AS leadTime
+		FROM BOM B
+		<!-- LEFT JOIN PROCESS_INFO P ON B.BOM_PRC_TYPE = P.PRC_TYPE_CODE -->
+		<!-- WHERE B.USE_YN = 'Y' -->
+ 		START WITH B.PARENT_PDT_CODE = 'WIP013'
+		CONNECT BY PRIOR B.CHILD_ITEM_CODE = B.PARENT_PDT_CODE
+	</select>
+	
+	<!-- 원자재 재고 조회 -->
+	<select id="getMaterialInventory" resultType="Map">
+		SELECT MTL_CODE, SUM(CURRENT_QTY)
+		FROM MATERIAL_INVENTORY
+		GROUP BY MTL_CODE
+	</select>
+	
+	<!-- 수주에 따른 BOM 조회 -->
+	<select id="getMfgPlanBomList" resultType="Map">
+		SELECT 
+			BOM_NO,
+			PARENT_PDT_CODE,
+			CHILD_ITEM_CODE,
+			ITEM_TYPE,
+			BOM_QTY,
+			BOM_UNIT,
+			BOM_PRC_TYPE,
+			PRIOR BOM_QTY * BOM_QTY AS TOTAL_QTY
+		FROM BOM
+		START WITH PARENT_PDT_CODE IN (
+			SELECT SO.PDT_CODE
+			FROM MFG_PLANS MP
+			JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+			JOIN COMMONCODE_DETAIL CD ON MP.MP_STATUS = CD.CMN_DETAIL_CODE
+			WHERE CMN_CODE = 'MP_STATUS'
+				AND CD.CMN_DETAIL_CODE IN ('MPS002', 'MPS003') 
+		)
+		CONNECT BY PRIOR CHILD_ITEM_CODE = PARENT_PDT_CODE
+	</select>
+	
 	<!-- 생산 계획 등록 -->
 	<insert id="registMpPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
 		INSERT INTO MFG_PLANS (
-		    MP_NO
+		      MP_NO
 		    , MP_CODE
 			, SO_CODE
 			, EMP_ID
-			, MP_STATUS
+<!-- 			, MP_STATUS -->
 			, MP_PRIORITY
 			, MP_CREATED_AT
 			, MP_UPDATED_AT
@@ -60,31 +115,35 @@
     		, #{mpCode, jdbcType=VARCHAR}
     		, #{soCode, jdbcType=VARCHAR}
     		, #{empId, jdbcType=VARCHAR}
-    		, #{mpStatus, jdbcType=VARCHAR}
+<!--     		, #{mpStatus, jdbcType=VARCHAR} -->
     		, #{mpPriority, jdbcType=VARCHAR}
-    		, #{mpCreatedAt, jdbcType=DATE}
+    		, SYSDATE
     		, NULL
     		, #{mpStartDate, jdbcType=DATE}
     		, #{mpEndDate, jdbcType=DATE}
+    	)	
 	</insert>
 	
-	<!-- 제품 BOM 조회 -->
-	<select id="getBomList" resultType="Map">
-		SELECT 
-			B.BOM_NO,
-			B.PARENT_PDT_CODE AS pdtCode,
-			B.CHILD_ITEM_CODE,
-			B.ITEM_TYPE,
-			B.BOM_QTY,
-			B.BOM_UNIT,
-			B.BOM_PRC_TYPE AS processCode,
-			P.LEAD_TIME
-		FROM BOM B
-		LEFT JOIN PROCESS P ON B.BOM_PRC_TYPE = P.PRC_CODE
-		WHERE B.USE_YN = 'Y'
-		START WITH B.PARENT_PDT_CODE = #{pdtCode}
-		CONNECT BY PRIOR B.CHILD_ITEM_CODE = B.PARENT_PDT_CODE
-	</select>
+	<!-- 생산 계획 수정 -->
+	<update id="updateMpPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		UPDATE MFG_PLANS
+		SET
+	        MP_PRIORITY   = #{mpPriority, jdbcType=VARCHAR},
+	        MP_STATUS     = #{mpStatus, jdbcType=VARCHAR},
+	        MP_START_DATE = #{mpStartDate, jdbcType=DATE},
+	        MP_END_DATE   = #{mpEndDate, jdbcType=DATE},
+	        MP_UPDATED_AT = SYSDATE
+	    WHERE MP_CODE = #{mpCode, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 생산 계획 삭제 -->
+	<delete id="deleteMpPlan" parameterType="list">
+		DELETE FROM MFG_PLANS
+		WHERE MP_CODE IN
+	    <foreach collection="list" item="code" open="(" separator="," close=")">
+	        #{code}
+	    </foreach>
+	</delete>
 
 	<!-- 전체 제조 계획 조회 -->
 	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">

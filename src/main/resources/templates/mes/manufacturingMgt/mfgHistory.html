@@ -28,6 +28,26 @@
 		<div id="mfgHistoryGrid"></div>
 	</div>
 	
+		<!--  모달 창 시작 -->
+	<div class="modal fade" id="mfgHistoriesModal" tabindex="-1" aria-labelledby="mfgHistoriesModal" aria-hidden="true">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="mfgHistoriesModalLabel">생산 이력</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	            	<div id="soGrid"></div>
+				</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                <button type="button" id="mfgPlanRegiBtn" class="btn btn-primary">등록</button>
+		        </div>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
+	
 	<script th:inline="javascript">
 	
 	//================================== 그리드 상단 상품 부분 ================================= 
@@ -36,12 +56,9 @@
 	let grid = new tui.Grid({
         el: document.getElementById('mfgHistoryGrid'), 
 		data: gridData,
-        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
-		//selectionUnit: 'row', //행 단위선택
+        rowHeaders: ['checkbox'],
 		scrollX: true,
         scrollY: true,
-		//width: 1600,  // 전체 너비 지정
-		//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
 		pageOptions: {
 		   useClient: true,   // 클라이언트 사이드 페이징 사용
 		   perPage: 10        // 페이지당 행 수

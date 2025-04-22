@@ -23,7 +23,7 @@ public class MfgScheduleDTO {
     private String staffName;	   // 담당 작업자 사번
     private String empId;          // 등록 직원 사번
     private String empName; 	   // 등록 직원명
-    private Long allocatedQty;     // 계획 수량
+    private String allocatedQty;   // 계획 수량
     private String msStatus;       // 제조 계획 상태
     private String msPriority;     // 우선순위
     private LocalDate msCreatedAt; // 등록일자

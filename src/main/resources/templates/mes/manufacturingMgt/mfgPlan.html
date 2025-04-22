@@ -26,16 +26,20 @@
 	            	</select>
 	            </div>
 	            <div class="col-md-3">	
-	                <input type="text" class="form-control" placeholder="수주주문번호를 입력해주세요.">  
+	                <input type="text" class="form-control" placeholder="수주코드를 입력해주세요.">  
 	            </div>
 	            <div class="col-md-2 d-flex align-items-end">
 	            	<button type="button" class="btn btn-outline-secondary">
 		            	<i class="bi bi-search"></i>
 		            </button>
-	            </div>    
+	            </div>
+	            
+	            <!-- 로그인한 사용자 ID -->
+	            <input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
+	            
 	            <div class="text-end mb-2">
-		            <button type="button" class="btn btn-outline-secondary">저장</button>
-		            <button type="button" class="btn btn-outline-secondary">삭제</button>
+		            <button type="button" id="updateBtn" class="btn btn-outline-secondary">저장</button>
+		            <button type="button" id="delete" class="btn btn-outline-secondary">삭제</button>
 		            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">계획 등록</button>
 	            </div>
 	        </div>		
@@ -49,7 +53,7 @@
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">
 	            <div class="modal-header">
-	                <h5 class="modal-title" id="mfgPlanModalLabel">상품 계획 등록</h5>
+	                <h5 class="modal-title" id="mfgPlanModalLabel">생산 계획 등록</h5>
 	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	            </div>
 	            <div class="modal-body">
@@ -63,13 +67,11 @@
 	    </div><!-- modal-dialog modal-lg -->
 	</div><!-- modal -->
 	<!-- 모달 끝 -->
-
+ 
 	<script th:inline="javascript">
 	
 	//================================== 그리드 부분 ================================= 
 	let mpList = /*[[${mpList}]]*/ [];
-	
-	
 	
 	let grid1 = new tui.Grid({
         el: document.getElementById('mfgPlanGrid'), 
@@ -93,7 +95,7 @@
 			{
 				header: '생산계획코드',
 				name: 'mpCode',
-				width: 100,
+				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
@@ -113,17 +115,7 @@
 				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
-				align: 'center',
-				editor: "text"
-            },
-			{
-                header: '우선순위',
-                name: 'mpPriority',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center",
-				editor: "text"
+				align: 'center'
             },
             {
 				header: '상태',
@@ -218,7 +210,25 @@
 	console.log("-----------------확인", soList);
 	let grid2 = null;
 	
+	let mpCode = "";
+	
 	document.getElementById('mfgPlanModal').addEventListener('shown.bs.modal', () => {
+		
+		const today = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
+		
+		$.ajax({
+			url: '/mfg/makeMpCode',
+			method: 'GET',
+			data: { data: today },
+			success: function (code) {
+				mpCode = code; // 등록 시 사용할 예정
+				console.log("자동 생성된 MP 코드:", mpCode);
+			},
+			error: function () {
+				alert("생산계획코드 자동 생성 실패");
+			}
+		});
+
 		
 		if (!grid2) {	
 			grid2 = new tui.Grid({
@@ -334,14 +344,15 @@
 			});
 		}
 		
-		grid2.on('afterChange', (ev) => {
+/* 		grid2.on('afterChange', (ev) => {
 		    ev.changes.forEach(change => {
 		        if (change.columnName === 'mpStartDate') {
 		            const rowKey = change.rowKey;
 		            const mpStartDateStr = change.value; // 입력된 생산 시작 예정일 (문자열)
 		            const leadTimeHours = grid2.getValue(rowKey, 'leadTime'); // 소요시간 가져오기
+		            console.log("DDDDD",leadTime);
 		            
-		            if (startDateStr && leadTimeHours) {
+		            if (mpStartDateStr && leadTimeHours) {
 		                const mpStartDate = new Date(mpStartDateStr);
 		                const leadTimeDays = Math.ceil(leadTimeHours / 24); // 소요시간을 24로 나누어 일 수 계산
 		                mpStartDate.setDate(mpStartDate.getDate() + leadTimeDays); // 날짜 더하기
@@ -351,7 +362,7 @@
 		            }
 		        }
 		    });
-		});
+		}); */
 		
 		
 		grid2.on('click', (ev) => {
@@ -363,7 +374,7 @@
 		            type: 'GET',
 		            data: {
 		            	pdtCode: rowData.pdtCode,
-		            	soQuantity: rowData.soQuantity
+		            	soQty: rowData.soQty
 		            },
 		            success: function(isAvailable) {
 		                const newValue = isAvailable ? "등록 가능" : "재고 부족";
@@ -390,24 +401,20 @@
 	
 	//상품 계획 등록 시작 -------------------------------------------
 	$('#mfgPlanRegiBtn').on('click', function () {
-		const checkedRows = grid2.getCheckedRows();
-		const row = checkedRows[0];
-		const data = {
-			soCode: row.soCode,
-			pdtCode: row.pdtCode,
-			mpPriority: row.mpPriority || "일반",
-			mpStartDate: row.mpStartDate,
-			mpEndDate: row.mpEndDate,
-			mpStatus: row.mpStatus || "등록",
-			//empId: row.empId,
-			//mpCreatedAt: row.mpCreatedAt
-		};
+		const checkedRows = grid2.getCheckedRows(); // 선택된 행 가져오기
+		const data = { ...checkedRows[0] };
+		
+		// 로그인한 유저
+		data.empId = document.getElementById('currentUserId')?.value;
+		
+		// 자동 생성된 생산계획코드
+		data.mpCode = mpCode;
 		
 		$.ajax({
 			url: "/mfg/mfgPlanRegi",
 			method : "POST",
 			contentType: "application/json",
-			data: JSON.stringify(data),
+			data: JSON.stringify(data), // JSON 문자열로 전송
 			success : function (response){
 				alert(response);
 				location.reload();
@@ -416,10 +423,62 @@
 				console.log(error);
 			}
 		})
-
-		
 	});
-	//상품 계획 등록 끝---------------------------------------------------------	
+	// 상품 계획 등록 끝---------------------------------------------------------	
+	
+	// 상품 계획 수정
+	$('#updateBtn').on('click', function () {
+    const selectedRow = grid1.getCheckedRowKeys();
+    
+    const rowKey = selectedRow[0];
+    const modifiedRow = grid1.getRow(rowKey);
+    
+	    $.ajax({
+	        url: '/mfg/mfgPlanUpdate',
+	        type: 'POST',
+	        contentType: 'application/json',
+	        data: JSON.stringify(modifiedRow),
+	        success: function (msg) {
+	            alert(msg);
+	            location.reload();
+	        },
+	        error: function (err) {
+	            alert("저장 실패");
+	            console.log(err);
+	        }
+	    });
+	});
+	
+	// 상품 계획 삭제
+	$('#delete').on('click', function () {
+    const selectedRowKeys = grid1.getCheckedRowKeys();
+    
+    if (selectedRowKeys.length === 0) {
+        alert("삭제할 항목을 선택해주세요.");
+        return;
+    }
+
+    const rowKey = selectedRowKeys[0];
+    const mpCode = grid1.getValue(rowKey, 'mpCode');
+    
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+
+	    $.ajax({
+	        url: '/mfg/mfgPlanDelete',
+	        type: 'POST',
+	        contentType: 'application/json',
+	        data: JSON.stringify([mpCode]),
+	        success: function (msg) {
+	            alert(msg);
+	            location.reload();
+	        },
+	        error: function (err) {
+	            alert("삭제 실패");
+	            console.log(err);
+	        }
+	    });
+	});
+
 	
 	
 	</script>

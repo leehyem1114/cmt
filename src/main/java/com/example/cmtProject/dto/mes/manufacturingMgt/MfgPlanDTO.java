@@ -22,7 +22,6 @@ public class MfgPlanDTO { // 생산 계획 DTO
     private String mpPriority;      // 우선순위
     private LocalDate mpCreatedAt;  // 등록일자
     private LocalDate mpUpdatedAt;  // 수정일자
-    //private LocalDate soDueDate;    // 납품 기한
     private LocalDate mpStartDate;  // 생산 시작 예정일
     private LocalDate mpEndDate;    // 생산 종료 예정일
     
