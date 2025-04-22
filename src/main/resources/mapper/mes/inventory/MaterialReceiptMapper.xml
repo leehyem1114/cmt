@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper">
+	
+	<!--발주 정보 SELECT-->
+	
+	<select id = "puchasesList" resultType="map" parameterType="map">
+        SELECT *
+        FROM  PURCHASES_ORDER
+<!--        WHERE PO_STATUS = 'PO_ORDERED'-->
+        ORDER BY PO_DATE DESC
+	
+	</select>
+	
+	<!--입고 정보 INSERT-->
+	
+	<insert id="insertMaterialReceipt">
+        INSERT INTO MATERIAL_RECEIPT (
+            RECEIPT_NO, RECEIPT_CODE, PO_NO, MTL_NO, RECEIVED_QTY, 
+            LOT_NO, RECEIPT_DATE, RECEIPT_STATUS, WAREHOUSE_CODE, 
+            LOCATION_CODE, RECEIVER, CREATED_BY, UPDATED_BY, 
+            CREATED_DATE, UPDATED_DATE
+        ) VALUES (
+            #{receiptNo}, #{receiptCode}, #{poNo}, #{mtlNo}, #{receivedQty}, 
+            #{lotNo}, #{receiptDate}, #{receiptStatus}, #{warehouseCode}, 
+            #{locationCode}, #{receiver}, #{createdBy}, #{updatedBy}, 
+            #{createdDate}, #{updatedDate}
+        )
+	</insert>
+	
+	<!--입고 정보 SELECT-->
+	<select id = "mReceiptList" resultType="map" parameterType="map">
+        SELECT *
+        FROM  MATERIAL_RECEIPT
+	
+	</select>
+	
+	
+
+</mapper>

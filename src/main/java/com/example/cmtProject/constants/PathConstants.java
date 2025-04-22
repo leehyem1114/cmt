@@ -8,8 +8,10 @@ public class PathConstants {
     // 기본 경로
     public static final String APPROVAL_BASE = "/eapproval";
     public static final String WAREHOUSE_BASE = "/warehouse";
+    public static final String MATERIALINVENTORY_BASE = "/materialinventory";
+//    public static final String INVENTORY_BASE = "/inventory";
     
-    // URL 경로
+    // URL 경로 // 상수로 어디다 쓸곳이 없는거 같은데 확인 해보기!!
     public static final String DOCUMENT_LIST = "/documents";
     public static final String DOCUMENT_NEW = "/document/new";
     public static final String DOCUMENT_EDIT = "/document/edit";
@@ -24,6 +26,11 @@ public class PathConstants {
     public static final String FORM_EDIT = "/edit";
     public static final String FORM_VIEW = "/view";
     public static final String WAREHOUSE_VIEW = "/view";
+    public static final String MATERIALINVENTORY_VIEW = "/view";
+    public static final String MATERIALRECEIPT_VIEW = "/view";
+    
+    // 원자재 view 만들어야하는데 쓰는곳이 없는거 같아서 보류 사이드 바에는 하드코딩
+    
     
     
     // API 경로
@@ -45,6 +52,7 @@ public class PathConstants {
     public static final String VIEW_FORM_EDIT = "erp/eapproval/docFormEdit";
     public static final String VIEW_FORM_VIEW = "erp/eapproval/docFormView";
     public static final String VIEW_WAREHOUSE_VIEW = "mes/wareHouse/wareHouseList";
+    public static final String VIEW_METINVENTORY_VIEW = "mes/inventory/metInventoryList";
 
     
     // 리다이렉트 경로

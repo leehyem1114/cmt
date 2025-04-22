@@ -8,7 +8,7 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>창고 관리</title>
+    <title>원자재 재고현황</title>
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
     .top-input-group {
@@ -71,7 +71,7 @@
 
     /* 테이블 스크롤 영역 */
     .table-responsive {
-        height: 500px; /* 높이 고정 */
+        height: 530px; /* 높이 고정 */
         overflow: auto; /* 스크롤 활성화 */
         -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */
     }
@@ -112,49 +112,49 @@
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
     <div layout:fragment="content">
-        <h3>창고 관리</h3>
+        <h3>원자재 관리</h3>
         
-        <!-- 창고 정보 섹션 -->
+        <!--원자재 정보 섹션 -->
         <section class="section">
             <div class="row" id="basic-table">
-                <!-- 창고 정보 그리드 카드 -->
+                <!-- 원자재 정보 그리드 카드 -->
                 <div class="col-12 col-md-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="card-title">창고정보</h4>
+                            <h4 class="card-title">원자재 재고현황</h4>
                             
                             <!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
                             <div class="top-input-group">
                                 <!-- 왼쪽: 검색 및 엑셀 관련 -->
                                 <div class="search-file-group">
-                                    <input type="text" class="form-control" id="wareHouseInput" 
-                                        placeholder="창고명 검색">
-                                    <button type="button" id="wareHouseSearchBtn" class="btn btn-outline-primary">
+                                    <input type="text" class="form-control" id="mInventoryInput" 
+                                        placeholder="원자재명 검색">
+                                    <button type="button" id="mInventorySearchBtn" class="btn btn-outline-primary">
                                         <i class="bi bi-search"></i>
                                     </button>
                                     
                                     <!-- 엑셀 파일 입력 및 버튼 -->
-                                    <input type="file" class="form-control file-input" id="wareHouseFileInput" accept=".xlsx,.xls">
-                                    <button type="button" id="wareHouseExcelUpBtn" class="btn btn-excel">
+                                    <input type="file" class="form-control file-input" id="mInventoryFileInput" accept=".xlsx,.xls">
+                                    <button type="button" id="mInventoryExcelUpBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
                                     </button>
-                                    <button type="button" id="wareHouseExcelDownBtn" class="btn btn-excel">
+                                    <button type="button" id="mInventoryExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
                                 </div>
                                 
                                 <!-- 오른쪽: CRUD 버튼 -->
                                 <div class="button-group">
-                                    <button type="button" id="wareHouseAppendBtn" class="btn btn-outline-secondary">추가</button>
-                                    <button type="button" id="wareHouseSaveBtn" class="btn btn-outline-success">저장</button>
-                                    <button type="button" id="wareHouseDeleteBtn" class="btn btn-outline-danger">삭제</button>
+                                    <button type="button" id="mInventoryAppendBtn" class="btn btn-outline-secondary">추가</button>
+                                    <button type="button" id="mInventorySaveBtn" class="btn btn-outline-success">저장</button>
+                                    <button type="button" id="mInventoryDeleteBtn" class="btn btn-outline-danger">삭제</button>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <!-- 창고 정보 그리드 -->
-                                <div id="wareHouseGrid"></div>
+                                <div id="mInventoryGrid"></div>
                             </div>
                         </div>
                     </div>
@@ -171,10 +171,10 @@
     <th:block layout:fragment="script">
         <script th:inline="javascript">
             // Thymeleaf 데이터를 전역 변수로 설정
-            window.wareHouseList = /*[[${wareHouseList}]]*/[];
-            console.log("wareHouseList 데이터:", window.wareHouseList);
+            window.mInventoryList = /*[[${mInventoryList}]]*/[];
+            console.log("mInventoryList 데이터:", window.mInventoryList);
         </script>
-        <script src="/js/wareHouse/wareHouseManager.js"></script>
+        <script src="/js/inventory/mInventoryManager.js"></script>
         <script src="/js/commonJs/ExcelUtil.js"></script>
         <script src="/js/commonJs/GridSearchUtil.js"></script>
     </th:block>

@@ -32,7 +32,7 @@
 			,WO_START_DATE
 			,ORDER_QTY
 		FROM WORK_ORDER 
-	   WHERE STATUS = 'RN'
+	   WHERE WO_STATUS_CODE = 'RN'
 	</select>
 	
 	<select id="selectWoCodeList" resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
