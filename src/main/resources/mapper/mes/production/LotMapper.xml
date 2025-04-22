@@ -54,6 +54,7 @@
 	    )
 	</insert>
 	
+	<!-- BOM 테이블에서 PATH가져오기 -->
 	<select id="selectStructurePath" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
 		SELECT
 		    LEVEL AS BOM_LEVEL,
@@ -69,6 +70,32 @@
 		START WITH CHILD_ITEM_CODE = #{pdtCode}
 		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
 		ORDER SIBLINGS BY CHILD_ITEM_CODE
+	</select>
+	
+	<!-- LOT 테이블에서 PATH가져오기 -->
+	<select id="selectStructurePathAll" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
+		SELECT DISTINCT
+		    ROWNUM AS IDX,
+		    LEVEL AS LOT_LEVEL,
+		    LOT_NO,
+		    PARENT_LOT_CODE,
+		    CHILD_LOT_CODE,
+		    PARENT_PDT_CODE,
+		    CHILD_PDT_CODE,
+		    CREATE_DATE,
+		    PRC_TYPE,
+		    LINE_CODE,
+		    EQP_CODE,
+		    WO_CODE,
+		    START_TIME,
+		    FINISH_TIME,
+		    WO_STATUS_NO,
+		    LTRIM(SYS_CONNECT_BY_PATH(CHILD_LOT_CODE, ' ← '), ' ← ') AS PATH
+		FROM LOT
+		WHERE USE_YN = 'Y'
+		    AND WO_CODE = #{woCode}
+		    START WITH CHILD_PDT_CODE = #{pdtCode}
+		CONNECT BY PRIOR PARENT_LOT_CODE = CHILD_LOT_CODE
 	</select>
 	
 </mapper>

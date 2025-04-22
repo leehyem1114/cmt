@@ -65,19 +65,20 @@
 
 	
 	<!-- ------------------- 하단 공정 현황 시작 ---------------------------- -->
-	<h4>공정현황</h4>
+	<button type="button" id="prcBoard" class="btn btn-primary btn-m">공정현황</button>
 	<br>
 	<div class="container-fluid">
 	  	<div class="row">
-			
+			<!-- bom-tree -->
 	    	<!-- 왼쪽 그리드 -->
 		    <div class="col-md-4 border-end">
-				<ul id="border-end"></ul>
+				<ul id="bom-tree"></ul>
 		    </div>
 
 		    <!-- 오른쪽 그리드 -->
 		    <div class="col-md-8">
 				<button class="btn btn-primary btn-m" id="regeWork">다음 공정</button>
+				<input type="text">
 				<br>
 	      		<div id="prcGrid"></div>	
 	    	</div>
@@ -206,6 +207,7 @@
 				  	cancelButtonText: '취소'
 				}).then((result) => {
 				  if (result.isConfirmed) {
+					
 					$.ajax({
 						url: '/production/pdtCodeSelected',
 						type: 'GET',
@@ -222,6 +224,7 @@
 					            parent: item.PARENT_PDT_CODE,
 					            child: item.CHILD_ITEM_CODE
 					        }));
+							console.log(bomList);
 							
 							//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
 							//bomList는 전역으로 선언해서 makeTree에서 바로 사용
@@ -244,10 +247,28 @@
 				
 				
 			})
+			
+			//======================================= 하단 왼쪽 위에 공정 현황 버튼 클릭 ================================================
+			$("#prcBoard").on("click", function(){
 				
+				$.ajax({
+					url: '/production/prcBoard',
+					type: 'POST',
+					data: {
+						'pdtCode' : pdtCode,
+						'woCode' : woCode
+						},
+					success : function(response){
+							console.log(response);
+							prcGrid.resetData(response);
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+				});//$.ajax
+			}) 
 		});//$(document).ready(function(){
-		
-		
+			
 		//======================================= 상단 그리드 ================================================
 		
 		let woGrid = new tui.Grid({
@@ -273,17 +294,17 @@
 					filter: 'text',
 					align: "center" 
 	            },
-	           {
-	                header: '부모 코드',
-	                name: 'PARENT_PDT_CODE',
+				{
+	                header: '자식 코드',
+	                name: 'CHILD_ITEM_CODE',
 					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 				{
-	                header: '자식 코드',
-	                name: 'CHILD_ITEM_CODE',
+	                header: '부모 코드',
+	                name: 'PARENT_PDT_CODE',
 					width: 150,
 					sortable: true, 
 					filter: 'text',
@@ -330,7 +351,6 @@
 		//======================================= 하단 왼쪽 트리 ================================================
 	
 		function makeTree(){
-			
 			const rootCode = pdtCode; //pdtCode 전역으로 선언
 			
 			//마지막 부모 태그 생성, bomList 전역으로 선언
@@ -342,22 +362,20 @@
 					
 		}
 		
-		//재귀로 tree구성
 		function buildBomTree(root, bomList) {
-			
-			//root와 일치하는 부모코드에 해당하는 자식들만 children배열 생성
-			const children = bomList.filter(rel => rel.parent === root).map(rel => rel.child);
-		  	if (children.length === 0) return '';
+		    // root를 자식으로 포함하는 모든 부모 찾기
+		    const parents = bomList.filter(rel => rel.child === root).map(rel => rel.parent);
+		    if (parents.length === 0) return '';
 
 			//자식에 해당하는 태그 생성
-		  	let html = '<ul>';
-		  	for (let child of children) {
-		    	html += `<li>${child} <button class='btn btn-outline-primary btn-sm' onclick="createLot('${child}')">LOT 생성</button>`;
-		    	html += buildBomTree(child, bomList); // 재귀적으로 자식 노드 탐색
-		    	html += '</li>';
-		  	}
-		  	html += '</ul>';
-		  	return html;
+		    let html = '<ul>';
+		    for (let parent of parents) {
+		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')">사용처 보기</button>`;
+		        html += buildBomTree(parent, bomList); // 상위 parent를 계속 탐색
+		        html += '</li>';
+		    }
+		    html += '</ul>';
+		    return html;
 		}
 
 		//======================================= 하단 오른쪽 그리드 ================================================
@@ -379,48 +397,48 @@
 			 },
 	        columns: [
 				{
-					header: '레벨',
-					name: 'BOM_LEVEL',
+					header: 'LOT번호',
+					name: 'LOT_NO',
 					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 	           {
-	                header: '부모 코드',
-	                name: 'PARENT_PDT_CODE',
+	                header: '자식 로트 코드',
+	                name: 'CHILD_LOT_CODE',
 					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 				{
-	                header: '자식 코드',
-	                name: 'CHILD_ITEM_CODE',
+	                header: '부모 로트 코드',
+	                name: 'PARENT_LOT_CODE',
 					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 				{
-	                header: '코드 유형',
-	                name: 'ITEM_TYPE',
+	                header: '자식 제품 코드',
+	                name: 'CHILD_PDT_CODE',
 					width: 200,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 				{
-	                header: '공정 단계',
-	                name: 'BOM_PRC_TYPE',
+	                header: '부모 제품 코드',
+	                name: 'PARENT_PDT_CODE',
 					width: 110,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
 	            },
 				{
-	                header: '수량',
-	                name: 'BOM_QTY',
+	                header: '생성 일자',
+	                name: 'CREATE_DATE',
 					width: 100,
 					sortable: true, 
 					filter: 'text',

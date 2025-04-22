@@ -68,6 +68,7 @@
 	
 	<select id="selectPdtCodeList" resultType="com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO">
 		SELECT
+			ROWNUM AS IDX,
 		    LEVEL AS BOM_LEVEL,
 		    CHILD_ITEM_CODE,
 		    PARENT_PDT_CODE,

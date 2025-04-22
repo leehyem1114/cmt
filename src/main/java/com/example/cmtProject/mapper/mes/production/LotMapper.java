@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 
 @Mapper
 public interface LotMapper {
@@ -22,7 +23,10 @@ public interface LotMapper {
 	void insertLot(LotOriginDTO lod);
 
 	//재귀로 BOM의 path가져오기
-	List<LotStructurePathDTO> selectStructurePath(String pdtCode);
+	List<BomStructurePathDTO> selectStructurePath(String pdtCode);
+
+	//LOT테이블에서 하단 오른쪽 그리드에 최초 보여줄 전체 데이터 PATH
+	List<LotStructurePathDTO> selectStructurePathAll(@Param("woCode") String woCode,@Param("pdtCode") String pdtCode);
 	
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 

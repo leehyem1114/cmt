@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 import com.example.cmtProject.mapper.mes.production.LotMapper;
 
 @Service
@@ -31,9 +32,14 @@ public class LotService {
 		lotMapper.insertLot(lod);
 	}
 
-	public List<LotStructurePathDTO> selectStructurePath(String pdtCode) {
+	public List<BomStructurePathDTO> selectStructurePath(String pdtCode) {
 		// TODO Auto-generated method stub
 		return lotMapper.selectStructurePath(pdtCode);
+	}
+
+	public List<LotStructurePathDTO> selectStructurePathAll(String woCode, String pdtCode) {
+		// TODO Auto-generated method stub
+		return lotMapper.selectStructurePathAll(woCode, pdtCode);
 	}
 	
 
