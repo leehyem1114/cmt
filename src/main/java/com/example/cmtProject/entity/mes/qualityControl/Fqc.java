@@ -35,19 +35,34 @@ public class Fqc {
 
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
+ 
+    @Column(name = "EMP_NAME")
+    private String empName;
 
-    @Column(name = "QCM_NO", nullable = false)
+    @Column(name = "QCM_NO")
     private Long qcmNo;
+    
+    @Column(name = "QCM_NAME")
+    private String qcmName;
 
-    @Column(name = "PDT_CODE", nullable = false)
+    @Column(name = "PDT_CODE")
     private String pdtCode;
 
-    @Column(name = "FQC_TIME")
-    private LocalDateTime fqcTime;
+    @Column(name = "PDT_NAME")
+    private String pdtName;
 
-    @Column(name = "FQC_MEASURED_VALUE")
-    private Double fqcMeasuredValue;
+    @Column(name = "FQC_START_TIME")
+    private LocalDateTime fqcStartTime;
+
+    @Column(name = "FQC_END_TIME")
+    private LocalDateTime fqcEndTime;
+
+    @Column(name = "FQC_MEASURED_WEIGHT_VALUE")
+    private Double fqcMeasuredWeightValue;
     
+    @Column(name = "FQC_MEASURED_LENGTH_VALUE")
+    private Double fqcMeasuredLengthValue;
+
     @Column(name = "QCM_UNIT_LENGTH")
     private String qcmUnitLength;
 
@@ -62,8 +77,18 @@ public class Fqc {
 
     @Column(name = "WHS_CODE")
     private String whsCode;
+    
+    @Column(name = "WHS_NAME")
+    private String whsName;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;
+    
+    @Column(name = "FQC_REMARKS")
+    private String fqcRemarks;
+    
+    @Column(name = "FQC_VISIABLE")
+    private String fqcVisiable;
+    
 	
 }

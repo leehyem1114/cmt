@@ -14,21 +14,28 @@ import lombok.NoArgsConstructor;
 public class FqcDTO {
 	
 	private Long fqcNo;                // 출고 검사 NO
-    private String fqcCode;           // 출고 검사 코드
+    private String fqcCode;           // 출고 검사 코드   
     private String empId;             // 사용자 ID
-    private String qcmName;              // 출고 검사 기준 번호
-    private String pdtCode;
-    private LocalDateTime fqcTime;    // 검사 시간
-    private Double fqcMeasuredValue;  // 측정값
+    private String empName;             // 사용자 ID
+    private Long qcmNo;              // 출고 검사 기준 번호
+    private String pdtName;
+    private LocalDateTime fqcStartTime;    // 검사 시작 시간
+    private LocalDateTime fqcEndTime;    // 검사 종료 시간
+    private Double fqcMeasuredWeightValue;  // 측정값
+    private Double fqcMeasuredLengthValue;  // 측정값
     private String qcmUnitWeight;   // 단위 (ex: g)
     private String qcmUnitLength;   // 단위 (ex: mm)
     private String fqcInspectionStatus; // 검사 상태 (검사전/검사중/검사완료)
     private String fqcInspectionResult; // 합격 여부 (P/F)
     private String whsName;               // 입고될 창고
     private String lotNo;             // LOT 번호
+    private String fqcRemarks;
+    private String fqcVisiable;			// 삭제 여부
     
     
     // join을 위한 DTO
-    private String pdtName;               // 완제품 NO
+    private String pdtCode;               // 완제품 NO
+    private String whsCode;               // 완제품 NO
+    private String qcmName;
 
 }
