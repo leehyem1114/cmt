@@ -1,22 +1,31 @@
 package com.example.cmtProject.dto.mes.production;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class LotStructurePathDTO {
 
-	private String bomLevel;
-    private String childItemCode;
-    private String parentPdtCode;
-    private String itemType;
-    private String bomPrcType;
-    private String bomQty;
-    private String bomUnit;
-    private String path;
+	private Long idx;
+	private Long lotLevel;
+	private Long lotNo;       
+	private String parentLotCode; 
+	private String childLotCode; 
+	private String parentPdtCode; 
+	private String childPdtCode; 
+	private LocalDate createDate;         
+	private String prcType; 
+	private String lineCode; 
+	private String eqpCode; 
+	private String woCode; 
+	private LocalDate startTime;         
+	private LocalDate finishTime;         
+	private String woStatusNo; 
+	private String path;
+	private String useYn; 
 }

@@ -11,13 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.cmtProject.dto.mes.production.LotBomPathBindingDTO;
-import com.example.cmtProject.dto.mes.production.LotCodeDTO;
-import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
@@ -83,7 +81,6 @@ public class ProductionPrcController {
 				WIP009	 MTL-009
 		*/
 		List<BomInfoDTO> selectPdtCodeList = productionPrcService.selectPdtCodeList(pdtCode);
-		log.info("selectPdtCodeList : "+selectPdtCodeList);
 		/*
 		
 		결과 => 재귀의 결과에 중복 제거한 pdtCode만 가져오기
@@ -117,8 +114,9 @@ public class ProductionPrcController {
 		int mtlInt = 0;
 		
 		Map<String, String> checkLot = new HashMap<>();
+		LotOriginDTO lod = new LotOriginDTO();
 		for(BomInfoDTO b : selectPdtCodeList) {
-			
+			System.out.println(b.toString());
 			//================ 부모 컬럼 lot생성=========================================================
 			int parentOrderNum = 0;
 			String parentpdtCode = b.getParentPdtCode(); //부모의 제품 코드
@@ -199,69 +197,69 @@ public class ProductionPrcController {
 				}else {
 					log.error("childPrcType is NULL");
 				}//if(childPrcType != null) {
-			
-				//MAP에 저장된 제품 코드를 조회, 있는 경우 기존 LOT번호 출력, 없는 경우 MAP에 저장 
-				String childLot = "";
-			    if (checkLot.containsKey(childItemCode)) {
-			    	childLot = checkLot.get(childItemCode);
-		        } else {
-		        	childLot = makeLotCode(childPrcType, todayStr, childOrderNum);
-		        	checkLot.put(childItemCode, childLot);
-		        }
-				
-				//========================= 위에서 생성한 lot를 lot테이블에 입력 ============================================= 
-				
-				Long lotNoMax = lotService.getLotNo(); 
-				
-				lotNoMax++;
-				Long lotNo = lotNoMax;
-				String lotCode = parentLot; //이후 단계 
-				
-				String parentPdtCode = b.getParentPdtCode();
-				String childPdtCode = b.getChildItemCode();
-				
-				String createDate = String.valueOf(today);
-				
-				String prcType = b.getBomPrcType();
-				
-				//LINE_CODE
-				//EQP_CODE
-				
-				//String woCode = woCode;
-				String childLotCode = childLot;
-				
-				LocalTime nowTime = LocalTime.now();
-				String startTime = String.valueOf(nowTime);
-				
-				String woStatusNo = "RN";
-				
-				String useYN = "Y";
-				
-				LotOriginDTO lod = new LotOriginDTO();
-				lod.setLotNo(Long.valueOf(lotNo));
-				lod.setChildLotCode(childLot);
-				lod.setParentLotCode(parentLot);
-				lod.setChildPdtCode(childPdtCode);
-				lod.setParentdPdtCode(parentPdtCode);
-				lod.setCreateDate(today);
-				lod.setPrcType(prcType);
-				lod.setLineCode("");
-				lod.setEqpCode("");
-				lod.setWoCode(woCode);
-				lod.setStartTime(nowTime);
-				lod.setFinishTime(nowTime);
-				lod.setWoStatusNo(woStatusNo);
-				lod.setUseYn(useYN);
-				
-				lotService.insertLot(lod);
 	        }//else {
+
+			//MAP에 저장된 제품 코드를 조회, 있는 경우 기존 LOT번호 출력, 없는 경우 MAP에 저장 
+			String childLot = "";
+		    if (checkLot.containsKey(childItemCode)) {
+		    	childLot = checkLot.get(childItemCode);
+	        } else {
+	        	childLot = makeLotCode(childPrcType, todayStr, childOrderNum);
+	        	checkLot.put(childItemCode, childLot);
+	        }
+			
+			//========================= 위에서 생성한 lot를 lot테이블에 입력 ============================================= 
+			Long lotNoMax = lotService.getLotNo(); 
+			
+			lotNoMax++;
+			Long lotNo = lotNoMax;
+			String lotCode = parentLot; //이후 단계 
+			
+			String parentPdtCode = b.getParentPdtCode();
+			String childPdtCode = b.getChildItemCode();
+			
+			String createDate = String.valueOf(today);
+			
+			String prcType = b.getBomPrcType();
+			String bomQty = b.getBomQty();
+			String bomUnit = b.getBomUnit();
+			
+			//LINE_CODE
+			//EQP_CODE
+			
+			//String woCode = woCode;
+			String childLotCode = childLot;
+			
+			LocalTime nowTime = LocalTime.now();
+			String startTime = String.valueOf(nowTime);
+			
+			String woStatusNo = "RN";
+			
+			String useYN = "Y";
+			
+			
+			lod.setLotNo(Long.valueOf(lotNo));
+			lod.setChildLotCode(childLot);
+			lod.setParentLotCode(parentLot);
+			lod.setChildPdtCode(childPdtCode);
+			lod.setParentdPdtCode(parentPdtCode);
+			lod.setCreateDate(today);
+			lod.setPrcType(prcType);
+			lod.setBomQty(bomQty);
+			lod.setBomUnit(bomUnit);
+			lod.setLineCode("");
+			lod.setEqpCode("");
+			lod.setWoCode(woCode);
+			lod.setStartTime(nowTime);
+			lod.setFinishTime(nowTime);
+			lod.setWoStatusNo(woStatusNo);
+			lod.setUseYn(useYN);
+			
+			System.out.println(lod.toString());
+			lotService.insertLot(lod);
+			
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
-		//========================= 하단 왼쪽에 보여줄 PATH가져오기 =============================================
-		List<LotStructurePathDTO> lspd = lotService.selectStructurePath(pdtCode);
-		
-		//LotBomPathBindingDTO
-		//return new LotBomPathBindingDTO(selectPdtCodeList, lspd);
 		
 		return selectPdtCodeList;
 		
@@ -269,9 +267,6 @@ public class ProductionPrcController {
 
 	
 	private String makeLotCode(String prcType, String todayStr, int orderNum) {
-
-		
-		System.out.println("prcType:" + prcType + " ,todayStr:" + todayStr + " ,orderNum:" + orderNum);
 				
 		String lot = "";
 		
@@ -290,12 +285,22 @@ public class ProductionPrcController {
 			log.error("orderType가 0과 음수가 나옴");
 		}
 		
-		System.out.println("lot:" + lot);
 		return lot;
 				
 	}
-
 	
+	@PostMapping("/prcBoard")
+	@ResponseBody
+	public List<LotStructurePathDTO> prcBoard(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode) {
+		
+		//pdtCode로 BOM 테이블에서 PATH가져오기
+		//List<LotStructurePathDTO> lspd = lotService.selectStructurePath(pdtCode);
+		
+		//LOT테이블에서 전체 PATH가져오기, woCode(작업지시코드)는 가져간다
+		List<LotStructurePathDTO> lspd = lotService.selectStructurePathAll(woCode, pdtCode);
+		System.out.println("LotStructurePathDTO:" + lspd);
+		return lspd;
+	}
 }
 
 

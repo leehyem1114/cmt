@@ -22,6 +22,8 @@ public class LotOriginDTO {
     private String parentdPdtCode;
     private LocalDate createDate;
     private String prcType;
+    private String bomQty;
+    private String bomUnit;
     private String lineCode;
     private String eqpCode;
     private String woCode;
