@@ -16,7 +16,7 @@ import com.example.cmtProject.service.mes.inventory.MaterialInventoryService;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@RequestMapping(PathConstants.INVENTORY_BASE)
+@RequestMapping(PathConstants.MATERIALINVENTORY_BASE)
 @Slf4j
 
 public class MaterialInventoryController {
@@ -29,11 +29,12 @@ public class MaterialInventoryController {
 	 * 원자재 재고 메인페이지
 	 * 
 	 */
-	@GetMapping("/view")
+	@GetMapping(PathConstants.MATERIALINVENTORY_VIEW)
 	public String meterialInventoryGET(Model model) {
 		Map<String,Object> findMap = new HashMap<>();
 		List<Map<String,Object>> mInventoryList = mis.inventoryList(findMap);
 		model.addAttribute("mInventoryList", mInventoryList);
+		
 		return PathConstants.VIEW_METINVENTORY_VIEW;
 	}
 	
