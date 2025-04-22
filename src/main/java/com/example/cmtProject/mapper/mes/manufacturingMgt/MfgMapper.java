@@ -20,16 +20,29 @@ public interface MfgMapper {
 	List<MfgPlanSalesOrderDTO> getSoList();
 
 	// 생산 계획 등록
-	void registMpPlan(MfgSchedulePlanDTO mfgSchedulePlanDTO);
+	void registMpPlan(MfgPlanDTO mfgPlanDTO);
 
-	// 제품 BOM 조회
+	// 생산 계획 수정
+	void updateMpPlan(MfgPlanDTO mfgPlanDTO);
+
+	// 생산 계획 삭제
+	void deleteMpPlan(List<String> mpCodes);
+
+	// BOM 조회
 	List<Map<String, Object>> getBomList(String pdtCode);
+	
+	// 원자재 재고 조회
+	List<Map<String, Object>> getMaterialInventory();
+	
+	// 수주에 따른 BOM 조회
+	List<Map<String, Object>> getMfgPlanBomList();
 	
 	// 제조 계획 목록 조회
 	List<MfgScheduleDTO> getMfgScheduleTotalList();
 
 	// 제조 계획 등록 시 생산 계획 목록 조회
 	List<MfgSchedulePlanDTO> getMpList();
+
 
 
 }

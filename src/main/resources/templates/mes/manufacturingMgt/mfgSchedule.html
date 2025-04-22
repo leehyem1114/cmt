@@ -52,7 +52,7 @@
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">
 	            <div class="modal-header">
-	                <h5 class="modal-title" id="mfgScheduleLabel">상품 계획 등록</h5>
+	                <h5 class="modal-title" id="mfgScheduleLabel">제조 계획 등록</h5>
 	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	            </div>
 	            <div class="modal-body">
@@ -75,12 +75,9 @@
 	let grid = new tui.Grid({
         el: document.getElementById('mfgScheduleGrid'), 
 		data: gridData,
-        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
-		//selectionUnit: 'row', //행 단위선택
+        rowHeaders: ['checkbox'], 
 		scrollX: true,
         scrollY: true,
-		//width: 1600,  // 전체 너비 지정
-		//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
 		pageOptions: {
 		   useClient: true,   // 클라이언트 사이드 페이징 사용
 		   perPage: 10        // 페이지당 행 수
@@ -135,7 +132,16 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: "select",
+					options: {
+						listItems: [
+							{ text: '높음', value: '높음' },
+							{ text: '일반', value: '일반' },
+							{ text: '낮음', value: '낮음' }
+						]	
+					}
+				}
             },
 			{
                 header: '제품코드',
@@ -191,7 +197,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             },
 			{
                 header: '수정일자',
@@ -200,7 +211,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             }
         ], // 열 설정
 		autoEdit: true,
@@ -240,8 +256,18 @@
 						header: '우선순위',
 						name: 'msPriority', 
 						sortable: true,
-						align: "center"
-					},
+						align: "center",
+						editor: {
+							type: "select",
+							options: {
+								listItems: [
+									{ text: '높음', value: '높음' },
+									{ text: '일반', value: '일반' },
+									{ text: '낮음', value: '낮음' }
+								]	
+							}
+						}
+		            },
 					{
 						header: '제품코드',
 						name: 'pdtCode', 
@@ -264,19 +290,25 @@
 						header: '제조 시작 예정일',
 						name: 'msStartDate', 
 						sortable: true,
-						align: "center"
-					},
+						align: "center",
+						editor: {
+							type: 'datePicker',
+							options: {
+								format: 'yyyy-MM-dd'
+							}
+						}
+		            },
 					{
 						header: '제조 완료 예정일',
 						name: 'msEndDate', 
 						sortable: true,
-						align: "center"
-					},
-					{
-						header: '재고 조회',
-						name: 'pdtQty', 
-						sortable: true,
-						align: "center"
+						align: "center",
+						editor: {
+							type: 'datePicker',
+							options: {
+								format: 'yyyy-MM-dd'
+							}
+						}
 					}
 				]
 			});
