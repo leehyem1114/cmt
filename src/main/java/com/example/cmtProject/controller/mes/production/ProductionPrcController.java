@@ -2,7 +2,10 @@ package com.example.cmtProject.controller.mes.production;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.dto.mes.production.LotCodeDTO;
 import com.example.cmtProject.dto.mes.production.LotDTO;
+import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.service.mes.production.LotService;
@@ -62,11 +67,147 @@ public class ProductionPrcController {
 	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode,
 	        @RequestParam("woCode") String woCode) {
 		
-		//모달에서 선택된 pdtCode로 BOM테이블에 있는 데이터를 재귀로 가겨오기
+		//PARENT_PDT_CODE => 앞 과정에서 투입되는 제품
+		//CHILD_ITEM_CODE => 현재 제품/최종 제품
+		
+		/*
+		결과 => 
+		PARENT_PDT_CODE CHILD_ITEM_CODE
+				WIP004	 MTL-005
+				WIP005	 MTL-006
+				WIP009	 WIP004
+				WIP009	 WIP005
+				WIP009	 MTL-009
+		*/
 		List<BomInfoDTO> selectPdtCodeList = productionPrcService.selectPdtCodeList(pdtCode);
+		log.info("selectPdtCodeList : "+selectPdtCodeList);
+		/*
 		
-		log.info("selectPdtCodeList:"+selectPdtCodeList);
+		결과 => 재귀의 결과에 중복 제거한 pdtCode만 가져오기
+		WIP009
+		WIP004
+		WIP005
+		MTL-009
+		MTL-005
+		MTL-006
 		
+		위에서 가져온 pdtCode에서 일률적으로 LOT번호를 생성 후 해당 데이터에 LOT번호를 삽입 
+		*/
+		
+		//루프를 돌면서 insert를 해도 바로 적용된 order값을 가져오지 못하기 때문에 내가 직접 order를 증가시킨다.
+		LocalDate today = LocalDate.now(); //2025-04-21
+		String todayStr = today.format(DateTimeFormatter.ofPattern("yyyyMMdd")); //20250421
+		
+		//3)LOT테이블에서 오늘 날짜의 해당 공정에 해당하는 ORDER순서 가져오기
+		//LOT-20250421-PR-02 이 형식에서 벗어나면 안된다, 값이 없는 경우 null 발생
+		LotOrderDTO lotOrderFP = lotService.getLotOrderPrcType(todayStr, "FP");
+		LotOrderDTO lotOrderPR = lotService.getLotOrderPrcType(todayStr, "PR");
+		LotOrderDTO lotOrderWE = lotService.getLotOrderPrcType(todayStr, "WE");
+		LotOrderDTO lotOrderPA = lotService.getLotOrderPrcType(todayStr, "PA");
+		LotOrderDTO lotOrderAS = lotService.getLotOrderPrcType(todayStr, "AS");
+	
+		int fpInt = lotOrderFP != null ?  lotOrderFP.getMaxSeq() : 0;
+		int prInt = lotOrderPR != null ?  lotOrderPR.getMaxSeq() : 0;
+		int weInt = lotOrderWE != null ?  lotOrderWE.getMaxSeq() : 0;
+		int paInt = lotOrderPA != null ?  lotOrderPA.getMaxSeq() : 0;
+		int asInt = lotOrderAS != null ?  lotOrderAS.getMaxSeq() : 0;
+		int mtlInt = 0;
+		System.out.println("prInt:" + prInt + " ,weInt:" + weInt + " ,paInt:" + paInt + " ,asInt:" + asInt);
+		//log.info(lotOrder.toString());
+		
+		for(BomInfoDTO b : selectPdtCodeList) {
+			/*
+			BomInfoDTO(bomNo=null, bomLevel=1, parentPdtCode=WIP013, childItemCode=FP001, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
+			BomInfoDTO(bomNo=null, bomLevel=2, parentPdtCode=WIP010, childItemCode=WIP013, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
+			BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=MTL-010, childItemCode=WIP010, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null), 
+			 * */	
+		
+			//================ 부모 컬럼 lot생성=========================================================
+			int parentOrderNum = 0;
+			
+			String parentpdtCode = b.getParentPdtCode();
+			System.out.println("parentpdtCode:" + parentpdtCode);
+			
+			String parentPrcType = "";
+			
+			//MTL-001 원자재인지 확인
+			if (parentpdtCode.toLowerCase().startsWith("mtl")) {
+				parentPrcType = "IN";
+				parentOrderNum = ++mtlInt;
+	        }else {
+	        	
+	        	parentPrcType = productionPrcService.getPrcType(parentpdtCode);
+				System.out.println("parentPrcType:" + parentPrcType);
+				
+				if(parentPrcType != null) {
+					
+		        	if(parentPrcType.equals("FP")) {
+						parentOrderNum = ++fpInt;
+					}else if(parentPrcType.equals("PR")) {
+						parentOrderNum = ++prInt;
+					}else if(parentPrcType.equals("WE")) {
+						parentOrderNum = ++weInt;
+					}else if(parentPrcType.equals("PA")) {
+						parentOrderNum = ++paInt;
+					}else if(parentPrcType.equals("AS")) {
+						parentOrderNum = ++asInt;
+					}else {
+						log.error("Parent 목록에 없는 공정 타입입니다.");
+					}
+			        
+				}else {
+					log.error("parentPrcType is NULL");
+				}//if(parentPrcType != null) {
+	        	
+	        }//else {
+	
+		
+			String parentLot = makeLotCode(parentPrcType, todayStr, parentOrderNum); 
+			System.out.println("parentLot:" + parentLot);
+			
+			//================ 자식 컬럼 lot생성=========================================================
+			
+			//자식 컬럼 lot생성
+			int childOrderNum = 0;
+			String childItemCode = b.getChildItemCode();
+			
+			String childPrcType = "";
+			
+			//MTL-001 원자재인지 확인
+			if (childItemCode.toLowerCase().startsWith("mtl")) {
+				childPrcType = "IN";
+				childOrderNum = ++mtlInt;
+	        }else {
+			
+	        	childPrcType = productionPrcService.getPrcType(childItemCode);
+				System.out.println("parentPrcType:" + parentPrcType);
+			
+				if(childPrcType != null) {
+					
+		        	if(childPrcType.equals("FP")) {
+		        		childOrderNum = ++fpInt;
+					}else if(childPrcType.equals("PR")) {
+						childOrderNum = ++prInt;
+					}else if(childPrcType.equals("WE")) {
+						childOrderNum = ++weInt;
+					}else if(childPrcType.equals("PA")) {
+						childOrderNum = ++paInt;
+					}else if(childPrcType.equals("AS")) {
+						childOrderNum = ++asInt;
+					}else {
+						log.error("Child 목록에 없는 공정 타입입니다.");
+					}
+			        
+				}else {
+					log.error("childPrcType is NULL");
+				}//if(childPrcType != null) {
+			
+				String childLot = makeLotCode(childPrcType, todayStr, childOrderNum); 
+				System.out.println("childLot:" + childLot);
+	        }//else {
+		}//for(BomInfoDTO b : selectPdtCodeList) {
+		
+		//------------------- lot테이블에 값 입력 --------------------------------
 		//lot테이블에서 현재 lot_no의 최대값
 		int lotNoMax = lotService.getLotNo(); 
 		
@@ -74,7 +215,7 @@ public class ProductionPrcController {
 		
 		//시작 버튼을 누르면 LOT테이블에 데이터가 입력된다
 		for(BomInfoDTO bid : selectPdtCodeList) {
-			
+			/*
 			lotNoMax++;
 			int LOT_NO = lotNoMax;
 			String LOT_CODE = makeLotCode(bid.getParentPdtCode());
@@ -82,7 +223,6 @@ public class ProductionPrcController {
 			String PDT_CODE = bid.getParentPdtCode();
 			String CHILD_PDT_CODE = bid.getChildItemCode();
 			
-			LocalDate today = LocalDate.now();
 			String CREATE_DATE = String.valueOf(today);
 			
 			String PRC_TYPE = bid.getBomPrcType();
@@ -97,25 +237,41 @@ public class ProductionPrcController {
 			String USE_YN = "Y";
 			
 			LotDTO lotDto = new LotDTO();
+			*/
 		}
 		
 		return selectPdtCodeList;
 	}
 
-	private String makeLotCode(String code) {
-		/*
-		LocalDate todayDate = LocalDate.now();
-		String today = String.valueOf(todayDate);
-		
-		//LOT번호 순서 추적(가장 뒤에 -001, -002 이 부분으로 같은 LOT번호 개수 가져오기)
-		int LotNumOrder = lotService.getLotNumOrder();
+	
+	private String makeLotCode(String prcType, String todayStr, int orderNum) {
 
+		
+		System.out.println("prcType:" + prcType + " ,todayStr:" + todayStr + " ,orderNum:" + orderNum);
 				
-		String lot = "L-" + today + ""
-		*/
-		return "";
+		String lot = "";
+		
+		//LOT-20250421-PR-02 
+		if(orderNum > 100) {
+			lot = "LOT-" + todayStr + "-" + prcType + "-" + orderNum;
+		}else if(orderNum > 10) {
+			lot = "LOT-" + todayStr + "-" + prcType + "-0" + orderNum;
+		}else if(orderNum >= 1) {
+			lot = "LOT-" + todayStr + "-" + prcType + "-00" + orderNum;
+		} /* == 0 조건이 있으면 값이 이상하게 들어간다
+			 * else if(orderNum == 0) { lot = "LOT-" + todayStr + "-" + prcType + "-01" +
+			 * orderNum; }
+			 */
+		else{
+			log.error("orderType가 0과 음수가 나옴");
+		}
+		
+		System.out.println("lot:" + lot);
+		return lot;
 				
 	}
 
 	
 }
+
+

@@ -8,8 +8,22 @@
 	></option><!--selected="${SalesOrder.pdtCode == code}"-->
 </select>
 
+SUM(CASE WHEN LOT_CODE LIKE '%' || TO_DATE(#{todayStr}, 'YYYY-MM-DD') || '-PR%' THEN 1 ELSE 0 END) AS PR_COUNT,
 
 
+selectPdtCodeList : 
+	[BomInfoDTO(bomNo=null, bomLevel=1, parentPdtCode=WIP013, childItemCode=FP001, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=2, parentPdtCode=WIP010, childItemCode=WIP013, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=MTL-010, childItemCode=WIP010, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=WIP006, childItemCode=WIP010, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=PA, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=4, parentPdtCode=MTL-003, childItemCode=WIP006, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=4, parentPdtCode=WIP001, childItemCode=WIP006, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=WE, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=5, parentPdtCode=MTL-001, childItemCode=WIP001, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=4, parentPdtCode=WIP002, childItemCode=WIP006, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=WE, bomDate=null, comments=null, useYN=null), 
+	 BomInfoDTO(bomNo=null, bomLevel=5, parentPdtCode=MTL-002, childItemCode=WIP002, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null)]
+			 
+			 
+			 
 
 
 
@@ -63,3 +77,41 @@ const rightGrid = new tui.Grid({
       <li>MTL-009 (복합재료 보조자재)</li>
     </ul>
   </li>
+  
+  
+  
+  
+  
+  //makeLotCode(오늘 날짜, 공정TYPE, ORDER)
+		for(LotCodeDTO lcd : pdtCodeArray) {
+			/*
+			//lcd.getCode() - FP001, WIP013, WIP010, ...
+			//lcd.getBomPrcType() - SA, PR, PA, WE , ...
+			
+			System.out.println("lcd.getCode():"+lcd.getCode()+" ,lcd.getBomPrcType():"+lcd.getBomPrcType());
+			
+			String prcType = "";
+			int orderType = 0;
+			if(lcd.getBomPrcType().equals("PR")) {
+				orderType = ++prInt;
+				prcType = "PR";
+				System.out.println("==============안 orderType:"+orderType+" ,prcType:" + prcType);
+			}else if(lcd.getBomPrcType().equals("WE")) {
+				orderType = ++weInt;
+				prcType = "WE";
+			}else if(lcd.getBomPrcType().equals("PA")) {
+				orderType = ++paInt;
+				prcType = "PA";
+			}else if(lcd.getBomPrcType().equals("AS")) {
+				orderType = ++asInt;
+				prcType = "AS";
+			}else {
+				log.error("LOT에 잘못된 공정이 있음");
+			}
+			
+			pdtCodeMap.put(lcd.getCode() , makeLotCode(prcType, todayStr, orderNum));
+			*/
+		}
+		
+		
+		

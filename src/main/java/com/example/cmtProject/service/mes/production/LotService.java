@@ -1,8 +1,11 @@
 package com.example.cmtProject.service.mes.production;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.mapper.mes.production.LotMapper;
 
 @Service
@@ -16,4 +19,12 @@ public class LotService {
 		return lotMapper.getLotNo();
 	}
 
+	public LotOrderDTO getLotOrderPrcType(String todayStr, String type) {
+		// TODO Auto-generated method stub
+		return lotMapper.getLotOrderPrcType(todayStr, type);
+	}
+	
+
+
+	
 }
