@@ -1,12 +1,84 @@
-/*
-selectPdtCodeList:[
-   BomInfoDTO(bomNo=null, bomLevel=1, parentPdtCode=FP001, childItemCode=WIP013, itemType=SEMI_FINISHED, bomQty=1, bomUnit=null, bomPrcType=SA, bomDate=null, comments=조립 부품 A → 완제품 A, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=2, parentPdtCode=WIP013, childItemCode=WIP010, itemType=SEMI_FINISHED, bomQty=1, bomUnit=null, bomPrcType=SA, bomDate=null, comments=도장된 프레임 A 조립, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=WIP010, childItemCode=MTL-010, itemType=RAW_MATERIAL, bomQty=1, bomUnit=null, bomPrcType=PR, bomDate=null, comments=브라켓용 강판 보조자재, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=WIP010, childItemCode=WIP006, itemType=SEMI_FINISHED, bomQty=1, bomUnit=null, bomPrcType=PA, bomDate=null, comments=용접 프레임 A 도장, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=4, parentPdtCode=WIP006, childItemCode=MTL-003, itemType=RAW_MATERIAL, bomQty=1, bomUnit=null, bomPrcType=PR, bomDate=null, comments=구조용 파이프 보조자재, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=4, parentPdtCode=WIP006, childItemCode=WIP001, itemType=SEMI_FINISHED, bomQty=1, bomUnit=null, bomPrcType=WE, bomDate=null, comments=프레스 부품 A 용접, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=5, parentPdtCode=WIP001, childItemCode=MTL-001, itemType=RAW_MATERIAL, bomQty=1, bomUnit=null, bomPrcType=PR, bomDate=null, comments=알루미늄 합금 프레스, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=4, parentPdtCode=WIP006, childItemCode=WIP002, itemType=SEMI_FINISHED, bomQty=1, bomUnit=null, bomPrcType=WE, bomDate=null, comments=프레스 부품 B 용접, useYN=null), 
-   BomInfoDTO(bomNo=null, bomLevel=5, parentPdtCode=WIP002, childItemCode=MTL-002, itemType=RAW_MATERIAL, bomQty=1, bomUnit=null, bomPrcType=PR, bomDate=null, comments=강판 프레스, useYN=null)]
-*/
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+public class LotFromBOMX {
+
+    static class Node {
+        String code;
+        List<Node> children = new ArrayList<>();
+
+        Node(String code) {
+            this.code = code;
+        }
+    }
+
+    static Map<String, Node> nodeMap = new HashMap<>();
+    static Map<String, String> lotMap = new LinkedHashMap<>();
+    static Map<String, Integer> prcSeqMap = new HashMap<>();
+    static String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+    // 공정 매핑 (제품코드 → 공정코드)
+    static Map<String, String> processMap = Map.of(
+        "MTL-001", "IN",
+        "MTL-002", "IN",
+        "MTL-003", "IN",
+        "MTL-010", "IN",
+        "WIP001", "PR",
+        "WIP002", "PR",
+        "WIP006", "WE",
+        "WIP010", "SA",
+        "WIP013", "PA",
+        "FP001",   "PK"
+    );
+
+    public static void main(String[] args) {
+
+        // 1. BOMX 데이터 입력 (PARENT → CHILD 구조)
+        List<String[]> bomx = List.of(
+            new String[]{"FP001", "WIP013"},
+            new String[]{"WIP013", "WIP010"},
+            new String[]{"WIP010", "MTL-010"},
+            new String[]{"WIP010", "WIP006"},
+            new String[]{"WIP006", "MTL-003"},
+            new String[]{"WIP006", "WIP001"},
+            new String[]{"WIP001", "MTL-001"},
+            new String[]{"WIP006", "WIP002"},
+            new String[]{"WIP002", "MTL-002"}
+        );
+
+        // 2. 노드 트리 구성
+        for (String[] pair : bomx) {
+            String parent = pair[0];
+            String child = pair[1];
+
+            nodeMap.putIfAbsent(parent, new Node(parent));
+            nodeMap.putIfAbsent(child, new Node(child));
+
+            nodeMap.get(parent).children.add(nodeMap.get(child));
+        }
+
+        // 3. 루트부터 LOT 번호 재귀 생성
+        generateLotRecursive(nodeMap.get("FP001"));
+
+        // 4. 결과 출력
+        lotMap.forEach((code, lot) -> {
+            System.out.println("제품: " + code + " → LOT: " + lot);
+        });
+    }
+
+    private static void generateLotRecursive(Node node) {
+        for (Node child : node.children) {
+            generateLotRecursive(child);
+        }
+
+        if (!lotMap.containsKey(node.code)) {
+            String prc = processMap.getOrDefault(node.code, "XX");
+            int seq = prcSeqMap.getOrDefault(prc, 0) + 1;
+            prcSeqMap.put(prc, seq);
+
+            String lotCode = "LOT-" + today + "-" + prc + "-" + String.format("%03d", seq);
+            lotMap.put(node.code, lotCode);
+        }
+    }
+}

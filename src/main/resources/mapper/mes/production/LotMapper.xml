@@ -10,4 +10,14 @@
 		SELECT MAX(NVL(LOT_NO,0)) FROM LOT
 	</select>
 	
+	<select id="getLotOrderPrcType" resultType="com.example.cmtProject.dto.mes.production.LotOrderDTO">
+		SELECT
+			SUBSTR(LOT_CODE, 14, 2) AS PRC_TYPE,
+			NVL(MAX(TO_NUMBER(SUBSTR(LOT_CODE, 17))),0) AS MAX_SEQ
+		FROM LOT
+		WHERE LOT_CODE LIKE 'LOT-' || #{todayStr} || '-%'
+		  AND SUBSTR(LOT_CODE, 14, 2) = #{type}
+		GROUP BY SUBSTR(LOT_CODE, 14, 2)
+	</select>
+	
 </mapper>
