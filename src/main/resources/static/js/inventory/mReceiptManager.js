@@ -3,8 +3,8 @@
  * 
  * 단일 데이터 테이블의 CRUD 기능을 담당하는 창고 관리 모듈입니다.
  * 
- * @version 2.0.0
- * @since 2025-04-21
+ * @version 2.1.0
+ * @since 2025-04-22
  */
 const WareHouseManager = (function() {
     // =============================
@@ -24,7 +24,32 @@ const WareHouseManager = (function() {
             DOWNLOAD: '/api/warehouses/excel/download'       // 엑셀 다운로드 API URL
         }
     };
-
+	// ====================================================== 추가
+    // 입고 상태 정의 - 공통 컴포넌트 사용을 위한 설정
+    const RECEIPT_STATUS_CONFIG = {
+        states: ['대기', '진행중', '완료', '취소'],
+        styles: {
+            '대기': 'btn-secondary',
+            '진행중': 'btn-primary',
+            '완료': 'btn-success',
+            '취소': 'btn-danger'
+        },
+        defaultState: '대기',
+        gridId: 'mReceiptGrid',
+        updateRowType: true,
+        buttonStyle: {
+            width: '100%',
+            height: '26px',
+            fontSize: '12px',
+            padding: '2px 5px'
+        },
+        // 선택적으로 상태 변경 콜백 설정 가능
+        onStateChange: (rowKey, oldState, newState, grid) => {
+            console.log(`입고 상태 변경 콜백: ${oldState} -> ${newState} (행 ${rowKey})`);
+            // 필요 시 추가 로직 구현
+        }
+    };
+	// ====================================================== 추가
     // =============================
     // 초기화 및 이벤트 처리 함수
     // =============================
@@ -181,26 +206,29 @@ const WareHouseManager = (function() {
             }
 
             // 서버에서 받은 데이터 활용
-            const gridData = window.mInventoryList || [];
-            console.log('초기 데이터:', gridData.length, '건');
-
+            const gridData = window.mReceipt || [];
+            console.log('초기 데이터:', gridData ? gridData.length : 0, '건');
+			// ====================================================== 추가
+            // 상태 포맷터 생성
+            const statusFormatter = GridUtil.createStatusFormatter(RECEIPT_STATUS_CONFIG);
+			// ====================================================== 추가
             // 그리드 생성 - GridUtil 사용
             mReceiptGrid = GridUtil.registerGrid({
                 id: 'mReceiptGrid',
                 columns: [
                     {
-                        header: '입고번호',
+                        header: '입고 코드',
                         name: 'RECEIPT_CODE',
                         editor: 'text'
                     },
                     {
-                        header: '발주번호',
-                        name: 'PO_NO',
+                        header: '발주 코드',
+                        name: 'PO_CODE',
                         editor: 'text'
                     },
                     {
-                        header: '자재 번호',
-                        name: 'MTL_NO',
+                        header: '자재 코드',
+                        name: 'MTL_CODE',
                         editor: 'text'
                     },
                     {
@@ -209,14 +237,19 @@ const WareHouseManager = (function() {
                         editor: 'text'
                     },
                     {
-                        header: '자재 명 어디서 가져올까..',
-                        name: 'LOCATION_CODE',
+                        header: '자재명',
+                        name: 'MTL_NAME',
                         editor: 'text'
                     },
                     {
                         header: '입고일',
                         name: 'RECEIPT_DATE',
                         editor: 'text',
+                        formatter: function(obj) {
+                            if (!obj.value) return '-';
+                            const date = new Date(obj.value);
+                            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        }
                     },
                     {
                         header: '입고 수량',
@@ -226,7 +259,10 @@ const WareHouseManager = (function() {
                     {
                         header: '입고 상태',
                         name: 'RECEIPT_STATUS',
-                        editor: 'text',
+						// ====================================================== 추가
+                        // 단순 formatter로 표시만 처리
+                        formatter: statusFormatter
+						// ====================================================== 추가
                     },
                     {
                         header: '창고 코드',
@@ -263,7 +299,16 @@ const WareHouseManager = (function() {
                     rowHeaders: ['rowNum', 'checkbox']
                 }
             });
-            
+			// ====================================================== 추가
+            // 그리드 데이터 정리
+            // 빈 상태 값 초기화
+            const rows = mReceiptGrid.getData();
+            rows.forEach((row, index) => {
+                if (!row.RECEIPT_STATUS) {
+                    mReceiptGrid.setValue(row.rowKey, 'RECEIPT_STATUS', RECEIPT_STATUS_CONFIG.defaultState);
+                }
+            });
+			// ====================================================== 추가
             // 편집 완료 이벤트 처리 - 변경된 행 추적
             mReceiptGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
@@ -278,7 +323,10 @@ const WareHouseManager = (function() {
 
             // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
             GridUtil.setupKeyColumnControl('mReceiptGrid', 'WHS_CODE');
-            
+			// ====================================================== 추가
+            // 상태 변경 이벤트 설정
+            GridUtil.setupStatusChangeEvent('mReceiptGrid', 'RECEIPT_STATUS', RECEIPT_STATUS_CONFIG);
+			// ====================================================== 추가
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
             GridSearchUtil.updateOriginalData('mReceiptGrid', gridData);
 
@@ -306,7 +354,10 @@ const WareHouseManager = (function() {
                 WHS_USED: '',
                 WHS_COMMENTS: '',
                 WHS_MANAGER: '',
-                IS_ACTIVE: 'Y'
+                IS_ACTIVE: 'Y',
+				// ====================================================== 추가
+                RECEIPT_STATUS: RECEIPT_STATUS_CONFIG.defaultState // 기본 상태 설정
+				// ====================================================== 추가
                 // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
             };
 
@@ -400,6 +451,9 @@ const WareHouseManager = (function() {
                 whsComments: row.WHS_COMMENTS || '',
                 whsManager: row.WHS_MANAGER || '',
                 isActive: row.IS_ACTIVE,
+				// ====================================================== 추가
+                receiptStatus: row.RECEIPT_STATUS || RECEIPT_STATUS_CONFIG.defaultState, // 입고 상태 추가
+				// ====================================================== 추가
                 action: row.ROW_TYPE // insert, update, delete
             }));
 
