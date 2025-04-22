@@ -30,6 +30,9 @@ public interface WorkOrderMapper {
 	//제조계획상태 변경 & 제조계획 delete
 	void updateMfgStatus(String msCode);
 	void deleteMfgList(String msCode);
+	
+	//====================================
+	List<LotDTO> selectAllLotTree();
 
 
 }

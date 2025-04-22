@@ -58,4 +58,9 @@ public class WorkOrderService {
 		return orderMapper.selectLotNoDetail(lotNo);
 	}
 	
+	//=====================================================
+	public List<LotDTO> getAllLotTree() {
+		return orderMapper.selectAllLotTree();
+	}
+	
 }

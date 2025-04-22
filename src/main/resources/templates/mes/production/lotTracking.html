@@ -197,59 +197,82 @@
 
 <th:block layout:fragment="script">
 	<script th:inline="javascript">
-		const orderList = /*[[${orderList}]]*/ [];
+// 		const orderList = /*[[${orderList}]]*/ [];
+
+		const orderList = [[${orderListJson}]];
+		console.log("typeof orderList:", typeof orderList);
+		console.log(orderList);
 	
-		const treeData = orderList.map(order => ({
-		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">${order.lotCode} - ${order.pdtName}</span>`,
-		    children: [
-		    	{
-		            text: `<span class="lot-node" data-lot-no="${order.lotNo}">자식 lot: ${order.childLotCode} ${order.pdtName}</span>`
-		        }
-		    ]
-		}));
-	
+	// 1. lotMap 구성
+		const lotMap = new Map();
+		orderList.forEach(order => {
+		  lotMap.set(order.lotCode, {
+// 		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">${order.lotCode} (${order.pdtCode})</span>`,
+		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">${order.lotCode} (${order.pdtCode} / ${order.pdtName ?? '이름없음'})</span>`, 
+		    lotNo: order.lotNo,
+		    lotCode: order.lotCode,
+		    pdtCode: order.pdtCode,
+		    childLotCode: order.childLotCode,
+		    children: []
+		  });
+		});
+		
+		// 2. 올바른 방향으로 트리 연결 (부모 → 자식)
+		lotMap.forEach(parent => {
+		  const child = lotMap.get(parent.childLotCode);
+		  if (child) {
+		    child.children.push(parent);
+		  }
+		});
+		
+		// 3. 루트 노드 판별 (자식이 아닌 노드만 root로 설정)
+		const treeData = [];
+		lotMap.forEach(node => {
+		  const isChild = [...lotMap.values()].some(parent => parent.children.includes(node));
+		  if (!isChild) {
+		    treeData.push(node);
+		  }
+		});
+		
+		
 		document.addEventListener('DOMContentLoaded', function () {
-			const tree = new tui.Tree('#tree', {
+			  const tree = new tui.Tree('#tree', {
 			    data: treeData,
 			    nodeDefaultState: 'opened',
-			    nodeTextTemplate: function(node) {
-			        return node.text;
-			    }
-			});
-	
-			$('#tree').on('click', '.lot-node', function() {
+			    nodeTextTemplate: node => node.text
+			  });
+		
+			  $('#tree').on('click', '.lot-node', function () {
 			    const lotNo = $(this).data('lot-no');
-			    console.log("클릭된 LOT NO:", lotNo);
-			    
-		        // AJAX 요청
-		        $.ajax({
-		            url: '/production/lotDetail',
-		            method: 'GET',
-		            data: { lotNo: lotNo },
-		            success: function (response) {
-		            	console.log("서버 응답", response);
-		            	
-		            	$('#lotNotice').hide();
-		                $('#lotDetailForm').show();
-		                 
-		                 
-		            	$('#lotCode').text(response.LOT_CODE);
-		                $('#pdtName').val(response.PDT_NAME);
-		                $('#prcType').val(response.PRC_TYPE);
-		                $('#startTime').val(response.START_TIME);
-		                $('#finishTime').val(response.FINISH_TIME);
-		                $('#woCode').val(response.WO_CODE);
-		                $('#empName').val(response.EMP_NAME);
-		                $('#workOrderStatus').val(response.WORK_ORDER_STATUS);
-		            },
-		            error: function (error) {
-		                alert("서버 오류: " + error.responseText);
-		            }
-		        });
-		    });
-		});
-
-</script>
+			    console.log('클릭된 LOT NO:', lotNo);
+		
+			    $.ajax({
+			      url: '/production/lotDetail',
+			      method: 'GET',
+			      data: { lotNo: lotNo },
+			      success: function (response) {
+			    	  console.log(lotNo);
+			        $('#lotNotice').hide();
+			        $('#lotDetailForm').show();
+		
+			        $('#lotCode').text(response.LOT_CODE);
+			        $('#pdtName').val(response.PDT_NAME);
+			        $('#prcType').val(response.PRC_TYPE);
+			        $('#startTime').val(response.START_TIME);
+			        $('#finishTime').val(response.FINISH_TIME);
+			        $('#woCode').val(response.WO_CODE);
+			        $('#empName').val(response.EMP_NAME);
+			        $('#workOrderStatus').val(response.WORK_ORDER_STATUS);
+			        
+			        console.log("서버 응답:", response);
+			      },
+			      error: function (error) {
+			        alert('서버 오류: ' + error.responseText);
+			      }
+			    });
+			  });
+			});
+		</script>
 </th:block>
 </body>
 </html>

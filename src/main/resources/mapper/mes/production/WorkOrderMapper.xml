@@ -126,4 +126,39 @@
 		SELECT L.*,W.PDT_NAME
 		FROM LOT L JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
 	</select>
+	
+	
+	<!-- 계층구조로 로트번호 리스트 뿌리기 -->
+	<select id="selectAllLotTree" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+<!-- 		SELECT -->
+<!-- 	      LEVEL, -->
+<!-- 	      L.LOT_NO, -->
+<!-- 	      L.LOT_CODE, -->
+<!-- 	      L.PDT_CODE, -->
+<!-- 	      L.CHILD_PDT_CODE, -->
+<!-- 	      CONNECT_BY_ISLEAF AS IS_LEAF, -->
+<!-- 	      PRIOR L.LOT_CODE AS childLotCode -->
+<!-- 	    FROM LOT L -->
+<!-- 	    START WITH L.PDT_CODE NOT IN (SELECT CHILD_PDT_CODE FROM LOT WHERE CHILD_PDT_CODE IS NOT NULL) -->
+<!-- 	     START WITH L.CHILD_PDT_CODE IS NULL -->
+<!-- 	    CONNECT BY PRIOR L.PDT_CODE = L.CHILD_PDT_CODE -->
+<!-- 	    ORDER SIBLINGS BY L.LOT_NO -->
+			SELECT    
+			    LEVEL,
+			    L.LOT_NO,
+			    L.LOT_CODE,
+			    L.PDT_CODE,
+			    L.CHILD_LOT_CODE,
+			    W.PDT_NAME,
+			    CONNECT_BY_ISLEAF AS IS_LEAF,
+			    PRIOR L.LOT_CODE AS PARENT_LOT_CODE,
+			    SYS_CONNECT_BY_PATH(L.LOT_CODE, ' → ') AS PATH
+			FROM LOT L
+			LEFT JOIN WORK_ORDER W ON L.PDT_CODE = W.PDT_CODE
+			START WITH L.CHILD_LOT_CODE IS NULL
+			CONNECT BY PRIOR L.LOT_CODE = L.CHILD_LOT_CODE
+			ORDER SIBLINGS BY L.LOT_NO
+
+	</select>
+	
 </mapper>
