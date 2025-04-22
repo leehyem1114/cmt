@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.service.mes.production.WorkOrderService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,23 +25,16 @@ public class ProductionExecutionController {//	생산 중 실적 등록, 자재 
 	
 	//Lot추적
 	@GetMapping("/lotTracking")
-	public String lotTracking(Model model) {
-		//로트번호로 단일제품 번호 불러오기
-//		WorkOrderDTO product = orderService.getProductDetail(lotNo);
-//		model.addAttribute("product",product);
-		
-		//lot + work_order 테이블 들고오기
-		List<LotDTO> orderList = orderService.getLotDetail();
-		model.addAttribute("orderList",orderList);
-		
-		return "mes/production/lotTracking";
+    public String lotTracking(Model model) throws Exception {
+		List<LotDTO> orderList = orderService.getAllLotTree();
+	    model.addAttribute("orderListJson", orderList);
+        return "mes/production/lotTracking";
 	}
 	
 	@GetMapping("/lotDetail")
 	@ResponseBody
 	public LotDTO lotDetail(@RequestParam("lotNo") Long lotNo, Model model) {
-//		LotDTO detail = orderService.getLotNoDetail(lotNo);
-//		 model.addAttribute("order", detail);
-		return orderService.getLotNoDetail(lotNo);
+		LotDTO detail = orderService.getLotNoDetail(lotNo);
+		return detail;
 	}
 }
