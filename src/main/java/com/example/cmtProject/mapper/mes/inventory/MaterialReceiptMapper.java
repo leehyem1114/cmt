@@ -28,4 +28,4 @@ public interface MaterialReceiptMapper {
 	
 	public int insertMaterialReceipt(Map<String, Object> params);
 
-}
+} //MaterialReceiptMapper
