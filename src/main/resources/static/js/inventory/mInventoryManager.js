@@ -189,8 +189,13 @@ const WareHouseManager = (function() {
                 id: 'mInventoryGrid',
                 columns: [
                     {
-                        header: '자재번호',
-                        name: 'MTL_NO',
+                        header: '자재코드',
+                        name: 'MTL_CODE',
+                        editor: 'text'
+                    },
+                    {
+                        header: '자재명',
+                        name: 'MTL_NAME',
                         editor: 'text'
                     },
                     {
