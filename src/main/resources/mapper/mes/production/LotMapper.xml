@@ -6,18 +6,69 @@
 <!-- ProductMapper.java 경로로 클래스명 ProductMapper까지 입력 --> 
 <mapper namespace="com.example.cmtProject.mapper.mes.production.LotMapper">
 	<!-- LOTNO의 최대값 -->
-	<select id="getLotNo" resultType="int">
-		SELECT MAX(NVL(LOT_NO,0)) FROM LOT
+	<select id="getLotNo" resultType="Long">
+		SELECT NVL(MAX(lot_no), 0) FROM LOT
 	</select>
 	
 	<select id="getLotOrderPrcType" resultType="com.example.cmtProject.dto.mes.production.LotOrderDTO">
 		SELECT
-			SUBSTR(LOT_CODE, 14, 2) AS PRC_TYPE,
-			NVL(MAX(TO_NUMBER(SUBSTR(LOT_CODE, 17))),0) AS MAX_SEQ
+			SUBSTR(CHILD_LOT_CODE, 14, 2) AS PRC_TYPE,
+			NVL(MAX(TO_NUMBER(SUBSTR(CHILD_LOT_CODE, 17))),0) AS MAX_SEQ
 		FROM LOT
-		WHERE LOT_CODE LIKE 'LOT-' || #{todayStr} || '-%'
-		  AND SUBSTR(LOT_CODE, 14, 2) = #{type}
-		GROUP BY SUBSTR(LOT_CODE, 14, 2)
+		WHERE CHILD_LOT_CODE LIKE 'LOT-' || #{todayStr} || '-%'
+		  AND SUBSTR(CHILD_LOT_CODE, 14, 2) = #{type}
+		GROUP BY SUBSTR(CHILD_LOT_CODE, 14, 2)
+	</select>
+	
+	<insert id="insertLot" parameterType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
+	    INSERT INTO LOT (
+	        LOT_NO
+			,PARENT_LOT_CODE
+			,CHILD_LOT_CODE
+			,PARENT_PDT_CODE
+			,CHILD_PDT_CODE
+			,CREATE_DATE
+			,PRC_TYPE
+			,LINE_CODE
+			,EQP_CODE
+			,WO_CODE
+			,START_TIME
+			,FINISH_TIME
+			,WO_STATUS_NO
+			,USE_YN
+	    ) VALUES (
+	        #{lotNo},
+	        #{parentLotCode},
+	        #{childLotCode},
+	        #{parentdPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
+	        #{childPdtCode},
+	        #{createDate},
+	        #{prcType},
+	        #{lineCode},
+	        #{eqpCode},
+	        #{woCode},
+	        #{startTime},
+	        #{finishTime},
+	        #{woStatusNo},
+	        #{useYn}
+	    )
+	</insert>
+	
+	<select id="selectStructurePath" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
+		SELECT
+		    LEVEL AS BOM_LEVEL,
+		    CHILD_ITEM_CODE,
+		    PARENT_PDT_CODE,
+		    ITEM_TYPE,
+		    BOM_PRC_TYPE,
+		    BOM_QTY,
+		    BOM_UNIT,
+		    LTRIM(SYS_CONNECT_BY_PATH(CHILD_ITEM_CODE, ' ← '), ' ← ') AS PATH
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = #{pdtCode}
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+		ORDER SIBLINGS BY CHILD_ITEM_CODE
 	</select>
 	
 </mapper>

@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.dto.mes.production.LotBomPathBindingDTO;
 import com.example.cmtProject.dto.mes.production.LotCodeDTO;
 import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
+import com.example.cmtProject.dto.mes.production.LotOriginDTO;
+import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.service.mes.production.LotService;
@@ -64,8 +67,8 @@ public class ProductionPrcController {
 	//모달 시작 버튼에서 실행
 	@GetMapping("/pdtCodeSelected")
 	@ResponseBody
-	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode,
-	        @RequestParam("woCode") String woCode) {
+	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode) {
+	//public LotBomPathBindingDTO pdtCodeSelected(@RequestParam("pdtCode") String pdtCode,  @RequestParam("woCode") String woCode) {
 		
 		//PARENT_PDT_CODE => 앞 과정에서 투입되는 제품
 		//CHILD_ITEM_CODE => 현재 제품/최종 제품
@@ -112,33 +115,25 @@ public class ProductionPrcController {
 		int paInt = lotOrderPA != null ?  lotOrderPA.getMaxSeq() : 0;
 		int asInt = lotOrderAS != null ?  lotOrderAS.getMaxSeq() : 0;
 		int mtlInt = 0;
-		System.out.println("prInt:" + prInt + " ,weInt:" + weInt + " ,paInt:" + paInt + " ,asInt:" + asInt);
-		//log.info(lotOrder.toString());
 		
+		Map<String, String> checkLot = new HashMap<>();
 		for(BomInfoDTO b : selectPdtCodeList) {
-			/*
-			BomInfoDTO(bomNo=null, bomLevel=1, parentPdtCode=WIP013, childItemCode=FP001, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
-			BomInfoDTO(bomNo=null, bomLevel=2, parentPdtCode=WIP010, childItemCode=WIP013, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
-			BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=MTL-010, childItemCode=WIP010, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null), 
-			 * */	
-		
+			
 			//================ 부모 컬럼 lot생성=========================================================
 			int parentOrderNum = 0;
-			
-			String parentpdtCode = b.getParentPdtCode();
-			System.out.println("parentpdtCode:" + parentpdtCode);
-			
+			String parentpdtCode = b.getParentPdtCode(); //부모의 제품 코드
 			String parentPrcType = "";
 			
-			//MTL-001 원자재인지 확인
 			if (parentpdtCode.toLowerCase().startsWith("mtl")) {
+				//MTL-001 원자재인지 경우 LOT에 IN 입력
 				parentPrcType = "IN";
 				parentOrderNum = ++mtlInt;
 	        }else {
 	        	
+	        	//FP, PR, WE, PA, AS
 	        	parentPrcType = productionPrcService.getPrcType(parentpdtCode);
-				System.out.println("parentPrcType:" + parentPrcType);
-				
+
+	        	//공정에 맞게 뒤에 ORDER증가
 				if(parentPrcType != null) {
 					
 		        	if(parentPrcType.equals("FP")) {
@@ -161,27 +156,30 @@ public class ProductionPrcController {
 	        	
 	        }//else {
 	
-		
-			String parentLot = makeLotCode(parentPrcType, todayStr, parentOrderNum); 
-			System.out.println("parentLot:" + parentLot);
-			
+			//MAP에 저장된 제품 코드를 조회, 있는 경우 기존 LOT번호 출력, 없는 경우 MAP에 저장 
+		    String parentLot = "";
+		    if (checkLot.containsKey(parentpdtCode)) {
+		    	 parentLot = checkLot.get(parentpdtCode);
+	        } else {
+	        	parentLot = makeLotCode(parentPrcType, todayStr, parentOrderNum);
+	        	checkLot.put(parentpdtCode, parentLot);
+	        }
+		    
 			//================ 자식 컬럼 lot생성=========================================================
 			
-			//자식 컬럼 lot생성
 			int childOrderNum = 0;
-			String childItemCode = b.getChildItemCode();
-			
+			String childItemCode = b.getChildItemCode(); //자식의 제품 코드
 			String childPrcType = "";
 			
-			//MTL-001 원자재인지 확인
 			if (childItemCode.toLowerCase().startsWith("mtl")) {
+				//MTL-001 원자재인지 확인
 				childPrcType = "IN";
 				childOrderNum = ++mtlInt;
 	        }else {
 			
 	        	childPrcType = productionPrcService.getPrcType(childItemCode);
-				System.out.println("parentPrcType:" + parentPrcType);
 			
+	        	//FP, PR, WE, PA, AS
 				if(childPrcType != null) {
 					
 		        	if(childPrcType.equals("FP")) {
@@ -202,45 +200,71 @@ public class ProductionPrcController {
 					log.error("childPrcType is NULL");
 				}//if(childPrcType != null) {
 			
-				String childLot = makeLotCode(childPrcType, todayStr, childOrderNum); 
-				System.out.println("childLot:" + childLot);
+				//MAP에 저장된 제품 코드를 조회, 있는 경우 기존 LOT번호 출력, 없는 경우 MAP에 저장 
+				String childLot = "";
+			    if (checkLot.containsKey(childItemCode)) {
+			    	childLot = checkLot.get(childItemCode);
+		        } else {
+		        	childLot = makeLotCode(childPrcType, todayStr, childOrderNum);
+		        	checkLot.put(childItemCode, childLot);
+		        }
+				
+				//========================= 위에서 생성한 lot를 lot테이블에 입력 ============================================= 
+				
+				Long lotNoMax = lotService.getLotNo(); 
+				
+				lotNoMax++;
+				Long lotNo = lotNoMax;
+				String lotCode = parentLot; //이후 단계 
+				
+				String parentPdtCode = b.getParentPdtCode();
+				String childPdtCode = b.getChildItemCode();
+				
+				String createDate = String.valueOf(today);
+				
+				String prcType = b.getBomPrcType();
+				
+				//LINE_CODE
+				//EQP_CODE
+				
+				//String woCode = woCode;
+				String childLotCode = childLot;
+				
+				LocalTime nowTime = LocalTime.now();
+				String startTime = String.valueOf(nowTime);
+				
+				String woStatusNo = "RN";
+				
+				String useYN = "Y";
+				
+				LotOriginDTO lod = new LotOriginDTO();
+				lod.setLotNo(Long.valueOf(lotNo));
+				lod.setChildLotCode(childLot);
+				lod.setParentLotCode(parentLot);
+				lod.setChildPdtCode(childPdtCode);
+				lod.setParentdPdtCode(parentPdtCode);
+				lod.setCreateDate(today);
+				lod.setPrcType(prcType);
+				lod.setLineCode("");
+				lod.setEqpCode("");
+				lod.setWoCode(woCode);
+				lod.setStartTime(nowTime);
+				lod.setFinishTime(nowTime);
+				lod.setWoStatusNo(woStatusNo);
+				lod.setUseYn(useYN);
+				
+				lotService.insertLot(lod);
 	        }//else {
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
-		//------------------- lot테이블에 값 입력 --------------------------------
-		//lot테이블에서 현재 lot_no의 최대값
-		int lotNoMax = lotService.getLotNo(); 
+		//========================= 하단 왼쪽에 보여줄 PATH가져오기 =============================================
+		List<LotStructurePathDTO> lspd = lotService.selectStructurePath(pdtCode);
 		
-		log.info(String.valueOf(lotNoMax));
-		
-		//시작 버튼을 누르면 LOT테이블에 데이터가 입력된다
-		for(BomInfoDTO bid : selectPdtCodeList) {
-			/*
-			lotNoMax++;
-			int LOT_NO = lotNoMax;
-			String LOT_CODE = makeLotCode(bid.getParentPdtCode());
-			String CHILD_LOT_CODE = makeLotCode(bid.getChildItemCode());
-			String PDT_CODE = bid.getParentPdtCode();
-			String CHILD_PDT_CODE = bid.getChildItemCode();
-			
-			String CREATE_DATE = String.valueOf(today);
-			
-			String PRC_TYPE = bid.getBomPrcType();
-			
-			String WO_CODE = woCode;
-			
-			LocalTime nowTime = LocalTime.now();
-			String START_TIME = String.valueOf(nowTime);
-			
-			String WO_STATUS_NO = "RN";
-			
-			String USE_YN = "Y";
-			
-			LotDTO lotDto = new LotDTO();
-			*/
-		}
+		//LotBomPathBindingDTO
+		//return new LotBomPathBindingDTO(selectPdtCodeList, lspd);
 		
 		return selectPdtCodeList;
+		
 	}
 
 	
@@ -254,7 +278,7 @@ public class ProductionPrcController {
 		//LOT-20250421-PR-02 
 		if(orderNum > 100) {
 			lot = "LOT-" + todayStr + "-" + prcType + "-" + orderNum;
-		}else if(orderNum > 10) {
+		}else if(orderNum >= 10) {
 			lot = "LOT-" + todayStr + "-" + prcType + "-0" + orderNum;
 		}else if(orderNum >= 1) {
 			lot = "LOT-" + todayStr + "-" + prcType + "-00" + orderNum;
