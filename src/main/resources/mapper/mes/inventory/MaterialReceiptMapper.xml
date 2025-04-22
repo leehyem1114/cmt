@@ -7,33 +7,98 @@
 	<!--발주 정보 SELECT-->
 	
 	<select id = "puchasesList" resultType="map" parameterType="map">
-        SELECT *
-        FROM  PURCHASES_ORDER
-<!--        WHERE PO_STATUS = 'PO_ORDERED'-->
-        ORDER BY PO_DATE DESC
-	
+	   SELECT
+	        PO_NO,              <!-- 발주 주문번호 -->
+	        PO_CODE,            <!-- 발주 코드 -->
+	        CLT_CODE,           <!-- 공급업체 코드 -->
+	        EMP_NO,             <!-- 사원번호 -->
+	        MTL_CODE,           <!-- 원자재 코드 -->
+	        MTL_RCV_QTY,        <!-- 자재 입고 수량 -->
+	        MTL_RCV_PRICE,      <!-- 자재 입고 단가 -->
+	        MTL_RCV_DATE,       <!-- 자재 입고 일자 -->
+	        PO_DATE,            <!-- 발주일자 -->
+	        PO_QTY,             <!-- 주문수량 -->
+	        QTY_UNIT,           <!-- 수량단위 -->
+	        WHS_CODE,           <!-- 창고 코드 -->
+	        PO_STATUS,          <!-- 발주 진행 상태 -->
+	        PO_USE_YN
+	    FROM
+	        PURCHASES_ORDER p
+	    WHERE 
+	        NOT EXISTS (
+	            SELECT 1 
+	            FROM MATERIAL_RECEIPT m 
+	            WHERE m.PO_CODE = p.PO_CODE
+	        )
+	    <!-- WHERE PO_STATUS = 'PO_ORDERED'-->
+	    ORDER BY PO_DATE DESC
 	</select>
+	
 	
 	<!--입고 정보 INSERT-->
 	
 	<insert id="insertMaterialReceipt">
         INSERT INTO MATERIAL_RECEIPT (
-            RECEIPT_NO, RECEIPT_CODE, PO_NO, MTL_NO, RECEIVED_QTY, 
-            LOT_NO, RECEIPT_DATE, RECEIPT_STATUS, WAREHOUSE_CODE, 
-            LOCATION_CODE, RECEIVER, CREATED_BY, UPDATED_BY, 
-            CREATED_DATE, UPDATED_DATE
+            RECEIPT_NO, <!-- 입고 번호 -->
+            RECEIPT_CODE, <!-- 입고 코드 -->
+            PO_CODE, <!-- 발주코드 -->
+            MTL_CODE, <!-- 자재코드 -->
+            RECEIVED_QTY, <!-- 입고수량 -->
+            LOT_NO, <!-- LOT 번호 -->
+            RECEIPT_DATE, <!-- 입고일 -->
+            RECEIPT_STATUS, <!-- 입고상태 -->
+            WAREHOUSE_CODE, <!-- 창고 코드 -->
+            LOCATION_CODE, <!-- 위치 코드 -->
+            RECEIVER, <!-- 입고 담당자 -->
+            CREATED_BY, <!-- 생성자 -->
+            UPDATED_BY, <!-- 수정자 -->
+            CREATED_DATE, <!-- 생성일자 -->
+            UPDATED_DATE <!-- 수정일자 -->
         ) VALUES (
-            #{receiptNo}, #{receiptCode}, #{poNo}, #{mtlNo}, #{receivedQty}, 
-            #{lotNo}, #{receiptDate}, #{receiptStatus}, #{warehouseCode}, 
-            #{locationCode}, #{receiver}, #{createdBy}, #{updatedBy}, 
-            #{createdDate}, #{updatedDate}
+            SEQ_MATERIAL_RECEIPT_NO.NEXTVAL,
+            #{receiptCode},
+            #{poCode},
+            #{mtlCode},
+            #{receivedQty}, 
+            #{lotNo},
+            #{receiptDate, jdbcType=DATE},
+            #{receiptStatus},
+            #{warehouseCode}, 
+            #{locationCode},
+            #{receiver},
+            #{createdBy},
+            #{updatedBy}, 
+            #{createdDate},
+            #{updatedDate}
         )
 	</insert>
 	
 	<!--입고 정보 SELECT-->
-	<select id = "mReceiptList" resultType="map" parameterType="map">
-        SELECT *
-        FROM  MATERIAL_RECEIPT
+	<select id ="mReceiptList" resultType="map" parameterType="map">
+        SELECT
+        	MR.RECEIPT_NO, <!-- 입고 번호 -->
+            MR.RECEIPT_CODE, <!-- 입고 코드 -->
+            MR.PO_CODE, <!-- 발주코드 -->
+            MR.MTL_CODE, <!-- 자재코드 -->
+            MR.RECEIVED_QTY, <!-- 입고수량 -->
+            MR.LOT_NO, <!-- LOT 번호 -->
+            M.MTL_NAME, <!-- 자재명  -->
+            MR.RECEIPT_DATE, <!-- 입고일 -->
+            MR.RECEIPT_STATUS, <!-- 입고상태 -->
+            MR.WAREHOUSE_CODE, <!-- 창고 코드 -->
+            MR.LOCATION_CODE, <!-- 위치 코드 -->
+            MR.RECEIVER, <!-- 입고 담당자 -->
+            MR.CREATED_BY, <!-- 생성자 -->
+            MR.UPDATED_BY, <!-- 수정자 -->
+            MR.CREATED_DATE, <!-- 생성일자 -->
+            MR.UPDATED_DATE <!-- 수정일자 -->
+        FROM  
+        	MATERIAL_RECEIPT MR
+        LEFT JOIN
+        	MATERIALS M
+        ON
+        	MR.MTL_CODE = M.MTL_CODE
+        
 	
 	</select>
 	
