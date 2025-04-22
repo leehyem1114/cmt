@@ -4,10 +4,8 @@
  * TOAST UI Grid 기본 기능을 확장하여 프로젝트 특화 기능 및 공통 패턴을 제공합니다.
  * 프로젝트에서 필요한 ROW_TYPE 관리 및 비즈니스 로직을 중앙화합니다.
  * 
- * 
- * 
- * @version 1.0.0
- * @since 2025-03-24
+ * @version 1.2.0
+ * @since 2025-04-22
  */
 
 const GridUtil = (function() {
@@ -34,82 +32,82 @@ const GridUtil = (function() {
      * 
      * @returns {Object} 생성된 TOAST UI Grid 인스턴스
      */
-	function registerGrid(options) {
-	    try {
-	        // 필수 옵션 확인
-	        if (!options.id || !options.columns) {
-	            throw new Error('그리드 ID와 컬럼 정의는 필수입니다.');
-	        }
+    function registerGrid(options) {
+        try {
+            // 필수 옵션 확인
+            if (!options.id || !options.columns) {
+                throw new Error('그리드 ID와 컬럼 정의는 필수입니다.');
+            }
 
-	        // 대상 요소 확인
-	        const targetElement = document.getElementById(options.id);
-	        if (!targetElement) {
-	            throw new Error(`ID가 '${options.id}'인 HTML 요소를 찾을 수 없습니다.`);
-	        }
+            // 대상 요소 확인
+            const targetElement = document.getElementById(options.id);
+            if (!targetElement) {
+                throw new Error(`ID가 '${options.id}'인 HTML 요소를 찾을 수 없습니다.`);
+            }
 
-	        const Grid = tui.Grid;
+            const Grid = tui.Grid;
 
-	        // 기본 그리드 옵션
-	        const defaultOptions = {
-	            scrollX: true,
-	            scrollY: true,
-	            rowHeaders: ['rowNum']
-	        };
+            // 기본 그리드 옵션
+            const defaultOptions = {
+                scrollX: true,
+                scrollY: true,
+                rowHeaders: ['rowNum']
+            };
 
-	        // options에서 내부 처리용 속성들을 제외한 모든 속성을 추출
-	        const { 
-	            id, 
-	            hiddenColumns, 
-	            displayColumnName, 
-	            onInitialized, 
-	            gridOptions = {}, 
-	            ...otherOptions 
-	        } = options;
+            // options에서 내부 처리용 속성들을 제외한 모든 속성을 추출
+            const { 
+                id, 
+                hiddenColumns, 
+                displayColumnName, 
+                onInitialized, 
+                gridOptions = {}, 
+                ...otherOptions 
+            } = options;
 
-	        // 최종 옵션 구성 (우선순위: 1. gridOptions 2. otherOptions 3. defaultOptions)
-	        const finalOptions = {
-	            ...defaultOptions,
-	            ...otherOptions,
-	            ...gridOptions,
-	            el: targetElement,
-	            columns: options.columns,
-	            data: options.data || []
-	        };
+            // 최종 옵션 구성 (우선순위: 1. gridOptions 2. otherOptions 3. defaultOptions)
+            const finalOptions = {
+                ...defaultOptions,
+                ...otherOptions,
+                ...gridOptions,
+                el: targetElement,
+                columns: options.columns,
+                data: options.data || []
+            };
 
-	        // 그리드 생성 - 모든 옵션을 전달
-	        const gridInstance = new Grid(finalOptions);
+            // 그리드 생성 - 모든 옵션을 전달
+            const gridInstance = new Grid(finalOptions);
 
-	        // 숨김 컬럼 처리
-	        if (hiddenColumns && hiddenColumns.length > 0) {
-	            hiddenColumns.forEach(column => {
-	                gridInstance.hideColumn(column);
-	            });
-	        }
+            // 숨김 컬럼 처리
+            if (hiddenColumns && hiddenColumns.length > 0) {
+                hiddenColumns.forEach(column => {
+                    gridInstance.hideColumn(column);
+                });
+            }
 
-	        // 드래그앤드롭 이벤트 (순서 컬럼이 있는 경우)
-	        if (options.draggable && displayColumnName) {
-	            gridInstance.on('drop', () => {
-	                _updateRowOrder(gridInstance, displayColumnName);
-	            });
-	        }
+            // 드래그앤드롭 이벤트 (순서 컬럼이 있는 경우)
+            if (options.draggable && displayColumnName) {
+                gridInstance.on('drop', () => {
+                    _updateRowOrder(gridInstance, displayColumnName);
+                });
+            }
 
-	        // 인스턴스 저장
-	        _gridInstances[id] = gridInstance;
+            // 인스턴스 저장
+            _gridInstances[id] = gridInstance;
 
-	        // 초기화 완료 콜백 실행
-	        if (typeof onInitialized === 'function') {
-	            onInitialized(gridInstance);
-	        }
+            // 초기화 완료 콜백 실행
+            if (typeof onInitialized === 'function') {
+                onInitialized(gridInstance);
+            }
 
-	        return gridInstance;
-	    } catch (error) {
-	        console.error('그리드 생성 중 오류 발생:', error);
-	        if (window.AlertUtil) {
-	            AlertUtil.showError('그리드 초기화 오류', error.message);
-	        }
-	        return null;
-	    }
-	}
+            return gridInstance;
+        } catch (error) {
+            console.error('그리드 생성 중 오류 발생:', error);
+            if (window.AlertUtil) {
+                AlertUtil.showError('그리드 초기화 오류', error.message);
+            }
+            return null;
+        }
+    }
 
     /**
      * 그리드 인스턴스 가져오기
@@ -305,58 +303,58 @@ const GridUtil = (function() {
      * 
      * @returns {Promise<Array<number>|false>} 삭제된 행의 rowKey 배열 또는 실패 시 false
      */
-	async function deleteSelectedRows(gridId, options = {}) {
-	    try {
-	        const grid = _gridInstances[gridId];
-	        if (!grid) {
-	            throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
-	        }
+    async function deleteSelectedRows(gridId, options = {}) {
+        try {
+            const grid = _gridInstances[gridId];
+            if (!grid) {
+                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+            }
 
-	        const selectedRowKeys = grid.getCheckedRowKeys();
+            const selectedRowKeys = grid.getCheckedRowKeys();
 
-	        if (selectedRowKeys.length === 0) {
-	            await AlertUtil.showWarning('삭제할 항목을 선택해주세요.');
-	            return false;
-	        }
+            if (selectedRowKeys.length === 0) {
+                await AlertUtil.showWarning('삭제할 항목을 선택해주세요.');
+                return false;
+            }
 
-	        // 삭제 전 콜백 호출
-	        if (options.onBeforeDelete) {
-	            const shouldProceed = await options.onBeforeDelete(selectedRowKeys);
-	            if (shouldProceed === false) {
-	                return false;
-	            }
-	        }
+            // 삭제 전 콜백 호출
+            if (options.onBeforeDelete) {
+                const shouldProceed = await options.onBeforeDelete(selectedRowKeys);
+                if (shouldProceed === false) {
+                    return false;
+                }
+            }
 
-	        // 확인 대화상자 표시 여부
-	        const showConfirm = options.showConfirm !== undefined ? options.showConfirm : true;
+            // 확인 대화상자 표시 여부
+            const showConfirm = options.showConfirm !== undefined ? options.showConfirm : true;
 
-	        if (showConfirm) {
-	            const confirmed = await AlertUtil.showConfirm({
-	                title: options.confirmTitle || '삭제 확인',
-	                text: options.confirmMessage || '선택한 항목을 삭제하시겠습니까?',
-	                icon: 'warning'
-	            });
+            if (showConfirm) {
+                const confirmed = await AlertUtil.showConfirm({
+                    title: options.confirmTitle || '삭제 확인',
+                    text: options.confirmMessage || '선택한 항목을 삭제하시겠습니까?',
+                    icon: 'warning'
+                });
 
-	            if (!confirmed) {
-	                return false;
-	            }
-	        }
+                if (!confirmed) {
+                    return false;
+                }
+            }
 
-	        // 행 삭제 - 원본 TOAST UI Grid API 사용
-	        grid.removeRows(selectedRowKeys);
+            // 행 삭제 - 원본 TOAST UI Grid API 사용
+            grid.removeRows(selectedRowKeys);
 
-	        // 삭제 후 콜백 호출
-	        if (options.onAfterDelete) {
-	            options.onAfterDelete(selectedRowKeys);
-	        }
+            // 삭제 후 콜백 호출
+            if (options.onAfterDelete) {
+                options.onAfterDelete(selectedRowKeys);
+            }
 
-	        return selectedRowKeys;
-	    } catch (error) {
-	        console.error('행 삭제 중 오류:', error);
-	        await AlertUtil.notifyDeleteError('삭제 중 오류가 발생했습니다.', error.message);
-	        return false;
-	    }
-	}
+            return selectedRowKeys;
+        } catch (error) {
+            console.error('행 삭제 중 오류:', error);
+            await AlertUtil.notifyDeleteError('삭제 중 오류가 발생했습니다.', error.message);
+            return false;
+        }
+    }
 
     /**
      * 그리드 행 순서 업데이트 내부 함수
@@ -373,6 +371,139 @@ const GridUtil = (function() {
         });
     }
 
+	// ====================================================== 추가
+	// =============================
+    // 상태 포맷터 및 이벤트 처리 - 간소화 버전
+    // =============================
+
+    /**
+     * 상태 표시 포맷터 생성 함수 (간소화 버전)
+     * 상태값과 스타일을 시각적으로 표시하는 포맷터를 생성합니다.
+     * 클릭 이벤트는 그리드의 click 이벤트에서 별도로 처리해야 합니다.
+     * 
+     * @param {Object} options - 포맷터 옵션
+     * @param {Object} options.styles - 상태별 스타일 클래스 매핑 객체
+     * @param {string} [options.defaultState] - 기본 상태값
+     * 
+     * @returns {Function} 생성된 포맷터 함수
+     */
+	function createStatusFormatter(options) {
+	    // 간단하게 직접 formatter 함수 반환
+	    return function(obj) {
+	        const value = obj.value || options.defaultState;
+	        const state = String(value);
+	        
+	        // 색상 매핑
+	        const colorMap = {
+	            '대기': '#6c757d',
+	            '검수중': '#007bff',
+	            '완료': '#28a745',
+	            '취소': '#dc3545'
+	        };
+	        
+	        const bgColor = colorMap[state] || '#6c757d';
+	        
+	        // 단순 HTML 문자열 반환
+	        return `<span style="display:inline-block; width:100%; text-align:center; padding:2px 5px; background-color:${bgColor}; color:white; border-radius:3px;">${state}</span>`;
+	    };
+	}
+
+    /**
+     * 상태값 변경 함수
+     * 지정된 행의 상태값을 변경하고 ROW_TYPE도 적절히 업데이트합니다.
+     * 
+     * @param {string} gridId - 그리드 ID
+     * @param {number} rowKey - 행 키
+     * @param {string} columnName - 상태 컬럼명
+     * @param {Object} statusConfig - 상태 설정 객체
+     * @returns {Promise<boolean>} 성공 여부
+     */
+    async function changeStatus(gridId, rowKey, columnName, statusConfig) {
+        try {
+            const grid = _gridInstances[gridId];
+            if (!grid) {
+                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+            }
+
+            const rowData = grid.getRow(rowKey);
+            if (!rowData) {
+                throw new Error(`rowKey ${rowKey}에 해당하는 행을 찾을 수 없습니다.`);
+            }
+
+            const currentState = rowData[columnName] || statusConfig.defaultState;
+            const currentIndex = statusConfig.states.indexOf(currentState);
+            
+            if (currentIndex === -1) {
+                throw new Error(`현재 상태 '${currentState}'가 상태 목록에 없습니다.`);
+            }
+            
+            // 다음 상태 계산
+            const nextIndex = (currentIndex + 1) % statusConfig.states.length;
+            const nextState = statusConfig.states[nextIndex];
+            
+            // 상태 변경 확인
+            const confirmed = await AlertUtil.showConfirm({
+                title: '상태 변경',
+                text: `'${currentState}'에서 '${nextState}'로 변경하시겠습니까?`,
+                icon: 'question'
+            });
+            
+            if (!confirmed) {
+                return false;
+            }
+            
+            // 상태 변경
+            grid.setValue(rowKey, columnName, nextState);
+            
+            // ROW_TYPE 업데이트
+            if (statusConfig.updateRowType && rowData.ROW_TYPE !== 'insert') {
+                grid.setValue(rowKey, 'ROW_TYPE', 'update');
+            }
+            
+            // 콜백 호출
+            if (typeof statusConfig.onStateChange === 'function') {
+                statusConfig.onStateChange(rowKey, currentState, nextState, grid);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('상태 변경 중 오류:', error);
+            await AlertUtil.showError('상태 변경 오류', error.message);
+            return false;
+        }
+    }
+
+    /**
+     * 상태 변경 이벤트 처리 설정 함수
+     * 지정된 그리드에 상태 클릭 이벤트 핸들러를 등록합니다.
+     * 
+     * @param {string} gridId - 그리드 ID
+     * @param {string} statusColumnName - 상태 컬럼명
+     * @param {Object} statusConfig - 상태 설정 객체
+     * @returns {boolean} 설정 성공 여부
+     */
+    function setupStatusChangeEvent(gridId, statusColumnName, statusConfig) {
+        try {
+            const grid = _gridInstances[gridId];
+            if (!grid) {
+                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+            }
+
+            // 그리드 클릭 이벤트에 핸들러 추가
+            grid.on('click', ev => {
+                // 상태 컬럼 클릭 시 상태 변경 처리
+                if (ev.columnName === statusColumnName) {
+                    changeStatus(gridId, ev.rowKey, statusColumnName, statusConfig);
+                }
+            });
+
+            return true;
+        } catch (error) {
+            console.error('상태 변경 이벤트 설정 중 오류:', error);
+            return false;
+        }
+    }
+	// ====================================================== 추가
     // =============================
     // 프로젝트 특화 에디터 및 유틸리티
     // =============================
@@ -410,38 +541,38 @@ const GridUtil = (function() {
      * @param {string|Array<string>} keyColumns - 제어할 키 컬럼명 또는 컬럼명 배열
      * @returns {boolean} 설정 성공 여부
      */
-	function setupKeyColumnControl(gridId, keyColumns) {
-	    try {
-	        const grid = _gridInstances[gridId];
-	        if (!grid) {
-	            throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
-	        }
+    function setupKeyColumnControl(gridId, keyColumns) {
+        try {
+            const grid = _gridInstances[gridId];
+            if (!grid) {
+                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+            }
 
-	        // 문자열을 배열로 변환
-	        const columns = Array.isArray(keyColumns) ? keyColumns : [keyColumns];
+            // 문자열을 배열로 변환
+            const columns = Array.isArray(keyColumns) ? keyColumns : [keyColumns];
 
-	        // 더블클릭 이벤트보다 선행하는 editingStart 이벤트 사용
-	        grid.on('editingStart', ev => {
-	            const rowData = grid.getRow(ev.rowKey);
-	            const rowType = rowData?.ROW_TYPE;
+            // 더블클릭 이벤트보다 선행하는 editingStart 이벤트 사용
+            grid.on('editingStart', ev => {
+                const rowData = grid.getRow(ev.rowKey);
+                const rowType = rowData?.ROW_TYPE;
 
-	            // 키 컬럼에 해당하는지 확인
-	            if (columns.includes(ev.columnName)) {
-	                // INSERT가 아닌 데이터의 키 컬럼 편집 방지
-	                if (rowType !== 'insert') {
-	                    // 기존 데이터는 키 컬럼 편집 취소
-	                    ev.stop();
-	                    console.log(`키 컬럼(${ev.columnName}) 편집이 방지되었습니다. 행 타입: ${rowType}`);
-	                }
-	            }
-	        });
+                // 키 컬럼에 해당하는지 확인
+                if (columns.includes(ev.columnName)) {
+                    // INSERT가 아닌 데이터의 키 컬럼 편집 방지
+                    if (rowType !== 'insert') {
+                        // 기존 데이터는 키 컬럼 편집 취소
+                        ev.stop();
+                        console.log(`키 컬럼(${ev.columnName}) 편집이 방지되었습니다. 행 타입: ${rowType}`);
+                    }
+                }
+            });
 
-	        return true;
-	    } catch (error) {
-	        console.error('키 컬럼 제어 설정 중 오류:', error);
-	        return false;
-	    }
-	}
+            return true;
+        } catch (error) {
+            console.error('키 컬럼 제어 설정 중 오류:', error);
+            return false;
+        }
+    }
 
     // =============================
     // 이벤트 관리 유틸리티
@@ -483,35 +614,35 @@ const GridUtil = (function() {
      * @param {Function} callback - 행 클릭 시 호출될 콜백 함수
      * @returns {boolean} 이벤트 등록 성공 여부
      */
-	function onRowClick(gridId, callback) {
-	    try {
-	        const grid = _gridInstances[gridId];
-	        if (!grid) {
-	            throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
-	        }
+    function onRowClick(gridId, callback) {
+        try {
+            const grid = _gridInstances[gridId];
+            if (!grid) {
+                throw new Error(`ID가 '${gridId}'인 그리드를 찾을 수 없습니다.`);
+            }
 
-	        grid.on('click', ev => {
-	            // ev.rowKey가 유효한지 확인
-	            if (ev.rowKey === undefined || ev.rowKey === null) {
-	                console.warn('유효하지 않은 rowKey:', ev.rowKey);
-	                if (typeof callback === 'function') {
-	                    callback(null, ev.rowKey, ev.columnName);
-	                }
-	                return;
-	            }
-	            
-	            const rowData = grid.getRow(ev.rowKey);
-	            if (typeof callback === 'function') {
-	                callback(rowData, ev.rowKey, ev.columnName);
-	            }
-	        });
+            grid.on('click', ev => {
+                // ev.rowKey가 유효한지 확인
+                if (ev.rowKey === undefined || ev.rowKey === null) {
+                    console.warn('유효하지 않은 rowKey:', ev.rowKey);
+                    if (typeof callback === 'function') {
+                        callback(null, ev.rowKey, ev.columnName);
+                    }
+                    return;
+                }
+                
+                const rowData = grid.getRow(ev.rowKey);
+                if (typeof callback === 'function') {
+                    callback(rowData, ev.rowKey, ev.columnName);
+                }
+            });
 
-	        return true;
-	    } catch (error) {
-	        console.error('행 클릭 이벤트 등록 중 오류:', error);
-	        return false;
-	    }
-	}
+            return true;
+        } catch (error) {
+            console.error('행 클릭 이벤트 등록 중 오류:', error);
+            return false;
+        }
+    }
 
     /**
      * 더블 클릭 이벤트 처리 함수 - 편의 기능
@@ -551,16 +682,22 @@ const GridUtil = (function() {
         // 프로젝트 특화 데이터 관리 함수
         addNewRow,         // ROW_TYPE 자동 설정하여 행 추가
         updateRowData,     // ROW_TYPE 자동 업데이트하며 행 데이터 수정
-        deleteSelectedRows, // 선택 행 삭제 (확인 대화상자 포함)
-        extractChangedData, // 변경된 데이터만 추출
+		deleteSelectedRows, // 선택 행 삭제 (확인 대화상자 포함)
+		        extractChangedData, // 변경된 데이터만 추출
 
-        // 이벤트 핸들러 관리
-        onRowClick,        // 행 클릭 이벤트 등록 (편의 함수)
-        onDblClick,        // 더블 클릭 이벤트 등록 (편의 함수)
-        removeEventHandlers, // 이벤트 핸들러 일괄 제거
+		        // 이벤트 핸들러 관리
+		        onRowClick,        // 행 클릭 이벤트 등록 (편의 함수)
+		        onDblClick,        // 더블 클릭 이벤트 등록 (편의 함수)
+		        removeEventHandlers, // 이벤트 핸들러 일괄 제거
 
-        // 프로젝트 특화 유틸리티
-        setupKeyColumnControl, // 키 컬럼 제어 설정
-        createYesNoEditor  // Y/N 드롭다운 에디터 생성
-    };
-})();
+		        // 프로젝트 특화 유틸리티
+		        setupKeyColumnControl, // 키 컬럼 제어 설정
+		        createYesNoEditor,  // Y/N 드롭다운 에디터 생성
+				// ====================================================== 추가
+		        // 상태 관리 유틸리티 (간소화 버전)
+		        createStatusFormatter, // 상태 포맷터 생성
+		        changeStatus,          // 상태값 변경
+		        setupStatusChangeEvent // 상태 변경 이벤트 설정
+				// ====================================================== 추가
+		    };
+		})();

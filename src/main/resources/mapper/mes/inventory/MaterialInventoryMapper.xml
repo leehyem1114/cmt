@@ -4,8 +4,31 @@
 
 <mapper namespace="com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper">
 	<select id = "mInventoryList" resultType="map" parameterType="map">
-        SELECT *
-        FROM  MATERIAL_INVENTORY
+        SELECT
+		    MI.INV_NO,                <!--  재고 관리번호 -->
+		    MI.MTL_CODE,              <!--  자재 코드 -->
+		    M.MTL_NAME,               <!--  자재명 -->
+		    MI.WAREHOUSE_CODE,        <!--  창고 코드 -->
+		    MI.LOCATION_CODE,         <!--  위치 코드 -->
+		    MI.CURRENT_QTY,           <!--  현재 수량 -->
+		    MI.ALLOCATED_QTY,         <!--  할당 수량 -->
+		    MI.AVAILABLE_QTY,         <!--  가용 수량 -->
+		    MI.LOT_NO,                <!--  LOT 번호 -->
+		    MI.LAST_MOVEMENT_DATE,    <!--  마지막 이동일 -->
+		    MI.LAST_ADJUSTMENT_DATE,  <!--  마지막 조정 일자 -->
+		    MI.ADJUSTMENT_REASON,     <!--  조정 사유 -->
+		    MI.SAFETY_STOCK_ALERT,    <!--  안전재고 알림 여부 -->
+		    MI.CREATED_BY,            <!--  생성자 -->
+		    MI.UPDATED_BY,            <!--  수정자 -->
+		    MI.CREATED_DATE,          <!--  생성일자 -->
+		    MI.UPDATED_DATE           <!--  수정일자 -->
+		FROM
+		    MATERIAL_INVENTORY MI
+		JOIN
+		    MATERIALS M
+		ON
+		    MI.MTL_CODE = M.MTL_CODE
+
 	
 	</select>
 

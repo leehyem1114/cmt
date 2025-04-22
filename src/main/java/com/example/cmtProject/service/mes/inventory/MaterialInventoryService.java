@@ -20,6 +20,7 @@ public class MaterialInventoryService {
 	public List<Map<String,Object>> inventoryList(Map<String, Object>map){
 		
 		return mImapper.mInventoryList(map);
+
 		
 	}
 

@@ -33,10 +33,12 @@ public class MaterialReceiptController {
 		Map<String, Object> findMap = new HashMap<>();
 		
 		List<Map<String, Object>> mReceipt = mrs.receiptList(findMap);
+		List<Map<String, Object>> mPuchases = mrs.puchasesList(findMap);
 		
 		model.addAttribute("mReceipt", mReceipt);	
+		model.addAttribute("mPuchases", mPuchases);	
 		
 		return "mes/inventory/materialReceipt";
 		
 	}
-}
+} //MaterialInventoryController
