@@ -80,14 +80,12 @@
 			, #{msStartDate, jdbcType=DATE}
 <!-- 			, #{msEndDate, jdbcType=DATE} -->
 			, NULL
-			,#{msStatus, jdbcType=VARCHAR}
+<!-- 			,#{msStatus, jdbcType=VARCHAR} -->
 		)
 	</insert>
 	<update id="updateMfgStatus">
 		UPDATE WORK_ORDER
-		SET WO_STATUS_CODE = (
-	        SELECT WO_STATUS_CODE FROM WORK_ORDER_STATUS WHERE WO_STATUS_CODE = 'SB'
-	    )
+		SET WO_STATUS_CODE = 'SB'
 		WHERE WO_CODE = #{msCode}
 	</update>
 	
@@ -101,7 +99,7 @@
 	<update id="updateWorkStartTime">
 		 UPDATE WORK_ORDER
 	     SET WO_START_DATE = SYSDATE 
-	    	 , WO_STATUS_CODE = 'RN' 
+	    	 , WO_STATUS_CODE = 'PS' 
 	     WHERE WO_NO = #{woNo}
 	</update>
 	
