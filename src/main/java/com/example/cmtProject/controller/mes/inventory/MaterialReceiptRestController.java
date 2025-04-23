@@ -51,17 +51,6 @@ public class MaterialReceiptRestController {
 	}
 	
 	/**
-	 * 발주 정보를 바탕으로 입고 정보 생성 API
-	 * 
-	 * @return 처리 결과
-	 */
-	@PostMapping("/register-all")
-	public ApiResponse<Map<String, Object>> registerAllFromPurchaseOrders() {
-	    Map<String, Object> result = mrs.createReceiptFromPurchaseOrder();
-	    return ApiResponse.success(result);
-	}
-	
-	/**
 	 * 입고 상세 정보 조회 API
 	 * 
 	 * @param receiptNo 입고 번호
@@ -71,6 +60,17 @@ public class MaterialReceiptRestController {
 	public ApiResponse<Map<String, Object>> getReceiptDetail(@PathVariable("receiptNo") Long receiptNo) {
 	    Map<String, Object> detail = mrs.getReceiptDetail(receiptNo);
 	    return ApiResponse.success(detail);
+	}
+	
+	/**
+	 * 발주 정보를 바탕으로 입고 정보 생성 API
+	 * 
+	 * @return 처리 결과
+	 */
+	@PostMapping("/register-all")
+	public ApiResponse<Map<String, Object>> registerAllFromPurchaseOrders() {
+		Map<String, Object> result = mrs.createReceiptFromPurchaseOrder();
+		return ApiResponse.success(result);
 	}
 	
 	/**

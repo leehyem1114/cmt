@@ -764,6 +764,9 @@ const MaterialReceiptManager = (function() {
                 await AlertUtil.showWarning('알림', '이미 입고 완료된 항목은 검수 등록이 불가능합니다.');
                 return false;
             }
+			
+			// 검수가 완료된 항목만 입고완료(구현예정)
+			if (receiptData.RECEIPT_STATUS )
             
             // 취소된 항목 체크
             if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
