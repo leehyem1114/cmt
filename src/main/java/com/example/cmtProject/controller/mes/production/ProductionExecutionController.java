@@ -37,4 +37,9 @@ public class ProductionExecutionController {//	생산 중 실적 등록, 자재 
 		LotDTO detail = orderService.getLotNoDetail(lotNo);
 		return detail;
 	}
+	@GetMapping("/lotProcessHistory")
+	@ResponseBody
+	public List<LotDTO> lotProcessHistory(@RequestParam("childLotCode") String childLotCode, Model model) {
+		return orderService.getLotProcessHistoryList(childLotCode);
+	}
 }

@@ -24,11 +24,12 @@ public class MfgScheduleDTO {
     private String empId;          // 등록 직원 사번
     private String empName; 	   // 등록 직원명
     private String allocatedQty;   // 계획 수량
+    private String soQty;   // 
     private String msStatus;       // 제조 계획 상태
     private String msPriority;     // 우선순위
     private LocalDate msCreatedAt; // 등록일자
     private LocalDate msUpdatedAt; // 수정일자
-    private LocalDate msStartDate; // 제조 시작 예정일
-    private LocalDate msEndDate;   // 제조 종료 예정일
+    private LocalDate msStartTime; // 제조 시작 예정일
+    private LocalDate msEndTime;   // 제조 종료 예정일
     
 }

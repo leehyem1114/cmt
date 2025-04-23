@@ -135,6 +135,7 @@
 	                <div id="grid3" ></div>
 					<script th:inline="javascript">
 						const gridData3 = /*[[${planList}]]*/ []; //생산계획 리스트
+						 console.log('gdfgdfgfdfg',gridData3);
 						
 						const grid3 = new tui.Grid({
 						  el: document.getElementById('grid3'),
@@ -142,14 +143,13 @@
 						  rowHeaders: ['checkbox'],
 						  scrollX: false,
 						  scrollY: true,
-						 
 						  columns: [
 					        { header: '계획코드', name: 'msCode',sortable: true,align: 'center' },
 					        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
 					        { header: '품목', name: 'pdtName' ,align: 'center'},
-					        { header: '계획 수량', name: 'allocatedQty' ,align: 'center'},
-					        { header: '생산 시작 예정일', name: 'msStartDate',sortable: true,align: 'center' },
-					        { header: '생산 완료 목표일', name: 'msEndDate' ,align: 'center'}
+					        { header: '계획 수량', name: 'soQty' ,align: 'center'},
+					        { header: '생산 시작 예정일', name: 'msStartTime',sortable: true,align: 'center' },
+					        { header: '생산 완료 목표일', name: 'msEndTime' ,align: 'center'}
 						  ]
 						});
 						
