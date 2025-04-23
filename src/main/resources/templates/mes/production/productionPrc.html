@@ -156,6 +156,7 @@
 		let woGridData; //상단 그리드에 입력될 데이터를 전역으로 설정
 		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
 		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
+		let woQty; //컨트롤러에서 개수를 넘기기 위해서 전역으로 설정 후 셀렉트박스에서 값이 선택되면 저장하게 함
 		
 		$(document).ready(function(){
 			
@@ -176,6 +177,8 @@
 						$("#txtPdtCode").val(response[0].PDT_CODE);
 						$("#txtPdtName").val(response[0].PDT_NAME);
 						$("#txtWoQty").val(response[0].WO_QTY);
+						woQty = response[0].WO_QTY;
+						console.log(woQty);
 						$("#txtEmpName").val(response[0].EMP_NAME);
 						$("#txtWoStartDate").val(response[0].WO_START_DATE);
 					},
@@ -213,7 +216,8 @@
 						type: 'GET',
 						data: {
 							'pdtCode' : pdtCode,
-							'woCode' : woCode
+							'woCode' : woCode,
+							'woQty' : woQty
 							},
 						success : function(response){
 							woGridData = response;

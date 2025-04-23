@@ -1,11 +1,14 @@
 package com.example.cmtProject.controller.mes.production;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -65,8 +68,10 @@ public class ProductionPrcController {
 	//모달 시작 버튼에서 실행
 	@GetMapping("/pdtCodeSelected")
 	@ResponseBody
-	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode) {
+	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode, @RequestParam("woQty") String woQty) {
 	//public LotBomPathBindingDTO pdtCodeSelected(@RequestParam("pdtCode") String pdtCode,  @RequestParam("woCode") String woCode) {
+		
+		System.out.println("woQty:" + woQty);
 		
 		//PARENT_PDT_CODE => 앞 과정에서 투입되는 제품
 		//CHILD_ITEM_CODE => 현재 제품/최종 제품
@@ -79,6 +84,17 @@ public class ProductionPrcController {
 				WIP009	 WIP004
 				WIP009	 WIP005
 				WIP009	 MTL-009
+		
+		BOM 테이블에서
+		1	1	FP002	WIP014	SEMI_FINISHED	AS	1	EA	FP002
+		2	2	WIP014	WIP011	SEMI_FINISHED	AS	1	EA	FP002 ← WIP014
+		3	3	WIP011	MTL-011	RAW_MATERIAL	PR	1	EA	FP002 ← WIP014 ← WIP011
+		4	3	WIP011	WIP007	SEMI_FINISHED	PA	1	EA	FP002 ← WIP014 ← WIP011
+		5	4	WIP007	MTL-007	RAW_MATERIAL	PR	1	EA	FP002 ← WIP014 ← WIP011 ← WIP007
+		6	4	WIP007	WIP002	SEMI_FINISHED	WE	1	EA	FP002 ← WIP014 ← WIP011 ← WIP007
+		7	5	WIP002	MTL-002	RAW_MATERIAL	PR	1	EA	FP002 ← WIP014 ← WIP011 ← WIP007 ← WIP002
+		8	4	WIP007	WIP003	SEMI_FINISHED	WE	1	EA	FP002 ← WIP014 ← WIP011 ← WIP007
+		9	5	WIP003	MTL-004	RAW_MATERIAL	PR	1	EA	FP002 ← WIP014 ← WIP011 ← WIP007 ← WIP003 
 		*/
 		List<BomInfoDTO> selectPdtCodeList = productionPrcService.selectPdtCodeList(pdtCode);
 		/*
@@ -92,7 +108,33 @@ public class ProductionPrcController {
 		MTL-006
 		
 		위에서 가져온 pdtCode에서 일률적으로 LOT번호를 생성 후 해당 데이터에 LOT번호를 삽입 
+		
+		SELECT 
+		    DISTINCT PARENT_PDT_CODE
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = 'FP001'
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+		
+		SELECT 
+		    DISTINCT CHILD_ITEM_CODE
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = 'FP001'
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+		
+		CHILD_ITEM_CODE와 PARENT_PDT_CODE 각각 중복 제거 후 set으로 합치기
 		*/
+		List<String> childPdtCodeList = productionPrcService.selectChildPdtCodeList(pdtCode);
+		List<String> parentdPdtCodeList = productionPrcService.selectParentdPdtCodeList(pdtCode);
+		
+		Set<String> setCodeArray = new HashSet<>();
+		//다음과 같이 list를 set에 입력하면 자동 중복 제거
+		setCodeArray.addAll(childPdtCodeList);
+		setCodeArray.addAll(parentdPdtCodeList);
+
+		//log.info("Merged Set: " + setCodeArray);
+		//[MTL-003, MTL-002, MTL-001, WIP006, FP001, WIP013, WIP002, MTL-010, WIP001, WIP010]
 		
 		//루프를 돌면서 insert를 해도 바로 적용된 order값을 가져오지 못하기 때문에 내가 직접 order를 증가시킨다.
 		LocalDate today = LocalDate.now(); //2025-04-21
@@ -100,6 +142,15 @@ public class ProductionPrcController {
 		
 		//3)LOT테이블에서 오늘 날짜의 해당 공정에 해당하는 ORDER순서 가져오기
 		//LOT-20250421-PR-02 이 형식에서 벗어나면 안된다, 값이 없는 경우 null 발생
+		/*
+		SELECT
+			SUBSTR(CHILD_LOT_CODE, 14, 2) AS PRC_TYPE,
+			NVL(MAX(TO_NUMBER(SUBSTR(CHILD_LOT_CODE, 17))),0) AS MAX_SEQ
+		FROM LOT
+		WHERE CHILD_LOT_CODE LIKE 'LOT-' || #{todayStr} || '-%'
+		  AND SUBSTR(CHILD_LOT_CODE, 14, 2) = #{type}
+		GROUP BY SUBSTR(CHILD_LOT_CODE, 14, 2)
+		*/
 		LotOrderDTO lotOrderFP = lotService.getLotOrderPrcType(todayStr, "FP");
 		LotOrderDTO lotOrderPR = lotService.getLotOrderPrcType(todayStr, "PR");
 		LotOrderDTO lotOrderWE = lotService.getLotOrderPrcType(todayStr, "WE");
@@ -112,12 +163,50 @@ public class ProductionPrcController {
 		int paInt = lotOrderPA != null ?  lotOrderPA.getMaxSeq() : 0;
 		int asInt = lotOrderAS != null ?  lotOrderAS.getMaxSeq() : 0;
 		int mtlInt = 0;
+
+		Map<String, String> pdTCodeLotMapping = new HashMap<String, String>();
+		/* 
+		- lot새로 생성 -
+		
+		setCodeArray를 돌면서 MTL, FP, PR, WE, PA, AS 인지 검색
+		
+		int 값을 각각 1번씩만 증가 후 입력
+		*/
+		
+		for(String s : setCodeArray) {
+
+			int orderNum = 0;
+			//prcType을 가져온다
+			String prcType = productionPrcService.getPrcType(s);
+			
+			//prcType이 null인 경우 MTL이 된다.
+			if(prcType == null) {
+				prcType = "IN";
+				orderNum = ++mtlInt;
+			} else if(prcType.equals("FP")) {
+				orderNum = ++fpInt;
+			}else if(prcType.equals("PR")) {
+				orderNum = ++prInt;
+			}else if(prcType.equals("WE")) {
+				orderNum = ++weInt;
+			}else if(prcType.equals("PA")) {
+				orderNum = ++paInt;
+			}else if(prcType.equals("AS")) {
+				orderNum = ++asInt;
+			}else {
+				log.error("Parent 목록에 없는 공정 타입 입니다.");
+			}
+		
+			pdTCodeLotMapping.put(s, makeLotCode(prcType, todayStr, orderNum));
+		}
 		
 		Map<String, String> checkLot = new HashMap<>();
 		LotOriginDTO lod = new LotOriginDTO();
+		
 		for(BomInfoDTO b : selectPdtCodeList) {
-			System.out.println(b.toString());
+			
 			//================ 부모 컬럼 lot생성=========================================================
+			/*
 			int parentOrderNum = 0;
 			String parentpdtCode = b.getParentPdtCode(); //부모의 제품 코드
 			String parentPrcType = "";
@@ -161,10 +250,12 @@ public class ProductionPrcController {
 	        } else {
 	        	parentLot = makeLotCode(parentPrcType, todayStr, parentOrderNum);
 	        	checkLot.put(parentpdtCode, parentLot);
-	        }
+	        }*/
+			b.getParentPdtCode(); //부모의 제품 코드
+			String parentLot = pdTCodeLotMapping.get(b.getParentPdtCode());
 		    
 			//================ 자식 컬럼 lot생성=========================================================
-			
+			/*
 			int childOrderNum = 0;
 			String childItemCode = b.getChildItemCode(); //자식의 제품 코드
 			String childPrcType = "";
@@ -206,7 +297,9 @@ public class ProductionPrcController {
 	        } else {
 	        	childLot = makeLotCode(childPrcType, todayStr, childOrderNum);
 	        	checkLot.put(childItemCode, childLot);
-	        }
+	        }*/
+			
+			String childLot = pdTCodeLotMapping.get(b.getChildItemCode());
 			
 			//========================= 위에서 생성한 lot를 lot테이블에 입력 ============================================= 
 			Long lotNoMax = lotService.getLotNo(); 
@@ -230,13 +323,15 @@ public class ProductionPrcController {
 			//String woCode = woCode;
 			String childLotCode = childLot;
 			
-			LocalTime nowTime = LocalTime.now();
-			String startTime = String.valueOf(nowTime);
+			LocalTime time = LocalTime.now();
+			String startTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+			System.out.println("startTime:" + startTime);
+			
+			LocalDate date = LocalDate.of(2024, 4, 22);
+			LocalDateTime dateTime = date.atStartOfDay(); // 00:00:00
 			
 			String woStatusNo = "RN";
-			
 			String useYN = "Y";
-			
 			
 			lod.setLotNo(Long.valueOf(lotNo));
 			lod.setChildLotCode(childLot);
@@ -250,12 +345,12 @@ public class ProductionPrcController {
 			lod.setLineCode("");
 			lod.setEqpCode("");
 			lod.setWoCode(woCode);
-			lod.setStartTime(nowTime);
-			lod.setFinishTime(nowTime);
+			lod.setWoQty(woQty);
+			lod.setStartTime(startTime);
+			lod.setFinishTime("00:00:00");
 			lod.setWoStatusNo(woStatusNo);
 			lod.setUseYn(useYN);
 			
-			System.out.println(lod.toString());
 			lotService.insertLot(lod);
 			
 		}//for(BomInfoDTO b : selectPdtCodeList) {

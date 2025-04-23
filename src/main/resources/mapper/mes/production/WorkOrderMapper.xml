@@ -67,7 +67,7 @@
 			 , PRC_CODE
 			 , WORK_START_DATE
 			 , WORK_END_DATE
-			 , WO_STATUS_CODE -- 공정상태
+			 -- , WO_STATUS_CODE -- 공정상태
 		) VALUES (
 				WORK_ORDER_SEQ.NEXTVAL
 			, #{msCode, jdbcType=VARCHAR}
