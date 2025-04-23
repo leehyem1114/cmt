@@ -62,5 +62,9 @@ public class WorkOrderService {
 	public List<LotDTO> getAllLotTree() {
 		return orderMapper.selectAllLotTree();
 	}
+	public List<LotDTO> getLotProcessHistoryList(String childLotCode) {
+		System.out.println("넘어온 lotCode"+childLotCode);
+		return orderMapper.selectLotProcessListByLotNo(childLotCode);
+	}
 	
 }

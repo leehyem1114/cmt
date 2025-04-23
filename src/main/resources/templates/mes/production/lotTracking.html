@@ -15,7 +15,7 @@
 	<script src="https://uicdn.toast.com/tui-tree/latest/tui-tree.js"></script>
 	<style>
 	  #tree {
-	    height: 200px;
+	    height: 400px;
 	    overflow-x: auto;
   		overflow-y: auto;
   		white-space: nowrap;
@@ -109,7 +109,8 @@
                     <div class="card-content">
                         <div class="card-body">
                             <form class="form"  action="/production/lotTracking" id="lotDetailForm" style="display:none">
-                        		<i class="fa-regular fa-folder-open"></i> LOT CODE<h4 class="card-title" id="lotCode"></h4>
+                        		<i class="fa-solid fa-gear"></i>  LOT No. <span id="lotNo"></span><br>
+                        		<i class="fa-regular fa-folder-open"></i> LOT CODE<h4 class="card-title" id="lotCode" style="margin:10px;"></h4>
                                 <div class="row">
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
@@ -149,6 +150,7 @@
                                     </div>
                                 </div>
                             </form>
+                            
                         </div>
                     </div>
                 </div> <!-- /공정상세 -->
@@ -159,31 +161,31 @@
 	            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab"> <!-- 공정이력 -->
 	                <div id="grid" style="height: 400px;"></div>
 				    <script th:inline="javascript">
-				    	const gridData = /*[[${orderList}]]*/ [];
-				    	gridData.forEach((list, index) => list.rowNum = index + 1); //row번호
-				    	
-					    const grid = new tui.Grid({
+					    window.gridData = /*[[${orderListJson}]]*/ [];
+					    gridData.forEach((list, index) => list.rowNum = index + 1);
+	
+					    window.grid = new tui.Grid({
 					      el: document.getElementById('grid'),
 					      data: gridData,
-					      rowHeaders: ['checkbox'],
+					      rowHeaders: [],
 					      scrollX: false,
 					      scrollY: true,
 					      columns: [
-					    	{ header: 'No.', name: 'rowNum', sortable: true,align: 'center'},
-					        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
-					        { header: '품목', name: 'pdtName' ,align: 'center'},
+					        { header: 'No.', name: 'rowNum', sortable: true,align: 'center'},
+					        { header: '상위 공정 LOT', name: 'CHILD_LOT_CODE',sortable: true,align: 'center'},
+					        { header: '하위 공정 LOT', name: 'PARENT_LOT_CODE',sortable: true,align: 'center'},
+					        { header: '품목', name: 'PDT_NAME' ,align: 'center'},
 					        { header: '수량', name: 'woQty' ,align: 'center'},
-					        { header: '라인', name: 'lineCode' ,align: 'center'},
-					        { header: '공정', name: 'prcCode' ,align: 'center'},
-					        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
-					        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'},
-					        { header: '작업담당자', name: 'empName' ,align: 'center'}
+					        { header: '공정', name: 'PRC_TYPE_NAME' ,align: 'center'},
+					        { header: '작업 시작일', name: 'START_TIME',sortable: true,align: 'center' },
+					        { header: '작업 종료일', name: 'FINISH_TIME' ,align: 'center'},
+					        { header: '작업담당자', name: 'EMP_NAME' ,align: 'center'}
 					      ]
 					    });
 				  </script>
 	            </div><!-- 공정이력 -->
 	            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-	                <p class="mt-2">검사공정 진행</p>
+	                <p class="mt-2">품질이력 조회해서 그리드 넣기</p>
 	            </div>
 	        </div><!-- /tab-content -->
 	    </div><!-- /card-body -->
@@ -197,82 +199,112 @@
 
 <th:block layout:fragment="script">
 	<script th:inline="javascript">
-// 		const orderList = /*[[${orderList}]]*/ [];
-
-		const orderList = [[${orderListJson}]];
-		console.log("typeof orderList:", typeof orderList);
-		console.log(orderList);
+		const orderList = /*[[${orderListJson}]]*/ [];
 	
-	// 1. lotMap 구성
+// 		console.log("받은 orderList:", orderList);
+// 		console.log("typeof orderList:", typeof orderList);
+	
+		// 전역 변수 선언
+		let selectedLotNo = null;
+		
+		// 1. lotMap 구성
 		const lotMap = new Map();
 		orderList.forEach(order => {
-		  lotMap.set(order.lotCode, {
-// 		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">${order.lotCode} (${order.pdtCode})</span>`,
-		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">${order.lotCode} (${order.pdtCode} / ${order.pdtName ?? '이름없음'})</span>`, 
+		  lotMap.set(order.childLotCode, {
+		    text: `<span class="lot-node" data-lot-no="${order.lotNo}">
+		             ${order.childLotCode} (${order.childPdtCode} / ${order.pdtName ?? '이름없음'})
+		           </span>`,
 		    lotNo: order.lotNo,
-		    lotCode: order.lotCode,
-		    pdtCode: order.pdtCode,
-		    childLotCode: order.childLotCode,
+		    lotCode: order.childLotCode,
+		    pdtCode: order.childPdtCode,
+		    parentLotCode: order.parentLotCode,
 		    children: []
 		  });
 		});
-		
-		// 2. 올바른 방향으로 트리 연결 (부모 → 자식)
-		lotMap.forEach(parent => {
-		  const child = lotMap.get(parent.childLotCode);
+	
+		// 2. 트리 연결
+		lotMap.forEach(node => {
+		  const child = lotMap.get(node.parentLotCode);
 		  if (child) {
-		    child.children.push(parent);
+		    node.children.push(child);
 		  }
 		});
-		
-		// 3. 루트 노드 판별 (자식이 아닌 노드만 root로 설정)
+	
+		// 3. 루트 노드 추출
 		const treeData = [];
 		lotMap.forEach(node => {
-		  const isChild = [...lotMap.values()].some(parent => parent.children.includes(node));
-		  if (!isChild) {
+		  const isRoot = ![...lotMap.values()].some(n => n.children.includes(node));
+		  if (isRoot) {
 		    treeData.push(node);
 		  }
 		});
-		
-		
+	
+// 		console.log("treeData", treeData);
+	
+		// 4. DOM 로딩 후 트리 생성 및 이벤트 연결
 		document.addEventListener('DOMContentLoaded', function () {
-			  const tree = new tui.Tree('#tree', {
-			    data: treeData,
-			    nodeDefaultState: 'opened',
-			    nodeTextTemplate: node => node.text
+		  const tree = new tui.Tree('#tree', {
+		    data: treeData,
+		    nodeDefaultState: 'opened',
+		    nodeTextTemplate: node => node.text
+		  });
+	
+		  // 트리 클릭 시 LOT 번호 저장 및 상세 AJAX 호출
+		  $('#tree').on('click', '.lot-node', function () {
+			  selectedLotNo = $(this).data('lot-no');
+			  console.log("LotNo : ", selectedLotNo)
+
+			 const clickedLot = orderList.find(order => order.lotNo === selectedLotNo);
+			  if (!clickedLot) {
+			    alert('해당 LOT 정보를 찾을 수 없습니다.');
+			    return;
+			  }
+			  
+			  $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+				  grid.refreshLayout();
+				});
+			  
+			  const childLotCode = clickedLot.childLotCode;
+			  // 1. 공정 이력 AJAX
+			  $.ajax({
+			    url: '/production/lotProcessHistory',
+			    method: 'GET',
+			    data: { childLotCode: childLotCode },
+			    success: function (list) {
+			      const withRowNum = list.map((item, idx) => ({ ...item, rowNum: idx + 1 }));
+			      grid.resetData(withRowNum);
+			      
+			      console.log(list);
+			    }
 			  });
-		
-			  $('#tree').on('click', '.lot-node', function () {
-			    const lotNo = $(this).data('lot-no');
-			    console.log('클릭된 LOT NO:', lotNo);
-		
-			    $.ajax({
-			      url: '/production/lotDetail',
-			      method: 'GET',
-			      data: { lotNo: lotNo },
-			      success: function (response) {
-			    	  console.log(lotNo);
-			        $('#lotNotice').hide();
-			        $('#lotDetailForm').show();
-		
-			        $('#lotCode').text(response.LOT_CODE);
-			        $('#pdtName').val(response.PDT_NAME);
-			        $('#prcType').val(response.PRC_TYPE);
-			        $('#startTime').val(response.START_TIME);
-			        $('#finishTime').val(response.FINISH_TIME);
-			        $('#woCode').val(response.WO_CODE);
-			        $('#empName').val(response.EMP_NAME);
-			        $('#workOrderStatus').val(response.WORK_ORDER_STATUS);
-			        
-			        console.log("서버 응답:", response);
-			      },
-			      error: function (error) {
-			        alert('서버 오류: ' + error.responseText);
-			      }
-			    });
+
+			  // 2. LOT 상세 AJAX
+			  $.ajax({
+			    url: '/production/lotDetail',
+			    method: 'GET',
+			    data: { lotNo: selectedLotNo },
+			    success: function (response) {
+			      $('#lotNotice').hide();
+			      $('#lotDetailForm').show();
+
+			      $('#lotCode').text(response.CHILD_LOT_CODE);
+			      $('#lotNo').text(response.LOT_NO);
+			      $('#pdtName').val(response.PDT_NAME);
+			      $('#prcType').val(response.PRC_TYPE_NAME);
+			      $('#startTime').val(response.START_TIME);
+			      $('#finishTime').val(response.FINISH_TIME);
+			      $('#woCode').val(response.WO_CODE);
+			      $('#empName').val(response.EMP_NAME);
+			      $('#workOrderStatus').val(response.WORK_ORDER_STATUS);
+			    },
+			    error: function (error) {
+			      alert('서버 오류: ' + error.responseText);
+			    }
 			  });
 			});
-		</script>
+		  });
+
+	</script>
 </th:block>
 </body>
 </html>
