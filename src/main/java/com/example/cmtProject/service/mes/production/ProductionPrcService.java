@@ -51,4 +51,9 @@ public class ProductionPrcService {
 		return productionPrcMapper.selectParentdPdtCodeList(pdtCode);
 	}
 
+	public void updateWoStatus(String woCode) {
+		// TODO Auto-generated method stub
+		productionPrcMapper.updateWoStatus(woCode);
+	}
+
 }
