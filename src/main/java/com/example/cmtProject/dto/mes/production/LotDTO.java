@@ -26,8 +26,8 @@ public class LotDTO {
     private String lineCode;
     private String eqpCode;
     private String woCode;
-    private LocalTime startTime;
-    private LocalTime finishTime;
+    private String startTime;
+    private String finishTime;
     private String woStatusNo;
     private String useYn;
     

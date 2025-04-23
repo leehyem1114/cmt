@@ -29,9 +29,12 @@
 			,CHILD_PDT_CODE
 			,CREATE_DATE
 			,PRC_TYPE
+			,BOM_QTY
+			,BOM_UNIT
 			,LINE_CODE
 			,EQP_CODE
 			,WO_CODE
+			,WO_QTY
 			,START_TIME
 			,FINISH_TIME
 			,WO_STATUS_NO
@@ -44,9 +47,12 @@
 	        #{childPdtCode},
 	        #{createDate},
 	        #{prcType},
+	        #{bomQty},
+	        #{bomUnit},
 	        #{lineCode},
 	        #{eqpCode},
 	        #{woCode},
+	        #{woQty},
 	        #{startTime},
 	        #{finishTime},
 	        #{woStatusNo},

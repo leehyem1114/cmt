@@ -105,4 +105,21 @@
 		SELECT PRC_TYPE_CODE FROM PRODUCTS WHERE PDT_CODE = #{pdtCode}
 	</select>
 	
+	<select id="selectChildPdtCodeList" resultType="String">
+		SELECT 
+    		DISTINCT PARENT_PDT_CODE
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = #{pdtCode}
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+	</select>
+	
+	<select id="selectParentdPdtCodeList" resultType="String">
+		SELECT 
+		    DISTINCT CHILD_ITEM_CODE
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = #{pdtCode}
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+	</select>
 </mapper>
