@@ -240,8 +240,10 @@
 				contentType: "application/json",
 				data: JSON.stringify(data),
 				success : function (response){
-					alert(response);
+					console.log(response);
 					location.reload();
+					
+					//$('#workModal').modal('hide');
 				},
 				error : function (error){
 					console.log(error);
