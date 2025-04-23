@@ -86,6 +86,12 @@
 	</div>
 	<!-- ------------------- 하단 공정 현황 끝---------------------------- -->
 	
+	<!-- ------------------- 두번째 하단 시작 ---------------------------- -->
+	
+	
+	
+	<!-- ------------------- 두번째 하단 끝 ---------------------------- -->
+	
 	<!--  모달 창 시작 -->
 	<div class="modal fade" id="woModal" tabindex="-1">
 	    <div class="modal-dialog modal-lg">
@@ -270,7 +276,18 @@
 						console.log("error:" + error)
 					}
 				});//$.ajax
-			}) 
+			});//$("#prcBoard").on("click", function(){
+			
+			//======================================= 하단 왼쪽에 트리 버튼 클릭 ================================================
+			
+			$("#treeName").on("click", function(this){
+			
+				alert(this);
+				
+			});//$("#treeName").on("click", function(){
+			
+			
+			
 		});//$(document).ready(function(){
 			
 		//======================================= 상단 그리드 ================================================
@@ -374,7 +391,7 @@
 			//자식에 해당하는 태그 생성
 		    let html = '<ul>';
 		    for (let parent of parents) {
-		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')">사용처 보기</button>`;
+		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')" id="treeName" hidden="${parent}">작업시작</button>`;
 		        html += buildBomTree(parent, bomList); // 상위 parent를 계속 탐색
 		        html += '</li>';
 		    }
