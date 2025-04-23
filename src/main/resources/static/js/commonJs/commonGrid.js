@@ -683,21 +683,21 @@ const GridUtil = (function() {
         addNewRow,         // ROW_TYPE 자동 설정하여 행 추가
         updateRowData,     // ROW_TYPE 자동 업데이트하며 행 데이터 수정
 		deleteSelectedRows, // 선택 행 삭제 (확인 대화상자 포함)
-		        extractChangedData, // 변경된 데이터만 추출
+        extractChangedData, // 변경된 데이터만 추출
 
-		        // 이벤트 핸들러 관리
-		        onRowClick,        // 행 클릭 이벤트 등록 (편의 함수)
-		        onDblClick,        // 더블 클릭 이벤트 등록 (편의 함수)
-		        removeEventHandlers, // 이벤트 핸들러 일괄 제거
+        // 이벤트 핸들러 관리
+        onRowClick,        // 행 클릭 이벤트 등록 (편의 함수)
+        onDblClick,        // 더블 클릭 이벤트 등록 (편의 함수)
+        removeEventHandlers, // 이벤트 핸들러 일괄 제거
 
-		        // 프로젝트 특화 유틸리티
-		        setupKeyColumnControl, // 키 컬럼 제어 설정
-		        createYesNoEditor,  // Y/N 드롭다운 에디터 생성
-				// ====================================================== 추가
-		        // 상태 관리 유틸리티 (간소화 버전)
-		        createStatusFormatter, // 상태 포맷터 생성
-		        changeStatus,          // 상태값 변경
-		        setupStatusChangeEvent // 상태 변경 이벤트 설정
-				// ====================================================== 추가
+        // 프로젝트 특화 유틸리티
+        setupKeyColumnControl, // 키 컬럼 제어 설정
+        createYesNoEditor,  // Y/N 드롭다운 에디터 생성
+		// ====================================================== 추가
+        // 상태 관리 유틸리티 (간소화 버전)
+        createStatusFormatter, // 상태 포맷터 생성
+        changeStatus,          // 상태값 변경
+        setupStatusChangeEvent // 상태 변경 이벤트 설정
+		// ====================================================== 추가
 		    };
 		})();

@@ -1,55 +1,44 @@
 /**
- * 창고 관리자 - 창고 정보 관리 모듈
+ * 원자재 입고관리 - 입고 정보 관리 모듈
  * 
- * 단일 데이터 테이블의 CRUD 기능을 담당하는 창고 관리 모듈입니다.
+ * 원자재 입고정보의 조회, 확정, 검수 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 2.1.0
+ * @version 3.0.0
  * @since 2025-04-22
  */
-const WareHouseManager = (function() {
+const MaterialReceiptManager = (function() {
     // =============================
     // 모듈 내부 변수 - 필요에 따라 변경하세요
     // =============================
 
     // 그리드 인스턴스 참조
     let mReceiptGrid;
+    
+    // 현재 선택된 입고정보
+    let selectedReceipt = null;
+    
+    // 탭 컨트롤러 참조
+    let tabController = null;
 
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/inventory/api/warehouses/list',              // 데이터 목록 조회
-        BATCH: '/api/warehouses/batch',                      // 데이터 배치 저장
-        DELETE: (whsNo) => `/api/warehouses/${whsNo}`,       // 데이터 삭제
+        LIST: '/api/materialreceipt/list',               // 입고 목록 조회
+        DETAIL: (receiptNo) => `/api/materialreceipt/detail/${receiptNo}`,  // 상세 정보 조회
+        CONFIRM: '/api/materialreceipt/confirm',         // 입고 확정
+        INSPECTION: '/api/materialreceipt/inspection',   // 검수 등록
         EXCEL: {
-            UPLOAD: '/api/warehouses/excel/upload',          // 엑셀 업로드 API URL
-            DOWNLOAD: '/api/warehouses/excel/download'       // 엑셀 다운로드 API URL
+            DOWNLOAD: '/api/materialreceipt/excel/download'  // 엑셀 다운로드 API URL
         }
     };
-	// ====================================================== 추가
-    // 입고 상태 정의 - 공통 컴포넌트 사용을 위한 설정
-    const RECEIPT_STATUS_CONFIG = {
-        states: ['대기', '진행중', '완료', '취소'],
-        styles: {
-            '대기': 'btn-secondary',
-            '진행중': 'btn-primary',
-            '완료': 'btn-success',
-            '취소': 'btn-danger'
-        },
-        defaultState: '대기',
-        gridId: 'mReceiptGrid',
-        updateRowType: true,
-        buttonStyle: {
-            width: '100%',
-            height: '26px',
-            fontSize: '12px',
-            padding: '2px 5px'
-        },
-        // 선택적으로 상태 변경 콜백 설정 가능
-        onStateChange: (rowKey, oldState, newState, grid) => {
-            console.log(`입고 상태 변경 콜백: ${oldState} -> ${newState} (행 ${rowKey})`);
-            // 필요 시 추가 로직 구현
-        }
+    
+    // 입고 상태 정의
+    const RECEIPT_STATUS = {
+        WAITING: '입고대기',
+        INSPECTING: '검수중',
+        COMPLETED: '입고완료',
+        CANCELED: '취소'
     };
-	// ====================================================== 추가
+
     // =============================
     // 초기화 및 이벤트 처리 함수
     // =============================
@@ -60,7 +49,7 @@ const WareHouseManager = (function() {
      */
     async function init() {
         try {
-            console.log('창고 관리자 초기화를 시작합니다.');
+            console.log('원자재 입고관리 초기화를 시작합니다.');
 
             // 그리드 초기화
             await initGrid();
@@ -74,10 +63,10 @@ const WareHouseManager = (function() {
             // 엑셀 기능 초기화
             initExcelFeatures();
 
-            console.log('창고 관리자 초기화가 완료되었습니다.');
+            console.log('원자재 입고관리 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('초기화 중 오류 발생:', error);
-            await AlertUtil.showError('초기화 오류', '창고 관리자 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '원자재 입고관리 초기화 중 오류가 발생했습니다.');
         }
     }
 
@@ -87,13 +76,11 @@ const WareHouseManager = (function() {
      */
     async function registerEvents() {
         try {
-            // UIUtil을 사용하여 이벤트 리스너 등록
+            // UIUtil을 사용하여 이벤트 리스너 등록 - 버튼 이벤트 변경
             await UIUtil.registerEventListeners({
-                'mReceiptAppendBtn': appendRow,              // 행 추가 버튼
-                'mReceiptSaveBtn': saveData,                 // 데이터 저장 버튼
-                'mReceiptDeleteBtn': deleteRows,             // 데이터 삭제 버튼
+                'mReceiptConfirmBtn': confirmReceipt,        // 입고확정 버튼
+                'mReceiptInspectionBtn': openInspectionModal, // 검수등록 버튼
                 'mReceiptSearchBtn': searchData              // 데이터 검색 버튼
-                // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
             });
 
             // 엔터키 검색 이벤트 등록
@@ -123,6 +110,9 @@ const WareHouseManager = (function() {
                 },
                 afterSearch: function(filteredData) {
                     console.log('그리드 검색 완료, 결과:', filteredData.length, '건');
+                    
+                    // 상세 정보 영역 초기화
+                    hideDetailSection();
                 }
             });
         } catch (error) {
@@ -132,54 +122,24 @@ const WareHouseManager = (function() {
     
     /**
      * 엑셀 기능 초기화 함수
-     * ExcelUtil을 사용하여 엑셀 다운로드/업로드 기능을 설정합니다.
+     * ExcelUtil을 사용하여 엑셀 다운로드 기능을 설정합니다.
      */
     function initExcelFeatures() {
         try {
             console.log('엑셀 기능 초기화');
             
-            // 엑셀 다운로드 버튼 설정 - HTML에 버튼 추가 필요
+            // 엑셀 다운로드 버튼 설정
             ExcelUtil.setupExcelDownloadButton({
                 buttonId: 'mReceiptExcelDownBtn', 
                 gridId: 'mReceiptGrid',
-                fileName: 'warehouse-data.xlsx',
-                sheetName: '창고정보',
+                fileName: 'material-receipt-data.xlsx',
+                sheetName: '원자재입고정보',
                 beforeDownload: function() {
                     console.log('엑셀 다운로드 시작');
                     return true;
                 },
                 afterDownload: function() {
                     console.log('엑셀 다운로드 완료');
-                }
-            });
-            
-            // 엑셀 업로드 버튼 설정 - HTML에 입력필드와 버튼 추가 필요
-            ExcelUtil.setupExcelUploadButton({
-                fileInputId: 'mReceiptFileInput', 
-                uploadButtonId: 'mReceiptExcelUpBtn', 
-                gridId: 'mReceiptGrid',
-                apiUrl: API_URLS.EXCEL.UPLOAD,
-                headerMapping: {
-                    '창고코드': 'WHS_CODE',
-                    '창고명': 'WHS_NAME',
-                    '창고 유형': 'WHS_TYPE',
-                    '위치': 'WHS_LOCATION',
-                    '용량': 'WHS_CAPACITY',
-                    '사용 정보': 'WHS_USED',
-                    '비고': 'WHS_COMMENTS',
-                    '관리자': 'WHS_MANAGER',
-                    '사용여부': 'IS_ACTIVE'
-                },
-                beforeLoad: function() {
-                    console.log('엑셀 업로드 시작');
-                    return true;
-                },
-                afterLoad: function(data, saveResult) {
-                    console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
-                    if (saveResult) {
-                        // 그리드 원본 데이터 업데이트
-                        GridSearchUtil.updateOriginalData('mReceiptGrid', data);
-                    }
                 }
             });
         } catch (error) {
@@ -208,10 +168,7 @@ const WareHouseManager = (function() {
             // 서버에서 받은 데이터 활용
             const gridData = window.mReceipt || [];
             console.log('초기 데이터:', gridData ? gridData.length : 0, '건');
-			// ====================================================== 추가
-            // 상태 포맷터 생성
-            const statusFormatter = GridUtil.createStatusFormatter(RECEIPT_STATUS_CONFIG);
-			// ====================================================== 추가
+
             // 그리드 생성 - GridUtil 사용
             mReceiptGrid = GridUtil.registerGrid({
                 id: 'mReceiptGrid',
@@ -219,32 +176,32 @@ const WareHouseManager = (function() {
                     {
                         header: '입고 코드',
                         name: 'RECEIPT_CODE',
-                        editor: 'text'
+                        sortable: true
                     },
                     {
                         header: '발주 코드',
                         name: 'PO_CODE',
-                        editor: 'text'
+                        sortable: true
                     },
                     {
                         header: '자재 코드',
                         name: 'MTL_CODE',
-                        editor: 'text'
-                    },
-                    {
-                        header: 'LOT 번호',
-                        name: 'LOT_NO',
-                        editor: 'text'
+                        sortable: true
                     },
                     {
                         header: '자재명',
                         name: 'MTL_NAME',
-                        editor: 'text'
+                        sortable: true
+                    },
+                    {
+                        header: 'LOT 번호',
+                        name: 'LOT_NO',
+                        sortable: true
                     },
                     {
                         header: '입고일',
                         name: 'RECEIPT_DATE',
-                        editor: 'text',
+                        sortable: true,
                         formatter: function(obj) {
                             if (!obj.value) return '-';
                             const date = new Date(obj.value);
@@ -254,35 +211,47 @@ const WareHouseManager = (function() {
                     {
                         header: '입고 수량',
                         name: 'RECEIVED_QTY',
-                        editor: 'text'
+                        sortable: true
                     },
                     {
                         header: '입고 상태',
                         name: 'RECEIPT_STATUS',
-						// ====================================================== 추가
-                        // 단순 formatter로 표시만 처리
-                        formatter: statusFormatter
-						// ====================================================== 추가
+                        sortable: true,
+                        formatter: function(obj) {
+                            const status = obj.value || RECEIPT_STATUS.WAITING;
+                            let badgeClass = 'badge-waiting';
+                            
+                            if (status === RECEIPT_STATUS.INSPECTING) {
+                                badgeClass = 'badge-inspecting';
+                            } else if (status === RECEIPT_STATUS.COMPLETED) {
+                                badgeClass = 'badge-completed';
+                            } else if (status === RECEIPT_STATUS.CANCELED) {
+                                badgeClass = 'badge-canceled';
+                            }
+                            
+                            return `<span class="badge ${badgeClass}">${status}</span>`;
+                        }
                     },
                     {
                         header: '창고 코드',
                         name: 'WAREHOUSE_CODE',
-                        editor: 'text',
+                        sortable: true
                     },
                     {
                         header: '위치 코드',
                         name: 'LOCATION_CODE',
-                        editor: 'text',
+                        sortable: true
                     },
                     {
-                        header: '입고 담당자',
+                        header: '담당자',
                         name: 'RECEIVER',
-                        editor: 'text',
+                        sortable: true
                     },
                     {
-                        header: '타입',
-                        name: 'ROW_TYPE'
-                    } // 조회/추가 구분
+                        header: '입고번호',
+                        name: 'RECEIPT_NO',
+                        hidden: true
+                    }
                 ],
                 columnOptions: {
                     resizable: true
@@ -292,41 +261,31 @@ const WareHouseManager = (function() {
                     perPage: 10
                 },
                 data: gridData,
-                draggable: true,
-                displayColumnName: 'SORT_ORDER',
-                hiddenColumns: ['ROW_TYPE'],
+                draggable: false,
                 gridOptions: {
                     rowHeaders: ['rowNum', 'checkbox']
                 }
             });
-			// ====================================================== 추가
-            // 그리드 데이터 정리
-            // 빈 상태 값 초기화
+            
+            // 그리드 데이터 정리 - 빈 상태 값 초기화
             const rows = mReceiptGrid.getData();
             rows.forEach((row, index) => {
                 if (!row.RECEIPT_STATUS) {
-                    mReceiptGrid.setValue(row.rowKey, 'RECEIPT_STATUS', RECEIPT_STATUS_CONFIG.defaultState);
+                    mReceiptGrid.setValue(row.rowKey, 'RECEIPT_STATUS', RECEIPT_STATUS.WAITING);
                 }
             });
-			// ====================================================== 추가
-            // 편집 완료 이벤트 처리 - 변경된 행 추적
-            mReceiptGrid.on('editingFinish', function(ev) {
-                const rowKey = ev.rowKey;
-                const row = mReceiptGrid.getRow(rowKey);
+            
+            // 행 클릭 이벤트 등록 - 상세 정보 표시
+            GridUtil.onRowClick('mReceiptGrid', async function(rowData, rowKey, columnName) {
+                if (!rowData) return;
                 
-                // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
-                if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
-                    mReceiptGrid.setValue(rowKey, 'ROW_TYPE', 'update');
-                    console.log(`행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
-                }
+                // 현재 선택된 입고 정보 저장
+                selectedReceipt = rowData;
+                
+                // 상세 정보 조회 및 표시
+                await loadReceiptDetail(rowData.RECEIPT_NO);
             });
-
-            // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
-            GridUtil.setupKeyColumnControl('mReceiptGrid', 'WHS_CODE');
-			// ====================================================== 추가
-            // 상태 변경 이벤트 설정
-            GridUtil.setupStatusChangeEvent('mReceiptGrid', 'RECEIPT_STATUS', RECEIPT_STATUS_CONFIG);
-			// ====================================================== 추가
+            
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
             GridSearchUtil.updateOriginalData('mReceiptGrid', gridData);
 
@@ -337,41 +296,325 @@ const WareHouseManager = (function() {
         }
     }
 
+    // =============================
+    // 상세 정보 관련 함수
+    // =============================
+    
     /**
-     * 데이터 행 추가 함수
-     * 그리드에 새로운 행을 추가합니다.
+     * 입고 상세 정보 로드 함수
+     * 선택된 입고 정보의 상세 내용을 조회하고 표시합니다.
+     * 
+     * @param {number} receiptNo - 입고 번호
      */
-    async function appendRow() {
+    async function loadReceiptDetail(receiptNo) {
         try {
-            console.log('행 추가');
-
-            const newRowData = {
-                WHS_CODE: '',
-                WHS_NAME: '',
-                WHS_TYPE: '',
-                WHS_LOCATION: '',
-                WHS_CAPACITY: '',
-                WHS_USED: '',
-                WHS_COMMENTS: '',
-                WHS_MANAGER: '',
-                IS_ACTIVE: 'Y',
-				// ====================================================== 추가
-                RECEIPT_STATUS: RECEIPT_STATUS_CONFIG.defaultState // 기본 상태 설정
-				// ====================================================== 추가
-                // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
-            };
-
-            // 그리드에 새 행 추가
-            await GridUtil.addNewRow('mReceiptGrid', newRowData, {
-                at: 0,
-                focus: true
-            });
+            // 로딩 표시
+            await UIUtil.toggleLoading(true, '상세 정보를 불러오는 중...');
+            
+            // API 호출
+            const response = await ApiUtil.get(API_URLS.DETAIL(receiptNo));
+            
+            // 로딩 종료
+            await UIUtil.toggleLoading(false);
+            
+            if (!response.success) {
+                throw new Error('상세 정보를 가져오는데 실패했습니다: ' + response.message);
+            }
+            
+            const detailData = response.data;
+            
+            // 상세 정보 표시
+            displayDetailInfo(detailData);
+            
+            // 상세 정보 영역 표시
+            showDetailSection();
+            
+            return true;
         } catch (error) {
-            console.error('행 추가 중 오류:', error);
-            await AlertUtil.showError('행 추가 오류', '행 추가 중 오류가 발생했습니다.');
+            console.error('상세 정보 로드 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            
+            // 오류 알림
+            await AlertUtil.showError('조회 오류', '상세 정보를 불러오는데 실패했습니다.');
+            
+            return false;
         }
     }
+    
+    /**
+     * 상세 정보 표시 함수
+     * 
+     * @param {Object} detailData - 입고 상세 정보 데이터
+     */
+    function displayDetailInfo(detailData) {
+        // 기본 정보 탭 데이터 설정
+        document.getElementById('receiptNo').textContent = detailData.RECEIPT_NO || '';
+        document.getElementById('receiptCode').textContent = detailData.RECEIPT_CODE || '';
+        document.getElementById('mtlCode').textContent = detailData.MTL_CODE || '';
+        document.getElementById('mtlName').textContent = detailData.MTL_NAME || '';
+        document.getElementById('receivedQty').textContent = detailData.RECEIVED_QTY || '';
+        
+        // 날짜 포맷팅
+        let receiptDate = '-';
+        if (detailData.RECEIPT_DATE) {
+            const date = new Date(detailData.RECEIPT_DATE);
+            receiptDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+        document.getElementById('receiptDate').textContent = receiptDate;
+        
+        // 상태에 따라 배지 스타일 적용
+        const status = detailData.RECEIPT_STATUS || RECEIPT_STATUS.WAITING;
+        let badgeClass = 'badge-waiting';
+        
+        if (status === RECEIPT_STATUS.INSPECTING) {
+            badgeClass = 'badge-inspecting';
+        } else if (status === RECEIPT_STATUS.COMPLETED) {
+            badgeClass = 'badge-completed';
+        } else if (status === RECEIPT_STATUS.CANCELED) {
+            badgeClass = 'badge-canceled';
+        }
+        
+        document.getElementById('receiptStatus').innerHTML = `<span class="badge ${badgeClass}">${status}</span>`;
+        document.getElementById('poCode').textContent = detailData.PO_CODE || '';
+        document.getElementById('warehouseInfo').textContent = 
+            `${detailData.WAREHOUSE_CODE || ''} / ${detailData.LOCATION_CODE || ''}`;
+        document.getElementById('receiver').textContent = detailData.RECEIVER || '';
+        
+        // 검수 정보 탭 설정
+        if (detailData.hasInspection) {
+            // 검수 정보가 있는 경우 검수 정보 표시
+            displayInspectionInfo(detailData.inspectionData);
+        } else {
+            // 검수 정보가 없는 경우 안내 메시지 표시
+            document.getElementById('inspectionContent').innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 검수 정보가 없습니다. 검수등록 버튼을 클릭하여 검수 정보를 등록해주세요.
+                </div>
+            `;
+        }
+        
+        // LOT 정보 탭 설정
+        if (detailData.lotData && detailData.lotData.length > 0) {
+            displayLotInfo(detailData.lotData);
+        } else {
+            document.getElementById('lotInfoBody').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">LOT 정보가 없습니다.</td>
+                </tr>
+            `;
+        }
+        
+        // 위치 정보 탭 설정
+        if (detailData.locationData && detailData.locationData.length > 0) {
+            displayLocationInfo(detailData.locationData);
+        } else {
+            document.getElementById('locationInfoBody').innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">위치 정보가 없습니다.</td>
+                </tr>
+            `;
+        }
+        
+        // 이력 정보 탭 설정
+        if (detailData.historyData && detailData.historyData.length > 0) {
+            displayHistoryInfo(detailData.historyData);
+        } else {
+            document.getElementById('historyInfoBody').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">이력 정보가 없습니다.</td>
+                </tr>
+            `;
+        }
+    }
+    
+    /**
+     * 검수 정보 표시 함수
+     * 
+     * @param {Object} inspectionData - 검수 정보 데이터
+     */
+    function displayInspectionInfo(inspectionData) {
+        if (!inspectionData) {
+            return;
+        }
+        
+        // 검수 정보 HTML 구성
+        const inspectionHtml = `
+            <table class="table table-bordered">
+                <tr>
+                    <th style="width: 20%">검수번호</th>
+                    <td>${inspectionData.INSP_NO || ''}</td>
+                    <th style="width: 20%">검수일자</th>
+                    <td>${formatDate(inspectionData.INSP_DATE)}</td>
+                </tr>
+                <tr>
+                    <th>검수수량</th>
+                    <td>${inspectionData.INSP_QTY || ''}</td>
+                    <th>검수자</th>
+                    <td>${inspectionData.INSPECTOR || ''}</td>
+                </tr>
+                <tr>
+                    <th>합격수량</th>
+                    <td>${inspectionData.PASS_QTY || ''}</td>
+                    <th>불합격수량</th>
+                    <td>${inspectionData.FAIL_QTY || ''}</td>
+                </tr>
+                <tr>
+                    <th>검수결과</th>
+                    <td colspan="3">${getInspectionResultText(inspectionData.INSP_RESULT)}</td>
+                </tr>
+                <tr>
+                    <th>검수의견</th>
+                    <td colspan="3">${inspectionData.INSP_COMMENTS || '-'}</td>
+                </tr>
+            </table>
+        `;
+        
+        document.getElementById('inspectionContent').innerHTML = inspectionHtml;
+    }
+    
+    /**
+     * LOT 정보 표시 함수
+     * 
+     * @param {Array} lotData - LOT 정보 데이터 배열
+     */
+    function displayLotInfo(lotData) {
+        if (!lotData || !lotData.length) {
+            return;
+        }
+        
+        // LOT 정보 HTML 구성
+        let html = '';
+        lotData.forEach(lot => {
+            html += `
+                <tr>
+                    <td>${lot.LOT_NO || ''}</td>
+                    <td>${lot.LOT_QTY || ''}</td>
+                    <td>${formatDate(lot.LOT_DATE)}</td>
+                    <td>${lot.LOT_STATUS || ''}</td>
+                </tr>
+            `;
+        });
+        
+        document.getElementById('lotInfoBody').innerHTML = html;
+    }
+    
+    /**
+     * 위치 정보 표시 함수
+     * 
+     * @param {Array} locationData - 위치 정보 데이터 배열
+     */
+    function displayLocationInfo(locationData) {
+        if (!locationData || !locationData.length) {
+            return;
+        }
+        
+        // 위치 정보 HTML 구성
+        let html = '';
+        locationData.forEach(loc => {
+            html += `
+                <tr>
+                    <td>${loc.WAREHOUSE_CODE || ''}</td>
+                    <td>${loc.WAREHOUSE_NAME || ''}</td>
+                    <td>${loc.LOCATION_CODE || ''}</td>
+                    <td>${loc.LOCATION_NAME || ''}</td>
+                    <td>${loc.STOCK_QTY || ''}</td>
+                </tr>
+            `;
+        });
+        
+        document.getElementById('locationInfoBody').innerHTML = html;
+    }
+    
+    /**
+     * 이력 정보 표시 함수
+     * 
+     * @param {Array} historyData - 이력 정보 데이터 배열
+     */
+    function displayHistoryInfo(historyData) {
+        if (!historyData || !historyData.length) {
+            return;
+        }
+        
+        // 이력 정보 HTML 구성
+        let html = '';
+        historyData.forEach(history => {
+            html += `
+                <tr>
+                    <td>${formatDateTime(history.ACTION_DATE)}</td>
+                    <td>${history.ACTION_TYPE || ''}</td>
+                    <td>${history.ACTION_DESCRIPTION || ''}</td>
+                    <td>${history.ACTION_USER || ''}</td>
+                </tr>
+            `;
+        });
+        
+        document.getElementById('historyInfoBody').innerHTML = html;
+    }
+    
+    /**
+     * 상세 정보 영역 표시 함수
+     */
+	function showDetailSection() {
+	    const detailSection = document.getElementById('detailSection');
+	    if (detailSection) {
+	        detailSection.style.display = 'block';
+	        
+	        try {
+	            // Bootstrap 5 방식으로 탭 초기화
+	            const firstTab = document.querySelector('#basic-info-tab');
+	            if (firstTab && window.bootstrap) {
+	                const tab = new bootstrap.Tab(firstTab);
+	                tab.show();
+	                console.log('기본 탭이 활성화되었습니다.');
+	            }
+	        } catch (error) {
+	            console.error('탭 초기화 오류:', error);
+	        }
+	    }
+	}
+//    function showDetailSection() {
+//        const detailSection = document.getElementById('detailSection');
+//        if (detailSection) {
+//            detailSection.style.display = 'block';
+//            
+//            // 탭 초기화 - 첫번째 탭 선택
+//            if (!tabController) {
+//                // UIUtil의 탭 초기화 함수 사용
+//                UIUtil.initTabs('receiptDetailTabs', {
+//                    defaultTab: 'basic-info',
+//                    onTabChange: function(tabId) {
+//                        console.log('탭 변경:', tabId);
+//                    }
+//                }).then(controller => {
+//                    tabController = controller;
+//                }).catch(error => {
+//                    console.error('탭 초기화 오류:', error);
+//                });
+//            } else {
+//                // 기존 탭 컨트롤러가 있는 경우 기본 탭 선택
+//                tabController.selectTab('basic-info');
+//            }
+//        }
+//    }
 
+    
+    /**
+     * 상세 정보 영역 숨김 함수
+     */
+    function hideDetailSection() {
+        const detailSection = document.getElementById('detailSection');
+        if (detailSection) {
+            detailSection.style.display = 'none';
+        }
+        
+        // 선택된 입고 정보 초기화
+        selectedReceipt = null;
+    }
+
+    // =============================
+    // 업무 처리 함수
+    // =============================
+    
     /**
      * 데이터 검색 함수
      * 검색어를 이용하여 데이터를 검색하고 그리드에 결과를 표시합니다.
@@ -402,6 +645,9 @@ const WareHouseManager = (function() {
                 GridSearchUtil.updateOriginalData('mReceiptGrid', data);
             }
 
+            // 상세 정보 영역 숨기기
+            hideDetailSection();
+
             console.log('데이터 검색 완료. 결과:', data.length, '건');
             return data;
         } catch (error) {
@@ -410,166 +656,236 @@ const WareHouseManager = (function() {
             throw error;
         }
     }
-
-    // =============================
-    // CRUD 처리 함수
-    // =============================
-
+    
     /**
-     * 데이터 저장 함수
-     * 그리드의 변경된 데이터를 저장합니다.
+     * 입고 확정 함수
+     * 선택된 입고 정보를 확정 처리합니다.
      */
-    async function saveData() {
-        try {
-            console.log('데이터 저장 시작');
-
-            const grid = GridUtil.getGrid('mReceiptGrid');
-            if (!grid) {
-                throw new Error('mReceiptGrid를 찾을 수 없습니다.');
-            }
-
-            // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
-            grid.blur();
-
-            // 변경된 데이터 추출
-            const changes = await GridUtil.extractChangedData('mReceiptGrid');
-            const modifiedData = [...changes.insert, ...changes.update];
-
-            if (modifiedData.length === 0) {
-                await AlertUtil.showWarning("알림", "수정된 내용이 없습니다.");
-                return false;
-            }
-
-            // 저장할 데이터 준비
-            const batchData = modifiedData.map(row => ({
-                whsCode: row.WHS_CODE,
-                whsName: row.WHS_NAME,
-                whsType: row.WHS_TYPE || '',
-                whsLocation: row.WHS_LOCATION || '',
-                whsCapacity: row.WHS_CAPACITY || '',
-                whsUsed: row.WHS_USED || '',
-                whsComments: row.WHS_COMMENTS || '',
-                whsManager: row.WHS_MANAGER || '',
-                isActive: row.IS_ACTIVE,
-				// ====================================================== 추가
-                receiptStatus: row.RECEIPT_STATUS || RECEIPT_STATUS_CONFIG.defaultState, // 입고 상태 추가
-				// ====================================================== 추가
-                action: row.ROW_TYPE // insert, update, delete
-            }));
-
-            // 유효성 검사
-            for (const item of batchData) {
-                if (ValidationUtil.isEmpty(item.whsCode)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "창고코드는 필수입니다.");
-                    return false;
-                }
-                if (ValidationUtil.isEmpty(item.whsName)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "창고명은 필수입니다.");
-                    return false;
-                }
-                if (ValidationUtil.isEmpty(item.isActive)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "사용여부는 필수입니다.");
-                    return false;
-                }
-            }
-
-            // API 호출 처리
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.BATCH, batchData), 
-                {
-                    loadingMessage: '데이터 저장 중...',
-                    successMessage: "데이터가 저장되었습니다.",
-                    errorMessage: "데이터 저장 중 오류가 발생했습니다.",
-                    successCallback: searchData
-                }
-            );
-            
-            if(response.success){
-                await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
-                return true;
-            } else {
-                return false;
-            }
-            
-        } catch (error) {
-            console.error('데이터 저장 오류:', error);
-            await AlertUtil.notifySaveError("저장 실패", "데이터 저장 중 오류가 발생했습니다.");
-            return false;
-        }
-    }
-
-    /**
-     * 데이터 삭제 함수
-     * 선택된 행을 삭제합니다.
-     */
-    async function deleteRows() {
+    async function confirmReceipt() {
         try {
             // 선택된 행 ID 확인
             const grid = GridUtil.getGrid('mReceiptGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '삭제할 항목을 선택해주세요.');
+                await AlertUtil.showWarning('알림', '확정할 입고 항목을 선택해주세요.');
                 return false;
             }
             
-            // 선택된 데이터 ID 목록 생성
-            const selectedDataIds = [];
+            // 선택된 입고 정보 수집
+            const selectedReceipts = [];
             for (const rowKey of selectedRowKeys) {
-                const whsNo = grid.getValue(rowKey, "WHS_NO");
-                if (whsNo) selectedDataIds.push(whsNo);
+                const receiptData = grid.getRow(rowKey);
+                
+                // 이미 확정된 항목 제외
+                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
+                    continue;
+                }
+                
+                // 취소된 항목 제외
+                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
+                    continue;
+                }
+                
+                selectedReceipts.push({
+                    receiptNo: receiptData.RECEIPT_NO,
+                    receiptCode: receiptData.RECEIPT_CODE,
+                    receiptStatus: RECEIPT_STATUS.COMPLETED,
+                    updatedBy: 'SYSTEM' // TODO: 로그인 사용자 정보로 대체
+                });
             }
             
-            if (selectedDataIds.length === 0) {
-                await AlertUtil.showWarning('알림', '유효한 창고번호를 찾을 수 없습니다.');
+            if (selectedReceipts.length === 0) {
+                await AlertUtil.showWarning('알림', '확정 가능한 입고 항목이 없습니다.');
                 return false;
             }
             
-            // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
-            const result = await GridUtil.deleteSelectedRows('mReceiptGrid', {
-                confirmTitle: "삭제 확인",
-                confirmMessage: "선택한 항목을 삭제하시겠습니까?",
-                onBeforeDelete: async () => {
-                    // 삭제 전 처리 - 여기서 true 반환해야 삭제 진행
-                    return true;
-                },
-                onAfterDelete: async () => {
-                    // 삭제 API 호출 및 처리
-                    try {
-                        // 삭제 요청 생성
-                        const deleteRequests = selectedDataIds.map(whsNo => 
-                            async () => ApiUtil.del(API_URLS.DELETE(whsNo))
-                        );
-                        
-                        // 일괄 삭제 요청 실행
-                        await ApiUtil.withLoading(async () => {
-                            await Promise.all(deleteRequests.map(req => req()));
-                        }, '데이터 삭제 중...');
-                        
-                        // 삭제 성공 메시지
-                        await AlertUtil.notifyDeleteSuccess('삭제 완료', '데이터가 삭제되었습니다.');
-                        
-                        // 목록 갱신
-                        await searchData();
-                    } catch (apiError) {
-                        console.error('삭제 API 호출 중 오류:', apiError);
-                        await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 API 오류가 발생했습니다.');
-                    }
-                }
+            // 확인 대화상자 표시
+            const confirmed = await AlertUtil.showConfirm({
+                title: "입고 확정",
+                text: `선택한 ${selectedReceipts.length}개 항목을 입고 확정 처리하시겠습니까?`,
+                icon: "question"
             });
             
-            return result;
+            if (!confirmed) {
+                return false;
+            }
+            
+            // API 호출 처리
+            const response = await ApiUtil.processRequest(
+                () => ApiUtil.post(API_URLS.CONFIRM, { items: selectedReceipts }), 
+                {
+                    loadingMessage: '입고 확정 처리 중...',
+                    successMessage: "입고가 확정되었습니다.",
+                    errorMessage: "입고 확정 처리 중 오류가 발생했습니다.",
+                    successCallback: async () => {
+                        // 목록 갱신
+                        await searchData();
+                        
+                        // 상세 정보 영역 숨기기
+                        hideDetailSection();
+                    }
+                }
+            );
+            
+            return response.success;
         } catch (error) {
-            console.error('데이터 삭제 오류:', error);
-            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
+            console.error('입고 확정 처리 오류:', error);
+            await AlertUtil.showError('처리 오류', '입고 확정 처리 중 오류가 발생했습니다.');
             return false;
         }
+    }
+    
+    /**
+     * 검수 등록 함수
+     * 선택한 입고 항목을 검수 담당자에게 넘깁니다.
+     */
+    async function openInspectionModal() {
+        try {
+            // 선택된 행 ID 확인
+            const grid = GridUtil.getGrid('mReceiptGrid');
+            const selectedRowKeys = grid.getCheckedRowKeys();
+            
+            if (selectedRowKeys.length === 0) {
+                await AlertUtil.showWarning('알림', '검수 등록할 입고 항목을 선택해주세요.');
+                return false;
+            }
+            
+            if (selectedRowKeys.length > 1) {
+                await AlertUtil.showWarning('알림', '검수 등록은 한 번에 하나의 항목만 가능합니다.');
+                return false;
+            }
+            
+            const rowKey = selectedRowKeys[0];
+            const receiptData = grid.getRow(rowKey);
+            
+            // 이미 입고 완료된 항목 체크
+            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
+                await AlertUtil.showWarning('알림', '이미 입고 완료된 항목은 검수 등록이 불가능합니다.');
+                return false;
+            }
+            
+            // 취소된 항목 체크
+            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
+                await AlertUtil.showWarning('알림', '취소된 항목은 검수 등록이 불가능합니다.');
+                return false;
+            }
+            
+            // 검수중인 항목 체크
+            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.INSPECTING) {
+                await AlertUtil.showWarning('알림', '이미 검수중인 항목입니다.');
+                return false;
+            }
+            
+            // 검수 항목 확인 대화상자
+            const confirmed = await AlertUtil.showConfirm({
+                title: "검수 등록",
+                text: `선택한 항목을 검수 등록하시겠습니까?\n\n자재명: ${receiptData.MTL_NAME}\n입고수량: ${receiptData.RECEIVED_QTY}`,
+                icon: "question"
+            });
+            
+            if (!confirmed) {
+                return false;
+            }
+            
+            // 검수 등록 API 호출
+            const inspectionData = {
+                receiptNo: receiptData.RECEIPT_NO,
+                receiptCode: receiptData.RECEIPT_CODE,
+                receiptStatus: RECEIPT_STATUS.INSPECTING,
+                updatedBy: 'SYSTEM' // TODO: 로그인 사용자 정보로 대체
+            };
+            
+            // API 호출 처리
+            const response = await ApiUtil.processRequest(
+                () => ApiUtil.post(API_URLS.INSPECTION, inspectionData), 
+                {
+                    loadingMessage: '검수 등록 중...',
+                    successMessage: "검수 등록이 완료되었습니다. 검수 담당자가 검사를 진행합니다.",
+                    errorMessage: "검수 등록 중 오류가 발생했습니다.",
+                    successCallback: async () => {
+                        // 목록 갱신
+                        await searchData();
+                        
+                        // 상세 정보 영역 숨기기
+                        hideDetailSection();
+                    }
+                }
+            );
+            
+            return response.success;
+        } catch (error) {
+            console.error('검수 등록 오류:', error);
+            await AlertUtil.showError('처리 오류', '검수 등록 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+    
+    /**
+     * 빈 함수 - 원래 검수 정보 저장 함수였으나 검수는 다른 담당자가 진행
+     * 함수 참조를 유지하기 위해 빈 함수로 남깁니다.
+     */
+    async function saveInspection() {
+        console.log('saveInspection은 사용되지 않습니다. 검수는 다른 담당자가 진행합니다.');
+        return false;
     }
 
     // =============================
     // 유틸리티 함수
     // =============================
-
+    
+    /**
+     * 날짜 포맷팅 함수
+     * 
+     * @param {string|Date} date - 날짜 문자열 또는 Date 객체
+     * @returns {string} 포맷팅된 날짜 문자열
+     */
+    function formatDate(date) {
+        if (!date) return '-';
+        
+        try {
+            const dateObj = new Date(date);
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        } catch (error) {
+            return '-';
+        }
+    }
+    
+    /**
+     * 날짜/시간 포맷팅 함수
+     * 
+     * @param {string|Date} datetime - 날짜/시간 문자열 또는 Date 객체
+     * @returns {string} 포맷팅된 날짜/시간 문자열
+     */
+    function formatDateTime(datetime) {
+        if (!datetime) return '-';
+        
+        try {
+            const dateObj = new Date(datetime);
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+        } catch (error) {
+            return '-';
+        }
+    }
+    
+    /**
+     * 검수 결과 텍스트 변환 함수
+     * 
+     * @param {string} resultCode - 검수 결과 코드
+     * @returns {string} 검수 결과 표시 텍스트
+     */
+    function getInspectionResultText(resultCode) {
+        if (!resultCode) return '-';
+        
+        const resultMap = {
+            'PASS': '<span class="badge badge-completed">합격</span>',
+            'CONDITIONAL_PASS': '<span class="badge badge-inspecting">조건부 합격</span>',
+            'FAIL': '<span class="badge badge-canceled">불합격</span>'
+        };
+        
+        return resultMap[resultCode] || resultCode;
+    }
+    
     /**
      * 그리드 인스턴스 반환 함수
      * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
@@ -580,109 +896,19 @@ const WareHouseManager = (function() {
         return mReceiptGrid;
     }
 
-    /**
-     * 검색 조건 저장 함수
-     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
-     */
-    async function saveSearchCondition() {
-        try {
-            const searchCondition = document.getElementById('mReceiptInput')?.value || '';
-
-            localStorage.setItem('warehouseSearchCondition', searchCondition);
-            console.log('검색 조건이 저장되었습니다.');
-
-            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
-            return true;
-        } catch (error) {
-            console.error('검색 조건 저장 오류:', error);
-            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-
-    /**
-     * 저장된 검색 조건 로드 함수
-     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
-     * 
-     * @returns {boolean} 로드 성공 여부
-     */
-    async function loadSearchCondition() {
-        try {
-            const savedCondition = localStorage.getItem('warehouseSearchCondition');
-
-            if (!savedCondition) {
-                console.log('저장된 검색 조건이 없습니다.');
-                return false;
-            }
-
-            // 검색 조건 설정
-            const searchInput = document.getElementById('mReceiptInput');
-            if (searchInput) {
-                searchInput.value = savedCondition;
-            }
-
-            // 검색 실행
-            await searchData();
-
-            console.log('검색 조건이 로드되었습니다.');
-            return true;
-        } catch (error) {
-            console.error('검색 조건 로드 오류:', error);
-            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-    
-    /**
-     * 로컬 검색 함수
-     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
-     */
-    function performLocalSearch() {
-        try {
-            const keyword = document.getElementById('mReceiptInput').value.toLowerCase();
-            
-            // 원본 데이터 가져오기
-            GridSearchUtil.resetToOriginalData('mReceiptGrid');
-            const grid = GridUtil.getGrid('mReceiptGrid');
-            const originalData = grid.getData();
-            
-            // 필터링
-            const filtered = originalData.filter(row => {
-                return Object.values(row).some(val => {
-                    if (val == null) return false;
-                    return String(val).toLowerCase().includes(keyword);
-                });
-            });
-            
-            // 그리드 업데이트
-            grid.resetData(filtered);
-            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
-            
-            return filtered;
-        } catch (error) {
-            console.error('로컬 검색 중 오류:', error);
-            return [];
-        }
-    }
-
     // =============================
     // 공개 API - 외부에서 접근 가능한 메서드
     // =============================
     return {
         // 초기화 및 기본 기능
-        init,           // 모듈 초기화
+        init,                // 모듈 초기화
 
         // 데이터 관련 함수
         searchData,     // 데이터 검색
-        appendRow,      // 행 추가
-        saveData,       // 데이터 저장
-        deleteRows,     // 데이터 삭제
-
+        confirmReceipt, // 입고 확정
+        
         // 유틸리티 함수
-        getGrid,               // 그리드 인스턴스 반환
-        saveSearchCondition,   // 검색 조건 저장
-        loadSearchCondition,   // 저장된 검색 조건 로드
-        performLocalSearch     // 로컬 검색 실행
+        getGrid,        // 그리드 인스턴스 반환
     };
 })();
 
@@ -691,17 +917,14 @@ const WareHouseManager = (function() {
 // =============================
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // 창고 관리자 초기화
-        await WareHouseManager.init();
-
-        // 저장된 검색 조건 로드 (필요 시 활성화)
-        // await WareHouseManager.loadSearchCondition();
+        // 원자재 입고관리 모듈 초기화
+        await MaterialReceiptManager.init();
     } catch (error) {
         console.error('초기화 중 오류 발생:', error);
         if (window.AlertUtil) {
-            await AlertUtil.showError('초기화 오류', '창고 관리자 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '원자재 입고관리 초기화 중 오류가 발생했습니다.');
         } else {
-            alert('창고 관리자 초기화 중 오류가 발생했습니다.');
+            alert('원자재 입고관리 초기화 중 오류가 발생했습니다.');
         }
     }
 });
