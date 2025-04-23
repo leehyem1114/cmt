@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,29 +52,25 @@ public class MaterialInventoryRestController {
 		
 	}
 	
-	
-
-    
-//    /**
-//     * 원자재 재고 차감 API (FIFO 적용)
-//     * 공정에서 사용된 자재의 재고를 FIFO 방식으로 차감합니다.
-//     * 
-//     * @param params 차감 정보 (mtlCode: 자재코드, consumptionQty: 소비량, updatedBy: 처리자)
-//     * @return 처리 결과
-//     */
-//    @PostMapping("/consume")
-//    public ApiResponse<Map<String, Object>> consumeMaterial(@RequestBody Map<String, Object> params) {
-//        log.info("자재 재고 차감 요청: {}", params);
-//        
-//        Map<String, Object> result = inventoryService.consumeMaterialFIFO(params);
-//        
-//        if ((Boolean) result.get("success")) {
-//            log.info("자재 재고 차감 성공: {}", result.get("message"));
-//            return ApiResponse.success(result);
-//        } else {
-//            log.warn("자재 재고 차감 실패: {}", result.get("message"));
-//            return ApiResponse.error(result.get("message").toString(), result);
-//        }
-//    }
-
+    /**
+     * 원자재 재고 차감 API (FIFO 적용)
+     * 공정에서 사용된 자재의 재고를 FIFO 방식으로 차감합니다.
+     * 
+     * @param params 차감 정보 (mtlCode: 자재코드, consumptionQty: 소비량, updatedBy: 처리자)
+     * @return 처리 결과
+     */
+    @PostMapping("/consume")
+    public ApiResponse<Map<String, Object>> consumeMaterial(@RequestBody Map<String, Object> params) {
+        log.info("자재 재고 차감 요청: {}", params);
+        
+        Map<String, Object> result = mis.consumeMaterialFIFO(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("자재 재고 차감 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("자재 재고 차감 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
 }

@@ -750,11 +750,11 @@ const MaterialReceiptManager = (function() {
                 await AlertUtil.showWarning('알림', '검수 등록할 입고 항목을 선택해주세요.');
                 return false;
             }
-            
-            if (selectedRowKeys.length > 1) {
-                await AlertUtil.showWarning('알림', '검수 등록은 한 번에 하나의 항목만 가능합니다.');
-                return false;
-            }
+// 다건등록으로 변경             
+//            if (selectedRowKeys.length > 1) {
+//                await AlertUtil.showWarning('알림', '검수 등록은 한 번에 하나의 항목만 가능합니다.');
+//                return false;
+//            }
             
             const rowKey = selectedRowKeys[0];
             const receiptData = grid.getRow(rowKey);
@@ -765,7 +765,7 @@ const MaterialReceiptManager = (function() {
                 return false;
             }
 			
-			// 검수가 완료된 항목만 입고완료(구현예정)
+			// 검수가 완료된 항목만 입고완료 할수있도록 바꿔야함(구현예정)
 			if (receiptData.RECEIPT_STATUS )
             
             // 취소된 항목 체크

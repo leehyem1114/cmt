@@ -45,7 +45,9 @@ public class MaterialReceiptRestController {
             findMap.put("keyword", keyword);
         }
         
+        log.info("입고 목록 조회 요청. 검색어: {}", keyword);
         List<Map<String, Object>> mReceipt = mrs.receiptList(findMap);
+        log.info("입고 목록 조회 결과: {}건", mReceipt.size());
 		
 		return ApiResponse.success(mReceipt);
 	}
@@ -58,8 +60,14 @@ public class MaterialReceiptRestController {
 	 */
 	@GetMapping("/detail/{receiptNo}")
 	public ApiResponse<Map<String, Object>> getReceiptDetail(@PathVariable("receiptNo") Long receiptNo) {
+	    log.info("입고 상세 정보 조회 요청. 입고번호: {}", receiptNo);
 	    Map<String, Object> detail = mrs.getReceiptDetail(receiptNo);
-	    return ApiResponse.success(detail);
+	    
+	    if ((Boolean) detail.get("success")) {
+	        return ApiResponse.success(detail);
+	    } else {
+	        return ApiResponse.error(detail.get("message").toString(), detail);
+	    }
 	}
 	
 	/**
@@ -69,21 +77,37 @@ public class MaterialReceiptRestController {
 	 */
 	@PostMapping("/register-all")
 	public ApiResponse<Map<String, Object>> registerAllFromPurchaseOrders() {
+		log.info("발주 정보 기반 입고 등록 요청");
 		Map<String, Object> result = mrs.createReceiptFromPurchaseOrder();
-		return ApiResponse.success(result);
+		log.info("발주 정보 기반 입고 등록 결과: {}", result);
+		
+		if ((Boolean) result.get("success")) {
+		    return ApiResponse.success(result);
+		} else {
+		    return ApiResponse.error(result.get("message").toString(), result);
+		}
 	}
 	
 	/**
 	 * 입고 확정 처리 API
-	 * 선택한 입고 항목의 상태를 "입고완료"로 변경합니다.
+	 * 선택한 입고 항목의 상태를 "입고완료"로 변경하고 재고를 반영합니다.
 	 * 
 	 * @param params 입고 확정 처리할 항목 정보
 	 * @return 처리 결과
 	 */
 	@PostMapping("/confirm")
 	public ApiResponse<Map<String, Object>> confirmReceipt(@RequestBody Map<String, Object> params) {
+	    log.info("입고 확정 처리 요청: {}", params);
+	    
 	    Map<String, Object> result = mrs.confirmReceipt(params);
-	    return ApiResponse.success(result);
+	    
+	    if ((Boolean) result.get("success")) {
+	        log.info("입고 확정 처리 성공: {}", result.get("message"));
+	        return ApiResponse.success(result);
+	    } else {
+	        log.warn("입고 확정 처리 실패: {}", result.get("message"));
+	        return ApiResponse.error(result.get("message").toString(), result);
+	    }
 	}
 	
 	/**
@@ -95,8 +119,16 @@ public class MaterialReceiptRestController {
 	 */
 	@PostMapping("/inspection")
 	public ApiResponse<Map<String, Object>> registerInspection(@RequestBody Map<String, Object> params) {
+	    log.info("검수 등록 처리 요청: {}", params);
+	    
 	    Map<String, Object> result = mrs.requestInspection(params);
-	    return ApiResponse.success(result);
+	    
+	    if ((Boolean) result.get("success")) {
+	        log.info("검수 등록 처리 성공: {}", result.get("message"));
+	        return ApiResponse.success(result);
+	    } else {
+	        log.warn("검수 등록 처리 실패: {}", result.get("message"));
+	        return ApiResponse.error(result.get("message").toString(), result);
+	    }
 	}
-
-} //MaterialInventoryRestController
+}

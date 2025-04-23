@@ -34,5 +34,4 @@ public interface MaterialReceiptStockMapper {
      * @return 처리 건수
      */
     public int deductStock(Map<String, Object> params);
-
 }
