@@ -71,8 +71,6 @@ public class ProductionPrcController {
 	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode, @RequestParam("woQty") String woQty) {
 	//public LotBomPathBindingDTO pdtCodeSelected(@RequestParam("pdtCode") String pdtCode,  @RequestParam("woCode") String woCode) {
 		
-		System.out.println("woQty:" + woQty);
-		
 		//PARENT_PDT_CODE => 앞 과정에서 투입되는 제품
 		//CHILD_ITEM_CODE => 현재 제품/최종 제품
 		
@@ -325,7 +323,6 @@ public class ProductionPrcController {
 			
 			LocalTime time = LocalTime.now();
 			String startTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-			System.out.println("startTime:" + startTime);
 			
 			LocalDate date = LocalDate.of(2024, 4, 22);
 			LocalDateTime dateTime = date.atStartOfDay(); // 00:00:00
@@ -355,6 +352,8 @@ public class ProductionPrcController {
 			
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
+		//작업지시에서 받아온 작업 RN으로 변경
+		productionPrcService.updateWoStatus(woCode);
 		
 		return selectPdtCodeList;
 		

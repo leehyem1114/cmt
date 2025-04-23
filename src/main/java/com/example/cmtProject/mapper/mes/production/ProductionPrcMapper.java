@@ -46,4 +46,6 @@ public interface ProductionPrcMapper {
 
 	//BOM 계층에서 부모 제품 가져와서 중복 제거
 	List<String> selectParentdPdtCodeList(String pdtCode);
+
+	void updateWoStatus(String woCode);
 }

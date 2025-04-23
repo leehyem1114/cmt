@@ -32,7 +32,7 @@
 			,WO_START_DATE
 			,ORDER_QTY
 		FROM WORK_ORDER 
-	   WHERE WO_STATUS_CODE = 'RN'
+	   WHERE WO_STATUS_CODE = 'PS'
 	</select>
 	
 	<select id="selectWoCodeList" resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
@@ -122,4 +122,8 @@
 		START WITH CHILD_ITEM_CODE = #{pdtCode}
 		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
 	</select>
+	
+	<update id="updateWoStatus">
+		UPDATE WORK_ORDER SET WO_STATUS_CODE = 'RN' WHERE WO_CODE = #{woCode}
+	</update>
 </mapper>
