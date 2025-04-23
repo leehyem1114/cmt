@@ -13,16 +13,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.entity.mes.qualityControl.Iqc;
 import com.example.cmtProject.repository.mes.qualityControl.IqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +66,12 @@ public class IqcController {
     	return "mes/qualityControl/iqcList";
 	}
 	
+	// 그리드에서 바로 수정
+	@ResponseBody
+	@PostMapping("/edit")
+	public void qcmEditexep(@ModelAttribute IqcDTO iqcDTO) throws JsonMappingException, JsonProcessingException {
+			iqcService.iqcRemarksUpdate(iqcDTO); 
+	}
 	
 	// 삭제 메서드
     @PostMapping("/delete")
@@ -70,7 +80,7 @@ public class IqcController {
         List<Long> ids = data.get("ids");
 
         // 삭제 로직 실행 (예: attendService.deleteByIds(ids))
-        iqcRepository.deleteAllById(ids);
+        iqcService.isVisiableToFalse(ids);
 
         return ResponseEntity.ok("success");
     }

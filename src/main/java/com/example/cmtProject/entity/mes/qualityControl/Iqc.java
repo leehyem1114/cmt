@@ -32,6 +32,9 @@ public class Iqc {
 
     @Column(name = "IQC_CODE", nullable = false)
     private String iqcCode;
+    
+    @Column(name = "RECEIPT_CODE")
+    private String receiptCode;
 
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
@@ -56,6 +59,12 @@ public class Iqc {
 
     @Column(name = "IQC_END_TIME")
     private LocalDateTime iqcEndTime;
+    
+    @Column(name = "RECEIVED_QTY")
+    private String receivedQty;
+    
+    @Column(name = "UNIT_QTY")
+    private String unitQty;
 
     @Column(name = "IQC_MEASURED_WEIGHT_VALUE")
     private Double iqcMeasuredWeightValue;
@@ -72,8 +81,8 @@ public class Iqc {
     @Column(name = "IQC_INSPECTION_STATUS")
     private String iqcInspectionStatus; // 검사전 / 검사중 / 검사완료
 
-    @Column(name = "IQC_INSPECTION_RESULT", length = 1)
-    private String iqcInspectionResult; // 'P' / 'F'
+    @Column(name = "IQC_INSPECTION_RESULT")
+    private String iqcInspectionResult; // 합격 / 불합격 / 확인불가
 
     @Column(name = "WHS_CODE")
     private String whsCode;

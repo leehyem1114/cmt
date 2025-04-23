@@ -114,6 +114,10 @@
 
 	    <script th:inline="javascript">
 	    
+		const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
+	    
+	    let isAdmin = userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MANAGER';
+	    
 	    const oneMonthAgo = new Date();
 		  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 		  // 시작일 DatePicker
@@ -157,39 +161,37 @@
             	{
            		  header: '작업 상태',
            		  name: 'iqcInspectionStatus',
+           		  sortable: true,
            		  align: 'center',
-           		  width: 80,
-           		  formatter: ({ value }) => {
+           		  width: 100,
+           		formatter: ({ value }) => {
            		    let btnClass = 'btn-secondary';
-           		    let btnLabel = value;
 
-           		    if (value === '진행중') {
+           		    if (value === '검사중') {
            		      btnClass = 'btn-primary';
-           		    } else if (value === '완료') {
+           		    } else if (value === '검사완료') {
            		      btnClass = 'btn-success';
            		    }
 
-           		    return `<button class="btn ${btnClass} btn-sm">${btnLabel}</button>`;
+           		    return `<button class="btn ${btnClass} btn-sm">${value}</button>`;
            		  }
            		},
            		{
            		  header: '합격 여부',
            		  name: 'iqcInspectionResult',
+           		  sortable: true,
            		  align: 'center',
-           		  width: 80,
+           		  width: 100,
            		  formatter: ({ value }) => {
            		    let btnClass = 'btn-secondary';
-           		    let btnLabel = '확인불가';
 
-           		    if (value === 'P') {
+           		    if (value === '합격') {
            		      btnClass = 'btn-success';
-           		      btnLabel = '합격';
-           		    } else if (value === 'F') {
+           		    } else if (value === '불합격') {
            		      btnClass = 'btn-danger';
-           		      btnLabel = '불합격';
            		    }
 
-           		    return `<button class="btn ${btnClass} btn-sm"">${btnLabel}</button>`;
+           		    return `<button class="btn ${btnClass} btn-sm">${value}</button>`;
            		  }
            		},
             	{ 
@@ -198,13 +200,24 @@
             	  sortable: true, 
             	  filter: 'text', 
             	  width: 100,
-            	  align: "center" 
+            	  align: "center",
+            	  hidden: true 
+            	},       	
+            	{ 
+                  header: '입고 코드', 
+            	  name: 'receiptCode', 
+            	  sortable: true, 
+            	  filter: 'text', 
+            	  width: 100,
+            	  align: "center",
+            	  hidden: true 
             	},       	
             	{ 
                   header: '검사이름', 
               	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
+              	  width: 200,
               	  align: "center",
               	},
               	{ 
@@ -223,6 +236,22 @@
                   width: 200,
                	  align: "center",
             	},
+            	{ 
+              	  header: '입고 검사 수량', 
+              	  name: 'receivedQty', 
+              	  sortable: true, 
+              	  filter: 'text',
+              	  width: 100,
+             	  align: "center",  
+              	},
+            	{ 
+              	  header: '단위', 
+              	  name: 'unitQty', 
+              	  sortable: true, 
+              	  filter: 'text',
+              	  width: 50,
+             	  align: "center",  
+              	},
             	{ 
             	  header: '무게 측정값', 
             	  name: 'iqcMeasuredWeightValue', 
@@ -306,22 +335,32 @@
            		  filter: 'text',
            		  width: 100,
            		  align: "center",
+            	  hidden: true
               	},
 	    		{ 
            	      header: '비고', 
            		  name: 'iqcRemarks', 
            		  sortable: true, 
            		  filter: 'text',
+           		  width: 300,
            		  align: "center",
+           		  ...(isAdmin && {
+    	           		editor: {
+    	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+    	           	    }
+    	           	  }),
+    	           	  formatter: ({ value }) => value // 그대로 출력
               	}
             ],  
+            autoEdit: true,
+    		editingEvent: 'dblclick'    
           });
 	    
 	    
 	    
 	    
 	    
-	    
+	    // 아무곳이나 클릭하면 상세정보 띄워주기
 	    grid.on('click', ev => {
 	    	  const rowKey = ev.rowKey;
 	    	  const rowData = grid.getRow(rowKey);
@@ -330,11 +369,11 @@
 	    	  const status = rowData.iqcInspectionStatus;
 	    	  const result = rowData.iqcInspectionResult;
 
-	    	  let color = '#6c757d'; // 기본 회색 (대기)
-	    	  if (status === '진행중') {
+	    	  let color = '#6c757d'; // 기본 회색 (검사전)
+	    	  if (status === '검사중') {
 	    	    color = '#0d6efd'; // 파랑
 	    	  } 
-	    	  if (status === '완료') {
+	    	  if (status === '검사완료') {
 	    	    color = '#198754'; // 초록
 	    	  }
 	    	  if (result === 'P') {
@@ -344,9 +383,9 @@
 		    	    color = '#dc3545'; // 빨강
 		      }
 
-	    	  const resultLabel = result === 'P' ? '합격'
-	                		    : result === 'F' ? '불합격'
-	                  			: '확인불가';
+	    	  const resultLabel = result === '합격' ? '합격'
+	                		    : result === '불합격' ? '불합격'
+	                  			: '예정';
 
 			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
 			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
@@ -356,8 +395,10 @@
 	    		  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
 	    		    ${makeDetailItem('작업 상태', statusHtml)}
 	    		    ${makeDetailItem('작업 상태', resultHtml)}
+	    		    ${makeDetailItem('입고 코드', rowData.receiptCode)}
 	    	        ${makeDetailItem('입고 검사 코드', rowData.iqcCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
+	    	        ${makeDetailItem('입고 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', rowData.empName)}
 	    	        ${makeDetailItem('원자재', rowData.mtlName)}
 	    	        ${makeDetailItem('무게 측정값', `${rowData.iqcMeasuredWeightValue} ${rowData.qcmUnitWeight}`)}
@@ -374,8 +415,8 @@
 	    	});
 	    function makeDetailItem(label, value) {
 	    	  return `
-	    	    <div style="flex: 1 1 45%; display: flex;">
-	    	      <div style="font-weight: 600; width: 120px;">${label}</div>
+	    	    <div style="flex: 0 0 calc(33.3333% - 12px); display: flex; min-width: 240px; box-sizing: border-box;">
+	    	      <div style="font-weight: bold; color: #333; width: 120px;">${label}</div>
 	    	      <div style="flex: 1;">${value ?? '-'}</div>
 	    	    </div>
 	    	  `;
@@ -392,6 +433,35 @@
 	    	  const min = String(date.getMinutes()).padStart(2, '0');
 	    	  return `${y}년 ${m}월 ${d}일 ${h}시 ${min}분`;
 	    	}
+	    	
+	    	
+	    	
+	    	
+	    	
+	    	//수정
+			grid.on('afterChange', (ev) => {
+				
+				let evValue = ev.changes[0];
+			    let rk = evValue.rowKey;
+			    let rowData = grid.getRow(rk);
+				
+			    let sendData = {
+		            iqcNo: rowData.iqcNo,
+		            iqcRemarks: rowData.iqcRemarks
+		        };
+
+				$.ajax({
+					url: "/iqc/edit",
+					type: "POST",
+					data: sendData,
+					success: function(result) {
+						console.log(result);
+					},
+					error: function(errorResult) {
+						grid.restore(); // 이전 상태로 롤백
+					}
+				});
+		    });
 
 	    
 
@@ -399,9 +469,11 @@
 	    
 	    
 	    
-	    // 행 아무곳이나 클릭하면 체크박스 활성화
+    	// 행 아무곳이나 클릭하면 체크박스 활성화
 	    grid.on('click', ev => {
-	    	  const rowKey = ev.rowKey;
+	    	  const { rowKey, columnName } = ev;
+
+	    	  if (columnName === '_checked') return;
 	    	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
 	    	  if (!isChecked) {
 	    	    grid.check(rowKey);
@@ -549,18 +621,22 @@
     			console.log(worksheet);
     			
     			worksheet["A1"] = { t: "s", v: "iqcNo", r:"<t>iqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcNo', w: 'iqcNo' };
-       			worksheet["B1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
-    			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["D1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["E1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName' };
-    			worksheet["F1"] = { t: "s", v: "iqcMeasuredWeightValue", r:"<t>iqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredWeightValue', w: 'iqcMeasuredWeightValue' };
-    			worksheet["G1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["H1"] = { t: "s", v: "iqcMeasuredLengthValue", r:"<t>iqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredLengthValue', w: 'iqcMeasuredLengthValue' };
-    			worksheet["I1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["J1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
-    			worksheet["K1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
-    			worksheet["L1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["M1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
+    			worksheet["B1"] = { t: "s", v: "iqcInspectionStatus", r:"<t>iqcInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcInspectionStatus', w: 'iqcInspectionStatus' };
+    			worksheet["C1"] = { t: "s", v: "iqcInspectionResult", r:"<t>iqcInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcInspectionResult', w: 'iqcInspectionResult' };    			
+    			worksheet["D1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
+    			worksheet["E1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["F1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["G1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName' };
+    			worksheet["H1"] = { t: "s", v: "receivedQty", r:"<t>receivedQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'receivedQty', w: 'receivedQty' };    			
+    			worksheet["I1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };    			
+    			worksheet["J1"] = { t: "s", v: "iqcMeasuredWeightValue", r:"<t>iqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredWeightValue', w: 'iqcMeasuredWeightValue' };
+    			worksheet["K1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["L1"] = { t: "s", v: "iqcMeasuredLengthValue", r:"<t>iqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredLengthValue', w: 'iqcMeasuredLengthValue' };
+    			worksheet["M1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["N1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
+    			worksheet["O1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
+    			worksheet["P1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["Q1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
@@ -641,8 +717,8 @@
   		    endDate.setHours(23, 59, 59, 999);
 
   		    filtered = filtered.filter(row => {
-  		      const iqcDate = new Date(row.iqcStartDate);
-  		      return iqcStartDate >= startDate && iqcStartDate <= endDate;
+  		      const iqcStartTime = new Date(row.iqcStartTime);
+  		      return iqcStartTime >= startDate && iqcStartTime <= endDate;
   		    });
   		  }
 

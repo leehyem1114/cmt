@@ -21,6 +21,8 @@ public class FqcDTO {
     private String pdtName;
     private LocalDateTime fqcStartTime;    // 검사 시작 시간
     private LocalDateTime fqcEndTime;    // 검사 종료 시간
+    private String issuedQty;			// 입고 검사 수량
+    private String unitQty;				// 단위 수량
     private Double fqcMeasuredWeightValue;  // 측정값
     private Double fqcMeasuredLengthValue;  // 측정값
     private String qcmUnitWeight;   // 단위 (ex: g)
@@ -37,5 +39,7 @@ public class FqcDTO {
     private String pdtCode;               // 완제품 NO
     private String whsCode;               // 완제품 NO
     private String qcmName;
+    private String qcmCode;
+    private String issueCode;         // 입고 코드
 
 }

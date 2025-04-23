@@ -114,6 +114,10 @@
 
 	    <script th:inline="javascript">
 	    
+		const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
+	    
+	    let isAdmin = userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MANAGER';
+	    
 	    const oneMonthAgo = new Date();
 		  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 		  // 시작일 DatePicker
@@ -157,39 +161,37 @@
             	{
            		  header: '작업 상태',
            		  name: 'fqcInspectionStatus',
+           		  sortable: true,
            		  align: 'center',
-           		  width: 80,
+           		  width: 100,
            		  formatter: ({ value }) => {
            		    let btnClass = 'btn-secondary';
-           		    let btnLabel = value;
 
-           		    if (value === '진행중') {
+           		    if (value === '검사중') {
            		      btnClass = 'btn-primary';
-           		    } else if (value === '완료') {
+           		    } else if (value === '검사완료') {
            		      btnClass = 'btn-success';
            		    }
 
-           		    return `<button class="btn ${btnClass} btn-sm">${btnLabel}</button>`;
+           		    return `<button class="btn ${btnClass} btn-sm">${value}</button>`;
            		  }
            		},
            		{
            		  header: '합격 여부',
            		  name: 'fqcInspectionResult',
+           		  sortable: true,
            		  align: 'center',
-           		  width: 80,
+           		  width: 100,
            		  formatter: ({ value }) => {
            		    let btnClass = 'btn-secondary';
-           		    let btnLabel = '확인불가';
 
-           		    if (value === 'P') {
+           		    if (value === '합격') {
            		      btnClass = 'btn-success';
-           		      btnLabel = '합격';
-           		    } else if (value === 'F') {
+           		    } else if (value === '불합격') {
            		      btnClass = 'btn-danger';
-           		      btnLabel = '불합격';
            		    }
 
-           		    return `<button class="btn ${btnClass} btn-sm"">${btnLabel}</button>`;
+           		    return `<button class="btn ${btnClass} btn-sm">${value}</button>`;
            		  }
            		},
             	{ 
@@ -198,13 +200,24 @@
             	  sortable: true, 
             	  filter: 'text', 
             	  width: 100,
-            	  align: "center" 
-            	},       	
+            	  align: "center",
+            	  hidden: true
+            	},    
+            	{ 
+                  header: '출고 코드', 
+              	  name: 'issueCode', 
+              	  sortable: true, 
+              	  filter: 'text', 
+              	  width: 100,
+              	  align: "center",
+              	  hidden: true 
+              	},     
             	{ 
                   header: '검사이름', 
               	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
+              	  width: 200,
               	  align: "center",
               	},
               	{ 
@@ -223,6 +236,22 @@
                   width: 200,
                	  align: "center",
             	},
+            	{ 
+               	  header: '출고 검사 수량', 
+               	  name: 'issuedQty', 
+               	  sortable: true, 
+               	  filter: 'text',
+               	  width: 100,
+               	  align: "center",  
+                },
+                { 
+               	  header: '단위', 
+               	  name: 'unitQty', 
+               	  sortable: true, 
+               	  filter: 'text',
+               	  width: 50,
+              	  align: "center",  
+               	},
             	{ 
             	  header: '무게 측정값', 
             	  name: 'fqcMeasuredWeightValue', 
@@ -306,15 +335,25 @@
            		  filter: 'text',
            		  width: 100,
            		  align: "center",
+            	  hidden: true
               	},
 	    		{ 
            	      header: '비고', 
            		  name: 'fqcRemarks', 
            		  sortable: true, 
            		  filter: 'text',
+           		  width: 300,
            		  align: "center",
+           		  ...(isAdmin && {
+    	           		editor: {
+    	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
+    	           	    }
+    	           	  }),
+    	           	  formatter: ({ value }) => value // 그대로 출력
               	}
             ],  
+            autoEdit: true,
+    		editingEvent: 'dblclick'    
           });
 	    
 
@@ -322,9 +361,11 @@
 	    
 	    
 	    
-	    // 행 아무곳이나 클릭하면 체크박스 활성화
+	 	// 행 아무곳이나 클릭하면 체크박스 활성화
 	    grid.on('click', ev => {
-	    	  const rowKey = ev.rowKey;
+	    	  const { rowKey, columnName } = ev;
+
+	    	  if (columnName === '_checked') return;
 	    	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
 	    	  if (!isChecked) {
 	    	    grid.check(rowKey);
@@ -346,10 +387,10 @@
 	    	  const result = rowData.fqcInspectionResult;
 
 	    	  let color = '#6c757d'; // 기본 회색 (대기)
-	    	  if (status === '진행중') {
+	    	  if (status === '검사중') {
 	    	    color = '#0d6efd'; // 파랑
 	    	  } 
-	    	  if (status === '완료') {
+	    	  if (status === '검사완료') {
 	    	    color = '#198754'; // 초록
 	    	  }
 	    	  if (result === 'P') {
@@ -359,9 +400,9 @@
 		    	    color = '#dc3545'; // 빨강
 		      }
 	    	  
-	    	  const resultLabel = result === 'P' ? '합격'
-	                 			: result === 'F' ? '불합격'
-	                  			: '확인불가';
+	    	  const resultLabel = result === '합격' ? '합격'
+	                 			: result === '불합격' ? '불합격'
+	                  			: '예정';
 
 			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
 			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
@@ -371,8 +412,10 @@
 	    		    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
 	    		      ${makeDetailItem('작업 상태', statusHtml)}
 	    		      ${makeDetailItem('작업 상태', resultHtml)}
+	    		      ${makeDetailItem('출고 코드', rowData.issueCode)}
 	    		      ${makeDetailItem('출고 검사 코드', rowData.fqcCode)}
 	    		      ${makeDetailItem('검사이름', rowData.qcmName)}
+	    		      ${makeDetailItem('출고 검사 수량', `${rowData.issuedQty} ${rowData.unitQty}`)}
 	    		      ${makeDetailItem('검수자', rowData.empName)}
 	    		      ${makeDetailItem('완제품', rowData.pdtName)}
 	    		      ${makeDetailItem('무게 측정값', `${rowData.fqcMeasuredWeightValue} ${rowData.qcmUnitWeight}`)}
@@ -387,8 +430,8 @@
 	    		`;
 				function makeDetailItem(label, value) {
 				  return `
-				    <div style="flex: 1 1 45%; display: flex;">
-				      <div style="font-weight: 600; width: 120px;">${label}</div>
+				    <div style="flex: 0 0 calc(33.3333% - 12px); display: flex; min-width: 240px; box-sizing: border-box;">
+				      <div style="font-weight: bold; color: #333; width: 120px;">${label}</div>
 				      <div style="flex: 1;">${value ?? '-'}</div>
 				    </div>
 				  `;
@@ -550,18 +593,22 @@
     			console.log(worksheet);
     			
     			worksheet["A1"] = { t: "s", v: "fqcNo", r:"<t>fqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcNo', w: 'fqcNo' };
-       			worksheet["B1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
-    			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["D1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["E1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
-    			worksheet["F1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
-    			worksheet["G1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["H1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
-    			worksheet["I1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["J1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
-    			worksheet["K1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["L1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["M1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };
+    			worksheet["B1"] = { t: "s", v: "fqcInspectionStatus", r:"<t>fqcInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionStatus', w: 'fqcInspectionStatus' };
+    			worksheet["C1"] = { t: "s", v: "fqcInspectionResult", r:"<t>fqcInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionResult', w: 'fqcInspectionResult' };
+       			worksheet["D1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
+    			worksheet["E1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["F1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["G1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+    			worksheet["H1"] = { t: "s", v: "issuedQty", r:"<t>issuedQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'issuedQty', w: 'issuedQty' };
+    			worksheet["I1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
+    			worksheet["J1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
+    			worksheet["K1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["L1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
+    			worksheet["M1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["N1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
+    			worksheet["O1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
+    			worksheet["P1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["Q1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
@@ -605,6 +652,36 @@
     		
     	});	
     	
+    	
+    	
+    	
+    	
+    	//수정
+		grid.on('afterChange', (ev) => {
+			
+			let evValue = ev.changes[0];
+		    let rk = evValue.rowKey;
+		    let rowData = grid.getRow(rk);
+			
+		    let sendData = {
+	            fqcNo: rowData.fqcNo,
+	            fqcRemarks: rowData.fqcRemarks
+	        };
+
+			$.ajax({
+				url: "/fqc/edit",
+				type: "POST",
+				data: sendData,
+				success: function(result) {
+					console.log(result);
+				},
+				error: function(errorResult) {
+					grid.restore(); // 이전 상태로 롤백
+				}
+			});
+	    });
+
+    	
 
         
         
@@ -642,8 +719,8 @@
   		    endDate.setHours(23, 59, 59, 999);
 
   		    filtered = filtered.filter(row => {
-  		      const fqcDate = new Date(row.fqcStartDate);
-  		      return fqcStartDate >= startDate && fqcStartDate <= endDate;
+  		      const fqcStartTime = new Date(row.fqcStartTime);
+  		      return fqcStartTime >= startDate && fqcStartTime <= endDate;
   		    });
   		  }
 

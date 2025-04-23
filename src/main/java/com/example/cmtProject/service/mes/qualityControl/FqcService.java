@@ -22,11 +22,25 @@ public class FqcService {
 	public List<FqcDTO> getAllFqc() {
 		return fqcMapper.getAllFqc();
 	}
+	
+	@Transactional
+	public void fqcRemarksUpdate(FqcDTO fqcDTO) {
+		fqcMapper.fqcRemarksUpdate(fqcDTO);
+	}
+	
+	// 저장 대신 업데이트로 안보이게 하기
+	@Transactional
+	public void isVisiableToFalse(List<Long> ids) {
+		fqcMapper.isVisiableToFalse(ids);
+	}
 
+	// 엑셀 데이터 저장
 	@Transactional
 	public void saveExcelData(FqcDTO dto) {
 		fqcMapper.saveExcelData(dto);
 	}
+
+	
 
 	
 

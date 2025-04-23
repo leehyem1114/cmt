@@ -32,6 +32,9 @@ public class Fqc {
 
     @Column(name = "FQC_CODE", nullable = false)
     private String fqcCode;
+    
+    @Column(name = "ISSUE_CODE")
+    private String issueCode;
 
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
@@ -56,6 +59,12 @@ public class Fqc {
 
     @Column(name = "FQC_END_TIME")
     private LocalDateTime fqcEndTime;
+    
+    @Column(name = "ISSUED_QTY")
+    private String issuedQty;
+
+    @Column(name = "UNIT_QTY")
+    private String unitQty;
 
     @Column(name = "FQC_MEASURED_WEIGHT_VALUE")
     private Double fqcMeasuredWeightValue;
@@ -70,10 +79,10 @@ public class Fqc {
     private String qcmUnitWeight;
 
     @Column(name = "FQC_INSPECTION_STATUS")
-    private String fqcInspectionStatus;
+    private String fqcInspectionStatus; // 검사전 / 검사중 / 검사완료
 
-    @Column(name = "FQC_INSPECTION_RESULT", length = 1)
-    private String fqcInspectionResult; // 'P' / 'F'
+    @Column(name = "FQC_INSPECTION_RESULT")
+    private String fqcInspectionResult; // 합격 / 불합격 / 확인불가
 
     @Column(name = "WHS_CODE")
     private String whsCode;
