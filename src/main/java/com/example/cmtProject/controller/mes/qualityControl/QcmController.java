@@ -92,7 +92,7 @@ public class QcmController {
 	}
 	
 	
-	//BOM 그리드에서 바로 수정
+	// 그리드에서 바로 수정
 	@ResponseBody
 	@PostMapping("/edit")
 	public void qcmEditexep(@ModelAttribute QcmDTO qcmDTO) throws JsonMappingException, JsonProcessingException {

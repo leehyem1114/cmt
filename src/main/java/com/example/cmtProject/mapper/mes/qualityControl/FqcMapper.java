@@ -10,8 +10,14 @@ import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
 public interface FqcMapper {
 
 	List<FqcDTO> getAllFqc();
+	
+	void fqcRemarksUpdate(FqcDTO fqcDTO);
+		
+	void isVisiableToFalse(List<Long> ids);
 
 	void saveExcelData(FqcDTO dto);
+
+
 
 
 

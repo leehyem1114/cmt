@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,8 @@ import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.entity.mes.qualityControl.Fqc;
 import com.example.cmtProject.repository.mes.qualityControl.FqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.FqcService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -58,10 +61,17 @@ public class FqcController {
     	// FQC 리스트
     	List<FqcDTO> fqcList = fqcService.getAllFqc();
     	model.addAttribute("fqcList", fqcList);
-    	log.info("" + fqcList);
     	
     	
     	return "mes/qualityControl/fqcList";
+	}
+	
+	
+	// 그리드에서 바로 수정
+	@ResponseBody
+	@PostMapping("/edit")
+	public void qcmEditexep(@ModelAttribute FqcDTO fqcDTO) throws JsonMappingException, JsonProcessingException {
+			fqcService.fqcRemarksUpdate(fqcDTO); 
 	}
 	
 	
@@ -72,10 +82,12 @@ public class FqcController {
         List<Long> ids = data.get("ids");
 
         // 삭제 로직 실행 (예: attendService.deleteByIds(ids))
-        fqcRepository.deleteAllById(ids);
+        fqcService.isVisiableToFalse(ids);
 
         return ResponseEntity.ok("success");
     }
+    
+    
 	
 	
 	

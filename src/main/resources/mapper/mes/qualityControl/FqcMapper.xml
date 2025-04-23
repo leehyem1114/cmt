@@ -15,6 +15,8 @@
         F.PDT_NAME,
         F.FQC_START_TIME,
         F.FQC_END_TIME,
+        F.ISSUED_QTY,
+        F.UNIT_QTY,
         F.FQC_MEASURED_WEIGHT_VALUE,
         F.FQC_MEASURED_LENGTH_VALUE,
         C_UNIT_LENGTH.CMN_DETAIL_NAME AS QCM_UNIT_LENGTH,
@@ -23,7 +25,8 @@
 		F.FQC_INSPECTION_RESULT,
         F.WHS_NAME,
         F.LOT_NO,
-        F.FQC_REMARKS
+        F.FQC_REMARKS,
+        F.ISSUE_CODE
     FROM FQC F
     LEFT JOIN COMMONCODE_DETAIL C_UNIT_LENGTH ON C_UNIT_LENGTH.CMN_DETAIL_NAME = F.QCM_UNIT_LENGTH
 	LEFT JOIN COMMONCODE_DETAIL C_UNIT_WEIGHT ON C_UNIT_WEIGHT.CMN_DETAIL_NAME = F.QCM_UNIT_WEIGHT	
@@ -32,18 +35,37 @@
     ORDER BY FQC_NO DESC
 	</select>
 	
+	<!-- 비고란 업데이트 -->
+	<update id="iqcRemarksUpdate" parameterType="com.example.cmtProject.dto.mes.qualityControl.FqcDTO">
+		UPDATE FQC
+		SET FQC_REMARKS = #{fqcRemarks}
+		WHERE FQC_NO = #{fqcNo}
+	</update>
 	
+	<!-- 삭제 대신 안보이게 업데이트 -->
+	<update id="isVisiableToFalse" parameterType="list">
+	  UPDATE FQC
+	  SET FQC_VISIABLE = 'N'
+	  WHERE FQC_NO IN (
+	    <foreach item="id" collection="list" separator=",">
+	      #{id}
+	    </foreach>
+	  )
+	</update>
 	
 	
 	<!-- 엑셀 데이터 업데이트 -->
 	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.FqcDTO">
 		UPDATE FQC
 	    SET
-	        LOT_NO                     = #{lotNo},
+	        FQC_INSPECTION_STATUS	   = #{fqcInspectionStatus}
+	    	FQC_INSPECTION_RESULT	   = #{fqcInspectionResult}
 	        FQC_CODE                   = #{fqcCode},
 	        QCM_NAME                   = #{qcmName},
 	        EMP_NAME                   = #{empName}, 
 	        PDT_NAME                   = #{pdtName},
+	        ISSUED_QTY                 = #{issuedQty},
+	        UNIT_QTY                   = #{unitQty},
 	        FQC_MEASURED_WEIGHT_VALUE  = #{fqcMeasuredWeightValue},
 	        QCM_UNIT_WEIGHT            = #{qcmUnitWeight},
 	        FQC_MEASURED_LENGTH_VALUE  = #{fqcMeasuredLengthValue},

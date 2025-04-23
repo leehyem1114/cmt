@@ -120,6 +120,14 @@
 		
 		<br>
 		
+		<!-- ✅ 오버레이 + 스피너 통합 -->
+		<div id="loadingOverlay" style="display: none;">
+		  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+		    <span class="visually-hidden">Loading...</span>
+		  </div>
+		</div>
+				
+		
     	<div id="gridTop"></div>
     	
     
@@ -252,7 +260,9 @@
 	    
 	    // 행 아무곳이나 클릭하면 체크박스 활성화
 	    grid.on('click', ev => {
-	    	  const rowKey = ev.rowKey;
+	    	  const { rowKey, columnName } = ev;
+
+	    	  if (columnName === '_checked') return;
 	    	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
 	    	  if (!isChecked) {
 	    	    grid.check(rowKey);
@@ -262,23 +272,11 @@
 	    	});
 	    
 	    
-        /* 이벤트 리스너 추가 */
-        grid.on('check', ev => {
-            console.log('체크됨!', ev);
-        });
-
-        grid.on('uncheck', ev => {
-            console.log('체크 해제됨!', ev);
-        });
-
-        grid.on('focusChange', ev => {
-            console.log('포커스 변경됨!', ev);
-        });
-        
 
 	    </script>
 	    <!-- 그리드 끝 -->
 	    <script th:inline="javascript">
+	    
 	    async function checkIn() {
 	    	  // 사용자에게 출근 확인 알림 표시
 	    	  const result = await Swal.fire({
@@ -296,35 +294,43 @@
 	    		  }
 	    	  // 출근 API 요청
 	    	  try {
-	    	    const response = await fetch('/attends/check-in', {
-	    	      method: 'POST',
-	    	      headers: {
-	    	        'Content-Type': 'application/json'
-	    	      },
-	    	      body: JSON.stringify({})
-	    	    });
-	    	    if (!response.ok) {
-	    	      await Swal.fire({
-	    	        icon: "error",
-	    	        title: "출근 처리 중 서버 오류가 <br>발생했습니다",
-	    	      });
-	    	      throw new Error("출근 처리 중 서버 오류");
-	    	    }
-	    	    await Swal.fire({
-	    	      title: "출근이 처리되었습니다",
-	    	      icon: "success",
-	    	    });
-
-	    	    location.reload();
-
-	    	  } catch (error) {
-	    	    console.error('Error:', error);
-	    	    await Swal.fire({
-	    	        icon: "error",
-	    	        title: "근무 일정 먼저 등록 바랍니다",
-	    	      });
-	    	  }
-	    	}
+				  // ✅ 로딩 시작
+				  spinner.style.display = 'flex';
+				
+				  const response = await fetch('/attends/check-in', {
+				    method: 'POST',
+				    headers: {
+				      'Content-Type': 'application/json'
+				    },
+				    body: JSON.stringify({})
+				  });
+				  // ✅ 로딩 종료
+				  spinner.style.display = 'none';
+				
+				  if (!response.ok) {
+				    await Swal.fire({
+				      icon: "error",
+				      title: "출근 처리 중 서버 오류가 <br>발생했습니다",
+				    });
+				    throw new Error("출근 처리 중 서버 오류");
+				  }
+				
+				  await Swal.fire({
+				    title: "출근이 처리되었습니다",
+				    icon: "success",
+				  });
+				
+				  location.reload();
+				
+				} catch (error) {
+				  console.error('Error:', error);
+				  await Swal.fire({
+				    icon: "error",
+				    title: "근무 일정 먼저 등록 바랍니다",
+				  });
+				
+				} 
+		    }
 	    
 	    	async function checkOut() {
 	    	  // 사용자에게 퇴근 확인 알림 표시

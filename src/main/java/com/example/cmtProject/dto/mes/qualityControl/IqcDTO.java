@@ -20,7 +20,9 @@ public class IqcDTO {
     private String qcmName;             // 입고 검사 기준 번호
     private String mtlName;			    // 원자재 코드
     private LocalDateTime iqcStartTime; // 검사 시작 시간
-    private LocalDateTime iqcEndTime;   // 검사 종료 시간    
+    private LocalDateTime iqcEndTime;   // 검사 종료 시간  
+    private String receivedQty;			// 출고 검사 수량
+    private String unitQty;				// 단위 수량
     private Double iqcMeasuredWeightValue;    // 측정값
     private Double iqcMeasuredLengthValue;    // 측정값
     private String qcmUnitWeight;       // 단위 (ex: g)
@@ -37,5 +39,7 @@ public class IqcDTO {
     private String mtlCode;             // 원자재 코드
     private String whsCode;				// 창고 코드
     private Long qcmNo;				// qcmNO
+    private String qcmCode;
+    private String receiptCode;         // 입고 코드
 
 }
