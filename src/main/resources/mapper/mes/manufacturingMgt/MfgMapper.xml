@@ -18,7 +18,6 @@
 		    MP.MP_UPDATED_AT,
 		    MP.MP_START_DATE,
 		    MP.MP_END_DATE,
-	
 		    E.EMP_NAME AS empName
 		FROM MFG_PLANS MP
 		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
@@ -161,7 +160,6 @@
 		    MS.MS_UPDATED_AT,
 		    MS.MS_START_DATE,
 		    MS.MS_END_DATE,
-	
 		    E.EMP_NAME AS empName
 		FROM MFG_SCHEDULES MS
 		LEFT JOIN MFG_PLANS MP ON MS.MP_CODE = MP.MP_CODE
@@ -170,8 +168,58 @@
 		ORDER BY MS.MS_NO DESC	
 	</select>
 	
-<!-- 	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+	<!-- 제조 계획 등록 시 생산 계획 내역 조회 -->
+	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
+		SELECT
+		    MP.MP_CODE AS mpCode,
+		    MP.EMP_ID AS empId,
+		    SO.PDT_CODE AS pdtCode,
+		    P.PDT_NAME AS pdtName
+		FROM MFG_PLANS MP
+		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
+		WHERE MP.MP_STATUS = '등록'
+		  AND NOT EXISTS (
+		      SELECT 1 
+		      FROM MFG_SCHEDULES MS
+		      WHERE MS.MP_CODE = MP.MP_CODE
+		  )
+	</select>
 	
-	</select> -->
+	<!-- 제조 계획 등록 -->
+	<insert id="registMsPlan" parameterType="java.util.List">
+		INSERT INTO MFG_SCHEDULES (
+		    MS_NO,
+		    MS_CODE,
+		    MP_CODE,
+		    EMP_ID,
+		    STAFF_ID,
+		    SO_QTY,
+		    PDT_CODE,
+		    PRC_CODE,
+		    MS_PRIORITY,
+		    MS_CREATED_AT,
+		    MS_UPDATED_AT,
+		    MS_START_TIME,
+		    MS_END_TIME
+		) 
+		<foreach collection="list" item="item" separator="UNION ALL">
+		SELECT
+		    MFG_SCHEDULES_SEQ.NEXTVAL,
+		    #{msCode, jdbcType=VARCHAR},
+		    #{mpCode, jdbcType=VARCHAR}, 
+		    #{empId, jdbcType=VARCHAR},
+		    #{staffId, jdbcType=VARCHAR},
+		    #{soQty, jdbcType=VARCHAR},
+		    #{pdtCode, jdbcType=VARCHAR},
+		    #{prcCode, jdbcType=VARCHAR},
+		    #{msPriority, jdbcType=VARCHAR},
+		    SYSDATE,
+		    NULL,
+		    #{msStartTime, jdbcType=DATE},
+		    #{msEndTime, jdbcType=DATE}
+		FROM DUAL
+		</foreach>		    
+    </insert>
 
 </mapper>

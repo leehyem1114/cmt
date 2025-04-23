@@ -180,21 +180,32 @@ public class MfgController {
 		model.addAttribute("msList", msList);
 		
 		// 생산 계획
-		List<MfgPlanDTO> mpList = mfgService.getMfgPlanTotalList();
+		List<MfgSchedulePlanDTO> mpList = mfgService.getMpList();
 		model.addAttribute("mpList", mpList);
 		
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ : " + mpList);
 		return "mes/manufacturingMgt/mfgSchedule";
 	}
 	
 	// 제품 계획 등록 조회
-	@GetMapping("/mfgScheduleRegi")
-	public String mfgScheduleRegi(Model model) {
+	@GetMapping("/mfgScheduleRegiList")
+	public String mfgScheduleRegiList(Model model) {
 		List<MfgSchedulePlanDTO> mpList = mfgService.getMpList();
 		model.addAttribute("mpList", mpList);
 		
 		System.out.println("mpList 확인 : " + mpList);
 		
-	    return "mes/manufacturingMgt/mfgPlan";
+	    return "mes/manufacturingMgt/mfgSchedule";
+	}
+	
+	// 제조 계획 등록
+	@PostMapping("/mfgScheduleRegi")
+	@ResponseBody
+	public String mfgScheduleRegi(@RequestBody List<MfgScheduleDTO> msList) {
+		
+		mfgService.registMsPlan(msList);
+		
+		return "success";
 	}
 	
 	// 생산 이력 조회
