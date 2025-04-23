@@ -4,7 +4,7 @@
 <mapper namespace="com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper">
 	
 	<!--발주 정보 SELECT-->
-	<select id = "puchasesList" resultType="map" parameterType="map">
+	<select id="puchasesList" resultType="map" parameterType="map">
 	    SELECT
 	        PO_NO,              <!-- 발주 주문번호 -->
 	        PO_CODE,            <!-- 발주 코드 -->
@@ -28,7 +28,6 @@
 	            FROM MATERIAL_RECEIPT m 
 	            WHERE m.PO_CODE = p.PO_CODE
 	        )
-	    <!-- WHERE PO_STATUS = 'PO_ORDERED'-->
 	    ORDER BY PO_DATE DESC
 	</select>
 	
@@ -129,83 +128,86 @@
             MR.UPDATED_DATE,
             PO.PO_DATE,
             PO.CLT_CODE
-<!--            C.CLT_NAME-->
         FROM  
             MATERIAL_RECEIPT MR
         LEFT JOIN
             MATERIALS M ON MR.MTL_CODE = M.MTL_CODE
         LEFT JOIN
             PURCHASES_ORDER PO ON MR.PO_CODE = PO.PO_CODE
-<!--        LEFT JOIN-->
-<!--            CLIENT C ON PO.CLT_CODE = C.CLT_CODE-->
         WHERE 
             MR.RECEIPT_NO = #{receiptNo}
     </select>
     
+    <!-- 마지막 저장된 입고 번호 조회 -->
+    <select id="getLastReceiptNo" resultType="java.lang.Long">
+        SELECT MAX(RECEIPT_NO) 
+        FROM MATERIAL_RECEIPT
+    </select>
+    
     <!-- 검수 정보 조회 -->
     <select id="getInspectionInfo" resultType="map" parameterType="long">
-<!--        SELECT-->
-<!--            MI.INSP_NO,-->
-<!--            MI.RECEIPT_NO,-->
-<!--            MI.INSP_DATE,-->
-<!--            MI.INSP_QTY,-->
-<!--            MI.PASS_QTY,-->
-<!--            MI.FAIL_QTY,-->
-<!--            MI.INSPECTOR,-->
-<!--            MI.INSP_RESULT,-->
-<!--            MI.INSP_COMMENTS,-->
-<!--            MI.CREATED_BY,-->
-<!--            MI.CREATED_DATE-->
-<!--        FROM-->
-<!--            MATERIAL_INSPECTION MI-->
-<!--        WHERE-->
-<!--            MI.RECEIPT_NO = #{receiptNo}-->
+        SELECT
+            MI.INSP_NO,
+            MI.RECEIPT_NO,
+            MI.INSP_DATE,
+            MI.INSP_QTY,
+            MI.PASS_QTY,
+            MI.FAIL_QTY,
+            MI.INSPECTOR,
+            MI.INSP_RESULT,
+            MI.INSP_COMMENTS,
+            MI.CREATED_BY,
+            MI.CREATED_DATE
+        FROM
+            MATERIAL_INSPECTION MI
+        WHERE
+            MI.RECEIPT_NO = #{receiptNo}
     </select>
     
     <!-- LOT 정보 조회 -->
     <select id="getLotInfo" resultType="map" parameterType="long">
-<!--        SELECT-->
-<!--            L.LOT_NO,-->
-<!--            L.LOT_QTY,-->
-<!--            L.LOT_DATE,-->
-<!--            L.LOT_STATUS-->
-<!--        FROM-->
-<!--            MATERIAL_LOT L-->
-<!--        WHERE-->
-<!--            L.RECEIPT_NO = #{receiptNo}-->
+        SELECT
+            L.LOT_NO,
+            L.LOT_QTY,
+            L.LOT_DATE,
+            L.LOT_STATUS
+        FROM
+            MATERIAL_LOT L
+        WHERE
+            L.RECEIPT_NO = #{receiptNo}
     </select>
     
     <!-- 위치 정보 조회 -->
     <select id="getLocationInfo" resultType="map" parameterType="long">
-<!--        SELECT-->
-<!--            W.WAREHOUSE_CODE,-->
-<!--            W.WHS_NAME AS WAREHOUSE_NAME,-->
-<!--            L.LOCATION_CODE,-->
-<!--            L.LOCATION_NAME,-->
-<!--            L.STOCK_QTY-->
-<!--        FROM-->
-<!--            MATERIAL_STOCK_LOCATION L-->
-<!--        JOIN-->
-<!--            WAREHOUSE W ON L.WAREHOUSE_CODE = W.WAREHOUSE_CODE-->
-<!--        WHERE-->
-<!--            L.RECEIPT_NO = #{receiptNo}-->
+        SELECT
+            W.WAREHOUSE_CODE,
+            W.WHS_NAME AS WAREHOUSE_NAME,
+            L.LOCATION_CODE,
+            L.LOCATION_NAME,
+            L.STOCK_QTY
+        FROM
+            MATERIAL_STOCK_LOCATION L
+        JOIN
+            WAREHOUSE W ON L.WAREHOUSE_CODE = W.WAREHOUSE_CODE
+        WHERE
+            L.RECEIPT_NO = #{receiptNo}
     </select>
     
     <!-- 이력 정보 조회 -->
     <select id="getHistoryInfo" resultType="map" parameterType="long">
-<!--        SELECT-->
-<!--            H.HISTORY_NO,-->
-<!--            H.RECEIPT_NO,-->
-<!--            H.ACTION_TYPE,-->
-<!--            H.ACTION_DESCRIPTION,-->
-<!--            H.ACTION_USER,-->
-<!--            H.ACTION_DATE-->
-<!--        FROM-->
-<!--            MATERIAL_RECEIPT_HISTORY H-->
-<!--        WHERE-->
-<!--            H.RECEIPT_NO = #{receiptNo}-->
-<!--        ORDER BY-->
-<!--            H.ACTION_DATE DESC-->
+        SELECT
+            H.HISTORY_NO,
+            H.RECEIPT_NO,
+            H.ACTION_TYPE,
+            H.ACTION_DESCRIPTION,
+            H.ACTION_USER,
+            H.ACTION_DATE
+        FROM
+            MATERIAL_RECEIPT_HISTORY H
+        WHERE
+            H.RECEIPT_NO = #{receiptNo}
+        ORDER BY
+            H.ACTION_DATE DESC
     </select>
     
     <!-- 입고 상태 업데이트 -->
@@ -215,7 +217,7 @@
         SET 
             RECEIPT_STATUS = #{receiptStatus},
             UPDATED_BY = #{updatedBy},
-            UPDATED_DATE = #{updatedDate}
+            UPDATED_DATE = SYSDATE
         WHERE 
             RECEIPT_NO = #{receiptNo}
     </update>
@@ -226,71 +228,10 @@
             MATERIAL_RECEIPT
         SET 
             RECEIPT_STATUS = #{receiptStatus},
-            RECEIPT_DATE = #{receiptDate},
+            RECEIPT_DATE = TO_DATE(#{receiptDate}, 'YYYY-MM-DD'),
             UPDATED_BY = #{updatedBy},
-            UPDATED_DATE = #{updatedDate}
+            UPDATED_DATE = SYSDATE
         WHERE 
             RECEIPT_NO = #{receiptNo}
-    </update>
-    
-    <!-- 입고 이력 정보 삽입 -->
-    <insert id="insertReceiptHistory" parameterType="map">
-<!--        INSERT INTO MATERIAL_RECEIPT_HISTORY (-->
-<!--            HISTORY_NO,-->
-<!--            RECEIPT_NO,-->
-<!--            ACTION_TYPE,-->
-<!--            ACTION_DESCRIPTION,-->
-<!--            ACTION_USER,-->
-<!--            ACTION_DATE-->
-<!--        ) VALUES (-->
-<!--            SEQ_MATERIAL_RECEIPT_HISTORY_NO.NEXTVAL,-->
-<!--            #{receiptNo},-->
-<!--            #{actionType},-->
-<!--            #{actionDescription},-->
-<!--            #{actionUser},-->
-<!--            #{actionDate}-->
-<!--        )-->
-    </insert>
-    
-    <!-- 재고 정보 업데이트 (MERGE 구문 사용) -->
-    <update id="updateMaterialInventory" parameterType="map">
-<!--        MERGE INTO MATERIAL_INVENTORY MI-->
-<!--        USING DUAL-->
-<!--        ON (MI.MTL_CODE = #{mtlCode} AND MI.WAREHOUSE_CODE = #{warehouseCode} AND MI.LOCATION_CODE = #{locationCode})-->
-<!--        WHEN MATCHED THEN-->
-<!--            UPDATE SET-->
-<!--                MI.CURRENT_QTY = MI.CURRENT_QTY + #{stockQty},-->
-<!--                MI.AVAILABLE_QTY = MI.AVAILABLE_QTY + #{stockQty},-->
-<!--                MI.LAST_MOVEMENT_DATE = SYSDATE,-->
-<!--                MI.UPDATED_BY = #{updatedBy},-->
-<!--                MI.UPDATED_DATE = SYSDATE-->
-<!--        WHEN NOT MATCHED THEN-->
-<!--            INSERT (-->
-<!--                INV_NO,-->
-<!--                MTL_CODE,-->
-<!--                WAREHOUSE_CODE,-->
-<!--                LOCATION_CODE,-->
-<!--                CURRENT_QTY,-->
-<!--                ALLOCATED_QTY,-->
-<!--                AVAILABLE_QTY,-->
-<!--                LAST_MOVEMENT_DATE,-->
-<!--                CREATED_BY,-->
-<!--                UPDATED_BY,-->
-<!--                CREATED_DATE,-->
-<!--                UPDATED_DATE-->
-<!--            ) VALUES (-->
-<!--                SEQ_MATERIAL_INVENTORY_NO.NEXTVAL,-->
-<!--                #{mtlCode},-->
-<!--                #{warehouseCode},-->
-<!--                #{locationCode},-->
-<!--                #{stockQty},-->
-<!--                0,-->
-<!--                #{stockQty},-->
-<!--                SYSDATE,-->
-<!--                #{updatedBy},-->
-<!--                #{updatedBy},-->
-<!--                SYSDATE,-->
-<!--                SYSDATE-->
-<!--            )-->
     </update>
 </mapper>

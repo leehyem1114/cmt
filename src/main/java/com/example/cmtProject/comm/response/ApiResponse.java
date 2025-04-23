@@ -38,6 +38,16 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> error(String message, String errorCode) {
         return new ApiResponse<>(false, message, null, errorCode);
     }
+    
+ // 에러 응답 (데이터 포함)
+    public static <T> ApiResponse<T> error(String message, T data) {
+        return new ApiResponse<>(false, message, data, ResponseCode.SERVER_ERROR);
+    }
+
+    // 에러 응답 (데이터 및 코드 포함)
+    public static <T> ApiResponse<T> error(String message, T data, String errorCode) {
+        return new ApiResponse<>(false, message, data, errorCode);
+    }
 }
 	
 

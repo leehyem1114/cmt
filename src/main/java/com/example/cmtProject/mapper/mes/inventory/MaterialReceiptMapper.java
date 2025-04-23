@@ -116,5 +116,4 @@ public interface MaterialReceiptMapper {
 	 * @return 처리 건수
 	 */
 	public int updateMaterialInventory(Map<String, Object> params);
-
-} //MaterialReceiptMapper
+}

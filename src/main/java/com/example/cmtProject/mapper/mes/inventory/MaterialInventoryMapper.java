@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MaterialInventoryMapper {
 	
-	
 	/**
 	 * 원자재 재고조회(Map 반환)
 	 */
@@ -38,5 +37,4 @@ public interface MaterialInventoryMapper {
      * @return 처리 건수
      */
     public int deductInventory(Map<String, Object> params);
-
 }
