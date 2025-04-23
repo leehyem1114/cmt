@@ -86,7 +86,7 @@ public class MfgService {
 		// 원자재 재고 조회
 		List<Map<String, Object>> mtlInventory = mfgMapper.getMaterialInventory();
 		
-		// 수주에 따른 BOM 조회
+		// 수주에 따른 BOM(자재 사용량) 조회
 		List<Map<String, Object>> mfgPlanBomList = mfgMapper.getMfgPlanBomList();
 		
 		// 재고 조회할 상품의 BOM 조회
@@ -155,7 +155,7 @@ public class MfgService {
 		        int currentQty = mtlInventoryMap.get(mtlCode);
 		        
 		        if (currentQty < 1) { // 재고 부족
-		        	isCqe = false;
+		        	isCqe = false; // 생산 불가
 		            break;
 		        }
 		    }
@@ -187,6 +187,11 @@ public class MfgService {
 	// 제조 계획 등록 시 생산 계획 내역 조회
 	public List<MfgSchedulePlanDTO> getMpList() {
 		return mfgMapper.getMpList();
+	}
+
+	// 제조 계획 등록
+	public void registMsPlan(List<MfgScheduleDTO> msList) {
+		mfgMapper.registMsPlan(msList);
 	}
 
 

@@ -43,6 +43,9 @@ public interface MfgMapper {
 	// 제조 계획 등록 시 생산 계획 목록 조회
 	List<MfgSchedulePlanDTO> getMpList();
 
+	// 제조 계획 등록
+	void registMsPlan(List<MfgScheduleDTO> msList);
+
 
 
 }

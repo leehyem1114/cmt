@@ -43,8 +43,8 @@ public class MfgSchedule { // 제조 계획
     @Column(name = "STAFF_ID")
 	private String staffId;  // 담당 직원 사번
 
-    @Column(name = "ALLOCATED_QTY")
-	private String allocatedQty;  // 계획 수량
+    @Column(name = "SO_QTY")
+	private String soQty;  // 계획 수량
 
     @Column(name = "MS_STATUS")
 	private String msStatus;  // 제조 계획 상태

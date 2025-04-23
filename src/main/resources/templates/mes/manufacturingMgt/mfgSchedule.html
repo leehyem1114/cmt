@@ -35,7 +35,11 @@
 	            	<button type="button" class="btn btn-outline-secondary">
 		            	<i class="bi bi-search"></i>
 		            </button>
-	            </div>   	              
+	            </div>   
+	            
+	            <!-- 로그인한 사용자 ID -->
+	            <input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
+	            	              
 	            <div class="text-end mb-2">
 		        	<button type="button" class="btn btn-outline-secondary">저장</button>
 		            <button type="button" class="btn btn-outline-secondary">삭제</button>
@@ -60,7 +64,7 @@
 	            </div>
 	            <div class="modal-footer">
 	            	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-					<button type="submit" class="btn btn-primary">등록</button>
+					<button type="submit" id="msRegiBtn" class="btn btn-primary">등록</button>
 	            </div>
 	        </div> <!-- modal-content -->
 	    </div><!-- modal-dialog modal-lg -->
@@ -72,7 +76,7 @@
 	//================================== 그리드 상단 상품 부분 ================================= 
 	let gridData = /*[[${msList}]]*/ [];
 	
-	let grid = new tui.Grid({
+	let grid1 = new tui.Grid({
         el: document.getElementById('mfgScheduleGrid'), 
 		data: gridData,
         rowHeaders: ['checkbox'], 
@@ -165,7 +169,7 @@
             },
             {
 				header: '계획수량',
-                name: 'allocatedQty',
+                name: 'soQty',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -179,7 +183,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             },
 			{
                 header: '제조 완료 예정일',
@@ -188,7 +197,12 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: {
+					type: 'datePicker',
+					options: {
+						format: 'yyyy-MM-dd'
+					}
+				}
             },
 			{
                 header: '등록일자',
@@ -223,13 +237,16 @@
 		editingEvent: 'dblclick' 
     });
 	
+	let mpList = /*[[${mpList}]]*/ [];
+	console.log("------------------ 제조계획확인", mpList);
+	
 	let grid2 = null;
 	
 	document.getElementById('mfgScheduleModal').addEventListener('shown.bs.modal', () => {
 		if (!grid2) {
 			grid2 = new tui.Grid({
 				el: document.getElementById('mpGrid'), 
-				data : /*[[${mpList}]]*/ [],
+				data : mpList,
 				rowHeaders: ['checkbox'],
 				pageOptions: {
 					useClient: true,
@@ -241,16 +258,50 @@
 						name: 'mpCode',
 						align: "center"
 					},
-					{
-						header: '등록직원명',
-						name: 'empName',
-						align: "center"
-					},
+					/* 
 					{
 						header: '상태',
 						name: 'msStatus', 
 						sortable: true,
 						align: "center"
+					}, */
+					{
+						header: '제품코드',
+						name: 'pdtCode', 
+						sortable: true,
+						align: "center"
+					},					{
+						header: '제품명',
+						name: 'pdtName', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '공정코드',
+						name: 'prcCode', 
+						sortable: true,
+						align: "center",
+						editor: "text"
+					},
+					{
+						header: '공정명',
+						name: 'prcName', 
+						sortable: true,
+						align: "center",
+						editor: "text"
+					},
+					{
+						header: '담당직원사번',
+						name: 'staffId',
+						align: "center",
+						editor: "text"
+					},
+					{
+						header: '계획수량',
+						name: 'soQty', 
+						sortable: true,
+						align: "center",
+						editor: "text"
 					},
 					{
 						header: '우선순위',
@@ -268,24 +319,6 @@
 							}
 						}
 		            },
-					{
-						header: '제품코드',
-						name: 'pdtCode', 
-						sortable: true,
-						align: "center"
-					},
-					{
-						header: '공정코드',
-						name: 'prcCode', 
-						sortable: true,
-						align: "center"
-					},
-					{
-						header: '계획수량',
-						name: 'allocatedQty', 
-						sortable: true,
-						align: "center"
-					},
 					{
 						header: '제조 시작 예정일',
 						name: 'msStartDate', 
@@ -321,6 +354,30 @@
 	    grid.refreshLayout();
 	});*/
 	
+	
+	// 제조 계획 등록 시작 -------------------------------------------
+	$('#msRegiBtn').on('click', function () {
+		const checkedRows = grid2.getCheckedRows(); // 선택된 행 가져오기
+		const data = { ...checkedRows[0] };
+		
+		// 로그인한 유저
+		data.empId = document.getElementById('currentUserId')?.value;
+		
+		$.ajax({
+			url: "/mfg/mfgScheduleRegi",
+			method : "POST",
+			contentType: "application/json",
+			data: JSON.stringify(data), // JSON 문자열로 전송
+			success : function (response){
+				alert(response);
+				location.reload();
+			},
+			error : function (error){
+				console.log(error);
+			}
+		})
+	});
+	// 상품 계획 등록 끝---------------------------------------------------------	
 	
 	</script>
 	
