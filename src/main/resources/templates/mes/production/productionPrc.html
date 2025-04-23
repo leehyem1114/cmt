@@ -279,13 +279,13 @@
 			});//$("#prcBoard").on("click", function(){
 			
 			//======================================= 하단 왼쪽에 트리 버튼 클릭 ================================================
-			
+			/*
 			$("#treeName").on("click", function(this){
 			
 				alert(this);
 				
 			});//$("#treeName").on("click", function(){
-			
+			*/
 			
 			
 		});//$(document).ready(function(){
@@ -391,7 +391,7 @@
 			//자식에 해당하는 태그 생성
 		    let html = '<ul>';
 		    for (let parent of parents) {
-		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')" id="treeName" hidden="${parent}">작업시작</button>`;
+		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')" id="treeName">작업시작</button>`;
 		        html += buildBomTree(parent, bomList); // 상위 parent를 계속 탐색
 		        html += '</li>';
 		    }
