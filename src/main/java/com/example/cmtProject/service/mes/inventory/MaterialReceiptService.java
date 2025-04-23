@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
+import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
+import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +26,18 @@ import lombok.extern.slf4j.Slf4j;
 public class MaterialReceiptService {
 	
 	@Autowired
-	private MaterialReceiptMapper mrm;
+	private MaterialReceiptMapper mRmapper;
+
+	@Autowired
+	private MaterialReceiptHistoryMapper mRhmapper;
+	
+	@Autowired
+	private MaterialInventoryMapper mImapper;
+	
+	@Autowired
+	private MaterialReceiptStockMapper mRsmapper;
+	
+	
 	
 	/**
 	 * 입고 목록 조회
@@ -32,7 +46,7 @@ public class MaterialReceiptService {
 	 * @return 입고 목록
 	 */
 	public List<Map<String, Object>> receiptList(Map<String,Object> map){
-		return mrm.mReceiptList(map);
+		return mRmapper.mReceiptList(map);
 	}
 	
 	/**
@@ -42,7 +56,7 @@ public class MaterialReceiptService {
 	 * @return 발주 목록
 	 */
 	public List<Map<String, Object>> puchasesList(Map<String,Object> map){
-		return mrm.puchasesList(map);
+		return mRmapper.puchasesList(map);
 	}
 
 	/**
@@ -58,7 +72,7 @@ public class MaterialReceiptService {
 	    try {
 	        // 미입고 상태인 발주 목록 조회
 	        Map<String, Object> findMap = new HashMap<>();
-	        List<Map<String, Object>> purchaseOrders = mrm.puchasesList(findMap);
+	        List<Map<String, Object>> purchaseOrders = mRmapper.puchasesList(findMap);
 	        
 	        log.info("조회된 발주 목록 수: {}", purchaseOrders.size());
 	        
@@ -88,7 +102,7 @@ public class MaterialReceiptService {
 	                log.info("입고 정보 생성: {}", receiptMap);
 	                
 	                // 입고 정보 저장
-	                int result = mrm.insertMaterialReceipt(receiptMap);
+	                int result = mRmapper.insertMaterialReceipt(receiptMap);
 	                log.info("입고 정보 저장 결과: {}", result);
 	                
 	                if (result > 0) {
@@ -122,7 +136,7 @@ public class MaterialReceiptService {
 	    
 	    try {
 	        // 기본 입고 정보 조회
-	        Map<String, Object> receiptDetail = mrm.getReceiptDetail(receiptNo);
+	        Map<String, Object> receiptDetail = mRmapper.getReceiptDetail(receiptNo);
 	        
 	        if (receiptDetail == null) {
 	            resultMap.put("success", false);
@@ -134,22 +148,22 @@ public class MaterialReceiptService {
 	        resultMap.putAll(receiptDetail);
 	        
 	        // 검수 정보 조회 (있는 경우)
-	        Map<String, Object> inspectionData = mrm.getInspectionInfo(receiptNo);
+	        Map<String, Object> inspectionData = mRmapper.getInspectionInfo(receiptNo);
 	        resultMap.put("hasInspection", inspectionData != null);
 	        if (inspectionData != null) {
 	            resultMap.put("inspectionData", inspectionData);
 	        }
 	        
 	        // LOT 정보 조회
-	        List<Map<String, Object>> lotData = mrm.getLotInfo(receiptNo);
+	        List<Map<String, Object>> lotData = mRmapper.getLotInfo(receiptNo);
 	        resultMap.put("lotData", lotData != null ? lotData : new ArrayList<>());
 	        
 	        // 위치 정보 조회
-	        List<Map<String, Object>> locationData = mrm.getLocationInfo(receiptNo);
+	        List<Map<String, Object>> locationData = mRmapper.getLocationInfo(receiptNo);
 	        resultMap.put("locationData", locationData != null ? locationData : new ArrayList<>());
 	        
 	        // 이력 정보 조회
-	        List<Map<String, Object>> historyData = mrm.getHistoryInfo(receiptNo);
+	        List<Map<String, Object>> historyData = mRmapper.getHistoryInfo(receiptNo);
 	        resultMap.put("historyData", historyData != null ? historyData : new ArrayList<>());
 	        
 	        resultMap.put("success", true);
@@ -196,7 +210,7 @@ public class MaterialReceiptService {
 	                updateMap.put("updatedBy", item.get("updatedBy"));
 	                updateMap.put("updatedDate", nowStr);
 	                
-	                int result = mrm.updateReceiptStatus(updateMap);
+	                int result = mRmapper.updateReceiptStatus(updateMap);
 	                
 	                if (result > 0) {
 	                    updateCount++;
@@ -209,10 +223,10 @@ public class MaterialReceiptService {
 	                    historyMap.put("actionUser", item.get("updatedBy"));
 	                    historyMap.put("actionDate", nowStr);
 	                    
-	                    mrm.insertReceiptHistory(historyMap);
+	                    mRmapper.insertReceiptHistory(historyMap);
 	                    
 	                    // 재고 정보 업데이트 - 실제 입고 수량만큼 재고 증가
-	                    Map<String, Object> receiptDetail = mrm.getReceiptDetail((Long)item.get("receiptNo"));
+	                    Map<String, Object> receiptDetail = mRmapper.getReceiptDetail((Long)item.get("receiptNo"));
 	                    if (receiptDetail != null) {
 	                        Map<String, Object> stockMap = new HashMap<>();
 	                        stockMap.put("mtlCode", receiptDetail.get("MTL_CODE"));
@@ -222,7 +236,7 @@ public class MaterialReceiptService {
 	                        stockMap.put("updatedBy", item.get("updatedBy"));
 	                        
 	                        // 재고 업데이트 (있으면 증가, 없으면 생성)
-	                        mrm.updateMaterialInventory(stockMap);
+	                        mRmapper.updateMaterialInventory(stockMap);
 	                    }
 	                }
 	            } catch (Exception e) {
@@ -286,7 +300,7 @@ public class MaterialReceiptService {
 	        updateMap.put("updatedBy", params.get("updatedBy"));
 	        updateMap.put("updatedDate", todayStr);
 	        
-	        int result = mrm.updateReceiptStatusAndDate(updateMap);
+	        int result = mRmapper.updateReceiptStatusAndDate(updateMap);
 	        
 	        if (result > 0) {
 	            // 이력 기록
@@ -297,7 +311,7 @@ public class MaterialReceiptService {
 	            historyMap.put("actionUser", params.get("updatedBy"));
 	            historyMap.put("actionDate", todayStr);
 	            
-	            mrm.insertReceiptHistory(historyMap);
+	            mRmapper.insertReceiptHistory(historyMap);
 	            
 	            resultMap.put("success", true);
 	            resultMap.put("message", "검수 등록이 완료되었습니다.");

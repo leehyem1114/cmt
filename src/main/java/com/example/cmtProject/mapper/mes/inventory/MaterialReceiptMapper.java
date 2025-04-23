@@ -31,12 +31,19 @@ public interface MaterialReceiptMapper {
 	public List<Map<String, Object>> mReceiptList(Map<String,Object> map);
 	
 	/**
-	 * 입고정보 삽입
+	 * 입고정보 저장
 	 * 
 	 * @param params 입고 정보
 	 * @return 처리 건수
 	 */
 	public int insertMaterialReceipt(Map<String, Object> params);
+	
+    /**
+     * 마지막 저장된 입고 번호 조회
+     * 
+     * @return 입고 번호
+     */
+    public Long getLastReceiptNo();
 	
 	/**
 	 * 입고 상세 정보 조회
