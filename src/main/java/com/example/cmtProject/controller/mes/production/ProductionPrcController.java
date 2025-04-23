@@ -393,7 +393,7 @@ public class ProductionPrcController {
 		
 		//LOT테이블에서 전체 PATH가져오기, woCode(작업지시코드)는 가져간다
 		List<LotStructurePathDTO> lspd = lotService.selectStructurePathAll(woCode, pdtCode);
-		System.out.println("LotStructurePathDTO:" + lspd);
+		//System.out.println("LotStructurePathDTO:" + lspd);
 		return lspd;
 	}
 }
