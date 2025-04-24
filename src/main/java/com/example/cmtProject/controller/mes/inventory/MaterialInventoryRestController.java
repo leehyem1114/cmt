@@ -13,42 +13,42 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.cmtProject.comm.response.ApiResponse;
+import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.service.mes.inventory.MaterialInventoryService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/materialInventory")
+@RequestMapping(PathConstants.API_MATERIALINVENTORY_BASE)
 @Slf4j
- 
 public class MaterialInventoryRestController {
-	
-	@Autowired
-	private MaterialInventoryService mis;
-	
+    
+    @Autowired
+    private MaterialInventoryService mis;
+    
     /**
      * 원자재 재고 목록 조회 API
      * 
      * @param keyword 검색 키워드 (선택사항)
      * @return 재고 목록 데이터
      */
-	@GetMapping("/list")
-	public ApiResponse<List<Map<String, Object>>> getmInventory(
-			@RequestParam(name = "keyword", required = false) String keyword) {
-		
-		Map<String, Object> findMap = new HashMap<>();
-	     // 사용자가 입력한 검색어(keyword)가 null이 아니고, 공백만으로 구성되어 있지 않은 경우에만 실행
+    @GetMapping("/list")
+    public ApiResponse<List<Map<String, Object>>> getMaterialInventory(
+            @RequestParam(name = "keyword", required = false) String keyword) {
+        
+        Map<String, Object> findMap = new HashMap<>();
+        // 사용자가 입력한 검색어(keyword)가 null이 아니고, 공백만으로 구성되어 있지 않은 경우에만 실행
         if (keyword != null && !keyword.trim().isEmpty()) {
-        	// 검색어를 Map에 추가 (이후 검색 조건으로 사용하기 위함)
+            // 검색어를 Map에 추가 (이후 검색 조건으로 사용하기 위함)
             findMap.put("keyword", keyword);
         }
         log.info("재고 목록 조회 요청. 검색어: {}", keyword);
         List<Map<String, Object>> mInventory = mis.inventoryList(findMap);
         log.info("재고 목록 조회 결과: {}건", mInventory.size());
-		
-		return ApiResponse.success(mInventory);
-	}
-	
+        
+        return ApiResponse.success(mInventory);
+    }
+    
     /**
      * 원자재 재고 차감 API (FIFO 적용)
      * 공정에서 사용된 자재의 재고를 FIFO 방식으로 차감합니다.
@@ -73,7 +73,7 @@ public class MaterialInventoryRestController {
     
     /**
      * 재고 정보 저장 API
-     * 재고 정보를 저장합니다. 가용수량은 서버에서 자동 계산됩니다.
+     * 재고 정보를 저장합니다. 가용수량은 트리거에서 자동 계산됩니다.
      * 
      * @param inventoryList 저장할 재고 정보 목록
      * @return 처리 결과
