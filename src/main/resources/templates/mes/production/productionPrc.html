@@ -178,7 +178,6 @@
 					type: 'GET',
 					data: {data: woCode},
 					success : function(response){
-						console.log(response);
 						
 						pdtCode = response[0].PDT_CODE;
 						
@@ -186,7 +185,7 @@
 						$("#txtPdtName").val(response[0].PDT_NAME);
 						$("#txtWoQty").val(response[0].WO_QTY);
 						woQty = response[0].WO_QTY;
-						console.log(woQty);
+						
 						$("#txtEmpName").val(response[0].EMP_NAME);
 						$("#txtWoStartDate").val(response[0].WO_START_DATE);
 					},
@@ -272,7 +271,6 @@
 						'pdtCode' : selectedPdtCode
 						},
 					success : function(response){
-							console.log(response);
 							productGrid.resetData(response);
 							
 					},
@@ -294,7 +292,6 @@
 						'woCode' : woCode
 						},
 					success : function(response){
-							console.log(response);
 							prcGrid.resetData(response);
 					},
 					error : function(error){
@@ -391,7 +388,7 @@
 				{
 	                header: '작업 경로',
 	                name: 'PATH',
-					width: 230,
+					width: 400,
 					sortable: true, 
 					filter: 'text',
 	            },
@@ -417,7 +414,7 @@
 		    // root를 자식으로 포함하는 모든 부모 찾기
 		    const parents = bomList.filter(rel => rel.child === root).map(rel => rel.parent);
 		    if (parents.length === 0) return '';
-
+			
 		    // 자식에 해당하는 태그 생성
 		    let html = '<ul>';
 		    for (let parent of parents) {
@@ -641,19 +638,26 @@
 			if (e.target && e.target.classList.contains('action-btn')) {
 			const rowKey = e.target.getAttribute('data-row-key');
 			const rowData = prcGrid.getRow(rowKey);
-		    console.log(rowDate);
+			console.log("--------- rowData -----------------------")
+		    console.log(rowData);
 			
 		    // rowData에서 필요한 값 추출
+			// LotOriginDTO에 있는 변수
 		    let lotNo = rowData.LOT_NO;
-			let presentQty = rowData.BOM_QTY;
-			let woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
-			let pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정
+			let bomQty = rowData.BOM_QTY;
+			let childPdtCode = rowData.CHILD_PDT_CODE
+			let parentPdtCode = rowData.PARENT_PDT_CODE;
+			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
+			
+			// LotOriginDTO에 없기 때문에 따로 넘긴다
+			pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정 - 완제품
 			 
+			console.log("lotNo:" + lotNo + " ,bomQty:" + bomQty + " ,childPdtCode:" + childPdtCode + " ,woCode:" + woCode + " ,pdtCode:" + pdtCode);
 			// 필요시 grid.reloadData(), grid.setValue(), grid.removeRow() 등 추가
-					
+			
 			//-------------- Swal.fire 시작 ----------------------
 			Swal.fire({
-				title: `생상된 자재의 수량은 ${presentQty}개 입니다.`,
+				title: `생상된 자재의 수량은 ${bomQty}개 입니다.`,
 			   	text: "작업을 완료 합니까?",
 			  	icon: 'warning',
 			  	showCancelButton: true,
@@ -662,13 +666,56 @@
 			}).then((result) => {
 			if (result.isConfirmed) {
 				
+				//---------------------------------
+				
+				//const input = document.getElementById('targetText').value.trim();
+					let input = parentPdtCode;
+					//let input = "WIP001";
+					input = input.trim(); // 입력된 문자열 공백 제거
+
+					const liList = document.querySelectorAll('#bom-tree li');
+
+					liList.forEach(li => {
+					  li.childNodes.forEach(node => {
+						//문자열 내 모든 공백 제거 (\s는 공백 문자 전체를 의미, g는 전체 대상)
+					    if (
+					      node.nodeType === Node.TEXT_NODE &&node.nodeValue.replace(/\s/g, '').includes(input)
+					    ) {
+					      // 이미 줄 그은 상태면 중복 적용 방지
+					      //if (li.innerHTML.includes('<span') && li.innerHTML.includes(input)) return;
+
+					      alert("안");
+
+					      const before = node.nodeValue.split(input)[0];
+					      const after = node.nodeValue.split(input)[1];
+					      const span = document.createElement('span');
+					      span.style.textDecoration = 'line-through';
+					      span.textContent = input;
+
+					      const beforeText = document.createTextNode(before);
+					      const afterText = document.createTextNode(after);
+
+					      li.insertBefore(beforeText, node);
+					      li.insertBefore(span, node);
+					      li.insertBefore(afterText, node);
+					      li.removeChild(node);
+					    }
+					  });
+					});
+
+				
+				
+				//---------------------------------
+				
+				/*
 				// Ajax 요청
 			    $.ajax({
 			    	url: '/production/jobCmpl',  // 예시 URL, 실제 컨트롤러에 맞게 수정
 			      	method: 'POST',
-			      	data: { lotNo: lotNo, presentQty: presentQty },  // 서버에 보낼 데이터
+			      	data: { lotNo: lotNo, bomQty: bomQty },  // 서버에 보낼 데이터
 			      	success: function(response) {
 							console.log(response);
+							
 						}, 
 					error: function(xhr, status, error) {
 				        Swal.fire({
@@ -679,7 +726,7 @@
 			        console.error('에러:', error);
 			      }// error: function(xhr, status, error) {
 			    });//$.ajax({
-					
+					*/
 			}//if (result.isConfirmed) {
 			});//}).then((result) => {
 				
