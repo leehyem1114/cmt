@@ -3,7 +3,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgMapper">
+<mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper">
 
 	<!-- 전체 생산 계획 조회 -->
 	<select id="getMfgPlanTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
@@ -22,6 +22,7 @@
 		FROM MFG_PLANS MP
 		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
 		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
+		WHERE MP.MP_VISIBLE = 'Y'
 		ORDER BY MP.MP_NO DESC
 	</select>
 	
@@ -124,102 +125,45 @@
 	</insert>
 	
 	<!-- 생산 계획 수정 -->
-	<update id="updateMpPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
-		UPDATE MFG_PLANS
-		SET
-	        MP_PRIORITY   = #{mpPriority, jdbcType=VARCHAR},
-	        MP_STATUS     = #{mpStatus, jdbcType=VARCHAR},
-	        MP_START_DATE = #{mpStartDate, jdbcType=DATE},
-	        MP_END_DATE   = #{mpEndDate, jdbcType=DATE},
-	        MP_UPDATED_AT = SYSDATE
-	    WHERE MP_CODE = #{mpCode, jdbcType=VARCHAR}
+	<update id="updateMpPlan" parameterType="java.util.List">
+    	<foreach collection="list" item="item" separator=";">
+			UPDATE MFG_PLANS
+			SET
+		        MP_PRIORITY   = #{item.mpPriority, jdbcType=VARCHAR},
+		        MP_STATUS     = #{item.mpStatus, jdbcType=VARCHAR},
+		        MP_START_DATE = #{item.mpStartDate, jdbcType=DATE},
+		        MP_END_DATE   = #{item.mpEndDate, jdbcType=DATE},
+		        MP_UPDATED_AT = SYSDATE
+		    WHERE MP_CODE = #{item.mpCode, jdbcType=VARCHAR}
+		</foreach>		    
 	</update>
 	
-	<!-- 생산 계획 삭제 -->
-	<delete id="deleteMpPlan" parameterType="list">
-		DELETE FROM MFG_PLANS
-		WHERE MP_CODE IN
-	    <foreach collection="list" item="code" open="(" separator="," close=")">
-	        #{code}
+	<!-- 생산 계획 삭제 (숨김 처리) -->
+	<update id="isVisiableToFalse" parameterType="java.util.List">
+	  UPDATE MFG_PLANS
+	  SET MP_VISIBLE = 'N'
+	  WHERE MP_NO IN (
+	    <foreach item="mpNo" collection="list" separator=",">
+	      #{mpNo}
 	    </foreach>
-	</delete>
+	  )
+	</update>
+	
+	<!-- 엑셀 데이터 업데이트 -->
+	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		UPDATE MFG_PLANS
+	    SET
+		    MP_CODE 	   			   = #{mpCode, jdbcType=VARCHAR},
+			SO_CODE 	   			   = #{soCode, jdbcType=VARCHAR},
+			EMP_ID 	   			       = #{empId, jdbcType=VARCHAR},
+			<!-- 			, MP_STATUS -->
+			MP_PRIORITY 	   		   = #{mpPriority, jdbcType=VARCHAR},
+			MP_CREATED_AT 	   		   = #{mpCreatedAt, jdbcType=DATE},
+			MP_UPDATED_AT 	   		   = #{mpUpdatedAt, jdbcType=DATE},
+			MP_START_DATE 	   		   = #{mpStartDate, jdbcType=DATE},
+		    MP_END_DATE 	   		   = #{mpEndDate, jdbcType=DATE}
+	    WHERE MP_NO = #{mpNo}
+	</update>	
 
-	<!-- 전체 제조 계획 조회 -->
-	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
-		SELECT
-			MS.MS_NO,
-			MS.MS_CODE,
-		    MP.MP_CODE,
-		    MS.EMP_ID,
-		    MS.MS_STATUS,
-		    MS.MS_PRIORITY,
-		    MS.PDT_CODE,
-		    MS.PRC_CODE,
-		    MS.ALLOCATED_QTY,
-		    MS.MS_CREATED_AT,
-		    MS.MS_UPDATED_AT,
-		    MS.MS_START_DATE,
-		    MS.MS_END_DATE,
-		    E.EMP_NAME AS empName
-		FROM MFG_SCHEDULES MS
-		LEFT JOIN MFG_PLANS MP ON MS.MP_CODE = MP.MP_CODE
-		LEFT JOIN MATERIAL_INVENTORY MI ON MS.ALLOCATED_QTY = MI.ALLOCATED_QTY											 
-		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
-		ORDER BY MS.MS_NO DESC	
-	</select>
-	
-	<!-- 제조 계획 등록 시 생산 계획 내역 조회 -->
-	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
-		SELECT
-		    MP.MP_CODE AS mpCode,
-		    MP.EMP_ID AS empId,
-		    SO.PDT_CODE AS pdtCode,
-		    P.PDT_NAME AS pdtName
-		FROM MFG_PLANS MP
-		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
-		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
-		WHERE MP.MP_STATUS = '등록'
-		  AND NOT EXISTS (
-		      SELECT 1 
-		      FROM MFG_SCHEDULES MS
-		      WHERE MS.MP_CODE = MP.MP_CODE
-		  )
-	</select>
-	
-	<!-- 제조 계획 등록 -->
-	<insert id="registMsPlan" parameterType="java.util.List">
-		INSERT INTO MFG_SCHEDULES (
-		    MS_NO,
-		    MS_CODE,
-		    MP_CODE,
-		    EMP_ID,
-		    STAFF_ID,
-		    SO_QTY,
-		    PDT_CODE,
-		    PRC_CODE,
-		    MS_PRIORITY,
-		    MS_CREATED_AT,
-		    MS_UPDATED_AT,
-		    MS_START_TIME,
-		    MS_END_TIME
-		) 
-		<foreach collection="list" item="item" separator="UNION ALL">
-		SELECT
-		    MFG_SCHEDULES_SEQ.NEXTVAL,
-		    #{msCode, jdbcType=VARCHAR},
-		    #{mpCode, jdbcType=VARCHAR}, 
-		    #{empId, jdbcType=VARCHAR},
-		    #{staffId, jdbcType=VARCHAR},
-		    #{soQty, jdbcType=VARCHAR},
-		    #{pdtCode, jdbcType=VARCHAR},
-		    #{prcCode, jdbcType=VARCHAR},
-		    #{msPriority, jdbcType=VARCHAR},
-		    SYSDATE,
-		    NULL,
-		    #{msStartTime, jdbcType=DATE},
-		    #{msEndTime, jdbcType=DATE}
-		FROM DUAL
-		</foreach>		    
-    </insert>
 
 </mapper>

@@ -4,31 +4,153 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 <head>
-<meta charset="UTF-8">
+    <!-- 기본 메타 정보 -->
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- xlsx.js (필수 의존성) -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>-->
+	<!-- 최신 xlsx 스크립트 CDN -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 	<title>CMT</title>
+<style>
+    /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
+    .top-input-group {
+        display: flex; /* 플렉스박스로 배치 */
+        align-items: flex-start; /* 위쪽 정렬 */
+        justify-content: space-between; /* 좌우 여백 최대 */
+        flex-wrap: wrap; /* 요소가 넘칠 경우 줄바꿈 */
+        gap: 10px; /* 요소 간 간격 */
+        margin-bottom: 15px; /* 하단 여백 */
+    }
+
+    /* 검색 및 파일 관련 그룹: 가로 배치, 줄바꿈 가능 */
+    .search-file-group {
+        display: flex;
+        align-items: center; /* 수직 정렬 */
+        gap: 8px; /* 요소 간 여백 */
+        flex-wrap: wrap; /* 줄바꿈 허용 */
+        flex: 1 1 auto; /* 공간을 적절히 차지하도록 설정 */
+        min-width: 500px; /* 최소 너비 확보 (줄바꿈 방지) */
+    }
+
+    /* CRUD 버튼 그룹: 버튼을 가로로 배치, 줄바꿈 허용 */
+    .button-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* 일반 입력창 스타일: 최대 너비 설정, 반응형 대응 */
+    .form-control {
+        max-width: 200px; /* 최대 너비 제한 */
+        flex: 0 1 auto; /* 내용에 따라 너비 조절 */
+    }
+
+    /* 파일 업로드 입력창 스타일 */
+    .file-input {
+        max-width: 280px;
+        flex: 0 1 auto;
+    }
+
+    /* 엑셀 다운로드 버튼 스타일 */
+    .btn-excel {
+        background-color: #1D6F42; /* 녹색 배경 */
+        color: white; /* 흰색 텍스트 */
+        white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+    }
+
+    /* 엑셀 버튼 호버 시 스타일 */
+    .btn-excel:hover {
+        background-color: #15562F; /* 더 어두운 녹색 */
+        color: white;
+    }
+
+    /* 테이블 전체 스타일 */
+    .table {
+        table-layout: fixed; /* 열 너비 고정 */
+        width: 100%; /* 부모 너비에 맞춤 */
+    }
+
+    /* 테이블 스크롤 영역 */
+    .table-responsive {
+        height: 530px; /* 높이 고정 */
+        overflow: auto; /* 스크롤 활성화 */
+        -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */
+    }
+
+    /* 첫 번째 열(선택 체크박스)의 너비와 정렬 */
+    th:first-child,
+    td:first-child {
+        width: 40px;
+        text-align: center;
+    }
+
+    /* TOAST UI Grid의 비활성 셀 스타일 */
+    .tui-grid-cell-disabled {
+        background-color: #fff !important;
+        color: #212529 !important;
+    }
+
+    /* 반응형: 화면이 좁을 때의 처리 */
+    @media (max-width: 768px) {
+        .top-input-group {
+            flex-direction: column; /* 세로로 배치 */
+            align-items: flex-start; /* 왼쪽 정렬 */
+        }
+
+        .search-file-group {
+            width: 100%; /* 전체 너비 사용 */
+            margin-bottom: 10px; /* 하단 여백 */
+        }
+    }
+</style>			
 </head>
 <body>
 	<div layout:fragment="content">
 	<h4>생산 이력</h4>
 	
-	<div class="card">
-		<div class="card-body">
-	    	<div class="row g-3 mb-4">
-	            <div class="col-md-3">	
-	                <input type="text" class="form-control" placeholder="생산계획번호를 입력해주세요.">
-	            </div>
-	            <div class="col-md-2 d-flex align-items-end">
-	            	<button type="button" class="btn btn-outline-secondary">
-		            	<i class="bi bi-search"></i>
-		            </button>
-	            </div>
-	    	</div>
-	    </div>
-	    	
-		<div id="mfgHistoryGrid"></div>
-	</div>
-	
-		<!--  모달 창 시작 -->
+	<!-- 생산 이력 정보 섹션 -->
+		<section class="section">
+			<div class="row" id="basic-table">
+				<!-- 생산 이력 정보 그리드 카드 -->
+				<div class="col-12 col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="card-title">생산 이력</h4>
+
+							<!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
+							<div class="top-input-group">
+								<!-- 왼쪽: 검색 및 엑셀 관련 -->
+								<div class="search-file-group">
+									<input type="text" class="form-control" id="searchInput"
+										placeholder="생산 계획 검색">
+									<button type="button" id="mpSearchBtn"
+										class="btn btn-outline-primary">
+										<i class="bi bi-search"></i>
+									</button>
+
+									<!-- 엑셀 파일 버튼 -->
+									<button type="button" id="ExcelDownBtn" class="btn btn-excel">
+										<i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
+									</button>
+								</div>
+
+							</div>
+						</div>
+						<div class="card-body">
+							<div class="table-responsive">
+								<!-- 생산 이력 그리드 -->
+								<div id="mfgHistoryGrid"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+
+	<!--  모달 창 시작 -->
 	<div class="modal fade" id="mfgHistoriesModal" tabindex="-1" aria-labelledby="mfgHistoriesModal" aria-hidden="true">
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">

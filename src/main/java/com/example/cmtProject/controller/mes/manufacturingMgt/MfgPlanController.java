@@ -1,14 +1,20 @@
 package com.example.cmtProject.controller.mes.manufacturingMgt;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,20 +24,22 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO;
-import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
-import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
-import com.example.cmtProject.repository.mes.manufacturingMgt.MfgPlansRepository;
+import com.example.cmtProject.repository.mes.manufacturingMgt.MfgPlanRepository;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
-import com.example.cmtProject.service.mes.manufacturingMgt.MfgService;
+import com.example.cmtProject.service.mes.manufacturingMgt.MfgPlanService;
 import com.example.cmtProject.service.mes.standardInfoMgt.ProductService;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
-@RequestMapping("/mfg")
-public class MfgController {
+@RequestMapping("/mp")
+@Slf4j
+public class MfgPlanController {
 	
 	@Autowired
-	private MfgService mfgService;
+	private MfgPlanService mfgPlanService;
 	
 	@Autowired
 	private SalesOrderService salesOrderService;
@@ -43,7 +51,7 @@ public class MfgController {
 	private ProductService productService;
 	
 	@Autowired
-	private MfgPlansRepository mfgPlansRepository;
+	private MfgPlanRepository mfgPlanRepository;
 	
 	// 생산 계획 조회
 	@GetMapping("/mfg-plan")
@@ -54,7 +62,7 @@ public class MfgController {
 //	    String currentUserId = auth.getName();
 
 		// 생산 계획
-		List<MfgPlanDTO> mpList = mfgService.getMfgPlanTotalList();
+		List<MfgPlanDTO> mpList = mfgPlanService.getMfgPlanTotalList();
 		
 //		  for (MfgPlanDTO dto : mpList) {
 //		        dto.setEmpId(currentUserId); // empId 필드에 현재 사용자 ID 설정
@@ -64,7 +72,7 @@ public class MfgController {
 		
 		
 		// 수주
-		List<MfgPlanSalesOrderDTO> soList = mfgService.getSoList();
+		List<MfgPlanSalesOrderDTO> soList = mfgPlanService.getSoList();
 		model.addAttribute("soList", soList);
 		
 		// 제품
@@ -81,7 +89,7 @@ public class MfgController {
 	// 생산 계획 등록 조회
 	@GetMapping("/mfgPlanRegiList")
 	public String mfgPlanRegiList(Model model) {
-		List<MfgPlanSalesOrderDTO> soList = mfgService.getSoList();
+		List<MfgPlanSalesOrderDTO> soList = mfgPlanService.getSoList();
 		model.addAttribute("soList", soList);
 		
 		System.out.println("soList 확인 : " + soList);
@@ -93,7 +101,7 @@ public class MfgController {
 	@GetMapping("/selectCurrentQty")
 	@ResponseBody
 	public boolean selectCurrentQty(@RequestParam("pdtCode") String pdtCode,@RequestParam("soQty") Long soQty) {
-		boolean isAvailable = mfgService.isCurrentQtyEnough(pdtCode, soQty);
+		boolean isAvailable = mfgPlanService.isCurrentQtyEnough(pdtCode, soQty);
 		return isAvailable;
 	}
 	
@@ -112,7 +120,7 @@ public class MfgController {
 	    // empId: 사원은 본인 ID, 관리자는 null (전체 조회)
 	    String empIdForQuery = isAdmin ? null : currentUserId;
 	
-		mfgService.registMpPlan(mfgPlanDTO);
+	    mfgPlanService.registMpPlan(mfgPlanDTO);
 		
 		return "success";
 	}
@@ -128,7 +136,7 @@ public class MfgController {
 	    String mpToday = today.format(todayFormat);
 
 	    // 해당 날짜의 MP_CODE 등록 수 조회
-	    int count = mfgPlansRepository.getNextMpCode(data);
+	    int count = mfgPlanRepository.getNextMpCode(data);
 
 	    String mpCode = "";
 	    data = data.replace("-", "");
@@ -153,60 +161,58 @@ public class MfgController {
 	// 생산 계획 수정
 	@PostMapping("/mfgPlanUpdate")
 	@ResponseBody
-	public String updateMpPlan(@RequestBody MfgPlanDTO mfgPlanDTO) {
-		mfgService.updateMpPlan(mfgPlanDTO);
+	public ResponseEntity<String> updateBatch(@RequestBody List<MfgPlanDTO> mpList) {
+		mfgPlanService.updateMpPlan(mpList);
 		
-		return "success";
+	    return ResponseEntity.ok("success");
 	}
 	
-	// 생산 계획 삭제
-	@PostMapping("/mfgPlanDelete")
+	// 생산 계획 삭제 (숨김 처리)
+    @PostMapping("/mfgPlanDelete")
+    @ResponseBody
+    public ResponseEntity<String> deleteMpPlan(@RequestBody Map<String, List<Long>> data) {
+        List<Long> mpNos = data.get("mpNos");
+
+        // 삭제 로직 실행
+        mfgPlanService.isVisiableToFalse(mpNos);
+
+        return ResponseEntity.ok("success");
+    }
+	
+	
+	//----------------------------------------------------------------------------------------------------	
+	
+	
+	// 엑셀 파일 다운로드
+	@GetMapping("/excel-file-down")
+	public void downloadExcel(HttpServletResponse response) throws IOException {
+		String fileName = "mp_form.xls";
+		String filePath = "/excel/" + fileName;
+
+		// /static/ 디렉토리 기준으로 파일을 읽어옴
+		log.info("filePath:" + filePath);
+		InputStream inputStream = new ClassPathResource(filePath).getInputStream();
+
+		log.info("inputStream:" + inputStream);
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+		// 파일 내용을 응답 스트림에 복사
+		StreamUtils.copy(inputStream, response.getOutputStream());
+		response.flushBuffer();
+	}
+
+	// 엑셀 파일 적용
+	@PostMapping("/SaveExcelData")
 	@ResponseBody
-	public String deleteMpPlan(@RequestBody List<String> mpCodes) {
-	    try {
-	    	mfgService.deleteMpPlan(mpCodes);
-	    	return "success";
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	    	return "fail";
-	    }
+	public ResponseEntity<?> saveExcelData(@RequestBody List<MfgPlanDTO> list) {
+
+		for (MfgPlanDTO dto : list) {
+			mfgPlanService.saveExcelData(dto); // insert or update
+		}
+		return ResponseEntity.ok("엑셀 저장 완료");
 	}
 	
-	// 제조 계획 조회
-	@GetMapping("/mfg-schedule")
-	public String mfgSchedule(Model model) {
-		// 제조 계획
-		List<MfgScheduleDTO> msList = mfgService.getMfgScheduleTotalList();
-		model.addAttribute("msList", msList);
-		
-		// 생산 계획
-		List<MfgSchedulePlanDTO> mpList = mfgService.getMpList();
-		model.addAttribute("mpList", mpList);
-		
-		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ : " + mpList);
-		return "mes/manufacturingMgt/mfgSchedule";
-	}
-	
-	// 제품 계획 등록 조회
-	@GetMapping("/mfgScheduleRegiList")
-	public String mfgScheduleRegiList(Model model) {
-		List<MfgSchedulePlanDTO> mpList = mfgService.getMpList();
-		model.addAttribute("mpList", mpList);
-		
-		System.out.println("mpList 확인 : " + mpList);
-		
-	    return "mes/manufacturingMgt/mfgSchedule";
-	}
-	
-	// 제조 계획 등록
-	@PostMapping("/mfgScheduleRegi")
-	@ResponseBody
-	public String mfgScheduleRegi(@RequestBody List<MfgScheduleDTO> msList) {
-		
-		mfgService.registMsPlan(msList);
-		
-		return "success";
-	}
 	
 	// 생산 이력 조회
 	@GetMapping("/mfg-history")

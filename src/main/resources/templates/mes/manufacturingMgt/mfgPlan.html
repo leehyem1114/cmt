@@ -4,49 +4,164 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 <head>
-<meta charset="UTF-8">
+    <!-- 기본 메타 정보 -->
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- xlsx.js (필수 의존성) -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>-->
+	<!-- 최신 xlsx 스크립트 CDN -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 	<title>CMT</title>
+<style>
+    /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
+    .top-input-group {
+        display: flex; /* 플렉스박스로 배치 */
+        align-items: flex-start; /* 위쪽 정렬 */
+        justify-content: space-between; /* 좌우 여백 최대 */
+        flex-wrap: wrap; /* 요소가 넘칠 경우 줄바꿈 */
+        gap: 10px; /* 요소 간 간격 */
+        margin-bottom: 15px; /* 하단 여백 */
+    }
+
+    /* 검색 및 파일 관련 그룹: 가로 배치, 줄바꿈 가능 */
+    .search-file-group {
+        display: flex;
+        align-items: center; /* 수직 정렬 */
+        gap: 8px; /* 요소 간 여백 */
+        flex-wrap: wrap; /* 줄바꿈 허용 */
+        flex: 1 1 auto; /* 공간을 적절히 차지하도록 설정 */
+        min-width: 500px; /* 최소 너비 확보 (줄바꿈 방지) */
+    }
+
+    /* CRUD 버튼 그룹: 버튼을 가로로 배치, 줄바꿈 허용 */
+    .button-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* 일반 입력창 스타일: 최대 너비 설정, 반응형 대응 */
+    .form-control {
+        max-width: 200px; /* 최대 너비 제한 */
+        flex: 0 1 auto; /* 내용에 따라 너비 조절 */
+    }
+
+    /* 파일 업로드 입력창 스타일 */
+    .file-input {
+        max-width: 280px;
+        flex: 0 1 auto;
+    }
+
+    /* 엑셀 업로드/다운로드 버튼 스타일 */
+    .btn-excel {
+        background-color: #1D6F42; /* 녹색 배경 */
+        color: white; /* 흰색 텍스트 */
+        white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+    }
+
+    /* 엑셀 버튼 호버 시 스타일 */
+    .btn-excel:hover {
+        background-color: #15562F; /* 더 어두운 녹색 */
+        color: white;
+    }
+
+    /* 테이블 전체 스타일 */
+    .table {
+        table-layout: fixed; /* 열 너비 고정 */
+        width: 100%; /* 부모 너비에 맞춤 */
+    }
+
+    /* 테이블 스크롤 영역 */
+    .table-responsive {
+        height: 530px; /* 높이 고정 */
+        overflow: auto; /* 스크롤 활성화 */
+        -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */
+    }
+
+    /* 첫 번째 열(선택 체크박스)의 너비와 정렬 */
+    th:first-child,
+    td:first-child {
+        width: 40px;
+        text-align: center;
+    }
+
+    /* TOAST UI Grid의 비활성 셀 스타일 */
+    .tui-grid-cell-disabled {
+        background-color: #fff !important;
+        color: #212529 !important;
+    }
+
+    /* 반응형: 화면이 좁을 때의 처리 */
+    @media (max-width: 768px) {
+        .top-input-group {
+            flex-direction: column; /* 세로로 배치 */
+            align-items: flex-start; /* 왼쪽 정렬 */
+        }
+
+        .search-file-group,
+        .button-group {
+            width: 100%; /* 전체 너비 사용 */
+            margin-bottom: 10px; /* 하단 여백 */
+        }
+    }
+</style>		
 </head>
 <body>
 	<div layout:fragment="content">
 	<h4>생산 계획</h4>
 	
-	<div class="card">
-		<div class="card-body">
-	    	<div class="row g-3 mb-4">
-	        	<div class="col-md-3">
-	        		<select id="mpStatus" name="" class="form-select">
-						<option>상태</option>
-						<option value="등록">등록</option>
-						<option value="생산중">생산중</option>
-						<option value="완료">완료</option>
-						<option value="대기중">대기중</option>
-						<option value="중단">중단</option>
-						<option value="종료">종료</option>
-	            	</select>
-	            </div>
-	            <div class="col-md-3">	
-	                <input type="text" class="form-control" placeholder="수주코드를 입력해주세요.">  
-	            </div>
-	            <div class="col-md-2 d-flex align-items-end">
-	            	<button type="button" class="btn btn-outline-secondary">
-		            	<i class="bi bi-search"></i>
-		            </button>
-	            </div>
-	            
-	            <!-- 로그인한 사용자 ID -->
-	            <input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
-	            
-	            <div class="text-end mb-2">
-		            <button type="button" id="updateBtn" class="btn btn-outline-secondary">저장</button>
-		            <button type="button" id="delete" class="btn btn-outline-secondary">삭제</button>
-		            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">계획 등록</button>
-	            </div>
-	        </div>		
-	    </div>
-
-		<div id="mfgPlanGrid"></div>
-	</div>
+	<!-- 제조 계획 정보 섹션 -->
+	<section class="section">
+		<div class="row" id="basic-table">
+			<!-- 생산 계획 정보 그리드 카드 -->
+			<div class="col-12 col-md-12">
+            	<div class="card">
+                	<div class="card-header">
+                    	<h4 class="card-title">생산 계획</h4>
+			
+						<!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
+						 <div class="top-input-group">
+                         	<!-- 왼쪽: 검색 및 엑셀 관련 -->
+                           	<div class="search-file-group">
+                            	<input type="text" class="form-control" id="searchInput" 
+                                       placeholder="생산 계획 검색">
+                                <button type="button" id="mpSearchBtn" class="btn btn-outline-primary">
+										<i class="bi bi-search"></i>
+								</button>
+                                	
+                                	<!-- 로그인한 사용자 ID -->
+	            					<input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
+                                    
+                                    <!-- 엑셀 파일 입력 및 버튼 -->
+                                    <input type="file" class="form-control file-input" id="fileInput" accept=".xlsx,.xls">
+                                    <button type="button" id="ExcelUpBtn" class="btn btn-excel">
+                                        <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
+                                    </button>
+                                    <button type="button" id="ExcelDownBtn" class="btn btn-excel">
+                                        <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
+                                    </button>
+                                </div>
+                                
+                                <!-- 오른쪽: CRUD 버튼 -->
+                                <div class="button-group">
+                                	<button type="button" id="mpInsertBtn" class="btn btn-outline-success">추가</button>
+                                	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">계획 등록</button>
+                                    <button type="button" id="mpSaveBtn" class="btn btn-outline-success">저장</button>
+                                    <button type="button" id="mpDeleteBtn" class="btn btn-outline-danger" onclick="deleteMp()">삭제</button>
+                                </div>
+                            </div>
+                        </div>
+						<div class="card-body">
+                            <div class="table-responsive">
+                                <!-- 생산 계획 그리드 -->
+								<div id="mfgPlanGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>	
 	
 	<!--  모달 창 시작 -->
 	<div class="modal fade" id="mfgPlanModal" tabindex="-1" aria-labelledby="mfgPlanModalLabel" aria-hidden="true">
@@ -179,12 +294,7 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: {
-					type: 'datePicker',
-					options: {
-						format: 'yyyy-MM-dd'
-					}
-				}
+				editor: null
             },
 			{
                 header: '수정일자',
@@ -193,12 +303,7 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: {
-					type: 'datePicker',
-					options: {
-						format: 'yyyy-MM-dd'
-					}
-				}
+				editor: null
             }
         ], 
 		autoEdit: true,
@@ -217,7 +322,7 @@
 		const today = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
 		
 		$.ajax({
-			url: '/mfg/makeMpCode',
+			url: '/mp/makeMpCode',
 			method: 'GET',
 			data: { data: today },
 			success: function (code) {
@@ -370,7 +475,7 @@
 		        const rowData = grid2.getRow(ev.rowKey);
 		        
 		        $.ajax({
-		            url: '/mfg/selectCurrentQty',
+		            url: '/mp/selectCurrentQty',
 		            type: 'GET',
 		            data: {
 		            	pdtCode: rowData.pdtCode,
@@ -411,7 +516,7 @@
 		data.mpCode = mpCode;
 		
 		$.ajax({
-			url: "/mfg/mfgPlanRegi",
+			url: "/mp/mfgPlanRegi",
 			method : "POST",
 			contentType: "application/json",
 			data: JSON.stringify(data), // JSON 문자열로 전송
@@ -427,57 +532,290 @@
 	// 상품 계획 등록 끝---------------------------------------------------------	
 	
 	// 상품 계획 수정
-	$('#updateBtn').on('click', function () {
-    const selectedRow = grid1.getCheckedRowKeys();
-    
-    const rowKey = selectedRow[0];
-    const modifiedRow = grid1.getRow(rowKey);
-    
-	    $.ajax({
-	        url: '/mfg/mfgPlanUpdate',
-	        type: 'POST',
-	        contentType: 'application/json',
-	        data: JSON.stringify(modifiedRow),
-	        success: function (msg) {
-	            alert(msg);
-	            location.reload();
-	        },
-	        error: function (err) {
-	            alert("저장 실패");
-	            console.log(err);
+	$('#mpSaveBtn').on('click', async function () {
+	    const modifiedRows = grid1.getModifiedRows(); // 수정된 행 추출
+	    const modifiedData = modifiedRows.updatedRows;
+	
+	    if (modifiedData.length === 0) {
+	        await Swal.fire({
+	            icon: 'warning',
+	            title: '알림',
+	            text: '수정된 내용이 없습니다.'
+	        });
+	        return;
+	    }
+	
+	    try {
+	        const response = await fetch('/mp/mfgPlanUpdate', {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json'
+	            },
+	            body: JSON.stringify(modifiedData)
+	        });
+	
+	        if (!response.ok) {
+	            throw new Error("서버 오류 발생");
 	        }
-	    });
+	
+	        await Swal.fire({
+	            icon: 'success',
+	            title: '저장 완료',
+	            text: '변경된 내용이 저장되었습니다.'
+	        });
+	
+	        location.reload(); // 저장 후 새로고침
+	
+	    } catch (error) {
+	        console.error("저장 오류:", error);
+	        await Swal.fire({
+	            icon: 'error',
+	            title: '저장 실패',
+	            text: '저장 중 오류가 발생했습니다.'
+	        });
+	    }
 	});
 	
+	// 행 아무곳이나 클릭하면 체크박스 활성화
+    grid1.on('click', ev => {
+    	  const { rowKey, columnName } = ev;
+
+    	  if (columnName === '_checked') return;
+    	  const isChecked = grid1.getCheckedRowKeys().includes(rowKey);
+    	  if (!isChecked) {
+    	    grid1.check(rowKey);
+    	  } else {
+    	    grid1.uncheck(rowKey);
+    	  }
+    });
+	
+	
 	// 상품 계획 삭제
-	$('#delete').on('click', function () {
-    const selectedRowKeys = grid1.getCheckedRowKeys();
-    
-    if (selectedRowKeys.length === 0) {
-        alert("삭제할 항목을 선택해주세요.");
-        return;
-    }
+    async function deleteMp() {
+  		const checkedRows = grid1.getCheckedRows();
+  		const mpNos = checkedRows.map(row => row.mpNo);
 
-    const rowKey = selectedRowKeys[0];
-    const mpCode = grid1.getValue(rowKey, 'mpCode');
-    
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+  		if (mpNos.length === 0) {
+  			await Swal.fire({
+  		      icon: "warning",
+  		      title: "삭제할 데이터를 선택해주세요."
+  		    });
+  		    return;
+  		}
 
-	    $.ajax({
-	        url: '/mfg/mfgPlanDelete',
-	        type: 'POST',
-	        contentType: 'application/json',
-	        data: JSON.stringify([mpCode]),
-	        success: function (msg) {
-	            alert(msg);
-	            location.reload();
-	        },
-	        error: function (err) {
-	            alert("삭제 실패");
-	            console.log(err);
-	        }
+  		const result = await Swal.fire({
+  		    title: "정말 삭제하시겠습니까?",
+  		    text: `총 ${mpNos.length}건의 데이터를 삭제합니다.`,
+  		    icon: "warning",
+  		    showDenyButton: true,
+  		    confirmButtonText: "삭제",
+  		    denyButtonText: "취소",
+  		});
+
+  		if (result.isDenied) {
+  		    await Swal.fire({
+  		      icon: "error",
+  		      title: "삭제가 취소되었습니다.",
+  		    });
+  		    return;
+  		}
+  		  
+
+  		// 삭제 API 요청
+  		try {
+  			const response = await fetch('/mp/mfgPlanDelete', {
+  		      method: 'POST',
+  		      headers: {
+  		        'Content-Type': 'application/json'
+  		      },
+  		      body: JSON.stringify({ mpNos: mpNos }) // 필요 시 선택한 ID 전달
+  		    });
+
+  		    if (!response.ok) {
+  		      await Swal.fire({
+  		        icon: "error",
+  		        title: "삭제 처리 중 서버 오류가 발생했습니다",
+  		      });
+  		      throw new Error("삭제 처리 중 서버 오류");
+  		    }
+
+  		    await Swal.fire({
+  		      title: "삭제가 완료되었습니다",
+  		      icon: "success",
+  		    });
+  		    
+  		      location.reload();
+
+  		} catch (error) {
+  		    console.error('Error:', error);
+  		    await Swal.fire({
+  		      icon: "error",
+  		      title: "삭제 처리 중 예외가 발생했습니다",
+  		    });
+  		  }
+  		}
+	
+	
+	
+    //그리드 -> 엑셀 파일로 다운로드
+	document.getElementById('ExcelDownBtn').addEventListener('click', function () {
+	    
+		//현재 그리드 데이터 가져오기
+		const gridData = grid1.getData();
+		
+		//현재 그리드의 컬럼 값 가져오기
+	    const columns = grid1.getColumns();
+
+		//컬럼을 header와 name으로 분리
+	    const header = columns.map(col => col.header);
+	    const keys = columns.map(col => col.name);
+
+		//header만큼 배열 생성
+	    const exportData = [header];
+
+		//row값을 데이터에 저장
+	    gridData.forEach(row => {
+	        const rowData = keys.map(key => row[key]);
+	        exportData.push(rowData);
 	    });
+
+		//CDN 이용
+	    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+	    const workbook = XLSX.utils.book_new();
+
+	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+	    XLSX.writeFile(workbook, 'MFG-PLAN-grid-data.xlsx');
 	});
+	
+	let file;
+	let reader;
+	
+	//파일이 선택시 실행
+	document.getElementById('fileInput').addEventListener('change', function (e) {	
+		
+	    file = e.target.files[0];
+	    reader = new FileReader();
+		
+		if (!file) {
+			Swal.fire({
+	            icon: 'warning',
+	            title: '파일 없음',
+	            text: '파일을 선택해 주세요.',
+	            confirmButtonText: '확인'
+	        });
+	        return;
+		}
+	});
+
+	//버튼 클릭 시 선택된 엑셀 파일을 그리드에 출력
+	document.getElementById('ExcelUpBtn').addEventListener('click', function (e) {
+		
+		if (!file) {
+			document.getElementById('fileInput').click();
+	        return;
+	    }
+		
+		reader.onload = function (event) {
+			const data = new Uint8Array(event.target.result);
+		    const workbook = XLSX.read(data, { type: 'array' });
+
+			const firstSheetName = workbook.SheetNames[0];
+		    const worksheet = workbook.Sheets[firstSheetName];
+
+			console.log(worksheet);
+			
+			worksheet["A1"] = { t: "s", v: "mpNo", r:"<t>mpNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpNo', w: 'mpNo' };
+			worksheet["B1"] = { t: "s", v: "mpCode", r:"<t>mpCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpCode', w: 'mpCode' };
+			worksheet["C1"] = { t: "s", v: "soCode", r:"<t>soCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'soCode', w: 'soCode' };    			
+			worksheet["D1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
+			worksheet["E1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
+			worksheet["F1"] = { t: "s", v: "mpStatus", r:"<t>mpStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpStatus', w: 'mpStatus' };
+			worksheet["G1"] = { t: "s", v: "mpPriority", r:"<t>mpPriority</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpPriority', w: 'mpPriority' };
+			worksheet["H1"] = { t: "s", v: "mpCreatedAt", r:"<t>mpCreatedAt</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpCreatedAt', w: 'mpCreatedAt' };    			
+			worksheet["I1"] = { t: "s", v: "mpUpdatedAt", r:"<t>mpUpdatedAt</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpUpdatedAt', w: 'mpUpdatedAt' };    			
+			worksheet["J1"] = { t: "s", v: "mpStartDate", r:"<t>mpStartDate</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpStartDate', w: 'mpStartDate' };
+			worksheet["K1"] = { t: "s", v: "mpEndDate", r:"<t>mpEndDate</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpEndDate', w: 'mpEndDate' };
+			
+			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+			// TUI Grid에 반영
+			grid1.resetData(jsonData);
+	   
+	   	
+			// 바로 서버에 저장 요청
+			fetch('/mp/saveExcelData', {
+			    method: 'POST',
+			    headers: {
+			        'Content-Type': 'application/json'
+			    },
+			    body: JSON.stringify(jsonData)
+			})
+			.then(res => {
+			    if (!res.ok) throw new Error("저장 실패");
+			    return res.text();
+			})
+			.then(data => {
+			    Swal.fire({
+			        icon: 'success',
+			        title: '업로드 완료',
+			        text: '엑셀 업로드 및 저장이 완료되었습니다.',
+			        confirmButtonText: '확인'
+			    });
+			})
+			.catch(err => {
+			    console.error(err);
+			    Swal.fire({
+			        icon: 'error',
+			        title: '저장 오류',
+			        text: '엑셀 저장 중 오류가 발생했습니다.',
+			        confirmButtonText: '닫기'
+			    });
+			});
+			
+			};
+
+		reader.readAsArrayBuffer(file);
+		
+	});	
+	
+    
+  	// grid 데이터 원본 저장
+  	const originalData = grid1.getData();
+
+  	document.getElementById('searchInput').addEventListener('input', function (e) {
+  	  const keyword = e.target.value.toLowerCase();
+
+  	  // 원본 데이터를 기준으로 필터링
+  	  const filtered = originalData.filter(row => {
+  	    return Object.values(row).some(val => {
+  	      if (val == null) return false;
+  	      return String(val).toLowerCase().includes(keyword);
+  	    });
+  	  });
+
+  	  // 필터링된 데이터로 그리드 업데이트
+  	  grid1.resetData(filtered);
+  	});
+  	
+  	
+  	function applyFilter() {
+		  const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+		  let filtered = originalData;
+
+		  if (keyword) {
+		    filtered = filtered.filter(row =>
+		      Object.values(row).some(val =>
+		        val != null && String(val).toLowerCase().includes(keyword)
+		      )
+		    );
+		  }
+
+		  grid1.resetData(filtered);
+		}
+
+  		document.getElementById('mpSearchBtn').addEventListener('click', applyFilter);
+		document.getElementById('searchInput').addEventListener('input', applyFilter);
 
 	
 	

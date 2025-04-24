@@ -11,17 +11,15 @@ import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO;
-import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
-import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
-import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgMapper;
+import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class MfgService {
+public class MfgPlanService {
 
 	@Autowired
-	private MfgMapper mfgMapper;
+	private MfgPlanMapper mfgPlanMapper;
 	
 	// 생산 계획 내역 조회
 	public List<MfgPlanDTO> getMfgPlanTotalList(){
@@ -30,20 +28,20 @@ public class MfgService {
 	    String currentUserId = auth.getName();
 	    
 	    
-		return mfgMapper.getMfgPlanTotalList();
+		return mfgPlanMapper.getMfgPlanTotalList();
 	}
 
 	// 생산 계획 등록 시 수주 내역 + 소요 시간 조회
 	@Transactional
 	public List<MfgPlanSalesOrderDTO> getSoList() {
 	    // 1. 수주 목록 조회
-	    List<MfgPlanSalesOrderDTO> soList = mfgMapper.getSoList();
+	    List<MfgPlanSalesOrderDTO> soList = mfgPlanMapper.getSoList();
 
 	    for (MfgPlanSalesOrderDTO so : soList) {
 	        Long totalLeadTime = 0L;
 
 	        // 2. 해당 제품에 대한 BOM + 공정 시간 리스트 조회
-	        List<Map<String, Object>> bomList = mfgMapper.getBomList(so.getPdtCode());
+	        List<Map<String, Object>> bomList = mfgPlanMapper.getBomList(so.getPdtCode());
 
 	        System.out.println("bom===========================" + bomList);
 	        
@@ -84,13 +82,13 @@ public class MfgService {
 		boolean isCqe = true;
 		
 		// 원자재 재고 조회
-		List<Map<String, Object>> mtlInventory = mfgMapper.getMaterialInventory();
+		List<Map<String, Object>> mtlInventory = mfgPlanMapper.getMaterialInventory();
 		
 		// 수주에 따른 BOM(자재 사용량) 조회
-		List<Map<String, Object>> mfgPlanBomList = mfgMapper.getMfgPlanBomList();
+		List<Map<String, Object>> mfgPlanBomList = mfgPlanMapper.getMfgPlanBomList();
 		
 		// 재고 조회할 상품의 BOM 조회
-		List<Map<String, Object>> bomList = mfgMapper.getBomList(pdtCode);
+		List<Map<String, Object>> bomList = mfgPlanMapper.getBomList(pdtCode);
 		
 		// 재고 정보 맵 변환
 		Map<String, Integer> mtlInventoryMap = new HashMap<>();
@@ -165,34 +163,30 @@ public class MfgService {
 	
 	// 생산 계획 등록
 	public void registMpPlan(MfgPlanDTO mfgPlanDTO) {
-		mfgMapper.registMpPlan(mfgPlanDTO);
+		mfgPlanMapper.registMpPlan(mfgPlanDTO);
 	}
 	
 	// 생산 계획 수정
 	@Transactional
-	public void updateMpPlan(MfgPlanDTO mfgPlanDTO) {
-		mfgMapper.updateMpPlan(mfgPlanDTO);
-	}
-	
-	// 생산 계획 삭제
-	public void deleteMpPlan(List<String> mpCodes) {
-		mfgMapper.deleteMpPlan(mpCodes);
-	}
-	
-	// 제조 계획 내역 조회
-	public List<MfgScheduleDTO> getMfgScheduleTotalList() {
-		return mfgMapper.getMfgScheduleTotalList();
+	public void updateMpPlan(List<MfgPlanDTO> mpList) {
+		mfgPlanMapper.updateMpPlan(mpList);
 	}
 
-	// 제조 계획 등록 시 생산 계획 내역 조회
-	public List<MfgSchedulePlanDTO> getMpList() {
-		return mfgMapper.getMpList();
+	// 생산 계획 삭제 (숨김 처리)
+	@Transactional
+	public void isVisiableToFalse(List<Long> mpNos) {
+		mfgPlanMapper.isVisiableToFalse(mpNos);
+	}	
+
+
+	// 엑셀 데이터 저장
+	@Transactional
+	public void saveExcelData(MfgPlanDTO dto) {
+		mfgPlanMapper.saveExcelData(dto);
 	}
 
-	// 제조 계획 등록
-	public void registMsPlan(List<MfgScheduleDTO> msList) {
-		mfgMapper.registMsPlan(msList);
-	}
+
+
 
 
 
