@@ -70,11 +70,11 @@
     }
 
     /* 테이블 스크롤 영역 */
-/*     .table-responsive { */
-/*         height: 530px; /* 높이 고정 */ */
-/*         overflow: auto; /* 스크롤 활성화 */ */
-/*         -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */ */
-/*     } */
+    .table-responsive {
+        height: 530px; /* 높이 고정 */
+        overflow: auto; /* 스크롤 활성화 */
+        -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */
+    }
 
     /* 첫 번째 열(선택 체크박스)의 너비와 정렬 */
     th:first-child,
@@ -112,23 +112,23 @@
         이 부분 안에 페이지별 HTML 내용을 작성하세요.
     -->
     <div layout:fragment="content">
-        <h3>원자재 관리</h3>
+        <h3>제품 관리</h3>
         
-        <!--원자재 정보 섹션 -->
+        <!--제품 정보 섹션 -->
         <section class="section">
             <div class="row" id="basic-table">
-                <!-- 원자재 정보 그리드 카드 -->
+                <!-- 제품 정보 그리드 카드 -->
                 <div class="col-12 col-md-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="card-title">원자재 재고현황</h4>
+                            <h4 class="card-title">제품 재고현황</h4>
                             
                             <!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
                             <div class="top-input-group">
                                 <!-- 왼쪽: 검색 및 엑셀 관련 -->
                                 <div class="search-file-group">
-                                    <input type="text" class="form-control" id="mInventoryInput" 
-                                        placeholder="원자재명 검색">
+                                    <input type="text" class="form-control" id="pInventoryInput" 
+                                        placeholder="제품명 검색">
 <!--                                     <button type="button" id="mInventorySearchBtn" class="btn btn-outline-primary"> -->
 <!--                                         <i class="bi bi-search"></i> -->
 <!--                                     </button> -->
@@ -138,7 +138,7 @@
 <!--                                     <button type="button" id="mInventoryExcelUpBtn" class="btn btn-excel"> -->
 <!--                                         <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드 -->
                                     </button>
-                                    <button type="button" id="mInventoryExcelDownBtn" class="btn btn-excel">
+                                    <button type="button" id="pInventoryExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
                                 </div>
@@ -154,7 +154,7 @@
                         <div class="card-body">
                             <div class="table-responsive">
                                 <!-- 창고 정보 그리드 -->
-                                <div id="mInventoryGrid"></div>
+                                <div id="pInventoryGrid"></div>
                             </div>
                         </div>
                     </div>
@@ -171,10 +171,10 @@
     <th:block layout:fragment="script">
         <script th:inline="javascript">
             // Thymeleaf 데이터를 전역 변수로 설정
-            window.mInventoryList = /*[[${mInventoryList}]]*/[];
-            console.log("mInventoryList 데이터:", window.mInventoryList);
+            window.pInventoryList = /*[[${pInventoryList}]]*/[];
+            console.log("pInventoryList 데이터:", window.pInventoryList);
         </script>
-        <script src="/js/inventory/mInventoryManager.js"></script>
+        <script src="/js/inventory/pInventoryManager.js"></script>
         <script src="/js/commonJs/ExcelUtil.js"></script>
         <script src="/js/commonJs/GridSearchUtil.js"></script>
     </th:block>

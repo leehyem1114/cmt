@@ -24,6 +24,9 @@ public class ProductsInventory {
     @Column(name = "PDT_NO", nullable = false, precision = 19, scale = 0)
     private Long pdtNo; // 제품 번호
 
+    @Column(name = "PDT_CODE", length = 50)
+    private Long pdtCode; // 제품 코드
+
     @Column(name = "WAREHOUSE_CODE", length = 50)
     private String warehouseCode; //창고코드
 
@@ -33,11 +36,11 @@ public class ProductsInventory {
     @Column(name = "CURRENT_QTY", length = 50)
     private String currentQty; //현재 수량
 
-//    @Column(name = "ALLOCATED_QTY", length = 50)
-//    private String allocatedQty; //할당수량(계획수량) 현재 시스템에서는 필요없음
+    @Column(name = "ALLOCATED_QTY", length = 50)
+    private String allocatedQty; //할당수량(계획수량)
 
-//    @Column(name = "AVAILABLE_QTY", length = 50)
-//    private String availableQty; // 가용수량 현재시스템에서는 필요없음
+    @Column(name = "AVAILABLE_QTY", length = 50)
+    private String availableQty; // 가용수량 
 
     @Column(name = "LOT_NO", length = 50)
     private String lotNo; // 완제품 LOT 번호

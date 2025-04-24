@@ -12,7 +12,7 @@ const MaterialInventoryManager = (function() {
     // =============================
 
     // 그리드 인스턴스 참조
-    let mInventoryGrid;
+    let pInventoryGrid;
 
     // API URL 상수 정의
     const API_URLS = {
@@ -89,7 +89,7 @@ const MaterialInventoryManager = (function() {
             
             // 그리드 검색 설정
             GridSearchUtil.setupGridSearch({
-                gridId: 'mInventoryGrid',
+                gridId: 'pInventoryGrid',
                 searchInputId: 'mInventoryInput',
                 autoSearch: true, // 입력 시 자동 검색
                 beforeSearch: function() {
@@ -116,7 +116,7 @@ const MaterialInventoryManager = (function() {
             // 엑셀 다운로드 버튼 설정 - HTML에 버튼 추가 필요
             ExcelUtil.setupExcelDownloadButton({
                 buttonId: 'mInventoryExcelDownBtn', 
-                gridId: 'mInventoryGrid',
+                gridId: 'pInventoryGrid',
                 fileName: 'material-inventory-data.xlsx',
                 sheetName: '원자재재고정보',
                 beforeDownload: function() {
@@ -132,7 +132,7 @@ const MaterialInventoryManager = (function() {
             ExcelUtil.setupExcelUploadButton({
                 fileInputId: 'mInventoryFileInput', 
                 uploadButtonId: 'mInventoryExcelUpBtn', 
-                gridId: 'mInventoryGrid',
+                gridId: 'pInventoryGrid',
                 apiUrl: API_URLS.EXCEL.UPLOAD,
                 headerMapping: {
                     '자재코드': 'MTL_CODE',
@@ -151,7 +151,7 @@ const MaterialInventoryManager = (function() {
                     console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
                     if (saveResult) {
                         // 그리드 원본 데이터 업데이트
-                        GridSearchUtil.updateOriginalData('mInventoryGrid', data);
+                        GridSearchUtil.updateOriginalData('pInventoryGrid', data);
                     }
                 }
             });
@@ -173,28 +173,28 @@ const MaterialInventoryManager = (function() {
             console.log('그리드 초기화를 시작합니다.');
 
             // DOM 요소 존재 확인
-            const gridElement = document.getElementById('mInventoryGrid');
+            const gridElement = document.getElementById('pInventoryGrid');
             if (!gridElement) {
-                throw new Error('mInventoryGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+                throw new Error('pInventoryGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
             }
 
             // 서버에서 받은 데이터 활용
-            const gridData = window.mInventoryList || [];
+            const gridData = window.pInventoryList || [];
             console.log('초기 데이터:', gridData.length, '건');
 
             // 그리드 생성 - GridUtil 사용
-            mInventoryGrid = GridUtil.registerGrid({
-                id: 'mInventoryGrid',
+            pInventoryGrid = GridUtil.registerGrid({
+                id: 'pInventoryGrid',
                 columns: [
                     {
-                        header: '자재코드',
-                        name: 'MTL_CODE',
+                        header: '제품코드',
+                        name: 'PTD_CODE',
                         editor: false,
                         sortable: true
                     },
                     {
                         header: '자재명',
-                        name: 'MTL_NAME',
+                        name: 'PTD_NAME',
                         editor: false,
                         sortable: true
                     },
@@ -276,9 +276,9 @@ const MaterialInventoryManager = (function() {
             });
             
             // 편집 완료 이벤트 처리 - 변경된 행 추적 및 가용수량 자동 계산
-            mInventoryGrid.on('editingFinish', function(ev) {
+            pInventoryGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
-                const row = mInventoryGrid.getRow(rowKey);
+                const row = pInventoryGrid.getRow(rowKey);
                 
                 // 현재수량 또는 할당수량이 변경된 경우 가용수량 자동 계산
                 if (ev.columnName === 'CURRENT_QTY' || ev.columnName === 'ALLOCATED_QTY') {
@@ -287,21 +287,21 @@ const MaterialInventoryManager = (function() {
                     const availableQty = (currentQty - allocatedQty).toString();
                     
                     // 가용수량 업데이트
-                    mInventoryGrid.setValue(rowKey, 'AVAILABLE_QTY', availableQty);
+                    pInventoryGrid.setValue(rowKey, 'AVAILABLE_QTY', availableQty);
                 }
                 
                 // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
                 if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
-                    mInventoryGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+                    pInventoryGrid.setValue(rowKey, 'ROW_TYPE', 'update');
                     console.log(`행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
                 }
             });
 
             // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
-            GridUtil.setupKeyColumnControl('mInventoryGrid', 'MTL_CODE');
+            GridUtil.setupKeyColumnControl('pInventoryGrid', 'MTL_CODE');
             
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
-            GridSearchUtil.updateOriginalData('mInventoryGrid', gridData);
+            GridSearchUtil.updateOriginalData('pInventoryGrid', gridData);
 
             console.log('그리드 초기화가 완료되었습니다.');
         } catch (error) {
@@ -332,7 +332,7 @@ const MaterialInventoryManager = (function() {
             };
 
             // 그리드에 새 행 추가
-            await GridUtil.addNewRow('mInventoryGrid', newRowData, {
+            await GridUtil.addNewRow('pInventoryGrid', newRowData, {
                 at: 0,
                 focus: true
             });
@@ -364,12 +364,12 @@ const MaterialInventoryManager = (function() {
             const data = Array.isArray(response) ? response : (response.data || []);
 
             // 그리드 데이터 설정
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('pInventoryGrid');
             if (grid) {
                 grid.resetData(data);
                 
                 // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
-                GridSearchUtil.updateOriginalData('mInventoryGrid', data);
+                GridSearchUtil.updateOriginalData('pInventoryGrid', data);
             }
 
             console.log('데이터 검색 완료. 결과:', data.length, '건');
@@ -393,9 +393,9 @@ const MaterialInventoryManager = (function() {
         try {
             console.log('데이터 저장 시작');
 
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('pInventoryGrid');
             if (!grid) {
-                throw new Error('mInventoryGrid를 찾을 수 없습니다.');
+                throw new Error('pInventoryGrid를 찾을 수 없습니다.');
             }
 
             // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
@@ -405,7 +405,7 @@ const MaterialInventoryManager = (function() {
             recalculateAvailableQty();
 
             // 변경된 데이터 추출
-            const changes = await GridUtil.extractChangedData('mInventoryGrid');
+            const changes = await GridUtil.extractChangedData('pInventoryGrid');
             const modifiedData = [...changes.insert, ...changes.update];
 
             if (modifiedData.length === 0) {
@@ -475,7 +475,7 @@ const MaterialInventoryManager = (function() {
     async function deleteRows() {
         try {
             // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('pInventoryGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
@@ -500,7 +500,7 @@ const MaterialInventoryManager = (function() {
             }
             
             // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
-            const result = await GridUtil.deleteSelectedRows('mInventoryGrid', {
+            const result = await GridUtil.deleteSelectedRows('pInventoryGrid', {
                 confirmTitle: "삭제 확인",
                 confirmMessage: "선택한 항목을 삭제하시겠습니까?",
                 onBeforeDelete: async () => {
@@ -545,7 +545,7 @@ const MaterialInventoryManager = (function() {
      */
     function recalculateAvailableQty() {
         try {
-            const grid = GridUtil.getGrid('mInventoryGrid');
+            const grid = GridUtil.getGrid('pInventoryGrid');
             if (!grid) return;
 
             const rows = grid.getData();
@@ -569,7 +569,7 @@ const MaterialInventoryManager = (function() {
      * @returns {Object} 그리드 인스턴스
      */
     function getGrid() {
-        return mInventoryGrid;
+        return pInventoryGrid;
     }
 
     /**
@@ -634,8 +634,8 @@ const MaterialInventoryManager = (function() {
 			const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
 			            
 			            // 원본 데이터 가져오기
-			            GridSearchUtil.resetToOriginalData('mInventoryGrid');
-			            const grid = GridUtil.getGrid('mInventoryGrid');
+			            GridSearchUtil.resetToOriginalData('pInventoryGrid');
+			            const grid = GridUtil.getGrid('pInventoryGrid');
 			            const originalData = grid.getData();
 			            
 			            // 필터링

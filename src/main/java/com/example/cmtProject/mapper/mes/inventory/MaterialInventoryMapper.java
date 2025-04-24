@@ -37,4 +37,20 @@ public interface MaterialInventoryMapper {
      * @return 처리 건수
      */
     public int deductInventory(Map<String, Object> params);
+    
+    /**
+     * 재고 정보 등록
+     * 
+     * @param params 등록할 재고 정보
+     * @return 처리 건수
+     */
+    public int insertInventory(Map<String, Object> params);
+    
+    /**
+     * 재고 정보 수정
+     * 
+     * @param params 수정할 재고 정보
+     * @return 처리 건수
+     */
+    public int updateInventory(Map<String, Object> params);
 }
