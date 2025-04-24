@@ -71,6 +71,53 @@ public class MaterialReceiptRestController {
 	}
 	
 	/**
+	 * 입고 이력 정보 조회 API
+	 * 
+	 * @param receiptNo 입고 번호
+	 * @return 입고 이력 정보 목록
+	 */
+	@GetMapping("/history/{receiptNo}")
+	public ApiResponse<List<Map<String, Object>>> getReceiptHistory(@PathVariable("receiptNo") Long receiptNo) {
+	    log.info("입고 이력 정보 조회 요청. 입고번호: {}", receiptNo);
+	    
+	    try {
+	        List<Map<String, Object>> historyList = mrs.getReceiptHistory(receiptNo);
+	        
+	        log.info("입고 이력 정보 조회 결과: {}건", historyList.size());
+	        return ApiResponse.success(historyList);
+	    } catch (Exception e) {
+	        log.error("입고 이력 정보 조회 중 오류 발생: {}", e.getMessage(), e);
+	        return ApiResponse.error("이력 정보 조회 중 오류가 발생했습니다.", null);
+	    }
+	}
+	
+	/**
+	 * 검수 정보 조회 API
+	 * 
+	 * @param receiptNo 입고 번호
+	 * @return 검수 정보
+	 */
+//	@GetMapping("/inspection/{receiptNo}")
+//	public ApiResponse<Map<String, Object>> getInspectionInfo(@PathVariable("receiptNo") Long receiptNo) {
+//	    log.info("검수 정보 조회 요청. 입고번호: {}", receiptNo);
+//	    
+//	    try {
+//	        Map<String, Object> inspectionInfo = mrs.getInspectionInfo(receiptNo);
+//	        
+//	        if (inspectionInfo == null) {
+//	            log.info("검수 정보가 없습니다. 입고번호: {}", receiptNo);
+//	            return ApiResponse.error("검수 정보가 없습니다.", null);
+//	        }
+//	        
+//	        log.info("검수 정보 조회 성공. 입고번호: {}", receiptNo);
+//	        return ApiResponse.success(inspectionInfo);
+//	    } catch (Exception e) {
+//	        log.error("검수 정보 조회 중 오류 발생: {}", e.getMessage(), e);
+//	        return ApiResponse.error("검수 정보 조회 중 오류가 발생했습니다.", null);
+//	    }
+//	}
+	
+	/**
 	 * 발주 정보를 바탕으로 입고 정보 생성 API
 	 * 
 	 * @return 처리 결과
@@ -111,7 +158,7 @@ public class MaterialReceiptRestController {
 	}
 	
 	/**
-	 * 검수 등록 처리 API
+	 * 검수 등록 처리 API - 다건 처리 지원
 	 * 선택한 입고 항목의 상태를 "검수중"으로 변경합니다.
 	 * 
 	 * @param params 검수 등록 처리할 항목 정보
@@ -121,11 +168,11 @@ public class MaterialReceiptRestController {
 	public ApiResponse<Map<String, Object>> registerInspection(@RequestBody Map<String, Object> params) {
 	    log.info("검수 등록 처리 요청: {}", params);
 	    
-	    Map<String, Object> result = mrs.requestInspection(params);
+	    Map<String, Object> result = mrs.registerInspectionMultiple(params);
 	    
 	    if ((Boolean) result.get("success")) {
 	        log.info("검수 등록 처리 성공: {}", result.get("message"));
-	        return ApiResponse.success(result);
+	        return ApiResponse.success(result.get("message").toString(), result);
 	    } else {
 	        log.warn("검수 등록 처리 실패: {}", result.get("message"));
 	        return ApiResponse.error(result.get("message").toString(), result);
