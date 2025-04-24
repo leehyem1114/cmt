@@ -4,7 +4,7 @@
  * 원자재 입고정보의 조회, 확정, 검수 기능을 담당하는 관리 모듈입니다.
  * 
  * @version 3.0.0
- * @since 2025-04-22
+ * @since 2025-04-24
  */
 const MaterialReceiptManager = (function() {
     // =============================
@@ -24,8 +24,10 @@ const MaterialReceiptManager = (function() {
     const API_URLS = {
         LIST: '/api/materialreceipt/list',               // 입고 목록 조회
         DETAIL: (receiptNo) => `/api/materialreceipt/detail/${receiptNo}`,  // 상세 정보 조회
+        HISTORY: (receiptNo) => `/api/materialreceipt/history/${receiptNo}`,  // 이력 정보 조회
+        INSPECTION: `/api/materialreceipt/inspection`,   // 검수 등록
+        INSPECTION_INFO: (receiptNo) => `/api/materialreceipt/inspection/${receiptNo}`,  // 검수 정보 조회
         CONFIRM: '/api/materialreceipt/confirm',         // 입고 확정
-        INSPECTION: '/api/materialreceipt/inspection',   // 검수 등록
         EXCEL: {
             DOWNLOAD: '/api/materialreceipt/excel/download'  // 엑셀 다운로드 API URL
         }
@@ -76,7 +78,7 @@ const MaterialReceiptManager = (function() {
      */
     async function registerEvents() {
         try {
-            // UIUtil을 사용하여 이벤트 리스너 등록 - 버튼 이벤트 변경
+            // UIUtil을 사용하여 이벤트 리스너 등록 - 버튼 이벤트
             await UIUtil.registerEventListeners({
                 'mReceiptConfirmBtn': confirmReceipt,        // 입고확정 버튼
                 'mReceiptInspectionBtn': openInspectionModal, // 검수등록 버튼
@@ -85,6 +87,16 @@ const MaterialReceiptManager = (function() {
 
             // 엔터키 검색 이벤트 등록
             await UIUtil.bindEnterKeySearch('mReceiptInput', searchData);
+            
+            // 탭 이벤트 등록 - 이력정보 탭
+            const historyTab = document.getElementById('history-tab');
+            if (historyTab) {
+                historyTab.addEventListener('shown.bs.tab', function(e) {
+                    if (selectedReceipt) {
+                        loadHistoryData(selectedReceipt.RECEIPT_NO);
+                    }
+                });
+            }
         } catch (error) {
             console.error('이벤트 리스너 등록 중 오류:', error);
             throw error;
@@ -380,51 +392,42 @@ const MaterialReceiptManager = (function() {
             `${detailData.WAREHOUSE_CODE || ''} / ${detailData.LOCATION_CODE || ''}`;
         document.getElementById('receiver').textContent = detailData.RECEIVER || '';
         
-        // 검수 정보 탭 설정
-        if (detailData.hasInspection) {
-            // 검수 정보가 있는 경우 검수 정보 표시
-            displayInspectionInfo(detailData.inspectionData);
-        } else {
-            // 검수 정보가 없는 경우 안내 메시지 표시
-            document.getElementById('inspectionContent').innerHTML = `
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> 검수 정보가 없습니다. 검수등록 버튼을 클릭하여 검수 정보를 등록해주세요.
-                </div>
-            `;
-        }
+//        // 검수 정보 탭 설정
+//        if (detailData.hasInspection) {
+//            // 검수 정보가 있는 경우 검수 정보 표시
+//            displayInspectionInfo(detailData.inspectionData);
+//        } else {
+//            // 검수 정보가 없는 경우 안내 메시지 표시
+//            document.getElementById('inspectionContent').innerHTML = `
+//                <div class="alert alert-info">
+//                    <i class="bi bi-info-circle"></i> 검수 정보가 없습니다. 검수등록 버튼을 클릭하여 검수 정보를 등록해주세요.
+//                </div>
+//            `;
+//        }
+//        
+//        // LOT 정보 탭 설정
+//        if (detailData.lotData && detailData.lotData.length > 0) {
+//            displayLotInfo(detailData.lotData);
+//        } else {
+//            document.getElementById('lotInfoBody').innerHTML = `
+//                <tr>
+//                    <td colspan="4" class="text-center">LOT 정보가 없습니다.</td>
+//                </tr>
+//            `;
+//        }
+//        
+//        // 위치 정보 탭 설정
+//        if (detailData.locationData && detailData.locationData.length > 0) {
+//            displayLocationInfo(detailData.locationData);
+//        } else {
+//            document.getElementById('locationInfoBody').innerHTML = `
+//                <tr>
+//                    <td colspan="5" class="text-center">위치 정보가 없습니다.</td>
+//                </tr>
+//            `;
+//        }
         
-        // LOT 정보 탭 설정
-        if (detailData.lotData && detailData.lotData.length > 0) {
-            displayLotInfo(detailData.lotData);
-        } else {
-            document.getElementById('lotInfoBody').innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center">LOT 정보가 없습니다.</td>
-                </tr>
-            `;
-        }
-        
-        // 위치 정보 탭 설정
-        if (detailData.locationData && detailData.locationData.length > 0) {
-            displayLocationInfo(detailData.locationData);
-        } else {
-            document.getElementById('locationInfoBody').innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center">위치 정보가 없습니다.</td>
-                </tr>
-            `;
-        }
-        
-        // 이력 정보 탭 설정
-        if (detailData.historyData && detailData.historyData.length > 0) {
-            displayHistoryInfo(detailData.historyData);
-        } else {
-            document.getElementById('historyInfoBody').innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center">이력 정보가 없습니다.</td>
-                </tr>
-            `;
-        }
+        // 이력 정보는 탭 선택 시 별도 로드
     }
     
     /**
@@ -525,409 +528,561 @@ const MaterialReceiptManager = (function() {
         document.getElementById('locationInfoBody').innerHTML = html;
     }
     
-    /**
-     * 이력 정보 표시 함수
-     * 
-     * @param {Array} historyData - 이력 정보 데이터 배열
-     */
-    function displayHistoryInfo(historyData) {
-        if (!historyData || !historyData.length) {
-            return;
-        }
-        
-        // 이력 정보 HTML 구성
-        let html = '';
-        historyData.forEach(history => {
-            html += `
-                <tr>
-                    <td>${formatDateTime(history.ACTION_DATE)}</td>
-                    <td>${history.ACTION_TYPE || ''}</td>
-                    <td>${history.ACTION_DESCRIPTION || ''}</td>
-                    <td>${history.ACTION_USER || ''}</td>
-                </tr>
-            `;
-        });
-        
-        document.getElementById('historyInfoBody').innerHTML = html;
-    }
-    
-    /**
-     * 상세 정보 영역 표시 함수
-     */
-	function showDetailSection() {
-	    const detailSection = document.getElementById('detailSection');
-	    if (detailSection) {
-	        detailSection.style.display = 'block';
-	        
+	/**
+	     * 이력 정보 로드 함수
+	     * 선택된 입고의 이력 정보를 로드하고 표시합니다.
+	     * 
+	     * @param {number} receiptNo - 입고 번호
+	     * @returns {Promise<boolean>} 로드 성공 여부
+	     */
+	    async function loadHistoryData(receiptNo) {
 	        try {
-	            // Bootstrap 5 방식으로 탭 초기화
-	            const firstTab = document.querySelector('#basic-info-tab');
-	            if (firstTab && window.bootstrap) {
-	                const tab = new bootstrap.Tab(firstTab);
-	                tab.show();
-	                console.log('기본 탭이 활성화되었습니다.');
+	            // 로딩 표시
+	            await UIUtil.toggleLoading(true, '이력 정보를 불러오는 중...');
+	            
+	            // API 호출
+	            const response = await ApiUtil.get(API_URLS.HISTORY(receiptNo));
+	            
+	            // 로딩 종료
+	            await UIUtil.toggleLoading(false);
+	            
+	            if (!response.success) {
+	                throw new Error('이력 정보를 가져오는데 실패했습니다: ' + response.message);
 	            }
+	            
+	            const historyData = response.data || [];
+	            
+	            // 이력 정보 표시
+	            displayHistoryInfo(historyData);
+	            
+	            return true;
 	        } catch (error) {
-	            console.error('탭 초기화 오류:', error);
+	            console.error('이력 정보 로드 중 오류:', error);
+	            await UIUtil.toggleLoading(false);
+	            
+	            // 오류 시 빈 테이블 표시
+	            displayHistoryInfo([]);
+	            
+	            return false;
 	        }
 	    }
-	}
-//    function showDetailSection() {
-//        const detailSection = document.getElementById('detailSection');
-//        if (detailSection) {
-//            detailSection.style.display = 'block';
-//            
-//            // 탭 초기화 - 첫번째 탭 선택
-//            if (!tabController) {
-//                // UIUtil의 탭 초기화 함수 사용
-//                UIUtil.initTabs('receiptDetailTabs', {
-//                    defaultTab: 'basic-info',
-//                    onTabChange: function(tabId) {
-//                        console.log('탭 변경:', tabId);
-//                    }
-//                }).then(controller => {
-//                    tabController = controller;
-//                }).catch(error => {
-//                    console.error('탭 초기화 오류:', error);
-//                });
-//            } else {
-//                // 기존 탭 컨트롤러가 있는 경우 기본 탭 선택
-//                tabController.selectTab('basic-info');
-//            }
-//        }
-//    }
+	    
+	    /**
+	     * 이력 정보 표시 함수
+	     * 
+	     * @param {Array} historyData - 이력 정보 데이터 배열
+	     */
+	    function displayHistoryInfo(historyData) {
+	        const historyInfoBody = document.getElementById('historyInfoBody');
+	        
+	        if (!historyInfoBody) {
+	            console.error('이력 정보 테이블 요소를 찾을 수 없습니다.');
+	            return;
+	        }
+	        
+	        if (!historyData || historyData.length === 0) {
+	            historyInfoBody.innerHTML = `
+	                <tr>
+	                    <td colspan="4" class="text-center">이력 정보가 없습니다.</td>
+	                </tr>
+	            `;
+	            return;
+	        }
+	        
+	        // 이력 정보 HTML 구성
+	        let html = '';
+	        historyData.forEach(history => {
+	            html += `
+	                <tr>
+	                    <td>${formatDateTime(history.ACTION_DATE)}</td>
+	                    <td>${history.ACTION_TYPE || ''}</td>
+	                    <td>${history.ACTION_DESCRIPTION || ''}</td>
+	                    <td>${history.ACTION_USER || ''}</td>
+	                </tr>
+	            `;
+	        });
+	        
+	        historyInfoBody.innerHTML = html;
+	    }
+	    
+	    /**
+	     * 상세 정보 영역 표시 함수
+	     */
+	    function showDetailSection() {
+	        const detailSection = document.getElementById('detailSection');
+	        if (detailSection) {
+	            detailSection.style.display = 'block';
+	            
+	            try {
+	                // Bootstrap 5 방식으로 첫 번째 탭 활성화
+	                const firstTab = document.querySelector('#basic-info-tab');
+	                if (firstTab && window.bootstrap) {
+	                    const tab = new bootstrap.Tab(firstTab);
+	                    tab.show();
+	                    console.log('기본 탭이 활성화되었습니다.');
+	                }
+	            } catch (error) {
+	                console.error('탭 초기화 오류:', error);
+	            }
+	        }
+	    }
+	    
+	    /**
+	     * 상세 정보 영역 숨김 함수
+	     */
+	    function hideDetailSection() {
+	        const detailSection = document.getElementById('detailSection');
+	        if (detailSection) {
+	            detailSection.style.display = 'none';
+	        }
+	        
+	        // 선택된 입고 정보 초기화
+	        selectedReceipt = null;
+	    }
 
-    
-    /**
-     * 상세 정보 영역 숨김 함수
-     */
-    function hideDetailSection() {
-        const detailSection = document.getElementById('detailSection');
-        if (detailSection) {
-            detailSection.style.display = 'none';
-        }
-        
-        // 선택된 입고 정보 초기화
-        selectedReceipt = null;
-    }
+	    // =============================
+	    // 업무 처리 함수
+	    // =============================
+	    
+	    /**
+	     * 데이터 검색 함수
+	     * 검색어를 이용하여 데이터를 검색하고 그리드에 결과를 표시합니다.
+	     */
+	    async function searchData() {
+	        try {
+	            const keyword = document.getElementById('mReceiptInput').value;
+	            console.log('데이터 검색 시작. 검색어:', keyword);
 
-    // =============================
-    // 업무 처리 함수
-    // =============================
-    
-    /**
-     * 데이터 검색 함수
-     * 검색어를 이용하여 데이터를 검색하고 그리드에 결과를 표시합니다.
-     */
-    async function searchData() {
-        try {
-            const keyword = document.getElementById('mReceiptInput').value;
-            console.log('데이터 검색 시작. 검색어:', keyword);
+	            // API 호출
+	            const response = await ApiUtil.getWithLoading(
+	                API_URLS.LIST, 
+	                {
+	                    keyword: keyword
+	                },
+	                '데이터 검색 중...'
+	            );
 
-            // API 호출
-            const response = await ApiUtil.getWithLoading(
-                API_URLS.LIST, 
-                {
-                    keyword: keyword
-                },
-                '데이터 검색 중...'
-            );
+	            // 응답 데이터 처리
+	            const data = Array.isArray(response) ? response : (response.data || []);
 
-            // 응답 데이터 처리
-            const data = Array.isArray(response) ? response : (response.data || []);
+	            // 그리드 데이터 설정
+	            const grid = GridUtil.getGrid('mReceiptGrid');
+	            if (grid) {
+	                grid.resetData(data);
+	                
+	                // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
+	                GridSearchUtil.updateOriginalData('mReceiptGrid', data);
+	            }
 
-            // 그리드 데이터 설정
-            const grid = GridUtil.getGrid('mReceiptGrid');
-            if (grid) {
-                grid.resetData(data);
-                
-                // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
-                GridSearchUtil.updateOriginalData('mReceiptGrid', data);
-            }
+	            // 상세 정보 영역 숨기기
+	            hideDetailSection();
 
-            // 상세 정보 영역 숨기기
-            hideDetailSection();
+	            console.log('데이터 검색 완료. 결과:', data.length, '건');
+	            return data;
+	        } catch (error) {
+	            console.error('데이터 검색 중 오류:', error);
+	            await AlertUtil.showError('검색 오류', '데이터 검색 중 오류가 발생했습니다.');
+	            throw error;
+	        }
+	    }
+	    
+	    /**
+	     * 입고 확정 함수 - 검수 완료된 항목만 처리
+	     * 선택된 입고 정보를 확정 처리합니다.
+	     */
+	    async function confirmReceipt() {
+	        try {
+	            // 선택된 행 ID 확인
+	            const grid = GridUtil.getGrid('mReceiptGrid');
+	            const selectedRowKeys = grid.getCheckedRowKeys();
+	            
+	            if (selectedRowKeys.length === 0) {
+	                await AlertUtil.showWarning('알림', '확정할 입고 항목을 선택해주세요.');
+	                return false;
+	            }
+	            
+	            // 선택된 입고 정보 수집 및 유효성 검증
+	            const validItems = [];
+	            const invalidItems = [];
+	            
+	            for (const rowKey of selectedRowKeys) {
+	                const receiptData = grid.getRow(rowKey);
+	                
+	                // 이미 확정된 항목 제외
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
+	                    invalidItems.push({
+	                        code: receiptData.RECEIPT_CODE,
+	                        reason: '이미 입고 완료된 항목'
+	                    });
+	                    continue;
+	                }
+	                
+	                // 취소된 항목 제외
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
+	                    invalidItems.push({
+	                        code: receiptData.RECEIPT_CODE,
+	                        reason: '취소된 항목'
+	                    });
+	                    continue;
+	                }
+	                
+	                // 검수가 완료된 항목만 입고완료 할수있도록 확인
+	                // 검수중인 항목은 검수 정보 확인
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.INSPECTING) {
+	                    try {
+	                        // 검수 완료 여부 확인
+	                        const response = await ApiUtil.get(
+	                            API_URLS.INSPECTION_INFO(receiptData.RECEIPT_NO)
+	                        );
+	                        
+	                        if (!response.success || !response.data) {
+	                            invalidItems.push({
+	                                code: receiptData.RECEIPT_CODE,
+	                                reason: '검수 정보가 없는 항목'
+	                            });
+	                            continue;
+	                        }
+	                        
+	                        // 검수 결과 확인 (합격 또는 조건부 합격만 처리 가능)
+	                        const inspResult = response.data.INSP_RESULT;
+	                        if (inspResult !== 'PASS' && inspResult !== 'CONDITIONAL_PASS') {
+	                            invalidItems.push({
+	                                code: receiptData.RECEIPT_CODE,
+	                                reason: '검수 중이거나 불합격 항목'
+	                            });
+	                            continue;
+	                        }
+	                    } catch (error) {
+	                        console.error('검수 정보 확인 중 오류:', error);
+	                        invalidItems.push({
+	                            code: receiptData.RECEIPT_CODE,
+	                            reason: '검수 정보 확인 중 오류 발생'
+	                        });
+	                        continue;
+	                    }
+	                }
+	                
+	                // 입고대기 상태인 경우(검수 없이 바로 입고하는 경우)는 경고 추가
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.WAITING) {
+	                    invalidItems.push({
+	                        code: receiptData.RECEIPT_CODE,
+	                        reason: '검수가 완료되지 않은 항목'
+	                    });
+	                    continue;
+	                }
+	                
+	                validItems.push({
+	                    receiptNo: receiptData.RECEIPT_NO,
+	                    receiptCode: receiptData.RECEIPT_CODE,
+	                    receiptStatus: RECEIPT_STATUS.COMPLETED,
+	                    updatedBy: 'SYSTEM' // TODO: 로그인 사용자 정보로 대체
+	                });
+	            }
+	            
+	            if (validItems.length === 0) {
+	                // 선택된 모든 항목이 유효하지 않은 경우
+	                let errorMessage = '다음 이유로 입고 확정할 수 없습니다:\n\n';
+	                invalidItems.forEach(item => {
+	                    errorMessage += `- ${item.code}: ${item.reason}\n`;
+	                });
+	                
+	                await AlertUtil.showWarning('알림', errorMessage);
+	                return false;
+	            }
+	            
+	            // 일부 항목이 유효하지 않은 경우
+	            if (invalidItems.length > 0) {
+	                let warningMessage = '다음 항목은 입고 확정이 불가능합니다:\n\n';
+	                invalidItems.forEach(item => {
+	                    warningMessage += `- ${item.code}: ${item.reason}\n`;
+	                });
+	                
+	                warningMessage += '\n유효한 항목만 확정 처리하시겠습니까?';
+	                
+	                const confirmed = await AlertUtil.showConfirm({
+	                    title: "입고 확정",
+	                    text: warningMessage,
+	                    icon: "warning"
+	                });
+	                
+	                if (!confirmed) {
+	                    return false;
+	                }
+	            }
+	            
+	            // 확인 대화상자 표시
+	            const confirmed = await AlertUtil.showConfirm({
+	                title: "입고 확정",
+	                text: `선택한 ${validItems.length}개 항목을 입고 확정 처리하시겠습니까?`,
+	                icon: "question"
+	            });
+	            
+	            if (!confirmed) {
+	                return false;
+	            }
+	            
+	            // API 호출 처리
+	            const response = await ApiUtil.processRequest(
+	                () => ApiUtil.post(API_URLS.CONFIRM, { items: validItems }), 
+	                {
+	                    loadingMessage: '입고 확정 처리 중...',
+	                    successMessage: `${validItems.length}개 항목이 입고 확정되었습니다.`,
+	                    errorMessage: "입고 확정 처리 중 오류가 발생했습니다.",
+	                    successCallback: async () => {
+	                        // 목록 갱신
+	                        await searchData();
+	                        
+	                        // 상세 정보 영역 숨기기
+	                        hideDetailSection();
+	                    }
+	                }
+	            );
+	            
+	            return response.success;
+	        } catch (error) {
+	            console.error('입고 확정 처리 오류:', error);
+	            await AlertUtil.showError('처리 오류', '입고 확정 처리 중 오류가 발생했습니다.');
+	            return false;
+	        }
+	    }
+	    
+	    /**
+	     * 검수 등록 함수 - 다건 등록 지원
+	     * 선택한 입고 항목들을 검수 등록합니다.
+	     */
+	    async function openInspectionModal() {
+	        try {
+	            // 선택된 행 ID 확인
+	            const grid = GridUtil.getGrid('mReceiptGrid');
+	            const selectedRowKeys = grid.getCheckedRowKeys();
+	            
+	            if (selectedRowKeys.length === 0) {
+	                await AlertUtil.showWarning('알림', '검수 등록할 입고 항목을 선택해주세요.');
+	                return false;
+	            }
+	            
+	            // 다건 등록 지원
+	            // 모든 선택된 항목의 유효성 검증
+	            const invalidItems = [];
+	            const validItems = [];
+	            
+	            for (const rowKey of selectedRowKeys) {
+	                const receiptData = grid.getRow(rowKey);
+	                
+	                // 입고 완료된 항목 체크
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
+	                    invalidItems.push({
+	                        code: receiptData.RECEIPT_CODE,
+	                        reason: '이미 입고 완료된 항목'
+	                    });
+	                    continue;
+	                }
+	                
+	                // 취소된 항목 체크
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
+	                    invalidItems.push({
+	                        code: receiptData.RECEIPT_CODE,
+	                        reason: '취소된 항목'
+	                    });
+	                    continue;
+	                }
+	                
+	                // 검수중인 항목 체크
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.INSPECTING) {
+	                    invalidItems.push({
+	                        code: receiptData.RECEIPT_CODE,
+	                        reason: '이미 검수중인 항목'
+	                    });
+	                    continue;
+	                }
+	                
+	                // 유효한 항목은 별도 목록에 추가
+	                validItems.push(receiptData);
+	            }
+	            
+	            // 유효하지 않은 항목이 있는 경우 알림
+	            if (invalidItems.length > 0) {
+	                let errorMessage = '다음 항목은 검수 등록이 불가능합니다:\n\n';
+	                invalidItems.forEach(item => {
+	                    errorMessage += `- ${item.code}: ${item.reason}\n`;
+	                });
+	                
+	                if (validItems.length === 0) {
+	                    await AlertUtil.showWarning('알림', errorMessage);
+	                    return false;
+	                } else {
+	                    errorMessage += '\n나머지 유효한 항목만 검수 등록을 진행하시겠습니까?';
+	                    const confirmed = await AlertUtil.showConfirm({
+	                        title: "검수 등록",
+	                        text: errorMessage,
+	                        icon: "question"
+	                    });
+	                    
+	                    if (!confirmed) {
+	                        return false;
+	                    }
+	                }
+	            }
+	            
+	            if (validItems.length === 0) {
+	                await AlertUtil.showWarning('알림', '검수 등록 가능한 항목이 없습니다.');
+	                return false;
+	            }
+	            
+	            // 검수 항목 확인 대화상자
+	            let confirmMessage = `선택한 ${validItems.length}개 항목을 검수 등록하시겠습니까?\n\n`;
+	            
+	            // 최대 5개 항목만 표시 (너무 많으면 UI가 복잡해짐)
+	            const displayItems = validItems.slice(0, 5);
+	            displayItems.forEach(item => {
+	                confirmMessage += `- ${item.RECEIPT_CODE}: ${item.MTL_NAME} (${item.RECEIVED_QTY})\n`;
+	            });
+	            
+	            // 표시되지 않은 항목이 있는 경우 추가 메시지
+	            if (validItems.length > 5) {
+	                confirmMessage += `\n외 ${validItems.length - 5}개 항목`;
+	            }
+	            
+	            const confirmed = await AlertUtil.showConfirm({
+	                title: "검수 등록",
+	                text: confirmMessage,
+	                icon: "question"
+	            });
+	            
+	            if (!confirmed) {
+	                return false;
+	            }
+	            
+	            // 검수 등록 API 호출 (다건 처리)
+	            const inspectionItems = validItems.map(item => ({
+	                receiptNo: item.RECEIPT_NO,
+	                receiptCode: item.RECEIPT_CODE,
+	                receiptStatus: RECEIPT_STATUS.INSPECTING,
+	                updatedBy: 'SYSTEM' // TODO: 로그인 사용자 정보로 대체
+	            }));
+	            
+	            // API 호출 처리
+	            const response = await ApiUtil.processRequest(
+	                () => ApiUtil.post(API_URLS.INSPECTION, { items: inspectionItems }), 
+	                {
+	                    loadingMessage: '검수 등록 중...',
+	                    successMessage: `${validItems.length}개 항목의 검수 등록이 완료되었습니다. 검수 담당자가 검사를 진행합니다.`,
+	                    errorMessage: "검수 등록 중 오류가 발생했습니다.",
+	                    successCallback: async () => {
+	                        // 목록 갱신
+	                        await searchData();
+	                        
+	                        // 상세 정보 영역 숨기기
+	                        hideDetailSection();
+	                    }
+	                }
+	            );
+	            
+	            return response.success;
+	        } catch (error) {
+	            console.error('검수 등록 오류:', error);
+	            await AlertUtil.showError('처리 오류', '검수 등록 중 오류가 발생했습니다.');
+	            return false;
+	        }
+	    }
 
-            console.log('데이터 검색 완료. 결과:', data.length, '건');
-            return data;
-        } catch (error) {
-            console.error('데이터 검색 중 오류:', error);
-            await AlertUtil.showError('검색 오류', '데이터 검색 중 오류가 발생했습니다.');
-            throw error;
-        }
-    }
-    
-    /**
-     * 입고 확정 함수
-     * 선택된 입고 정보를 확정 처리합니다.
-     */
-    async function confirmReceipt() {
-        try {
-            // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('mReceiptGrid');
-            const selectedRowKeys = grid.getCheckedRowKeys();
-            
-            if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '확정할 입고 항목을 선택해주세요.');
-                return false;
-            }
-            
-            // 선택된 입고 정보 수집
-            const selectedReceipts = [];
-            for (const rowKey of selectedRowKeys) {
-                const receiptData = grid.getRow(rowKey);
-                
-                // 이미 확정된 항목 제외
-                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
-                    continue;
-                }
-                
-                // 취소된 항목 제외
-                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
-                    continue;
-                }
-                
-                selectedReceipts.push({
-                    receiptNo: receiptData.RECEIPT_NO,
-                    receiptCode: receiptData.RECEIPT_CODE,
-                    receiptStatus: RECEIPT_STATUS.COMPLETED,
-                    updatedBy: 'SYSTEM' // TODO: 로그인 사용자 정보로 대체
-                });
-            }
-            
-            if (selectedReceipts.length === 0) {
-                await AlertUtil.showWarning('알림', '확정 가능한 입고 항목이 없습니다.');
-                return false;
-            }
-            
-            // 확인 대화상자 표시
-            const confirmed = await AlertUtil.showConfirm({
-                title: "입고 확정",
-                text: `선택한 ${selectedReceipts.length}개 항목을 입고 확정 처리하시겠습니까?`,
-                icon: "question"
-            });
-            
-            if (!confirmed) {
-                return false;
-            }
-            
-            // API 호출 처리
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.CONFIRM, { items: selectedReceipts }), 
-                {
-                    loadingMessage: '입고 확정 처리 중...',
-                    successMessage: "입고가 확정되었습니다.",
-                    errorMessage: "입고 확정 처리 중 오류가 발생했습니다.",
-                    successCallback: async () => {
-                        // 목록 갱신
-                        await searchData();
-                        
-                        // 상세 정보 영역 숨기기
-                        hideDetailSection();
-                    }
-                }
-            );
-            
-            return response.success;
-        } catch (error) {
-            console.error('입고 확정 처리 오류:', error);
-            await AlertUtil.showError('처리 오류', '입고 확정 처리 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-    
-    /**
-     * 검수 등록 함수
-     * 선택한 입고 항목을 검수 담당자에게 넘깁니다.
-     */
-    async function openInspectionModal() {
-        try {
-            // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('mReceiptGrid');
-            const selectedRowKeys = grid.getCheckedRowKeys();
-            
-            if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '검수 등록할 입고 항목을 선택해주세요.');
-                return false;
-            }
-// 다건등록으로 변경             
-//            if (selectedRowKeys.length > 1) {
-//                await AlertUtil.showWarning('알림', '검수 등록은 한 번에 하나의 항목만 가능합니다.');
-//                return false;
-//            }
-            
-            const rowKey = selectedRowKeys[0];
-            const receiptData = grid.getRow(rowKey);
-            
-            // 이미 입고 완료된 항목 체크
-            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
-                await AlertUtil.showWarning('알림', '이미 입고 완료된 항목은 검수 등록이 불가능합니다.');
-                return false;
-            }
-			
-			// 검수가 완료된 항목만 입고완료 할수있도록 바꿔야함(구현예정)
-			if (receiptData.RECEIPT_STATUS )
-            
-            // 취소된 항목 체크
-            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
-                await AlertUtil.showWarning('알림', '취소된 항목은 검수 등록이 불가능합니다.');
-                return false;
-            }
-            
-            // 검수중인 항목 체크
-            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.INSPECTING) {
-                await AlertUtil.showWarning('알림', '이미 검수중인 항목입니다.');
-                return false;
-            }
-            
-            // 검수 항목 확인 대화상자
-            const confirmed = await AlertUtil.showConfirm({
-                title: "검수 등록",
-                text: `선택한 항목을 검수 등록하시겠습니까?\n\n자재명: ${receiptData.MTL_NAME}\n입고수량: ${receiptData.RECEIVED_QTY}`,
-                icon: "question"
-            });
-            
-            if (!confirmed) {
-                return false;
-            }
-            
-            // 검수 등록 API 호출
-            const inspectionData = {
-                receiptNo: receiptData.RECEIPT_NO,
-                receiptCode: receiptData.RECEIPT_CODE,
-                receiptStatus: RECEIPT_STATUS.INSPECTING,
-                updatedBy: 'SYSTEM' // TODO: 로그인 사용자 정보로 대체
-            };
-            
-            // API 호출 처리
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.INSPECTION, inspectionData), 
-                {
-                    loadingMessage: '검수 등록 중...',
-                    successMessage: "검수 등록이 완료되었습니다. 검수 담당자가 검사를 진행합니다.",
-                    errorMessage: "검수 등록 중 오류가 발생했습니다.",
-                    successCallback: async () => {
-                        // 목록 갱신
-                        await searchData();
-                        
-                        // 상세 정보 영역 숨기기
-                        hideDetailSection();
-                    }
-                }
-            );
-            
-            return response.success;
-        } catch (error) {
-            console.error('검수 등록 오류:', error);
-            await AlertUtil.showError('처리 오류', '검수 등록 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-    
-    /**
-     * 빈 함수 - 원래 검수 정보 저장 함수였으나 검수는 다른 담당자가 진행
-     * 함수 참조를 유지하기 위해 빈 함수로 남깁니다.
-     */
-    async function saveInspection() {
-        console.log('saveInspection은 사용되지 않습니다. 검수는 다른 담당자가 진행합니다.');
-        return false;
-    }
+	    // =============================
+	    // 유틸리티 함수
+	    // =============================
+	    
+	    /**
+	     * 날짜 포맷팅 함수
+	     * 
+	     * @param {string|Date} date - 날짜 문자열 또는 Date 객체
+	     * @returns {string} 포맷팅된 날짜 문자열
+	     */
+	    function formatDate(date) {
+	        if (!date) return '-';
+	        
+	        try {
+	            const dateObj = new Date(date);
+	            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+	        } catch (error) {
+	            return '-';
+	        }
+	    }
+	    
+	    /**
+	     * 날짜/시간 포맷팅 함수
+	     * 
+	     * @param {string|Date} datetime - 날짜/시간 문자열 또는 Date 객체
+	     * @returns {string} 포맷팅된 날짜/시간 문자열
+	     */
+	    function formatDateTime(datetime) {
+	        if (!datetime) return '-';
+	        
+	        try {
+	            const dateObj = new Date(datetime);
+	            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+	        } catch (error) {
+	            return '-';
+	        }
+	    }
+	    
+	    /**
+	     * 검수 결과 텍스트 변환 함수
+	     * 
+	     * @param {string} resultCode - 검수 결과 코드
+	     * @returns {string} 검수 결과 표시 텍스트
+	     */
+	    function getInspectionResultText(resultCode) {
+	        if (!resultCode) return '-';
+	        
+	        const resultMap = {
+	            'PASS': '<span class="badge badge-completed">합격</span>',
+	            'CONDITIONAL_PASS': '<span class="badge badge-inspecting">조건부 합격</span>',
+	            'FAIL': '<span class="badge badge-canceled">불합격</span>'
+	        };
+	        
+	        return resultMap[resultCode] || resultCode;
+	    }
+	    
+	    /**
+	     * 그리드 인스턴스 반환 함수
+	     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
+	     * 
+	     * @returns {Object} 그리드 인스턴스
+	     */
+	    function getGrid() {
+	        return mReceiptGrid;
+	    }
 
-    // =============================
-    // 유틸리티 함수
-    // =============================
-    
-    /**
-     * 날짜 포맷팅 함수
-     * 
-     * @param {string|Date} date - 날짜 문자열 또는 Date 객체
-     * @returns {string} 포맷팅된 날짜 문자열
-     */
-    function formatDate(date) {
-        if (!date) return '-';
-        
-        try {
-            const dateObj = new Date(date);
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-        } catch (error) {
-            return '-';
-        }
-    }
-    
-    /**
-     * 날짜/시간 포맷팅 함수
-     * 
-     * @param {string|Date} datetime - 날짜/시간 문자열 또는 Date 객체
-     * @returns {string} 포맷팅된 날짜/시간 문자열
-     */
-    function formatDateTime(datetime) {
-        if (!datetime) return '-';
-        
-        try {
-            const dateObj = new Date(datetime);
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-        } catch (error) {
-            return '-';
-        }
-    }
-    
-    /**
-     * 검수 결과 텍스트 변환 함수
-     * 
-     * @param {string} resultCode - 검수 결과 코드
-     * @returns {string} 검수 결과 표시 텍스트
-     */
-    function getInspectionResultText(resultCode) {
-        if (!resultCode) return '-';
-        
-        const resultMap = {
-            'PASS': '<span class="badge badge-completed">합격</span>',
-            'CONDITIONAL_PASS': '<span class="badge badge-inspecting">조건부 합격</span>',
-            'FAIL': '<span class="badge badge-canceled">불합격</span>'
-        };
-        
-        return resultMap[resultCode] || resultCode;
-    }
-    
-    /**
-     * 그리드 인스턴스 반환 함수
-     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
-     * 
-     * @returns {Object} 그리드 인스턴스
-     */
-    function getGrid() {
-        return mReceiptGrid;
-    }
+	    // =============================
+	    // 공개 API - 외부에서 접근 가능한 메서드
+	    // =============================
+	    return {
+	        // 초기화 및 기본 기능
+	        init,                // 모듈 초기화
 
-    // =============================
-    // 공개 API - 외부에서 접근 가능한 메서드
-    // =============================
-    return {
-        // 초기화 및 기본 기능
-        init,                // 모듈 초기화
+	        // 데이터 관련 함수
+	        searchData,          // 데이터 검색
+	        confirmReceipt,      // 입고 확정
+	        openInspectionModal, // 검수 등록 모달 
+	        loadHistoryData,     // 이력 정보 로드
+	        
+	        // 유틸리티 함수
+	        getGrid,             // 그리드 인스턴스 반환
+	    };
+	})();
 
-        // 데이터 관련 함수
-        searchData,     // 데이터 검색
-        confirmReceipt, // 입고 확정
-        
-        // 유틸리티 함수
-        getGrid,        // 그리드 인스턴스 반환
-    };
-})();
-
-// =============================
-// DOM 로드 시 초기화
-// =============================
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // 원자재 입고관리 모듈 초기화
-        await MaterialReceiptManager.init();
-    } catch (error) {
-        console.error('초기화 중 오류 발생:', error);
-        if (window.AlertUtil) {
-            await AlertUtil.showError('초기화 오류', '원자재 입고관리 초기화 중 오류가 발생했습니다.');
-        } else {
-            alert('원자재 입고관리 초기화 중 오류가 발생했습니다.');
-        }
-    }
-});
+	// =============================
+	// DOM 로드 시 초기화
+	// =============================
+	document.addEventListener('DOMContentLoaded', async function() {
+	    try {
+	        // 원자재 입고관리 모듈 초기화
+	        await MaterialReceiptManager.init();
+	    } catch (error) {
+	        console.error('초기화 중 오류 발생:', error);
+	        if (window.AlertUtil) {
+	            await AlertUtil.showError('초기화 오류', '원자재 입고관리 초기화 중 오류가 발생했습니다.');
+	        } else {
+	            alert('원자재 입고관리 초기화 중 오류가 발생했습니다.');
+	        }
+	    }
+	});
