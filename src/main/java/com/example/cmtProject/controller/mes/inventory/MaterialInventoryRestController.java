@@ -29,7 +29,7 @@ public class MaterialInventoryRestController {
     /**
      * 원자재 재고 목록 조회 API
      * 
-     * @param keyword 검색 키워드 (선택사항)
+     * @param keyword 검색 키워드
      * @return 재고 목록 데이터
      */
 	@GetMapping("/list")
