@@ -13,7 +13,7 @@
         I.IQC_CODE,
         E.EMP_NAME,
         I.QCM_NAME,
-        I.MTL_NAME,
+        M.MTL_NAME,
         I.IQC_START_TIME,
         I.IQC_END_TIME,
         I.RECEIVED_QTY,
@@ -31,7 +31,8 @@
     FROM IQC I
     LEFT JOIN COMMONCODE_DETAIL C_UNIT_LENGTH ON C_UNIT_LENGTH.CMN_DETAIL_NAME = I.QCM_UNIT_LENGTH
 	LEFT JOIN COMMONCODE_DETAIL C_UNIT_WEIGHT ON C_UNIT_WEIGHT.CMN_DETAIL_NAME = I.QCM_UNIT_WEIGHT	
-	JOIN EMPLOYEES E ON E.EMP_ID = I.EMP_ID
+	LEFT JOIN EMPLOYEES E ON E.EMP_ID = I.EMP_ID
+	JOIN MATERIALS M ON M.MTL_CODE = I.MTL_CODE
 	WHERE I.IQC_VISIABLE = 'Y'
     ORDER BY IQC_NO DESC
 	</select>
@@ -80,15 +81,15 @@
 	
 	
 	<!-- 물건 입고시 입고 검사 검사전과 필요한 데이터 가져오기 -->
-	<select id="getMaterialReceipts" resultType="map">
+	<select id="getMaterialReceipts" resultType="map" parameterType="map">
 		SELECT 
 			RECEIPT_CODE,
-			MLT_CODE,
+			MTL_CODE,
 			RECEIVED_QTY,
 			WAREHOUSE_CODE
 		FROM
 			MATERIAL_RECEIPT
-		WHERE RECEIPT_STATUS = '검수중'
+		WHERE RECEIPT_CODE = #{receiptCode}
 	</select>
 	
 	<!-- IQC CODE 생성 및 최대값 가져오는 코드 -->
@@ -98,31 +99,48 @@
 	  FROM 
 	    IQC
 	  WHERE 
-	    SUBSTR(IQC_CODE, 5, 9) = #{datePart}
+	    SUBSTR(IQC_CODE, 5, 8) = #{datePart}
 	</select>
 	
-	<!--  -->
+	<!-- 입고가 되고 검사 시작 눌렀을시 저장될 데이터들 -->
 	<insert id="insertIqcInspectionList" parameterType="map">
 	INSERT INTO IQC (
-		IQC_INSPECTION_STATUS,
-		IQC_INSPECTION_RESULT,
-		IQC_CODE, 
-		RECEIPT_CODE
-		MTL_CODE, 
-		RECEIVED_QTY, 
-		UNIT_QTY,
-		WHS_CODE, 
-	) VALUES (
-		'검사전',
-		'예정',
-		#{iqcCode},
-		#{receiptCode}, 
-		#{mltCode}, 
-		#{receivedQty},
-		#{unitQty}, 
-		#{warehouseCode}, 
+	  IQC_INSPECTION_STATUS,
+	  IQC_INSPECTION_RESULT,
+	  IQC_CODE, 
+	  RECEIPT_CODE,
+	  MTL_CODE, 
+	  RECEIVED_QTY, 
+	  UNIT_QTY,
+	  WHS_CODE,
+	  IQC_VISIABLE
+	)
+	SELECT
+	  '검사전',
+	  '예정',
+	  #{iqcCode},
+	  #{receiptCode}, 
+	  #{mtlCode}, 
+	  #{receivedQty},
+	  '개',
+	  #{whsCode},
+	  'Y'
+	FROM DUAL
+	WHERE NOT EXISTS (
+	  SELECT 1 FROM IQC WHERE RECEIPT_CODE = #{receiptCode}
 	)
 	</insert>
+	
+	<!-- 검사전에서 검사중으로 업데이트 -->
+	<update id="updateIqcInspectionStatusProcessing" parameterType="map">
+		UPDATE IQC
+		SET 
+			IQC_INSPECTION_STATUS = '검사중',
+			EMP_NAME = #{emp.empName},
+			EMP_ID = #{emp.empId},
+			IQC_START_TIME = #{iqc.iqcStartTime}
+		WHERE IQC_CODE = #{iqc.iqcCode}
+	</update>
 
 
 </mapper>

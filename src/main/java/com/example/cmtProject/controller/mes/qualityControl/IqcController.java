@@ -2,6 +2,7 @@ package com.example.cmtProject.controller.mes.qualityControl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.entity.mes.qualityControl.Iqc;
 import com.example.cmtProject.repository.mes.qualityControl.IqcRepository;
@@ -84,6 +86,33 @@ public class IqcController {
 
         return ResponseEntity.ok("success");
     }
+    
+    // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
+    @ResponseBody
+    @PostMapping("/status-action")
+    public ResponseEntity<?> postMethodName(Model model, 
+    											@RequestBody Map<String, String> payload,
+    											@AuthenticationPrincipal PrincipalDetails principalDetails) {
+
+    	// 유저정보
+    	Employees loginUser = principalDetails.getUser();
+    	
+    	IqcDTO iqcDTO = new IqcDTO();
+    	
+    	iqcDTO.setIqcCode(payload.get("iqcCode"));
+        String status = payload.get("status");
+
+        // TODO: 상태에 따라 분기 처리
+        if ("검사전".equals(status)) {
+        	iqcService.updateIqcInspectionStatusProcessing(loginUser, iqcDTO);
+        } else if ("검사중".equals(status)) {
+        	iqcService.updateIqcInspectionStatusComplete(iqcDTO);
+        }
+    	
+        
+        return ResponseEntity.ok(Collections.singletonMap("result", "success"));
+    }
+    
 	
 	
 	

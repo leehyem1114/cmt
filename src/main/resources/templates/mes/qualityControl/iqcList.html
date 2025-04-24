@@ -164,7 +164,7 @@
            		  sortable: true,
            		  align: 'center',
            		  width: 100,
-           		formatter: ({ value }) => {
+           		formatter: ({ row, value }) => {
            		    let btnClass = 'btn-secondary';
 
            		    if (value === '검사중') {
@@ -173,8 +173,13 @@
            		      btnClass = 'btn-success';
            		    }
 
-           		    return `<button class="btn ${btnClass} btn-sm">${value}</button>`;
-           		  }
+	           		 return `<button 
+	                 class="btn ${btnClass} btn-sm" 
+	                 data-action="status" 
+	                 data-code="${row.iqcCode}" 
+	                 data-status="${value}"
+	               >${value}</button>`;
+     				}
            		},
            		{
            		  header: '합격 여부',
@@ -360,6 +365,58 @@
 	    
 	    
 	    
+	    document.getElementById('gridTop').addEventListener('click', function (e) {
+	    	  if (e.target.tagName === 'BUTTON' && e.target.dataset.action === 'status') {
+	    	    const iqcCode = e.target.dataset.code;
+	    	    const status = e.target.dataset.status;
+	    	    handleStatusClick(iqcCode, status);
+	    	  }
+	    	});
+
+	    	function handleStatusClick(iqcCode, status) {
+	    	  // 검사전일 때만 "검사중"으로 바꿀지 물어봄
+	    	  if (status === '검사전') {
+	    	    Swal.fire({
+	    	      title: `정말 '검사중' 상태로 변경하시겠습니까?`,
+	    	      icon: 'warning',
+	    	      showCancelButton: true,
+	    	      confirmButtonText: '변경',
+	    	      cancelButtonText: '취소'
+	    	    }).then(result => {
+	    	      if (!result.isConfirmed) return;
+
+	    	      fetch('/iqc/status-action', {
+	    	        method: 'POST',
+	    	        headers: { 'Content-Type': 'application/json' },
+	    	        body: JSON.stringify({ iqcCode, status })
+	    	      })
+	    	        .then(res => res.json())
+	    	        .then(data => {
+	    	          Swal.fire({
+	    	            title: '성공',
+	    	            text: '상태가 "검사중"으로 변경되었습니다.',
+	    	            icon: 'success'
+	    	          }).then(() => location.reload());
+	    	        })
+	    	        .catch(err => {
+	    	          console.error('전송 실패:', err);
+	    	          Swal.fire('오류', '상태 변경에 실패했습니다.', 'error');
+	    	        });
+	    	    });
+	    	  } else {
+	    	    Swal.fire({
+	    	      icon: 'warning',
+	    	      title: '이미 검사중이거나<br>완료된 항목입니다.',
+	    	      text: '검사전 상태만 변경할 수 있습니다.'
+	    	    });
+	    	  }
+	    	}
+
+	    
+	    
+	    
+	    
+	    
 	    // 아무곳이나 클릭하면 상세정보 띄워주기
 	    grid.on('click', ev => {
 	    	  const rowKey = ev.rowKey;
@@ -389,6 +446,10 @@
 
 			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
 			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
+			  
+			  function safe(value) {
+				  return (value === null || value === undefined) ? ' ' : value;
+				}
 
 	    	  const detailHtml = `
 	    		<div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
@@ -401,8 +462,8 @@
 	    	        ${makeDetailItem('입고 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', rowData.empName)}
 	    	        ${makeDetailItem('원자재', rowData.mtlName)}
-	    	        ${makeDetailItem('무게 측정값', `${rowData.iqcMeasuredWeightValue} ${rowData.qcmUnitWeight}`)}
-	    	        ${makeDetailItem('길이 측정값', `${rowData.iqcMeasuredLengthValue} ${rowData.qcmUnitLength}`)}
+	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.iqcMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
+	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.iqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
 	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.iqcStartTime))}
 	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.iqcEndTime))}
 	    	        ${makeDetailItem('입고 창고', rowData.whsName)}

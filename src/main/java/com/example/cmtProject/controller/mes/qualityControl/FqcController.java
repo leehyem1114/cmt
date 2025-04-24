@@ -88,6 +88,31 @@ public class FqcController {
     }
     
     
+    // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
+    @ResponseBody
+    @PostMapping("status-action")
+    public ResponseEntity<String> postMethodName(Model model, 
+    											@RequestBody Map<String, String> payload,
+    											@ModelAttribute FqcDTO fqcDTO,
+    											@AuthenticationPrincipal PrincipalDetails principalDetails) {
+
+    	// 유저정보
+    	String loginUser = principalDetails.getUsername();
+    	
+    	String iqcCode = payload.get("iqcCode");
+        String status = payload.get("status");
+
+        // TODO: 상태에 따라 분기 처리
+        if ("검사중".equals(status)) {
+        	fqcService.updateFqcInspectionStatusProcessing(loginUser, fqcDTO);
+        } else if ("검사완료".equals(status)) {
+        	fqcService.updateFqcInspectionStatusComplete(loginUser, fqcDTO);
+        }
+        
+    	return ResponseEntity.ok("success");
+    }
+    
+    
 	
 	
 	

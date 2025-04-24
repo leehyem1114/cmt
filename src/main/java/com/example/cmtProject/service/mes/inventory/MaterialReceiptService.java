@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
+import com.example.cmtProject.service.mes.qualityControl.IqcService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +25,9 @@ public class MaterialReceiptService {
 	
 	@Autowired
 	private MaterialReceiptMapper mrm;
+	
+	@Autowired
+	private IqcService iqcService;
 	
 	/**
 	 * 입고 목록 조회
@@ -134,23 +138,23 @@ public class MaterialReceiptService {
 	        resultMap.putAll(receiptDetail);
 	        
 	        // 검수 정보 조회 (있는 경우)
-	        Map<String, Object> inspectionData = mrm.getInspectionInfo(receiptNo);
-	        resultMap.put("hasInspection", inspectionData != null);
-	        if (inspectionData != null) {
-	            resultMap.put("inspectionData", inspectionData);
-	        }
+//	        Map<String, Object> inspectionData = mrm.getInspectionInfo(receiptNo);
+//	        resultMap.put("hasInspection", inspectionData != null);
+//	        if (inspectionData != null) {
+//	            resultMap.put("inspectionData", inspectionData);
+//	        }
 	        
 	        // LOT 정보 조회
-	        List<Map<String, Object>> lotData = mrm.getLotInfo(receiptNo);
-	        resultMap.put("lotData", lotData != null ? lotData : new ArrayList<>());
+//	        List<Map<String, Object>> lotData = mrm.getLotInfo(receiptNo);
+//	        resultMap.put("lotData", lotData != null ? lotData : new ArrayList<>());
 	        
 	        // 위치 정보 조회
-	        List<Map<String, Object>> locationData = mrm.getLocationInfo(receiptNo);
-	        resultMap.put("locationData", locationData != null ? locationData : new ArrayList<>());
+//	        List<Map<String, Object>> locationData = mrm.getLocationInfo(receiptNo);
+//	        resultMap.put("locationData", locationData != null ? locationData : new ArrayList<>());
 	        
 	        // 이력 정보 조회
-	        List<Map<String, Object>> historyData = mrm.getHistoryInfo(receiptNo);
-	        resultMap.put("historyData", historyData != null ? historyData : new ArrayList<>());
+//	        List<Map<String, Object>> historyData = mrm.getHistoryInfo(receiptNo);
+//	        resultMap.put("historyData", historyData != null ? historyData : new ArrayList<>());
 	        
 	        resultMap.put("success", true);
 	    } catch (Exception e) {
@@ -209,7 +213,7 @@ public class MaterialReceiptService {
 	                    historyMap.put("actionUser", item.get("updatedBy"));
 	                    historyMap.put("actionDate", nowStr);
 	                    
-	                    mrm.insertReceiptHistory(historyMap);
+//	                    mrm.insertReceiptHistory(historyMap);
 	                    
 	                    // 재고 정보 업데이트 - 실제 입고 수량만큼 재고 증가
 	                    Map<String, Object> receiptDetail = mrm.getReceiptDetail((Long)item.get("receiptNo"));
@@ -222,7 +226,7 @@ public class MaterialReceiptService {
 	                        stockMap.put("updatedBy", item.get("updatedBy"));
 	                        
 	                        // 재고 업데이트 (있으면 증가, 없으면 생성)
-	                        mrm.updateMaterialInventory(stockMap);
+//	                        mrm.updateMaterialInventory(stockMap);
 	                    }
 	                }
 	            } catch (Exception e) {
@@ -285,8 +289,10 @@ public class MaterialReceiptService {
 	        updateMap.put("receiptDate", todayStr); // 검수 요청일을 입고일로 설정
 	        updateMap.put("updatedBy", params.get("updatedBy"));
 	        updateMap.put("updatedDate", todayStr);
-	        
+	        updateMap.put("receiptCode", params.get("receiptCode"));
+
 	        int result = mrm.updateReceiptStatusAndDate(updateMap);
+	        iqcService.insertIqcInspection(updateMap);
 	        
 	        if (result > 0) {
 	            // 이력 기록
@@ -297,7 +303,7 @@ public class MaterialReceiptService {
 	            historyMap.put("actionUser", params.get("updatedBy"));
 	            historyMap.put("actionDate", todayStr);
 	            
-	            mrm.insertReceiptHistory(historyMap);
+//	            mrm.insertReceiptHistory(historyMap);
 	            
 	            resultMap.put("success", true);
 	            resultMap.put("message", "검수 등록이 완료되었습니다.");
@@ -305,6 +311,7 @@ public class MaterialReceiptService {
 	            resultMap.put("success", false);
 	            resultMap.put("message", "검수 등록 처리가 실패했습니다.");
 	        }
+	        
 	    } catch (Exception e) {
 	        log.error("검수 등록 처리 중 오류 발생: {}", e.getMessage(), e);
 	        resultMap.put("success", false);

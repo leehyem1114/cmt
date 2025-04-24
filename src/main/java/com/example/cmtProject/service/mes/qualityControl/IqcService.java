@@ -1,6 +1,7 @@
 package com.example.cmtProject.service.mes.qualityControl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.qualityControl.IqcMapper;
 
 import jakarta.transaction.Transactional;
@@ -54,16 +56,31 @@ public class IqcService {
 
 	// 물건 입고시 입고 검사 검사전과 필요한 데이터 가져와서 인서트 하기
 	@Transactional
-	public void insertIqcInspection() {
-		List<Map<String, Object>> result = iqcMapper.getMaterialReceipts();
+	public void insertIqcInspection(Map<String, Object> updateMap) {
+		List<Map<String, Object>> result = iqcMapper.getMaterialReceipts(updateMap);
 		
 		for (Map<String, Object> row : result) {
-			// 예: IQC_CODE 자동 생성 (선택)
-			String iqcCode = generateIqcCode(); // 'IQC-20250422-001' 같은 것
-			row.put("iqcCode", iqcCode); // insert 쿼리에서 #{iqcCode}로 사용될 수 있도록
+		    row.put("receiptCode", row.get("RECEIPT_CODE"));
+		    row.put("mtlCode", row.get("MTL_CODE"));
+		    row.put("receivedQty", row.get("RECEIVED_QTY"));
+		    row.put("whsCode", row.get("WAREHOUSE_CODE"));
+		    row.put("iqcCode", generateIqcCode());
 
 			iqcMapper.insertIqcInspectionList(row);
 		}
+	}
+
+	// 검사전에서 검사중으로 업데이트
+	@Transactional
+	public void updateIqcInspectionStatusProcessing(Employees loginUser, IqcDTO iqcDTO) {
+		iqcDTO.setIqcStartTime(LocalDateTime.now());
+		iqcMapper.updateIqcInspectionStatusProcessing(loginUser, iqcDTO);
+	}
+
+	@Transactional
+	// 검사중에서 검사완료로 업데이트
+	public void updateIqcInspectionStatusComplete(IqcDTO iqcDTO) {
+		
 	}
 
 	

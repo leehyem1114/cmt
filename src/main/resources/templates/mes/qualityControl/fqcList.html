@@ -164,7 +164,7 @@
            		  sortable: true,
            		  align: 'center',
            		  width: 100,
-           		  formatter: ({ value }) => {
+           		  formatter: ({ row, value }) => {
            		    let btnClass = 'btn-secondary';
 
            		    if (value === '검사중') {
@@ -173,7 +173,7 @@
            		      btnClass = 'btn-success';
            		    }
 
-           		    return `<button class="btn ${btnClass} btn-sm">${value}</button>`;
+           		 return `<button class="btn ${btnClass} btn-sm" onclick="handleStatusClick('${row.fqcCode}', '${value}')">${value}</button>`;
            		  }
            		},
            		{
@@ -360,6 +360,25 @@
 	    
 	    
 	    
+		 // 검사전 검사중 버튼 눌렀을시 작동하는 로직
+	    function handleStatusClick(fqcCode, status) {
+	    	  fetch('/fqc/status-action', {
+	    	    method: 'POST',
+	    	    headers: { 'Content-Type': 'application/json' },
+	    	    body: JSON.stringify({ fqcCode, status })
+	    	  })
+	    	  .then(res => res.json())
+	    	  .then(data => {
+	    	    console.log('서버 응답:', data);
+	    	    // 추가 처리 (예: 알림, 그리드 리로드 등)
+	    	  })
+	    	  .catch(err => {
+	    	    console.error('전송 실패:', err);
+	    	  });
+	    	}
+	    
+	    
+	    
 	    
 	 	// 행 아무곳이나 클릭하면 체크박스 활성화
 	    grid.on('click', ev => {
@@ -406,6 +425,10 @@
 
 			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
 			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
+			  
+			  function safe(value) {
+				  return (value === null || value === undefined) ? ' ' : value;
+				}
 	
 	    	  const detailHtml = `
 	    		  <div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
@@ -418,8 +441,8 @@
 	    		      ${makeDetailItem('출고 검사 수량', `${rowData.issuedQty} ${rowData.unitQty}`)}
 	    		      ${makeDetailItem('검수자', rowData.empName)}
 	    		      ${makeDetailItem('완제품', rowData.pdtName)}
-	    		      ${makeDetailItem('무게 측정값', `${rowData.fqcMeasuredWeightValue} ${rowData.qcmUnitWeight}`)}
-	    		      ${makeDetailItem('길이 측정값', `${rowData.fqcMeasuredLengthValue} ${rowData.qcmUnitLength}`)}
+	    		      ${makeDetailItem('무게 측정값', `${safe(rowData.fqcMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
+		    	      ${makeDetailItem('길이 측정값', `${safe(rowData.fqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
 	    		      ${makeDetailItem('검사 시작', formatDate(rowData.fqcStartTime))}
 	    		      ${makeDetailItem('검사 종료', formatDate(rowData.fqcEndTime))}
 	    		      ${makeDetailItem('출고 창고', rowData.whsName)}

@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
 public interface IqcMapper {
@@ -18,11 +20,13 @@ public interface IqcMapper {
 	
 	void saveExcelData(IqcDTO dto);
 
-	List<Map<String, Object>> getMaterialReceipts();
+	List<Map<String, Object>> getMaterialReceipts(Map<String, Object> updateMap);
 	
 	int getMaxIqcCodeSeq(String datePart);
 
 	void insertIqcInspectionList(Map<String, Object> row);
+	
+	void updateIqcInspectionStatusProcessing(@Param("emp") Employees loginUser, @Param("iqc") IqcDTO iqcDTO);
 
 
 
