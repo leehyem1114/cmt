@@ -78,30 +78,39 @@
 		ORDER SIBLINGS BY CHILD_ITEM_CODE
 	</select>
 	
-	<!-- LOT 테이블에서 PATH가져오기 -->
-	<select id="selectStructurePathAll" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
-		SELECT DISTINCT
-		    ROWNUM AS IDX,
-		    LEVEL AS LOT_LEVEL,
-		    LOT_NO,
-		    PARENT_LOT_CODE,
-		    CHILD_LOT_CODE,
-		    PARENT_PDT_CODE,
-		    CHILD_PDT_CODE,
-		    CREATE_DATE,
-		    PRC_TYPE,
-		    LINE_CODE,
-		    EQP_CODE,
-		    WO_CODE,
-		    START_TIME,
-		    FINISH_TIME,
-		    WO_STATUS_NO,
-		    LTRIM(SYS_CONNECT_BY_PATH(CHILD_LOT_CODE, ' ← '), ' ← ') AS PATH
+	<!-- LOT 테이블 origin 가져오기 -->
+	<select id="selectLotOrigin" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
+		SELECT 
+			LOT_NO
+			,CHILD_LOT_CODE
+			,PARENT_LOT_CODE
+			,CHILD_PDT_CODE
+			,PARENT_PDT_CODE
+			,CREATE_DATE
+			,PRC_TYPE
+			,BOM_QTY
+			,BOM_UNIT
+			,LINE_CODE
+			,EQP_CODE
+			,WO_CODE
+			,WO_QTY
+			,START_TIME
+			,FINISH_TIME
+			,WO_STATUS_NO
+			,USE_YN
 		FROM LOT
 		WHERE USE_YN = 'Y'
-		    AND WO_CODE = #{woCode}
-		    START WITH CHILD_PDT_CODE = #{pdtCode}
-		CONNECT BY PRIOR PARENT_LOT_CODE = CHILD_LOT_CODE
+		AND WO_CODE = #{woCode}
+		ORDER BY LOT_NO
 	</select>
+	
+	<update id="updateLotResentPRC" parameterType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
+		UPDATE LOT
+		SET 
+			FINISH_TIME = #{finishTime},
+		    WO_STATUS_NO = #{woStatusNo},
+		    BOM_QTY = #{lineCode},
+		WHERE LOT_NO = #{lotNo}
+	</update>
 	
 </mapper>

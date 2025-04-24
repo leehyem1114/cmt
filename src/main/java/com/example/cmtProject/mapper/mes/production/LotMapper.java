@@ -27,6 +27,12 @@ public interface LotMapper {
 
 	//LOT테이블에서 하단 오른쪽 그리드에 최초 보여줄 전체 데이터 PATH
 	List<LotStructurePathDTO> selectStructurePathAll(@Param("woCode") String woCode,@Param("pdtCode") String pdtCode);
+
+	//두번째 그리드에 보여줄 데이터
+	List<LotOriginDTO> selectLotOrigin(String woCode);
+
+	//두번째 그리드에서 현재 공정 업데이트
+	void updateLotResentPRC(LotOriginDTO lotOrigin);
 	
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 

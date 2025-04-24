@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.example.cmtProject.dto.mes.production.LotCodeDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 
 @Mapper
 public interface ProductionPrcMapper {
@@ -48,4 +49,6 @@ public interface ProductionPrcMapper {
 	List<String> selectParentdPdtCodeList(String pdtCode);
 
 	void updateWoStatus(String woCode);
+
+	List<ProductTotalDTO> selectProductInfo(String pdtCode);
 }

@@ -29,6 +29,9 @@ public class LotDTO {
     private String startTime;
     private String finishTime;
     private String woStatusNo;
+    private String bomQty;
+	private String bomUnit;
+	private String path;
     private String useYn;
     
     //------------------
