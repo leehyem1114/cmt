@@ -4,8 +4,8 @@
  * TOAST UI Grid 기본 기능을 확장하여 프로젝트 특화 기능 및 공통 패턴을 제공합니다.
  * 프로젝트에서 필요한 ROW_TYPE 관리 및 비즈니스 로직을 중앙화합니다.
  * 
- * @version 1.2.0
- * @since 2025-04-22
+ * @version 1.3.0
+ * @since 2025-04-25
  */
 
 const GridUtil = (function() {
@@ -28,6 +28,7 @@ const GridUtil = (function() {
      * @param {boolean} [options.draggable=false] - 행 드래그 가능 여부
      * @param {string} [options.displayColumnName=''] - 드래그 시 자동 정렬에 사용할 컬럼명
      * @param {Object} [options.gridOptions={}] - Toast UI Grid 추가 옵션
+     * @param {boolean} [options.toggleRowCheckedOnClick=false] - 행 클릭 시 체크박스 토글 여부
      * @param {Function} [options.onInitialized] - 그리드 초기화 후 실행될 콜백 함수
      * 
      * @returns {Object} 생성된 TOAST UI Grid 인스턴스
@@ -60,6 +61,7 @@ const GridUtil = (function() {
                 hiddenColumns, 
                 displayColumnName, 
                 onInitialized, 
+                toggleRowCheckedOnClick,
                 gridOptions = {}, 
                 ...otherOptions 
             } = options;
@@ -88,6 +90,23 @@ const GridUtil = (function() {
             if (options.draggable && displayColumnName) {
                 gridInstance.on('drop', () => {
                     _updateRowOrder(gridInstance, displayColumnName);
+                });
+            }
+            
+            // 행 클릭 시 체크박스 토글 기능 설정
+            if (toggleRowCheckedOnClick === true) {
+                gridInstance.on('click', ev => {
+                    const { rowKey, columnName } = ev;
+                    // 체크박스 영역 클릭은 무시 (기본 토글 동작 유지)
+                    if (columnName === '_checked') return;
+                    
+                    // 현재 체크 상태 확인 후 토글
+                    const isChecked = gridInstance.getCheckedRowKeys().includes(rowKey);
+                    if (!isChecked) {
+                        gridInstance.check(rowKey);
+                    } else {
+                        gridInstance.uncheck(rowKey);
+                    }
                 });
             }
 
@@ -665,39 +684,39 @@ const GridUtil = (function() {
                 }
             });
 
-            return true;
-        } catch (error) {
-            console.error('더블 클릭 이벤트 등록 중 오류:', error);
-            return false;
-        }
-    }
+			return true;
+			        } catch (error) {
+			            console.error('더블 클릭 이벤트 등록 중 오류:', error);
+			            return false;
+			        }
+			    }
 
-    // 공개 API - 모듈의 공개 인터페이스
-    return {
-        // 그리드 인스턴스 관리
-        registerGrid,      // 그리드 인스턴스 생성 및 등록
-        getGrid,           // 그리드 인스턴스 조회
-        unregisterGrid,    // 그리드 인스턴스 제거
+			    // 공개 API - 모듈의 공개 인터페이스
+			    return {
+			        // 그리드 인스턴스 관리
+			        registerGrid,      // 그리드 인스턴스 생성 및 등록
+			        getGrid,           // 그리드 인스턴스 조회
+			        unregisterGrid,    // 그리드 인스턴스 제거
 
-        // 프로젝트 특화 데이터 관리 함수
-        addNewRow,         // ROW_TYPE 자동 설정하여 행 추가
-        updateRowData,     // ROW_TYPE 자동 업데이트하며 행 데이터 수정
-		deleteSelectedRows, // 선택 행 삭제 (확인 대화상자 포함)
-        extractChangedData, // 변경된 데이터만 추출
+			        // 프로젝트 특화 데이터 관리 함수
+			        addNewRow,         // ROW_TYPE 자동 설정하여 행 추가
+			        updateRowData,     // ROW_TYPE 자동 업데이트하며 행 데이터 수정
+					deleteSelectedRows, // 선택 행 삭제 (확인 대화상자 포함)
+			        extractChangedData, // 변경된 데이터만 추출
 
-        // 이벤트 핸들러 관리
-        onRowClick,        // 행 클릭 이벤트 등록 (편의 함수)
-        onDblClick,        // 더블 클릭 이벤트 등록 (편의 함수)
-        removeEventHandlers, // 이벤트 핸들러 일괄 제거
+			        // 이벤트 핸들러 관리
+			        onRowClick,        // 행 클릭 이벤트 등록 (편의 함수)
+			        onDblClick,        // 더블 클릭 이벤트 등록 (편의 함수)
+			        removeEventHandlers, // 이벤트 핸들러 일괄 제거
 
-        // 프로젝트 특화 유틸리티
-        setupKeyColumnControl, // 키 컬럼 제어 설정
-        createYesNoEditor,  // Y/N 드롭다운 에디터 생성
-		// ====================================================== 추가
-        // 상태 관리 유틸리티 (간소화 버전)
-        createStatusFormatter, // 상태 포맷터 생성
-        changeStatus,          // 상태값 변경
-        setupStatusChangeEvent // 상태 변경 이벤트 설정
-		// ====================================================== 추가
-		    };
-		})();
+			        // 프로젝트 특화 유틸리티
+			        setupKeyColumnControl, // 키 컬럼 제어 설정
+			        createYesNoEditor,  // Y/N 드롭다운 에디터 생성
+					// ====================================================== 추가
+			        // 상태 관리 유틸리티 (간소화 버전)
+			        createStatusFormatter, // 상태 포맷터 생성
+			        changeStatus,          // 상태값 변경
+			        setupStatusChangeEvent // 상태 변경 이벤트 설정
+					// ====================================================== 추가
+			    };
+			})();

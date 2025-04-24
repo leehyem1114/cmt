@@ -26,14 +26,12 @@ public class MaterialInventoryRestController {
 	@Autowired
 	private MaterialInventoryService mis;
 	
-	
     /**
      * 원자재 재고 목록 조회 API
      * 
      * @param keyword 검색 키워드 (선택사항)
      * @return 재고 목록 데이터
      */
-	
 	@GetMapping("/list")
 	public ApiResponse<List<Map<String, Object>>> getmInventory(
 			@RequestParam(name = "keyword", required = false) String keyword) {
@@ -49,7 +47,6 @@ public class MaterialInventoryRestController {
         log.info("재고 목록 조회 결과: {}건", mInventory.size());
 		
 		return ApiResponse.success(mInventory);
-		
 	}
 	
     /**
@@ -70,6 +67,28 @@ public class MaterialInventoryRestController {
             return ApiResponse.success(result);
         } else {
             log.warn("자재 재고 차감 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
+    /**
+     * 재고 정보 저장 API
+     * 재고 정보를 저장합니다. 가용수량은 서버에서 자동 계산됩니다.
+     * 
+     * @param inventoryList 저장할 재고 정보 목록
+     * @return 처리 결과
+     */
+    @PostMapping("/save")
+    public ApiResponse<Map<String, Object>> saveInventory(@RequestBody List<Map<String, Object>> inventoryList) {
+        log.info("재고 정보 저장 요청: {}건", inventoryList.size());
+        
+        Map<String, Object> result = mis.saveInventory(inventoryList);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("재고 정보 저장 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("재고 정보 저장 실패: {}", result.get("message"));
             return ApiResponse.error(result.get("message").toString(), result);
         }
     }
