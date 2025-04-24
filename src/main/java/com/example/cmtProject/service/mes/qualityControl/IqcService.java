@@ -29,8 +29,8 @@ public class IqcService {
 
 	// 비고란 수정
 	@Transactional
-	public void iqcRemarksUpdate(IqcDTO iqcDTO) {
-		iqcMapper.iqcRemarksUpdate(iqcDTO);
+	public void iqcRemarksAndQcmNameUpdate(IqcDTO iqcDTO) {
+		iqcMapper.iqcRemarksAndQcmNameUpdate(iqcDTO);
 	}
 	
 	// 삭제 대신 안보이게 하기

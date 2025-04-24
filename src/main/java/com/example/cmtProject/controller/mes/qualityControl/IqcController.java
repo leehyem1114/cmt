@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
@@ -25,8 +26,10 @@ import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.entity.mes.qualityControl.Iqc;
+import com.example.cmtProject.mapper.mes.qualityControl.QcmMapper;
 import com.example.cmtProject.repository.mes.qualityControl.IqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
+import com.example.cmtProject.service.mes.qualityControl.QcmService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -44,8 +47,7 @@ public class IqcController {
 	private IqcService iqcService;
 	
 	@Autowired
-	private IqcRepository iqcRepository;
-	
+	private QcmService qcmService;
 	
 	
 	@GetMapping("/inspection-info")
@@ -64,15 +66,22 @@ public class IqcController {
     	List<IqcDTO> iqcList = iqcService.getAllIqc();
     	model.addAttribute("iqcList", iqcList);
     	
-    	
     	return "mes/qualityControl/iqcList";
 	}
+	
+	
+	@GetMapping("/names-by-mtl")
+	@ResponseBody
+	public List<Map<String, Object>> getQcmNamesByMtl(@RequestParam("mtlName") String mtlName) {
+	    return qcmService.getQcmNamesByMtlName(mtlName);
+	}
+	
 	
 	// 그리드에서 바로 수정
 	@ResponseBody
 	@PostMapping("/edit")
 	public void qcmEditexep(@ModelAttribute IqcDTO iqcDTO) throws JsonMappingException, JsonProcessingException {
-			iqcService.iqcRemarksUpdate(iqcDTO); 
+		iqcService.iqcRemarksAndQcmNameUpdate(iqcDTO); 
 	}
 	
 	// 삭제 메서드

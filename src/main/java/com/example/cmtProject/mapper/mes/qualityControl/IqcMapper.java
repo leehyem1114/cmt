@@ -14,7 +14,7 @@ public interface IqcMapper {
 
 	List<IqcDTO> getAllIqc();
 
-	void iqcRemarksUpdate(IqcDTO iqcDTO);
+	void iqcRemarksAndQcmNameUpdate(IqcDTO iqcDTO);
 	
 	void isVisiableToFalse(List<Long> ids);	
 	

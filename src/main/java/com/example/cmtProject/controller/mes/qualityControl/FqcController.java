@@ -42,11 +42,7 @@ public class FqcController {
 	
 	@Autowired
 	private FqcService fqcService;
-	
-	@Autowired
-	private FqcRepository fqcRepository;
-	
-	
+
 	
 	@GetMapping("/inspection-info")
 	public String getFqcInfo(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {

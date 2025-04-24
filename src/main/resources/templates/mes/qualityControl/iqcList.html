@@ -223,7 +223,7 @@
               	  sortable: true, 
               	  filter: 'text', 
               	  width: 200,
-              	  align: "center",
+              	  align: "center"
               	},
               	{ 
                   header: '검수자', 
@@ -234,7 +234,7 @@
                	  align: "center",
                	},       
               	{ 
-                  header: '검수자', 
+                  header: '검수자 아이디', 
                	  name: 'empId', 
                	  sortable: true, 
                	  filter: 'text', 
@@ -372,6 +372,68 @@
 	    
 	    
 	    
+	    // 더블클릭시 원자재에 따른 검사 목록 가져오기
+	    grid.on('dblclick', async (ev) => {	    	
+    	  if (!ev || typeof ev.rowKey !== 'number' || ev.columnName !== 'qcmName') return;
+    	  
+    	  
+    	  const row = grid.getRow(ev.rowKey);
+    	  const mtlName = row.mtlName;
+
+    	  if (!mtlName) {
+    	    alert("원자재 이름이 없습니다.");
+    	    return;
+    	  }
+
+    	  // 서버에서 검사 항목 이름 목록 받아오기
+    	  const qcmNames = await fetchQcmNamesByMtlName(mtlName);
+    	  if (qcmNames.length === 0) {
+    	    Swal.fire("해당 원자재에 검사 항목이 <br>없습니다.");
+    	    return;
+    	  }
+
+//     	  선택 옵션 객체로 변환: { '길이': '길이', '중량': '중량' }
+	      const inputOptions = qcmNames.reduce((acc, item) => {
+			acc[item.qcmNames] = item.qcmNames; // key: value 형태
+			return acc;
+		  }, {});
+
+    	  // select 팝업 표시
+    	  const { value: selectedQcm } = await Swal.fire({
+    	    title: `${mtlName}의 검사 항목 선택`,
+    	    input: 'select',
+    	    inputOptions: inputOptions,
+// 			inputOptions: qcmNames,
+    	    inputPlaceholder: '검사 항목을 선택하세요',
+    	    showCancelButton: true
+    	  });
+
+    	  // 선택하면 콘솔에 출력 (혹은 셀 값 바꾸는 것도 가능)
+    	  if (selectedQcm) {
+    	    console.log("선택한 검사 항목:", selectedQcm);
+    	    // 👉 원하면 셀에 값 반영할 수도 있음
+    	    grid.setValue(ev.rowKey, 'qcmName', selectedQcm);
+    	  }
+    	});
+	    
+	    // 원자재 이름에 따른 검사 목록 가져오는 함수
+	    async function fetchQcmNamesByMtlName(mtlName) {
+    	  try {
+    	    const res = await fetch(`/iqc/names-by-mtl?mtlName=${encodeURIComponent(mtlName)}`);
+    	    if (!res.ok) throw new Error("서버 오류");
+    	    const list = await res.json(); // [{qcmName: '길이'}, ...]
+//     	    return list;
+    	    return list.map(item => item.qcmName);
+    	  } catch (err) {
+    	    console.error(err);
+    	    return [];
+    	  }
+    	}
+	    
+	    
+	    
+	    
+	    
 	    
 	    
 	    document.getElementById('gridTop').addEventListener('click', function (e) {
@@ -469,7 +531,7 @@
 	    	        ${makeDetailItem('입고 검사 코드', rowData.iqcCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
 	    	        ${makeDetailItem('입고 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
-	    	        ${makeDetailItem('검수자', rowData.empName)}
+	    	        ${makeDetailItem('검수자', `${safe(rowData.empName)} ${safe(rowData.empId)}`)}
 	    	        ${makeDetailItem('원자재', rowData.mtlName)}
 	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.iqcMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
 	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.iqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
@@ -517,9 +579,10 @@
 				
 			    let sendData = {
 		            iqcNo: rowData.iqcNo,
-		            iqcRemarks: rowData.iqcRemarks
+		            iqcRemarks: rowData.iqcRemarks,
+		            qcmName: rowData.qcmName
 		        };
-
+			    
 				$.ajax({
 					url: "/iqc/edit",
 					type: "POST",
@@ -696,17 +759,18 @@
     			worksheet["D1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
     			worksheet["E1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
     			worksheet["F1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["G1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName' };
-    			worksheet["H1"] = { t: "s", v: "receivedQty", r:"<t>receivedQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'receivedQty', w: 'receivedQty' };    			
-    			worksheet["I1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };    			
-    			worksheet["J1"] = { t: "s", v: "iqcMeasuredWeightValue", r:"<t>iqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredWeightValue', w: 'iqcMeasuredWeightValue' };
-    			worksheet["K1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["L1"] = { t: "s", v: "iqcMeasuredLengthValue", r:"<t>iqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredLengthValue', w: 'iqcMeasuredLengthValue' };
-    			worksheet["M1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["N1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
-    			worksheet["O1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
-    			worksheet["P1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["Q1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
+    			worksheet["G1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
+    			worksheet["H1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName' };
+    			worksheet["I1"] = { t: "s", v: "receivedQty", r:"<t>receivedQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'receivedQty', w: 'receivedQty' };    			
+    			worksheet["J1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };    			
+    			worksheet["K1"] = { t: "s", v: "iqcMeasuredWeightValue", r:"<t>iqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredWeightValue', w: 'iqcMeasuredWeightValue' };
+    			worksheet["L1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["M1"] = { t: "s", v: "iqcMeasuredLengthValue", r:"<t>iqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcMeasuredLengthValue', w: 'iqcMeasuredLengthValue' };
+    			worksheet["N1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["O1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
+    			worksheet["P1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
+    			worksheet["Q1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["R1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 

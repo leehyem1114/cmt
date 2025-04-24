@@ -39,9 +39,10 @@
 	</select>
 	
 	<!-- 비고란 업데이트 -->
-	<update id="iqcRemarksUpdate" parameterType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
+	<update id="iqcRemarksAndQcmNameUpdate" parameterType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
 		UPDATE IQC
-		SET IQC_REMARKS = #{iqcRemarks}
+		SET IQC_REMARKS = #{iqcRemarks},
+			QCM_NAME = #{qcmName}
 		WHERE IQC_NO = #{iqcNo}
 	</update>
 	
@@ -60,22 +61,23 @@
 	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
 		UPDATE IQC
 	    SET
-	    	IQC_INSPECTION_STATUS	   = #{iqcInspectionStatus}
-	    	IQC_INSPECTION_RESULT	   = #{iqcInspectionResult}	    	
-	        IQC_CODE                   = #{iqcCode},
-	        QCM_NAME                   = #{qcmName},
-	        EMP_NAME                   = #{empName}, 
-	        MTL_NAME                   = #{mtlName},
-	        RECEIVED_QTY               = #{receivedQty},
-	        UNIT_QTY                   = #{unitQty},
-	        IQC_MEASURED_WEIGHT_VALUE  = #{iqcMeasuredWeightValue},
-	        QCM_UNIT_WEIGHT            = #{qcmUnitWeight},
-	        IQC_MEASURED_LENGTH_VALUE  = #{iqcMeasuredLengthValue},
-	        QCM_UNIT_LENGTH            = #{qcmUnitLength},
-	        IQC_START_TIME             = #{iqcStartTime},
-	        IQC_END_TIME               = #{iqcEndTime},
-	        WHS_NAME                   = #{whsName},
-	        IQC_REMARKS                = #{iqcRemarks}
+	    	IQC_INSPECTION_STATUS       = #{iqcInspectionStatus},
+	        IQC_INSPECTION_RESULT       = #{iqcInspectionResult},
+	        IQC_CODE                    = #{iqcCode},
+	        QCM_NAME                    = #{qcmName},
+	        EMP_NAME                    = #{empName},
+	        EMP_ID                      = #{empId},
+	        MTL_NAME                    = #{mtlName},
+	        RECEIVED_QTY                = #{receivedQty},
+	        UNIT_QTY                    = #{unitQty},
+	        IQC_MEASURED_WEIGHT_VALUE   = #{iqcMeasuredWeightValue},
+	        QCM_UNIT_WEIGHT             = #{qcmUnitWeight},
+	        IQC_MEASURED_LENGTH_VALUE   = #{iqcMeasuredLengthValue},
+	        QCM_UNIT_LENGTH             = #{qcmUnitLength},
+	        IQC_START_TIME              = #{iqcStartTime},
+	        IQC_END_TIME                = #{iqcEndTime},
+	        WHS_NAME                    = #{whsName},
+	        IQC_REMARKS                 = #{iqcRemarks}
 	    WHERE IQC_NO = #{iqcNo}
 	</update>
 	
