@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
+import com.example.cmtProject.dto.mes.production.LotUpdateDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
@@ -43,6 +45,17 @@ public class ProductionPrcController {
 		공정 현황에서 공정 작업 등록 버튼을 누르면 셀렉트 박스가 나타나고 시작을 클릭하면 RN으로 상태 변환
 		=> RN으로 돼 버리면 이후 셀렉트 박스 목록에는 나타나지 않는다
 		두 번째 하단 그리드에서 작업 완료 버튼을 클릭하면 해당 작업만 CP로 변환
+		
+		
+		*작업 지시서에는 완제품만 있고 LOT 테이블에는 반제품과 완제품이 있어서 상태를 따로 둔다        
+		
+		-- 작업지시서에 PS만 공정 현황 셀렉트박스에 노출
+		SELECT * FROM WORK_ORDER;
+		UPDATE WORK_ORDER SET WO_STATUS_CODE = 'PS' WHERE WO_CODE = 'MSC001'  -- 넘어온 데이터 작업을 위해 PS로 변경
+		
+		-- 공정 현황에서 셀렉트 박스를 선택한 작업만 상태가 RN으로 변경 된다. 
+		SELECT * FROM LOT;
+		UPDATE LOT SET WO_STATUS_NO = 'PS' -- 넘어온 데이터 작업을 위해 PS로 변경
 	*/
 	
 
@@ -217,6 +230,7 @@ public class ProductionPrcController {
 		Map<String, String> checkLot = new HashMap<>();
 		LotOriginDTO lod = new LotOriginDTO();
 		
+		int checkLast = 0; //startTime 때문에 사용
 		for(BomInfoDTO b : selectPdtCodeList) {
 			
 			//================ 부모 컬럼 lot생성=========================================================
@@ -248,7 +262,12 @@ public class ProductionPrcController {
 			String childLotCode = childLot;
 			
 			LocalTime time = LocalTime.now();
-			String startTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+			String startTime = "00:00:00";
+			//startTime : 데이터가 order 된 상태로 넘어오기 때문에 가장 마지막 데이터가 가장 첫번째 작업으로 온다
+			//가장 마지막 데이터(첫번째로 이루어질 작업)만 startTime을 현재 시간으로 입력한다
+			if (checkLast == selectPdtCodeList.size() - 1) {
+				startTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+		    }
 			
 			String woStatusNo = "RN";
 			String useYN = "Y";
@@ -272,13 +291,14 @@ public class ProductionPrcController {
 			lod.setUseYn(useYN);
 			
 			//---------------------------------- 하단 그리드 작업 중으로 주석 처리
-			//lotService.insertLot(lod);
+			lotService.insertLot(lod);
 			
+			checkLast++;
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
 		//---------------------------------- 하단 그리드 작업 중으로 주석 처리
 		//작업지시에서 받아온 작업 RN으로 변경
-		//productionPrcService.updateWoStatus(woCode);
+		productionPrcService.updateWoStatus(woCode);
 		
 		return selectPdtCodeList;
 	}
@@ -335,14 +355,38 @@ public class ProductionPrcController {
 		return selectLotOrigin;
 	}
 	
-	//두번째 그리드에서 작업 완료 버큰 클릭시 업데이트
-	//FINISH_TIME, WO_STATUS_NO, BOM_QTY
-	//작업지시서의 WO_CODE와 일치하는 PDT_CODE이면 WORK_ORDER의 WO_STATUS_CODE도 CP로 업데이트 
+	//두번째 그리드에서 작업 완료 버큰 클릭 시 업데이트
+	
+	//LOT_NO - 1 에 START_TIME 등록
+	
 	@PostMapping("/jobCmpl")
 	@ResponseBody
-	public void jobCmpl(@RequestParam("lotNo") String lotNo, @RequestParam("presentQty") String presentQty) {
+	public List<LotOriginDTO> jobCmpl(@RequestBody LotUpdateDTO lotUpdateDTO) {
 		
+		//parentPdtCode가 소모되어 childPdtCode가 되므로 parentPdtCode가 소모품, 소모량
+		
+		//log.info(lotUpdateDTO.toString());
+		//LotUpdateDTO(lotNo=163, bomQty=1, childPdtCode=WIP002, parentPdtCode=MTL-002, woCode=MSC001, pdtCode=FP001)
+		/*
+		
+		//FINISH_TIME, WO_STATUS_NO, BOM_QTY 업데이트
+		
+		if(childPdtCode가 PDT_CODE와 일치하지 않는 경우){
+			lotNo - 1 => START_TIME 업데이트
+		}
+		
+		if(childPdtCode가 PDT_CODE와 일치하는 경우){
+			작업지시서의 WO_CODE와 일치하는 PDT_CODE이면 WORK_ORDER의 WO_STATUS_CODE도 CP로 업데이트 
+		} 
+		
+		*/
+		
+		Long lotNo = Long.valueOf(lotUpdateDTO.getLotNo()); 
+	
 		LotOriginDTO lotOrigin = new LotOriginDTO();
+		
+		//LOT_NO
+		lotOrigin.setLotNo(lotNo);
 		
 		//FINISH_TIME
 		LocalTime time = LocalTime.now();
@@ -350,16 +394,30 @@ public class ProductionPrcController {
 		lotOrigin.setFinishTime(finishTime);
 		
 		//WO_STATUS_NO
-		lotOrigin.setWoStatusNo("CP");
+		lotOrigin.setWoStatusNo("CP"); //CP : 완료
 		
 		//BOM_QTY
-		lotOrigin.setBomQty(presentQty);
+		lotOrigin.setBomQty(lotUpdateDTO.getBomQty());
 		
-		//lotService.updateLotResentPRC(lotOrigin);
+		//WO_CODE
+		lotOrigin.setWoCode(lotUpdateDTO.getWoCode());
 		
-		//완제품이 들어오면
-		//WORK_ORDER 테이블의 WO_STATUS_CODE도 CP로 업데이트 
+		lotService.updateLotPresentPRC(lotOrigin);
 		
+		if(!lotUpdateDTO.getChildPdtCode().equals(lotUpdateDTO.getPdtCode())) {
+			Long nextLotNo = lotNo - 1;
+			
+			//LOT테이블의 다음 작업에 startTime 업데이트 => 전 공정의 finishTime이 이후 공정의 startTime
+			lotService.updateLotNextPRC(nextLotNo, finishTime);
+		}else {
+			//WORK_ORDER 테이블의 WO_STATUS_CODE도 CP로 업데이트 
+			lotService.updateWOtoCP(lotUpdateDTO.getWoCode());
+		}
+		
+		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(lotUpdateDTO.getWoCode());
+	
+		return selectLotOrigin;
+			
 	}
 }
 

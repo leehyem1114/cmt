@@ -32,7 +32,11 @@ public interface LotMapper {
 	List<LotOriginDTO> selectLotOrigin(String woCode);
 
 	//두번째 그리드에서 현재 공정 업데이트
-	void updateLotResentPRC(LotOriginDTO lotOrigin);
+	void updateLotPresentPRC(LotOriginDTO lotOrigin);
+
+	void updateLotNextPRC(@Param("nextLotNo") Long nextLotNo, @Param("startTime") String startTime);
+
+	void updateWOtoCP(String woCode);
 	
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 

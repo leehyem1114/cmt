@@ -104,13 +104,33 @@
 		ORDER BY LOT_NO
 	</select>
 	
-	<update id="updateLotResentPRC" parameterType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
-		UPDATE LOT
+	<!-- 작업 완료 버튼 클릭시 LOT 업데이트 -->
+	<update id="updateLotPresentPRC" parameterType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
+		UPDATE 
+			LOT
 		SET 
 			FINISH_TIME = #{finishTime},
 		    WO_STATUS_NO = #{woStatusNo},
-		    BOM_QTY = #{lineCode},
-		WHERE LOT_NO = #{lotNo}
+		    BOM_QTY = #{bomQty}
+		WHERE LOT_NO = #{lotNo} AND WO_CODE = #{woCode}
+	</update>
+	
+	<!-- 작업 완료 버튼 클릭시 이후 공정 startTime 입력 -->
+	<update id="updateLotNextPRC">
+		UPDATE 
+			LOT
+		SET
+			START_TIME = #{startTime}
+		WHERE LOT_NO = #{nextLotNo}
+	</update>
+	
+	<!-- 완제품 작업 완료시 작업 지시서 CP로 업데이트 -->
+	<update id="updateWOtoCP">
+		UPDATE 
+			WORK_ORDER 
+		SET 
+			WO_STATUS_CODE = 'CP' 
+		WHERE WO_CODE = #{woCode} 
 	</update>
 	
 </mapper>
