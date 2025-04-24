@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,17 +33,17 @@ public class MfgSchedule { // 제조 계획
     @Column(name = "PDT_CODE")
 	private String pdtCode;  // 제품 코드
 
-    @Column(name = "PRC_CODE")
-	private String prcCode;  // 공정 코드
+    //@Column(name = "PRC_CODE")
+	//private String prcCode;  // 공정 코드
 
     @Column(name = "EMP_ID")
 	private String empId;  // 등록 직원 사번
     
-    @Column(name = "STAFF_ID")
-	private String staffId;  // 담당 직원 사번
+//    @Column(name = "STAFF_ID")
+//	private String staffId;  // 담당 직원 사번
 
     @Column(name = "SO_QTY")
-	private String soQty;  // 계획 수량
+	private String soQty;  // 수주 수량
 
     @Column(name = "MS_STATUS")
 	private String msStatus;  // 제조 계획 상태
@@ -58,10 +57,10 @@ public class MfgSchedule { // 제조 계획
     @Column(name = "MS_UPDATED_AT")
 	private LocalDate msUpdatedAt;  // 수정일자
 
-    @Column(name = "MS_START_TIME")
-	private LocalDate msStartTime;  // 제조 시작 예정일시
-    
-    @Column(name = "MS_END_TIME")
-	private LocalDate msEndTime;  // 제조 종료 예정일시
+//    @Column(name = "MS_START_TIME")
+//	private LocalDate msStartTime;  // 제조 시작 예정일시
+//    
+//    @Column(name = "MS_END_TIME")
+//	private LocalDate msEndTime;  // 제조 종료 예정일시
     
 }

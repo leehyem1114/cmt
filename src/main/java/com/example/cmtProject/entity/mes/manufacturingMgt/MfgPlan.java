@@ -51,5 +51,8 @@ public class MfgPlan { // 생산 계획
 
     @Column(name = "MP_END_DATE")
 	private LocalDate mpEndDate;  // 생산 종료 예정일
+    
+    @Column(name = "MP_VISIBLE")
+	private String mpVisible;  // 삭제 시 숨김 처리
 
 }

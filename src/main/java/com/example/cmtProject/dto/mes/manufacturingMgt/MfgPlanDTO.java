@@ -24,5 +24,6 @@ public class MfgPlanDTO { // 생산 계획 DTO
     private LocalDate mpUpdatedAt;  // 수정일자
     private LocalDate mpStartDate;  // 생산 시작 예정일
     private LocalDate mpEndDate;    // 생산 종료 예정일
+    private String mpVisible;
     
 }
