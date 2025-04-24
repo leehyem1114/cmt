@@ -18,7 +18,8 @@ public class WorkOrderDTO {
     private String pdtName;             // 제품 이름
     private LocalDate orderDate;        // 지시 날짜
     private String woQty;            // 지시 수량
-    private String status;              // 진행 상태
+    private String soQty;            // 지시 수량
+    private String status;              // 진행 상태 //안씀 woStatusCode으로 변경
     private LocalDate dueDate;          // 납기일
     private String comments;            // 비고
     private String useYn;               // 사용 여부
@@ -38,6 +39,9 @@ public class WorkOrderDTO {
     private String empId;
     private String empName;
     private String msStatus;
+    private String woStatusCode;
+    private String woStatusName;
+    private String prcTypeName;
 
     
     

@@ -49,15 +49,18 @@ public interface LeaveMapper {
     
     // 결재 문서ID와 함께 휴가 저장
     void insertLeaveWithDocId(@Param("dto") LeaveDTO dto, 
-                           @Param("empId") String empId, 
-                           @Param("docId") String docId);
+                              @Param("empId") String empId, 
+                              @Param("docId") String docId);
     
     // 휴가 상태 업데이트
     int updateLeaveStatus(@Param("levNo") Long levNo, 
-                        @Param("status") String status, 
-                        @Param("remarks") String remarks);
+                          @Param("status") String status, 
+                          @Param("remarks") String remarks);
+    
+    // 휴가인지 체크
+    boolean isOnLeave(@Param("empId") String empId,
+            		  @Param("date") LocalDate date);
 
-	
 }
 
 

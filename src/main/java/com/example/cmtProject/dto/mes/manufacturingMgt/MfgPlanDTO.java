@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MfgPlanDTO {
+public class MfgPlanDTO { // 생산 계획 DTO
 
     private Long mpNo;              // 생산 계획 번호
     private String mpCode;			// 생산 계획 코드
@@ -22,8 +22,8 @@ public class MfgPlanDTO {
     private String mpPriority;      // 우선순위
     private LocalDate mpCreatedAt;  // 등록일자
     private LocalDate mpUpdatedAt;  // 수정일자
-    //private LocalDate soDueDate;    // 납품 기한
     private LocalDate mpStartDate;  // 생산 시작 예정일
     private LocalDate mpEndDate;    // 생산 종료 예정일
+    private String mpVisible;
     
 }

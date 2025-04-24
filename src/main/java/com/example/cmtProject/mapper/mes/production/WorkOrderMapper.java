@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
+import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 
 @Mapper
@@ -15,9 +16,24 @@ public interface WorkOrderMapper {
 	List<MfgScheduleDTO> selectPlanList();
 	//제조계획 -> 작업지시 insert
 	void insertMsPlan(WorkOrderDTO workOrderDTO);
-	//제조계획상태 변경
-	void updateMfgStatus(String msCode);
 	//작업시작 버튼 = 날짜 업데이트&진행중
 	void updateWorkStartTime(Long workOrderNo);
+
+	//로트번호로 단일 제품 정보 들고오기
+	WorkOrderDTO selectProductDetail(String lotNo);
+	// Lot + workOrder
+	List<LotDTO> selectLotDetail();
+	//lotNo로 상품 상세정보 들고오기
+	LotDTO selectLotNoDetail(Long lotNo);
+
+	
+	//제조계획상태 변경 & 제조계획 delete
+	void updateMfgStatus(String msCode);
+	void deleteMfgList(String msCode);
+	
+	//====================================
+	List<LotDTO> selectAllLotTree();
+	List<LotDTO> selectLotProcessListByLotNo(String childLotCode);
+
 
 }

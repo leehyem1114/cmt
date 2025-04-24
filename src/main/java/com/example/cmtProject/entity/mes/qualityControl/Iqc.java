@@ -32,21 +32,45 @@ public class Iqc {
 
     @Column(name = "IQC_CODE", nullable = false)
     private String iqcCode;
+    
+    @Column(name = "RECEIPT_CODE")
+    private String receiptCode;
 
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
+    
+    @Column(name = "EMP_NAME")
+    private String empName;
 
-    @Column(name = "QCM_NO", nullable = false)
+    @Column(name = "QCM_NO")
     private Long qcmNo;
 
-    @Column(name = "MTL_CODE", nullable = false)
+    @Column(name = "QCM_NAME")
+    private String qcmName;
+
+    @Column(name = "MTL_CODE")
     private String mtlCode;
+    
+    @Column(name = "MTL_NAME")
+    private String mtlName;
 
-    @Column(name = "IQC_TIME")
-    private LocalDateTime iqcTime;
+    @Column(name = "IQC_START_TIME")
+    private LocalDateTime iqcStartTime;
 
-    @Column(name = "IQC_MEASURED_VALUE")
-    private Double iqcMeasuredValue;
+    @Column(name = "IQC_END_TIME")
+    private LocalDateTime iqcEndTime;
+    
+    @Column(name = "RECEIVED_QTY")
+    private String receivedQty;
+    
+    @Column(name = "UNIT_QTY")
+    private String unitQty;
+
+    @Column(name = "IQC_MEASURED_WEIGHT_VALUE")
+    private Double iqcMeasuredWeightValue;
+
+    @Column(name = "IQC_MEASURED_LENGTH_VALUE")
+    private Double iqcMeasuredLengthValue;
     
     @Column(name = "QCM_UNIT_LENGTH")
     private String qcmUnitLength;
@@ -57,13 +81,22 @@ public class Iqc {
     @Column(name = "IQC_INSPECTION_STATUS")
     private String iqcInspectionStatus; // 검사전 / 검사중 / 검사완료
 
-    @Column(name = "IQC_INSPECTION_RESULT", length = 1)
-    private String iqcInspectionResult; // 'P' / 'F'
+    @Column(name = "IQC_INSPECTION_RESULT")
+    private String iqcInspectionResult; // 합격 / 불합격 / 확인불가
 
     @Column(name = "WHS_CODE")
     private String whsCode;
+    
+    @Column(name = "WHS_NAME")
+    private String whsName;
 
     @Column(name = "LOT_NO", nullable = false)
     private String lotNo;
+    
+    @Column(name = "IQC_REMARKS")
+    private String iqcRemarks;
+    
+    @Column(name = "IQC_VISIABLE")
+    private String iqcVisiable;
 
 }

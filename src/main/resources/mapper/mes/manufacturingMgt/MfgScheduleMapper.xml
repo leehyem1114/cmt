@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgScheduleMapper">
+
+	<!-- 전체 제조 계획 조회 -->
+	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
+		SELECT
+			MS.MS_NO,
+			MS.MS_CODE,
+		    MP.MP_CODE,
+		    SO.SO_QTY,
+		    MS.EMP_ID,
+		    MS.MS_STATUS,
+		    MS.MS_PRIORITY,
+		    MS.PDT_CODE,
+		    MS.MS_CREATED_AT,
+		    MS.MS_UPDATED_AT
+		FROM MFG_SCHEDULES MS
+		LEFT JOIN MFG_PLANS MP ON MS.MP_CODE = MP.MP_CODE
+		LEFT JOIN SALES_ORDER SO ON SO.SO_CODE = MP.SO_CODE										 
+		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
+		WHERE MP.MP_STATUS = '등록'
+		ORDER BY MS.MS_NO DESC	
+	</select>
+	
+	<!-- 제조 계획 상세 정보 조회 -->
+<!-- 	<select id="getMsdList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO">
+		SELECT
+			MSD.MSD_NO
+			, MSD.MS_CODE
+			, B.BOM_LEVEL
+			, MSD.PARENT_PDT_CODE
+			, MSD.CHILD_ITEM_CODE
+			, MSD.ITEM_TYPE
+			, MSD.BOM_PRC_TYPE
+			, (SO.SO_QTY * B.BOM_QTY) AS msQty
+			, MSD.COMMENTS
+		FROM MFG_SCHEDULES_DETAIL MSD
+		LEFT JOIN MFG_SCHEDULES MS ON MS.MS_CODE = MSD.MS_CODE
+		LEFT JOIN MFG_PLANS MP ON MP.MP_CODE = MS.MP_CODE
+		LEFT JOIN SALES_ORDER SO ON SO.SO_CODE = MP.SO_CODE
+		LEFT JOIN (SELECT 
+                LEVEL AS BOM_LEVEL,
+                B.*
+            FROM BOM B
+            WHERE B.USE_YN = 'Y'
+            START WITH B.CHILD_ITEM_CODE = 'FP001'
+            CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
+        ) B ON B.CHILD_ITEM_CODE = MSD.CHILD_ITEM_CODE
+	</select> -->
+	
+	<!-- 제조 상세 계획 조회 -->
+	<select id="getMsdDetailList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO">
+		SELECT
+			MSD_NO AS msdNo
+			, MS_CODE AS msCode
+			, BOM_LEVEL AS bomLevel
+			, PARENT_PDT_CODE AS parentPdtCode
+			, CHILD_ITEM_CODE AS childItemCode
+			, ITEM_TYPE AS itemType
+			, BOM_PRC_TYPE AS bomPrcType
+			, MS_QTY AS msQty
+			, COMMENTS AS comments
+		FROM MFG_SCHEDULES_DETAIL
+	</select>
+	
+	<!-- 제조 계획 등록 -->
+	<insert id="registMsPlan" parameterType="java.util.List">
+		INSERT INTO MFG_SCHEDULES (
+		    MS_NO,
+		    MS_CODE,
+		    MP_CODE,
+		    EMP_ID,
+		    SO_QTY,
+		    PDT_CODE,
+		    MS_PRIORITY,
+		    MS_CREATED_AT,
+		    MS_UPDATED_AT
+		) 
+		<foreach collection="list" item="item" separator="UNION ALL">
+		SELECT
+		    MFG_SCHEDULES_SEQ.NEXTVAL,
+		    #{msCode, jdbcType=VARCHAR},
+		    #{mpCode, jdbcType=VARCHAR}, 
+		    #{empId, jdbcType=VARCHAR},
+		    #{soQty, jdbcType=VARCHAR},
+		    #{pdtCode, jdbcType=VARCHAR},
+		    #{msPriority, jdbcType=VARCHAR},
+		    SYSDATE,
+		    NULL
+		FROM DUAL
+		</foreach>		    
+    </insert>
+    
+    <!-- 엑셀 데이터 업데이트 -->
+	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO">
+		UPDATE MFG_SCHEDULES_DETAIL
+	    SET
+		    MS_CODE 	   			   = #{msCode},
+			BOM_LEVEL 	   			   = #{bomLevel},			
+			PARENT_PDT_CODE 	   	   = #{parentPdtCode},
+			CHILD_ITEM_CODE			   = #{childItemCode},
+			ITEM_TYPE	 	   		   = #{itemType},
+			MS_QTY 			   		   = #{msQty},
+			COMMENTS	 	   		   = #{comments}
+	    WHERE MSD_NO = #{msdNo}
+	</update>	
+
+</mapper>

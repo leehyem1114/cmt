@@ -58,6 +58,14 @@
                category: 'time',
                start: '2025-05-26',
                end: '2025-05-27',
+           },
+			{
+               id: '7',
+               calendarId: 'dayoff',
+               title: '🌟발표일',
+               category: 'time',
+               start: '2025-05-7',
+               end: '2025-05-7',
            }
         ];
 

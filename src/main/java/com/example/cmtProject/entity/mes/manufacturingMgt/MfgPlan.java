@@ -45,17 +45,14 @@ public class MfgPlan { // 생산 계획
 
     @Column(name = "MP_UPDATED_AT")
 	private LocalDate mpUpdatedAt;  // 수정일자
-    
-    //@Column(name = "mrDurationTime")
-	//private Long MR_DURATION_TIME;  // 소요시간
-    
-    @Column(name = "SO_DUE_DATE")
-	private LocalDate soDueDate;  // 납품 기한
 
     @Column(name = "MP_START_DATE")
 	private LocalDate mpStartDate;  // 생산 시작 예정일
 
     @Column(name = "MP_END_DATE")
 	private LocalDate mpEndDate;  // 생산 종료 예정일
+    
+    @Column(name = "MP_VISIBLE")
+	private String mpVisible;  // 삭제 시 숨김 처리
 
 }

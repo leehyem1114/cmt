@@ -69,7 +69,7 @@
 
   <!-- 오른쪽: 등록/삭제 -->
   <div style="display: flex; align-items: center; gap: 10px;">
-    <button type="button" class="btn btn-outline-primary" id="registerQcm">품질 정보 등록</button>
+    <button type="button" class="btn btn-outline-primary" onclick="addEditableRow()">품질 정보 등록</button>
     <button type="button" class="btn btn-outline-danger" onclick="deleteQcm()" sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">삭제</button>
   </div>
 
@@ -78,6 +78,13 @@
 <br>
 	
 	<div id="gridTop"></div>
+	
+	
+	<!-- 상세 정보 표시용 -->
+	<div id="qcmDetailWrapper" style="margin-top: 20px; border: 1px solid #ddd; padding: 15px;">
+	  <h3>상세 정보</h3>
+	  <div id="qcmDetailContent">검사 항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
+	</div>
 	
 	
 	
@@ -91,7 +98,7 @@
 	    
 	    const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
 	    
-	    let isAdmin = userRole === 'ROLE_ADMIN';
+	    let isAdmin = userRole === 'ROLE_ADMIN' || userRole === 'ROLE_MANAGER';
 	    
 	    
 	    let materialList = /*[[${materialsList}]]*/ [];
@@ -100,11 +107,40 @@
 		let unitWeightList = /*[[${unitWeightList}]]*/ [];
 		
 		
-		let materialSelected = materialList.map(item => ({text: item.mtlName, label: item.mtlName, value: item.mtlName}));
-		let productSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtName}));
-		let unitLengthSelected = unitLengthList.map(item => ({text: item.cmnDetailName, label: item.cmnDetailName, value: item.cmnDetailName}));
-		let unitWeightSelected = unitWeightList.map(item => ({text: item.cmnDetailName, label: item.cmnDetailName, value: item.cmnDetailName}));
-		
+		let materialSelected = [
+		    { text: '', label: '', value: '' },  // ✅ null 선택지
+		    ...materialList.map(item => ({
+		        text: item.mtlName,
+		        label: item.mtlName,
+		        value: item.mtlName
+		    }))
+		];
+		let productSelected = [
+		    { text: '', label: '', value: '' },
+		    ...productList.map(item => ({
+		        text: item.pdtName,
+		        label: item.pdtName,
+		        value: item.pdtName
+		    }))
+		];
+
+		let unitLengthSelected = [
+		    { text: '', label: '', value: '' },
+		    ...unitLengthList.map(item => ({
+		        text: item.cmnDetailName,
+		        label: item.cmnDetailName,
+		        value: item.cmnDetailName
+		    }))
+		];
+
+		let unitWeightSelected = [
+		    { text: '', label: '', value: '' },
+		    ...unitWeightList.map(item => ({
+		        text: item.cmnDetailName,
+		        label: item.cmnDetailName,
+		        value: item.cmnDetailName
+		    }))
+		];
 	    
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
@@ -136,8 +172,8 @@
               	  name: 'qcmName', 
               	  sortable: true, 
               	  filter: 'text', 
-              	  width: 150,
               	  align: "center",
+              	  width: 300,
            		  ...(isAdmin && {
   	           		editor: {
   	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
@@ -151,6 +187,7 @@
                	  sortable: true, 
                	  filter: 'text',
                	  align: "center",
+               	  width: 200,
                	  ...(isAdmin && {
                		editor: {
     					type: 'select',
@@ -165,11 +202,20 @@
     			    }
             	},
             	{ 
-            	  header: '완제품', 
+                  header: '원자재CODE', 
+              	  name: 'mtlCode', 
+              	  sortable: true, 
+              	  filter: 'text', 
+              	  align: "center",
+              	  hidden: true
+              	},
+            	{ 
+            	  header: '반제품 및 완제품', 
             	  name: 'pdtName', 
             	  sortable: true, 
             	  filter: 'text',
            		  align: "center",
+           		  width: 200,
            		  ...(isAdmin && {
 					editor: {
 						type: 'select',
@@ -183,6 +229,14 @@
 				    	return pdtValue ? pdtValue.label : value; 
 				    }
            		},
+           		{ 
+                  header: '완재품CODE', 
+              	  name: 'pdtCode', 
+              	  sortable: true, 
+              	  filter: 'text', 
+              	  align: "center",
+              	  hidden: true
+              	},
             	{ 
             	  header: '목표값', 
             	  name: 'qcmTargetValue', 
@@ -270,8 +324,8 @@
            		  name: 'qcmMethod', 
            		  sortable: true, 
            		  filter: 'text',
-           		  width: 150,
            		  align: "center",
+           		  width: 300,
            		  ...(isAdmin && {
   	           		editor: {
   	           	      type: 'text'  // ✅ 여기! 수기 입력 가능
@@ -284,22 +338,73 @@
     		editingEvent: 'dblclick'     
           });
 	    
+	    
+	    
+	    // 아무행이나 클릭했을시 상세정보 출력
+	    grid.on('click', ev => {
+	    	  const rowKey = ev.rowKey;
+	    	  const rowData = grid.getRow(rowKey);
+	    	  if (!rowData) return;
+
+	    	  const detailHtml = `
+	    	    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
+	    	      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+
+	    	        ${makeDetailItem('검사 코드', rowData.qcmCode)}
+	    	        ${makeDetailItem('검사명', rowData.qcmName)}
+	    	        ${makeDetailItem('원자재', rowData.mtlName)}
+	    	        ${makeDetailItem('반제품/완제품', rowData.pdtName)}
+	    	        ${makeDetailItem('목표값', rowData.qcmTargetValue)}
+	    	        ${makeDetailItem('상한값', rowData.qcmMaxValue)}
+	    	        ${makeDetailItem('하한값', rowData.qcmMinValue)}
+	    	        ${makeDetailItem('단위(무게)', rowData.qcmUnitWeight)}
+	    	        ${makeDetailItem('단위(길이)', rowData.qcmUnitLength)}
+	    	        ${makeDetailItem('검사방법', rowData.qcmMethod)}
+
+	    	      </div>
+	    	    </div>
+	    	  `;
+
+	    	  document.getElementById('qcmDetailContent').innerHTML = detailHtml;
+	    	});
+	    function makeDetailItem(label, value) {
+	    	  return `
+	    	    <div style="flex: 1 1 45%; display: flex;">
+	    	      <div style="font-weight: 600; width: 120px;">${label}</div>
+	    	      <div style="flex: 1;">${value ?? '-'}</div>
+	    	    </div>
+	    	  `;
+	    	}
+	    
+	    
+	    
 
 			
 		//수정
 		grid.on('afterChange', (ev) => {
 			
 			let evValue = ev.changes[0];
-			let rk = evValue.rowKey;
-			let rowData = grid.getRow(rk);
-			let qcmNo = rowData.qcmNo;
+		    let rk = evValue.rowKey;
+		    let rowData = grid.getRow(rk);
 			
-			let sendData = {
-				qcmNo : qcmNo,
-				columnName : evValue.columnName,
-				value : evValue.value
-			};
-			
+		    let sendData = {
+	            qcmNo: rowData.qcmNo,
+	            columnName: evValue.columnName,
+	            value: evValue.value,
+	            qcmCode: rowData.qcmCode,
+	            qcmName: rowData.qcmName,
+	            mtlName: rowData.mtlName,
+	            mtlCode: rowData.mtlCode,
+	            pdtName: rowData.pdtName,
+	            pdtCode: rowData.pdtCode,
+	            qcmTargetValue: rowData.qcmTargetValue,
+	            qcmMaxValue: rowData.qcmMaxValue,
+	            qcmMinValue: rowData.qcmMinValue,
+	            qcmUnitWeight: rowData.qcmUnitWeight,
+	            qcmUnitLength: rowData.qcmUnitLength,
+	            qcmMethod: rowData.qcmMethod
+	        };
+
 			$.ajax({
 				url: "/qcm/edit",
 				type: "POST",
@@ -486,15 +591,17 @@
     			worksheet["A1"] = { t: "s", v: "qcmNo", r:"<t>qcmNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmNo', w: 'qcmNo'};
     			worksheet["B1"] = { t: "s", v: "qcmCode", r:"<t>qcmCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmCode', w: 'qcmCode'};
     			worksheet["C1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName'};
-    			worksheet["D1"] = { t: "s", v: "mtlName", r:"<t>mtlNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName'};
-    			worksheet["E1"] = { t: "s", v: "pdtName", r:"<t>pdtNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName'};
-    			worksheet["F1"] = { t: "s", v: "qcmTargetValue", r:"<t>qcmTargetValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmTargetValue', w: 'qcmTargetValue'};
-    			worksheet["G1"] = { t: "s", v: "qcmMaxValue", r:"<t>qcmMaxValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMaxValue', w: 'qcmMaxValue'};
-    			worksheet["H1"] = { t: "s", v: "qcmMinValue", r:"<t>qcmMinValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMinValue', w: 'qcmMinValue'};
-    			worksheet["I1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight'};
-    			worksheet["J1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength'};
-    			worksheet["K1"] = { t: "s", v: "qcmMethod", r:"<t>qcmMethod</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMethod', w: 'qcmMethod'};
-
+    			worksheet["D1"] = { t: "s", v: "mtlName", r:"<t>mtlName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlName', w: 'mtlName'};
+    			worksheet["E1"] = { t: "s", v: "mtlCode", r:"<t>mtlCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mtlCode', w: 'mtlCode'};  // ✅ 추가
+    			worksheet["F1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName'};
+    			worksheet["G1"] = { t: "s", v: "pdtCode", r:"<t>pdtCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtCode', w: 'pdtCode'};  // ✅ 추가
+    			worksheet["H1"] = { t: "s", v: "qcmTargetValue", r:"<t>qcmTargetValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmTargetValue', w: 'qcmTargetValue'};
+    			worksheet["I1"] = { t: "s", v: "qcmMaxValue", r:"<t>qcmMaxValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMaxValue', w: 'qcmMaxValue'};
+    			worksheet["J1"] = { t: "s", v: "qcmMinValue", r:"<t>qcmMinValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMinValue', w: 'qcmMinValue'};
+    			worksheet["K1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight'};
+    			worksheet["L1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength'};
+    			worksheet["M1"] = { t: "s", v: "qcmMethod", r:"<t>qcmMethod</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmMethod', w: 'qcmMethod'};
+    			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
     			// TUI Grid에 반영
@@ -536,7 +643,46 @@
     		reader.readAsArrayBuffer(file);
     		
     	});	
+    	
+    	
+    	
+    	
+    	function addEditableRow() {
+    	    const data = grid.getData();
 
+    	    // qcmNo에서 숫자만 추출해서 최대값 구하기
+    	    const maxNo = data.reduce((max, row) => {
+			    const num = parseInt(String(row.qcmNo || '').replace(/\D/g, ''), 10);
+			    return isNaN(num) ? max : Math.max(max, num);
+			}, 0);
+
+    	    const newNo = maxNo + 1;
+    	    const newQcmNo = 'QCM' + newNo.toString().padStart(3, '0'); // QCM001, QCM002, ...
+
+    	    grid.prependRow({
+    	    	qcmNo: newNo,
+    	        qcmCode: newQcmNo,
+    	        qcmName: '',
+    	        mltName: '',
+    	        mltCode: '',
+    	        pdtName: '',
+    	        pdtCode: '',
+    	        qcmTargetValue: '0',
+    	        qcmMaxValue: '0',
+    	        qcmMinValue: '0',
+    	        qcmUnitLength: '',
+    	        qcmUnitWeight: '',
+    	        qcmMethod: ''
+    	    });
+    	
+    	// 새로 추가한 행 index
+	    const lastIndex = grid.getRowCount() - 1;
+    	
+    	// 포커스 및 편집 시작
+	    grid.focusAt(lastIndex, 'qcmName');
+	    grid.startEditing(lastIndex, 'qcmName');
+
+    	};
         
         
         

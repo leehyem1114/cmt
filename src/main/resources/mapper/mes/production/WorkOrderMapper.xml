@@ -15,7 +15,8 @@
 			, W.PRC_CODE
 			, W.ORDER_DATE
 			, W.WO_QTY
-		--	, S.MS_STATUS
+			, S.WO_STATUS_CODE
+			, S.WO_STATUS_NAME
 			, W.STATUS
 			, W.DUE_DATE
 			, W.COMMENTS
@@ -28,7 +29,7 @@
 		  FROM WORK_ORDER W 
 		           JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
 		           JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
-		        --   JOIN MFG_SCHEDULES S ON W.WO_CODE = S.MS_CODE
+		           JOIN WORK_ORDER_STATUS S ON W.WO_STATUS_CODE = S.WO_STATUS_CODE
 		 ORDER BY WORK_ORDER_NO DESC
 	</select>
 	<!-- 제조계획 리스트 - 모달 -->
@@ -38,19 +39,19 @@
 		    , S.MS_CODE
 		    , S.PDT_CODE
 		    , P.PDT_NAME
-		    , S.ALLOCATED_QTY
-		    , S.MS_START_DATE
-		    , S.MS_END_DATE
+		    , S.SO_QTY
+		    , S.MS_START_TIME
+		    , S.MS_END_TIME
 		    , S.EMP_ID
 		    , S.MS_PRIORITY
 		    , S.MS_STATUS
 		    , S.MS_UPDATED_AT
 		    , S.PRC_CODE
 		    , S.MP_CODE
-		    , S.MS_QTY
-		    , S.PDT_PRC_TYPE_CODE
+		    , S.SO_QTY
+		  --  , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
-		WHERE  MS_STATUS != '대기중'
+		WHERE  MS_STATUS != '대기'
 		ORDER BY S.MS_NO DESC
 	</select>
 	<!-- 제조계획리스트 -> workOrder 테이블에 insert -->
@@ -66,7 +67,7 @@
 			 , PRC_CODE
 			 , WORK_START_DATE
 			 , WORK_END_DATE
-			 , STATUS -- 공정상태
+			 -- , WO_STATUS_CODE -- 공정상태
 		) VALUES (
 				WORK_ORDER_SEQ.NEXTVAL
 			, #{msCode, jdbcType=VARCHAR}
@@ -79,20 +80,110 @@
 			, #{msStartDate, jdbcType=DATE}
 <!-- 			, #{msEndDate, jdbcType=DATE} -->
 			, NULL
-			,#{msStatus, jdbcType=VARCHAR}
+<!-- 			,#{msStatus, jdbcType=VARCHAR} -->
 		)
 	</insert>
 	<update id="updateMfgStatus">
 		UPDATE WORK_ORDER
-		SET STATUS = '대기중'
+		SET WO_STATUS_CODE = 'SB'
 		WHERE WO_CODE = #{msCode}
 	</update>
+	
+	<delete id="deleteMfgList">
+		DELETE FROM MFG_SCHEDULES 
+		WHERE MS_CODE = #{msCode}
+	</delete>
+	
+	
 	<!-- 작업시작 버튼 = 날짜 업데이트&진행중 -->
 	<update id="updateWorkStartTime">
 		 UPDATE WORK_ORDER
 	     SET WO_START_DATE = SYSDATE 
-	    	 , STATUS = '진행중'
+	    	 , WO_STATUS_CODE = 'PS' 
 	     WHERE WO_NO = #{woNo}
 	</update>
+	
+	<!-- 로트번호로 단일제품 정보 들고오기 -->
+	<select id="selectLotNoDetail" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		SELECT 
+		    L.*, 
+		    W.PDT_NAME,
+		    E.EMP_NAME
+		    ,  P.PRC_TYPE_NAME
+		FROM 
+		    LOT L
+		JOIN 
+		    WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+		LEFT JOIN 
+		    EMPLOYEES E ON W.EMP_ID = E.EMP_ID
+	    LEFT JOIN 
+	    	PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
+		WHERE 
+		    L.LOT_NO = #{lotNo}
+	</select>
+	
+	<!-- 로트번호 뿌리기 -->
+	<select id="selectLotDetail" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		SELECT L.*,W.PDT_NAME
+		FROM LOT L JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+	</select>
+	
+	
+	<!-- 계층구조로 로트번호 리스트 뿌리기 -->
+	<select id="selectAllLotTree" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		SELECT    
+		    LEVEL,
+		    L.LOT_NO,
+		    L.CHILD_LOT_CODE,
+		    L.PARENT_LOT_CODE,
+		    L.CHILD_PDT_CODE,
+		    L.PARENT_PDT_CODE,
+		    L.PRC_TYPE,
+		    L.START_TIME,
+		    L.FINISH_TIME,
+		    L.WO_QTY,
+		    W.PDT_NAME,
+		    E.EMP_NAME,
+		    P.PRC_TYPE_NAME,
+		    CONNECT_BY_ISLEAF AS IS_LEAF,
+		    PRIOR L.CHILD_LOT_CODE AS NEXT_LOT_CODE,
+		    SYS_CONNECT_BY_PATH(L.CHILD_LOT_CODE, '← ') AS PATH
+		FROM LOT L
+		LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+		LEFT JOIN PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
+		LEFT JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
+		-- 완제품 루트
+		START WITH L.CHILD_LOT_CODE NOT IN (
+		    SELECT DISTINCT PARENT_LOT_CODE FROM LOT WHERE PARENT_LOT_CODE IS NOT NULL
+		)
+		-- 루트 → 구성품 방향
+		CONNECT BY L.CHILD_LOT_CODE = PRIOR L.PARENT_LOT_CODE
+		ORDER SIBLINGS BY L.LOT_NO
+
+	</select>
+	
+	<select id="selectLotProcessListByLotNo" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		SELECT
+		  L.LOT_NO,
+		  L.CHILD_LOT_CODE,
+		  L.PARENT_LOT_CODE,
+		  L.CHILD_PDT_CODE,
+		  W.PDT_NAME,
+		  L.PRC_TYPE,
+		  L.START_TIME,
+		  L.FINISH_TIME,
+		  W.EMP_NAME,
+		  L.WO_QTY,
+		  P.PRC_TYPE_NAME,
+		  E.EMP_NAME
+		FROM LOT L
+		LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+		LEFT JOIN PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
+		LEFT JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
+		START WITH L.CHILD_LOT_CODE = #{childLotCode}
+		CONNECT BY PRIOR L.CHILD_LOT_CODE = L.PARENT_LOT_CODE
+	--	CONNECT BY PRIOR L.PARENT_LOT_CODE = L.CHILD_LOT_CODE
+		ORDER SIBLINGS BY L.PRC_TYPE
+	</select>
 	
 </mapper>

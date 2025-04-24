@@ -260,6 +260,22 @@
             LEV_APPROVAL_DATE = SYSDATE
         WHERE LEV_NO = #{levNo}
     </update>
+    
+    <!-- 휴가인지 체크 -->
+	<select id="isOnLeave" resultType="boolean" parameterType="map">
+    	SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+    	FROM LEAVES
+    	WHERE EMP_ID = #{empId}
+     	 AND #{date} BETWEEN LEV_START_DATE AND LEV_END_DATE
+	</select>
+	
+    <!-- 휴가 상태 체크 -->
+    <select id="existsAttendStatus" resultType="boolean" parameterType="map">
+    SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+    FROM ATTENDS
+    WHERE EMP_ID = #{empId}
+      AND ATD_DATE = #{date}
+	</select>
 
 	
 	

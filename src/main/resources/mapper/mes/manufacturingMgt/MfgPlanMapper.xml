@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper">
+
+	<!-- 전체 생산 계획 조회 -->
+	<select id="getMfgPlanTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		SELECT
+			MP.MP_NO,
+			MP.MP_CODE,
+		    MP.SO_CODE,
+		    MP.EMP_ID,
+		    MP.MP_STATUS,
+		    MP.MP_PRIORITY,
+		    MP.MP_CREATED_AT,
+		    MP.MP_UPDATED_AT,
+		    MP.MP_START_DATE,
+		    MP.MP_END_DATE,
+		    E.EMP_NAME AS empName
+		FROM MFG_PLANS MP
+		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
+		WHERE MP.MP_VISIBLE = 'Y'
+		ORDER BY MP.MP_NO DESC
+	</select>
+	
+	<!-- 생산 계획 등록 시 수주 내역 조회 -->
+	<select id="getSoList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO">
+		SELECT
+			SO.SO_CODE AS soCode,
+			SO.SO_QTY AS soQty,
+			CD.CMN_DETAIL_NAME AS qtyUnitName,
+			SO.SO_DUE_DATE AS soDueDate,
+			SO.PDT_CODE AS pdtCode,
+			P.PDT_NAME AS pdtName,
+			C.CLT_NAME AS cltName
+		FROM SALES_ORDER SO
+		LEFT JOIN COMMONCODE_DETAIL CD ON SO.QTY_UNIT = CD.CMN_DETAIL_CODE
+		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
+		LEFT JOIN CLIENTS C ON SO.CLT_CODE = C.CLT_CODE
+		WHERE SO_STATUS = 'SO_CONFIRMED'
+		  AND NOT EXISTS (
+	      SELECT 1 FROM MFG_PLANS MP
+	      WHERE MP.SO_CODE = SO.SO_CODE
+	  )	
+	</select>  
+	
+	<!-- 제품 BOM 조회 -->
+	<select id="getBomList" resultType="Map">
+		SELECT 
+			B.BOM_NO,
+			B.PARENT_PDT_CODE,
+			B.CHILD_ITEM_CODE,
+			B.ITEM_TYPE,
+			B.BOM_QTY,
+			B.BOM_UNIT,
+			B.BOM_PRC_TYPE,
+			NVL(PRIOR B.BOM_QTY, 1) * B.BOM_QTY AS TOTAL_QTY,
+			<!-- PRIOR B.BOM_QTY * B.BOM_QTY AS totalQty, -->
+			3 AS leadTime
+		FROM BOM B
+		<!-- LEFT JOIN PROCESS_INFO P ON B.BOM_PRC_TYPE = P.PRC_TYPE_CODE -->
+		<!-- WHERE B.USE_YN = 'Y' -->
+ 		START WITH B.PARENT_PDT_CODE = 'WIP013'
+		CONNECT BY PRIOR B.CHILD_ITEM_CODE = B.PARENT_PDT_CODE
+	</select>
+	
+	<!-- 원자재 재고 조회 -->
+	<select id="getMaterialInventory" resultType="Map">
+		SELECT MTL_CODE, SUM(CURRENT_QTY)
+		FROM MATERIAL_INVENTORY
+		GROUP BY MTL_CODE
+	</select>
+	
+	<!-- 수주에 따른 BOM 조회 -->
+	<select id="getMfgPlanBomList" resultType="Map">
+		SELECT 
+			BOM_NO,
+			PARENT_PDT_CODE,
+			CHILD_ITEM_CODE,
+			ITEM_TYPE,
+			BOM_QTY,
+			BOM_UNIT,
+			BOM_PRC_TYPE,
+			PRIOR BOM_QTY * BOM_QTY AS TOTAL_QTY
+		FROM BOM
+		START WITH PARENT_PDT_CODE IN (
+			SELECT SO.PDT_CODE
+			FROM MFG_PLANS MP
+			JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+			JOIN COMMONCODE_DETAIL CD ON MP.MP_STATUS = CD.CMN_DETAIL_CODE
+			WHERE CMN_CODE = 'MP_STATUS'
+				AND CD.CMN_DETAIL_CODE IN ('MPS002', 'MPS003') 
+		)
+		CONNECT BY PRIOR CHILD_ITEM_CODE = PARENT_PDT_CODE
+	</select>
+	
+	<!-- 생산 계획 등록 -->
+	<insert id="registMpPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		INSERT INTO MFG_PLANS (
+		      MP_NO
+		    , MP_CODE
+			, SO_CODE
+			, EMP_ID
+<!-- 			, MP_STATUS -->
+			, MP_PRIORITY
+			, MP_CREATED_AT
+			, MP_UPDATED_AT
+			, MP_START_DATE
+		    , MP_END_DATE
+		) VALUES (
+		    MFG_PLANS_SEQ.NEXTVAL
+    		, #{mpCode, jdbcType=VARCHAR}
+    		, #{soCode, jdbcType=VARCHAR}
+    		, #{empId, jdbcType=VARCHAR}
+<!--     		, #{mpStatus, jdbcType=VARCHAR} -->
+    		, #{mpPriority, jdbcType=VARCHAR}
+    		, SYSDATE
+    		, NULL
+    		, #{mpStartDate, jdbcType=DATE}
+    		, #{mpEndDate, jdbcType=DATE}
+    	)	
+	</insert>
+	
+	<!-- 생산 계획 수정 -->
+	<update id="updateMpPlan" parameterType="java.util.List">
+    	<foreach collection="list" item="item" separator=";">
+			UPDATE MFG_PLANS
+			SET
+		        MP_PRIORITY   = #{item.mpPriority, jdbcType=VARCHAR},
+		        MP_STATUS     = #{item.mpStatus, jdbcType=VARCHAR},
+		        MP_START_DATE = #{item.mpStartDate, jdbcType=DATE},
+		        MP_END_DATE   = #{item.mpEndDate, jdbcType=DATE},
+		        MP_UPDATED_AT = SYSDATE
+		    WHERE MP_CODE = #{item.mpCode, jdbcType=VARCHAR}
+		</foreach>		    
+	</update>
+	
+	<!-- 생산 계획 삭제 (숨김 처리) -->
+	<update id="isVisiableToFalse" parameterType="java.util.List">
+	  UPDATE MFG_PLANS
+	  SET MP_VISIBLE = 'N'
+	  WHERE MP_NO IN (
+	    <foreach item="mpNo" collection="list" separator=",">
+	      #{mpNo}
+	    </foreach>
+	  )
+	</update>
+	
+	<!-- 엑셀 데이터 업데이트 -->
+	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		UPDATE MFG_PLANS
+	    SET
+		    MP_CODE 	   			   = #{mpCode, jdbcType=VARCHAR},
+			SO_CODE 	   			   = #{soCode, jdbcType=VARCHAR},
+			EMP_ID 	   			       = #{empId, jdbcType=VARCHAR},
+			<!-- 			, MP_STATUS -->
+			MP_PRIORITY 	   		   = #{mpPriority, jdbcType=VARCHAR},
+			MP_CREATED_AT 	   		   = #{mpCreatedAt, jdbcType=DATE},
+			MP_UPDATED_AT 	   		   = #{mpUpdatedAt, jdbcType=DATE},
+			MP_START_DATE 	   		   = #{mpStartDate, jdbcType=DATE},
+		    MP_END_DATE 	   		   = #{mpEndDate, jdbcType=DATE}
+	    WHERE MP_NO = #{mpNo}
+	</update>	
+
+
+</mapper>

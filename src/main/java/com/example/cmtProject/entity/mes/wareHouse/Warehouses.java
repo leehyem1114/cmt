@@ -1,13 +1,11 @@
 package com.example.cmtProject.entity.mes.wareHouse;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -19,7 +17,7 @@ public class Warehouses {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_WAREHOUSES_WHS_NO")
 	@SequenceGenerator(name = "SEQ_WAREHOUSES_WHS_NO", sequenceName = "SEQ_WAREHOUSES_WHS_NO", allocationSize = 1)
-	@Column(name = "WHS_NO", nullable = false)
+	@Column(name = "WHS_NO",precision = 19, scale = 0, nullable = false)
 	private Long whsNo; //창고 번호(PK)
 
     @Column(name = "WHS_CODE", nullable = false, length = 50, unique = true)
@@ -56,18 +54,18 @@ public class Warehouses {
     private String updatedBy; //수정자
 
     @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate; //생성일시
+    private LocalDate createdDate; //생성일시
 
     @Column(name = "UPDATED_DATE")
-    private LocalDateTime updatedDate; //수정일시
+    private LocalDate updatedDate; //수정일시
 
-    @PrePersist
-    protected void onCreate() {
-        createdDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedDate = LocalDateTime.now();
-    }
+//    @PrePersist
+//    protected void onCreate() {
+//        createdDate = LocalDateTime.now();
+//    }
+//
+//    @PreUpdate
+//    protected void onUpdate() {
+//        updatedDate = LocalDateTime.now();
+//    }
 }

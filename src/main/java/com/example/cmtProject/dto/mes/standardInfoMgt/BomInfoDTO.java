@@ -23,5 +23,7 @@ public class BomInfoDTO {
     private LocalDate bomDate;  // 입력 날짜
     private String comments; 	// 비고
     private String useYN; 		// 사용 여부
+    private String path;     	//하단 왼쪽에 경로를 보여주기 위해서 path값 따로 추가 
+		
 }
 

@@ -1,7 +1,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 	<div th:fragment="sidebar" >
+
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-		
+	
 		<div id="topbar" class="d-block row d-flex justify-content-between align-items-center" >
 	        <div class="col-md-8 d-flex justify-content-start">
 	        
@@ -65,8 +66,18 @@
 				</div>
 				</div>
 			</div>
+			
+			<!-- ✅ 오버레이 + 스피너 통합 -->
+			<div id="loadingOverlay" style="display: none;">
+			  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+			    <span class="visually-hidden">Loading...</span>
+			  </div>
+			</div>
+			
 			<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		    <script th:inline="javascript">
+		    const spinner = document.getElementById('loadingOverlay');
+		    
 		    async function checkIn() {
 		    	  // 사용자에게 출근 확인 알림 표시
 		    	  const result = await Swal.fire({
@@ -84,35 +95,43 @@
 		    		  }
 		    	  // 출근 API 요청
 		    	  try {
-		    	    const response = await fetch('/attends/check-in', {
-		    	      method: 'POST',
-		    	      headers: {
-		    	        'Content-Type': 'application/json'
-		    	      },
-		    	      body: JSON.stringify({})
-		    	    });
-		    	    if (!response.ok) {
-		    	      await Swal.fire({
-		    	        icon: "error",
-		    	        title: "출근 처리 중 서버 오류가 <br>발생했습니다",
-		    	      });
-		    	      throw new Error("출근 처리 중 서버 오류");
-		    	    }
-		    	    await Swal.fire({
-		    	      title: "출근이 처리되었습니다",
-		    	      icon: "success",
-		    	    });
-	
-		    	    location.reload();
-	
-		    	  } catch (error) {
-		    	    console.error('Error:', error);
-		    	    await Swal.fire({
-		    	        icon: "error",
-		    	        title: "근무 일정 먼저 등록 바랍니다",
-		    	      });
-		    	  }
-		    	}
+					  // ✅ 로딩 시작
+					  spinner.style.display = 'flex';
+					
+					  const response = await fetch('/attends/check-in', {
+					    method: 'POST',
+					    headers: {
+					      'Content-Type': 'application/json'
+					    },
+					    body: JSON.stringify({})
+					  });
+					  // ✅ 로딩 종료
+					  spinner.style.display = 'none';
+					
+					  if (!response.ok) {
+					    await Swal.fire({
+					      icon: "error",
+					      title: "출근 처리 중 서버 오류가 <br>발생했습니다",
+					    });
+					    throw new Error("출근 처리 중 서버 오류");
+					  }
+					
+					  await Swal.fire({
+					    title: "출근이 처리되었습니다",
+					    icon: "success",
+					  });
+					
+					  location.reload();
+					
+					} catch (error) {
+					  console.error('Error:', error);
+					  await Swal.fire({
+					    icon: "error",
+					    title: "근무 일정 먼저 등록 바랍니다",
+					  });
+					
+					} 
+			    }
 		    
 		    	async function checkOut() {
 		    	  // 사용자에게 퇴근 확인 알림 표시
@@ -376,6 +395,8 @@
 						    </ul>
 						</li>
 						
+						
+						
 						<li class="sidebar-item  has-sub">
 						    <a href="#" class='sidebar-link'>
 						        <i class="bi bi-collection-fill"></i>
@@ -386,13 +407,13 @@
 						            <a href="/prdct-order">주문 관리</a>
 						        </li> -->
 						        <li class="submenu-item ">
-						            <a href="/mfg/mfg-plan">생산 계획</a>
+						            <a href="/mp/mfg-plan">생산 계획</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/mfg/mfg-schedule">제조 계획</a>
+						            <a href="/ms/mfg-schedule">제조 계획</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/mfg/mfg-history">생산 이력</a>
+						            <a href="/mp/mfg-history">생산 이력</a>
 						        </li>
 						        
 						    </ul>
@@ -417,13 +438,25 @@
 						            <a href="/ex">ex</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/quality-inspection">품질 검사</a>
+						            <a href="/production/lotTracking">Lot 추적</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/quality-history">품질 이력</a>
+						            <a href="/ship">출하</a>
+						        </li>
+						    </ul>
+						</li>
+						
+						<li class="sidebar-item  has-sub">
+						    <a href="#" class='sidebar-link'>
+						        <i class="bi bi-pencil-square"></i>
+						        <span>품질 검사</span>
+						    </a>
+						    <ul class="submenu ">
+						        <li class="submenu-item ">
+						            <a href="/iqc/inspection-info">입고 검사</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/lot-tracking">Lot 추적</a>
+						            <a href="/fqc/inspection-info">출고 검사</a>
 						        </li>
 						    </ul>
 						</li>
@@ -451,10 +484,13 @@
 						    </a>
 						    <ul class="submenu ">
 						        <li class="submenu-item ">
-						            <a href="/inventory-status">재고 현황</a>
+						            <a href="/materialinventory/view">원자재 재고 현황</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/inbound">입고 관리</a>
+						            <a href="/productsinventory/view">완제품 재고 현황</a>
+						        </li>
+						        <li class="submenu-item ">
+						            <a href="/materialreceipt/view">입고 관리</a>
 						        </li>
 						        <li class="submenu-item ">
 						            <a href="/outbound">출고 관리</a>
