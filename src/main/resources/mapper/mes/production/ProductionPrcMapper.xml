@@ -126,4 +126,19 @@
 	<update id="updateWoStatus">
 		UPDATE WORK_ORDER SET WO_STATUS_CODE = 'RN' WHERE WO_CODE = #{woCode}
 	</update>
+	
+	<select id="selectProductInfo" resultType="com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO">
+		SELECT * 
+		FROM PRODUCTS P
+		LEFT JOIN MATERIAL_TYPE M
+		  ON P.MTL_TYPE_CODE = M.MTL_TYPE_CODE
+		LEFT JOIN WEIGHT_UNIT W
+		  ON P.WT_TYPE_CODE = W.WT_TYPE_CODE
+		LEFT JOIN LENGTH_UNIT L
+		  ON P.LT_TYPE_CODE = L.LT_TYPE_CODE
+		LEFT JOIN PRODUCT_TYPE P2
+		  ON P.PDT_TYPE = P2.PDT_TYPE_CODE
+	   WHERE P.PDT_USEYN = 'Y' AND P.PDT_CODE = #{pdtCode}
+	</select>
+	
 </mapper>

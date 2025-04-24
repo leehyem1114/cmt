@@ -24,6 +24,7 @@ import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.service.mes.production.LotService;
 import com.example.cmtProject.service.mes.production.ProductionPrcService;
 
@@ -33,6 +34,17 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/production")
 public class ProductionPrcController {
+	
+	/*
+	 * 대기(SB) -> 공정 작업 대기(PS) -> 진행중(공정 작업 중)(RN) -> 완료(CP)
+	 * 
+		작업 등록을 클릭하면 모달창이 뜨고 작업 지시 등록을 누르면 SB
+		하단 작업 시작 버튼을 클릭하면 PS : 이때 공정 현황의 셀렉트 박스 목록에 나타난다
+		공정 현황에서 공정 작업 등록 버튼을 누르면 셀렉트 박스가 나타나고 시작을 클릭하면 RN으로 상태 변환
+		=> RN으로 돼 버리면 이후 셀렉트 박스 목록에는 나타나지 않는다
+		두 번째 하단 그리드에서 작업 완료 버튼을 클릭하면 해당 작업만 CP로 변환
+	*/
+	
 
 	@Autowired
 	private ProductionPrcService productionPrcService;
@@ -75,7 +87,11 @@ public class ProductionPrcController {
 		//CHILD_ITEM_CODE => 현재 제품/최종 제품
 		
 		/*
-		결과 => 
+		
+		- BOM테이블에서 path를 가져와서 해당 정보를 바탕으로 Lot을 생성 후 Lot테이블에 입력하고
+		상단 그리드에는 BOM테이블에서 가져온 정보를 출력한다 -
+		  
+		BOM테이블 결과 => 
 		PARENT_PDT_CODE CHILD_ITEM_CODE
 				WIP004	 MTL-005
 				WIP005	 MTL-006
@@ -204,99 +220,13 @@ public class ProductionPrcController {
 		for(BomInfoDTO b : selectPdtCodeList) {
 			
 			//================ 부모 컬럼 lot생성=========================================================
-			/*
-			int parentOrderNum = 0;
-			String parentpdtCode = b.getParentPdtCode(); //부모의 제품 코드
-			String parentPrcType = "";
 			
-			if (parentpdtCode.toLowerCase().startsWith("mtl")) {
-				//MTL-001 원자재인지 경우 LOT에 IN 입력
-				parentPrcType = "IN";
-				parentOrderNum = ++mtlInt;
-	        }else {
-	        	
-	        	//FP, PR, WE, PA, AS
-	        	parentPrcType = productionPrcService.getPrcType(parentpdtCode);
-
-	        	//공정에 맞게 뒤에 ORDER증가
-				if(parentPrcType != null) {
-					
-		        	if(parentPrcType.equals("FP")) {
-						parentOrderNum = ++fpInt;
-					}else if(parentPrcType.equals("PR")) {
-						parentOrderNum = ++prInt;
-					}else if(parentPrcType.equals("WE")) {
-						parentOrderNum = ++weInt;
-					}else if(parentPrcType.equals("PA")) {
-						parentOrderNum = ++paInt;
-					}else if(parentPrcType.equals("AS")) {
-						parentOrderNum = ++asInt;
-					}else {
-						log.error("Parent 목록에 없는 공정 타입입니다.");
-					}
-			        
-				}else {
-					log.error("parentPrcType is NULL");
-				}//if(parentPrcType != null) {
-	        	
-	        }//else {
-	
-			//MAP에 저장된 제품 코드를 조회, 있는 경우 기존 LOT번호 출력, 없는 경우 MAP에 저장 
-		    String parentLot = "";
-		    if (checkLot.containsKey(parentpdtCode)) {
-		    	 parentLot = checkLot.get(parentpdtCode);
-	        } else {
-	        	parentLot = makeLotCode(parentPrcType, todayStr, parentOrderNum);
-	        	checkLot.put(parentpdtCode, parentLot);
-	        }*/
-			b.getParentPdtCode(); //부모의 제품 코드
+			//위에서 만든 MAP에서 부모 코드에 해당하는 LOT 부여
 			String parentLot = pdTCodeLotMapping.get(b.getParentPdtCode());
 		    
 			//================ 자식 컬럼 lot생성=========================================================
-			/*
-			int childOrderNum = 0;
-			String childItemCode = b.getChildItemCode(); //자식의 제품 코드
-			String childPrcType = "";
 			
-			if (childItemCode.toLowerCase().startsWith("mtl")) {
-				//MTL-001 원자재인지 확인
-				childPrcType = "IN";
-				childOrderNum = ++mtlInt;
-	        }else {
-			
-	        	childPrcType = productionPrcService.getPrcType(childItemCode);
-			
-	        	//FP, PR, WE, PA, AS
-				if(childPrcType != null) {
-					
-		        	if(childPrcType.equals("FP")) {
-		        		childOrderNum = ++fpInt;
-					}else if(childPrcType.equals("PR")) {
-						childOrderNum = ++prInt;
-					}else if(childPrcType.equals("WE")) {
-						childOrderNum = ++weInt;
-					}else if(childPrcType.equals("PA")) {
-						childOrderNum = ++paInt;
-					}else if(childPrcType.equals("AS")) {
-						childOrderNum = ++asInt;
-					}else {
-						log.error("Child 목록에 없는 공정 타입입니다.");
-					}
-			        
-				}else {
-					log.error("childPrcType is NULL");
-				}//if(childPrcType != null) {
-	        }//else {
-
-			//MAP에 저장된 제품 코드를 조회, 있는 경우 기존 LOT번호 출력, 없는 경우 MAP에 저장 
-			String childLot = "";
-		    if (checkLot.containsKey(childItemCode)) {
-		    	childLot = checkLot.get(childItemCode);
-	        } else {
-	        	childLot = makeLotCode(childPrcType, todayStr, childOrderNum);
-	        	checkLot.put(childItemCode, childLot);
-	        }*/
-			
+			//위에서 만든 MAP에서 자식 코드에 해당하는 LOT 부여
 			String childLot = pdTCodeLotMapping.get(b.getChildItemCode());
 			
 			//========================= 위에서 생성한 lot를 lot테이블에 입력 ============================================= 
@@ -314,18 +244,11 @@ public class ProductionPrcController {
 			String prcType = b.getBomPrcType();
 			String bomQty = b.getBomQty();
 			String bomUnit = b.getBomUnit();
-			
-			//LINE_CODE
-			//EQP_CODE
-			
-			//String woCode = woCode;
+
 			String childLotCode = childLot;
 			
 			LocalTime time = LocalTime.now();
 			String startTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-			
-			LocalDate date = LocalDate.of(2024, 4, 22);
-			LocalDateTime dateTime = date.atStartOfDay(); // 00:00:00
 			
 			String woStatusNo = "RN";
 			String useYN = "Y";
@@ -348,15 +271,16 @@ public class ProductionPrcController {
 			lod.setWoStatusNo(woStatusNo);
 			lod.setUseYn(useYN);
 			
-			lotService.insertLot(lod);
+			//---------------------------------- 하단 그리드 작업 중으로 주석 처리
+			//lotService.insertLot(lod);
 			
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
+		//---------------------------------- 하단 그리드 작업 중으로 주석 처리
 		//작업지시에서 받아온 작업 RN으로 변경
-		productionPrcService.updateWoStatus(woCode);
+		//productionPrcService.updateWoStatus(woCode);
 		
 		return selectPdtCodeList;
-		
 	}
 
 	
@@ -383,17 +307,59 @@ public class ProductionPrcController {
 				
 	}
 	
+	//첫번째 하단의 왼쪽 트리에서 제품 정보를 클릭시 비동기
+	@PostMapping("/pdtInfo")
+	@ResponseBody
+	public List<ProductTotalDTO> pdtInfo(@RequestParam("pdtCode") String pdtCode) {
+		
+		List<ProductTotalDTO> productTotalDto = productionPrcService.selectProductInfo(pdtCode);
+		
+		return productTotalDto;
+		
+	}
+	
+	//두번째 하단 작업 현황 버튼 클릭시 비동기
 	@PostMapping("/prcBoard")
 	@ResponseBody
-	public List<LotStructurePathDTO> prcBoard(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode) {
+	public List<LotOriginDTO> prcBoard(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode) {
 		
 		//pdtCode로 BOM 테이블에서 PATH가져오기
 		//List<LotStructurePathDTO> lspd = lotService.selectStructurePath(pdtCode);
 		
 		//LOT테이블에서 전체 PATH가져오기, woCode(작업지시코드)는 가져간다
-		List<LotStructurePathDTO> lspd = lotService.selectStructurePathAll(woCode, pdtCode);
-		//System.out.println("LotStructurePathDTO:" + lspd);
-		return lspd;
+		//List<LotStructurePathDTO> lspd = lotService.selectStructurePathAll(woCode, pdtCode);
+		
+		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(woCode);
+		
+		log.info("LotStructurePathDTO:" + selectLotOrigin);
+		return selectLotOrigin;
+	}
+	
+	//두번째 그리드에서 작업 완료 버큰 클릭시 업데이트
+	//FINISH_TIME, WO_STATUS_NO, BOM_QTY
+	//작업지시서의 WO_CODE와 일치하는 PDT_CODE이면 WORK_ORDER의 WO_STATUS_CODE도 CP로 업데이트 
+	@PostMapping("/jobCmpl")
+	@ResponseBody
+	public void jobCmpl(@RequestParam("lotNo") String lotNo, @RequestParam("presentQty") String presentQty) {
+		
+		LotOriginDTO lotOrigin = new LotOriginDTO();
+		
+		//FINISH_TIME
+		LocalTime time = LocalTime.now();
+		String finishTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+		lotOrigin.setFinishTime(finishTime);
+		
+		//WO_STATUS_NO
+		lotOrigin.setWoStatusNo("CP");
+		
+		//BOM_QTY
+		lotOrigin.setBomQty(presentQty);
+		
+		//lotService.updateLotResentPRC(lotOrigin);
+		
+		//완제품이 들어오면
+		//WORK_ORDER 테이블의 WO_STATUS_CODE도 CP로 업데이트 
+		
 	}
 }
 

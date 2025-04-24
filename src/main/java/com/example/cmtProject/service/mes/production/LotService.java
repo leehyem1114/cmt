@@ -41,6 +41,16 @@ public class LotService {
 		// TODO Auto-generated method stub
 		return lotMapper.selectStructurePathAll(woCode, pdtCode);
 	}
+
+	public List<LotOriginDTO> selectLotOrigin(String woCode) {
+		// TODO Auto-generated method stub
+		return lotMapper.selectLotOrigin(woCode);
+	}
+
+	public void updateLotResentPRC(LotOriginDTO lotOrigin) {
+		// TODO Auto-generated method stub
+		lotMapper.updateLotResentPRC(lotOrigin);
+	}
 	
 
 
