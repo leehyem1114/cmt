@@ -2,6 +2,7 @@ package com.example.cmtProject.controller.mes.qualityControl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
 import com.example.cmtProject.entity.mes.qualityControl.Fqc;
 import com.example.cmtProject.repository.mes.qualityControl.FqcRepository;
@@ -88,29 +90,31 @@ public class FqcController {
     }
     
     
-    // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
+ // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
     @ResponseBody
-    @PostMapping("status-action")
-    public ResponseEntity<String> postMethodName(Model model, 
+    @PostMapping("/status-action")
+    public ResponseEntity<?> postMethodName(Model model, 
     											@RequestBody Map<String, String> payload,
-    											@ModelAttribute FqcDTO fqcDTO,
     											@AuthenticationPrincipal PrincipalDetails principalDetails) {
 
     	// 유저정보
-    	String loginUser = principalDetails.getUsername();
+    	Employees loginUser = principalDetails.getUser();
     	
-    	String iqcCode = payload.get("iqcCode");
+    	FqcDTO fqcDTO = new FqcDTO();
+    	
+    	fqcDTO.setFqcCode(payload.get("fqcCode"));
         String status = payload.get("status");
 
         // TODO: 상태에 따라 분기 처리
-        if ("검사중".equals(status)) {
+        if ("검사전".equals(status)) {
         	fqcService.updateFqcInspectionStatusProcessing(loginUser, fqcDTO);
-        } else if ("검사완료".equals(status)) {
-        	fqcService.updateFqcInspectionStatusComplete(loginUser, fqcDTO);
+        } else if ("검사중".equals(status)) {
+        	fqcService.updateFqcInspectionStatusComplete(fqcDTO);
         }
-        
-    	return ResponseEntity.ok("success");
+    	
+        return ResponseEntity.ok(Collections.singletonMap("result", "success"));
     }
+    
     
     
 	

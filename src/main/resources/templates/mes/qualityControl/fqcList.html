@@ -173,8 +173,13 @@
            		      btnClass = 'btn-success';
            		    }
 
-           		 return `<button class="btn ${btnClass} btn-sm" onclick="handleStatusClick('${row.fqcCode}', '${value}')">${value}</button>`;
-           		  }
+	           		 return `<button 
+	                 class="btn ${btnClass} btn-sm" 
+	                 data-action="status" 
+	                 data-code="${row.fqcCode}" 
+	                 data-status="${value}"
+	               >${value}</button>`;
+                  }
            		},
            		{
            		  header: '합격 여부',
@@ -358,23 +363,51 @@
 	    
 
 	    
+	    document.getElementById('gridTop').addEventListener('click', function (e) {
+	    	  if (e.target.tagName === 'BUTTON' && e.target.dataset.action === 'status') {
+	    	    const fqcCode = e.target.dataset.code;
+	    	    const status = e.target.dataset.status;
+	    	    handleStatusClick(fqcCode, status);
+	    	  }
+	    	});
 	    
-	    
-		 // 검사전 검사중 버튼 눌렀을시 작동하는 로직
-	    function handleStatusClick(fqcCode, status) {
-	    	  fetch('/fqc/status-action', {
-	    	    method: 'POST',
-	    	    headers: { 'Content-Type': 'application/json' },
-	    	    body: JSON.stringify({ fqcCode, status })
-	    	  })
-	    	  .then(res => res.json())
-	    	  .then(data => {
-	    	    console.log('서버 응답:', data);
-	    	    // 추가 처리 (예: 알림, 그리드 리로드 등)
-	    	  })
-	    	  .catch(err => {
-	    	    console.error('전송 실패:', err);
-	    	  });
+	    	function handleStatusClick(fqcCode, status) {
+	    	  // 검사전일 때만 "검사중"으로 바꿀지 물어봄
+	    	  if (status === '검사전') {
+	    	    Swal.fire({
+	    	      title: `정말 '검사중' 상태로 변경하시겠습니까?`,
+	    	      icon: 'warning',
+	    	      showCancelButton: true,
+	    	      confirmButtonText: '변경',
+	    	      cancelButtonText: '취소'
+	    	    }).then(result => {
+	    	      if (!result.isConfirmed) return;
+
+	    	      fetch('/fqc/status-action', {
+	    	        method: 'POST',
+	    	        headers: { 'Content-Type': 'application/json' },
+	    	        body: JSON.stringify({ fqcCode, status })
+	    	      })
+	    	        .then(res => res.json())
+	    	        .then(data => {
+	    	          Swal.fire({
+	    	            title: '성공',
+	    	            text: '상태가 "검사중"으로 변경되었습니다.',
+	    	            icon: 'success'
+	    	          }).then(() => location.reload());
+	    	        })
+	    	        .catch(err => {
+	    	          console.error('전송 실패:', err);
+	    	          Swal.fire('오류', '상태 변경에 실패했습니다.', 'error');
+	    	        });
+	    	    });
+	    	  } else {
+	    	    Swal.fire({
+	    	      icon: 'warning',
+	    	      title: '이미 검사중이거나<br>완료된 항목입니다.',
+	    	      text: '검사전 상태만 변경할 수 있습니다.'
+	    	    });
+	    	  }
 	    	}
 	    
 	    

@@ -98,7 +98,7 @@
 	  FROM 
 	    FQC
 	  WHERE 
-	    SUBSTR(FQC_CODE, 5, 9) = #{datePart}
+	    SUBSTR(FQC_CODE, 5, 8) = #{datePart}
 	</select>
 
 	<!-- 출고가 되기전 검사 시작 눌렀을시 저장될 데이터들 -->
@@ -129,6 +129,17 @@
 	  SELECT 1 FROM FQC WHERE ISSUE_CODE = #{issueCode}
 	)
 	</insert>
+	
+	<!-- 검사전에서 검사중으로 업데이트 -->
+	<update id="updateFqcInspectionStatusProcessing" parameterType="map">
+		UPDATE FQC
+		SET 
+			FQC_INSPECTION_STATUS = '검사중',
+			EMP_NAME = #{emp.empName},
+			EMP_ID = #{emp.empId},
+			FQC_START_TIME = #{fqc.fqcStartTime}
+		WHERE FQC_CODE = #{fqc.fqcCode}
+	</update>
 	
 
 

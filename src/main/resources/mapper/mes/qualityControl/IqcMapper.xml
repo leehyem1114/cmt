@@ -12,6 +12,7 @@
         I.IQC_NO,
         I.IQC_CODE,
         E.EMP_NAME,
+        E.EMP_ID,
         I.QCM_NAME,
         M.MTL_NAME,
         I.IQC_START_TIME,

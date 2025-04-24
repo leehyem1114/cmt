@@ -1,6 +1,7 @@
 package com.example.cmtProject.service.mes.qualityControl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.qualityControl.FqcMapper;
 
 import jakarta.transaction.Transactional;
@@ -60,11 +63,23 @@ public class FqcService {
 		    row.put("pdtCode", row.get("PDT_CODE"));
 		    row.put("issuedQty", row.get("ISSUED_QTY"));
 		    row.put("whsCode", row.get("WAREHOUSE_CODE"));
-
 		    row.put("iqcCode", generateFqcCode());
 
 			fqcMapper.insertFqcInspectionList(row);
 		}
+	}
+
+	// 검사전에서 검사중으로 업데이트
+	@Transactional
+	public void updateFqcInspectionStatusProcessing(Employees loginUser, FqcDTO fqcDTO) {
+		fqcDTO.setFqcStartTime(LocalDateTime.now());
+		fqcMapper.updateFqcInspectionStatusProcessing(loginUser, fqcDTO);
+	}
+
+	@Transactional
+	// 검사중에서 검사완료로 업데이트
+	public void updateFqcInspectionStatusComplete(FqcDTO fqcDTO) {
+		
 	}
 
 	
