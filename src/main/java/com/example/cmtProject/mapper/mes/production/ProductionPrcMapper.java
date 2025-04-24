@@ -40,4 +40,12 @@ public interface ProductionPrcMapper {
 	List<LotCodeDTO> selectPdtCodeArray(String pdtCode);
 
 	String getPrcType(String pdtCode);
+
+	//BOM 계층에서 자식 제품 가져와서 중복 제거
+	List<String> selectChildPdtCodeList(String pdtCode);
+
+	//BOM 계층에서 부모 제품 가져와서 중복 제거
+	List<String> selectParentdPdtCodeList(String pdtCode);
+
+	void updateWoStatus(String woCode);
 }

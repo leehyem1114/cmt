@@ -32,7 +32,7 @@
 			,WO_START_DATE
 			,ORDER_QTY
 		FROM WORK_ORDER 
-	   WHERE WO_STATUS_CODE = 'RN'
+	   WHERE WO_STATUS_CODE = 'PS'
 	</select>
 	
 	<select id="selectWoCodeList" resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
@@ -105,4 +105,25 @@
 		SELECT PRC_TYPE_CODE FROM PRODUCTS WHERE PDT_CODE = #{pdtCode}
 	</select>
 	
+	<select id="selectChildPdtCodeList" resultType="String">
+		SELECT 
+    		DISTINCT PARENT_PDT_CODE
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = #{pdtCode}
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+	</select>
+	
+	<select id="selectParentdPdtCodeList" resultType="String">
+		SELECT 
+		    DISTINCT CHILD_ITEM_CODE
+		FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = #{pdtCode}
+		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+	</select>
+	
+	<update id="updateWoStatus">
+		UPDATE WORK_ORDER SET WO_STATUS_CODE = 'RN' WHERE WO_CODE = #{woCode}
+	</update>
 </mapper>

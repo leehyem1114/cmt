@@ -20,14 +20,14 @@ public class LotDTO {
 	private String childLotCode;
     private String parentLotCode;
     private String childPdtCode;
-    private String parentdPdtCode;
+    private String parentPdtCode;
     private LocalDate createDate;
     private String prcType;
     private String lineCode;
     private String eqpCode;
     private String woCode;
-    private LocalTime startTime;
-    private LocalTime finishTime;
+    private String startTime;
+    private String finishTime;
     private String woStatusNo;
     private String useYn;
     
@@ -35,7 +35,9 @@ public class LotDTO {
     private Long woNo;           // 작업지시 번호
     private LocalDate orderDate;        // 지시 날짜
     private String woQty;            // 지시 수량
+    private String soQty;            // 지시 수량
     private String status;              // 진행 상태
+    private String pdtName;              // 상품이름
     private LocalDate dueDate;          // 납기일
     private String comments;            // 비고
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -53,6 +55,7 @@ public class LotDTO {
     private String empId;
     private String empName;
     private String msStatus;
+    private String prcTypeName;
 	 	
 }
 

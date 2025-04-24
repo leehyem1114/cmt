@@ -41,4 +41,19 @@ public class ProductionPrcService {
 		return productionPrcMapper.getPrcType(pdtCode);
 	}
 
+	public List<String> selectChildPdtCodeList(String pdtCode) {
+		// TODO Auto-generated method stub
+		return productionPrcMapper.selectChildPdtCodeList(pdtCode);
+	}
+
+	public List<String> selectParentdPdtCodeList(String pdtCode) {
+		// TODO Auto-generated method stub
+		return productionPrcMapper.selectParentdPdtCodeList(pdtCode);
+	}
+
+	public void updateWoStatus(String woCode) {
+		// TODO Auto-generated method stub
+		productionPrcMapper.updateWoStatus(woCode);
+	}
+
 }

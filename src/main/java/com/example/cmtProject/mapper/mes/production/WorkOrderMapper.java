@@ -33,6 +33,7 @@ public interface WorkOrderMapper {
 	
 	//====================================
 	List<LotDTO> selectAllLotTree();
+	List<LotDTO> selectLotProcessListByLotNo(String childLotCode);
 
 
 }

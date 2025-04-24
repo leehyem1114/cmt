@@ -28,8 +28,8 @@
 	<div class="container mt-5">
 	    <div class="row mb-4 d-flex justify-content-between">
 	        <div class="col-md-3">
-				<button class="form-control btn btn-primary btn-m" id="regeWork" data-bs-toggle="modal" data-bs-target="#woModal">
-				<i class="fa-solid fa-magnifying-glass"></i>진행 중 작업 등록</button>
+				<button class="form-control btn btn-primary btn-m" data-bs-toggle="modal" data-bs-target="#woModal">
+				<i class="fa-solid fa-magnifying-glass"></i>공정 작업 등록</button>
 	        </div>
 			<div class="col-md-3">
 				<input type="month" class="form-control" placeholder="등록월">
@@ -85,6 +85,12 @@
 	 	</div>
 	</div>
 	<!-- ------------------- 하단 공정 현황 끝---------------------------- -->
+	
+	<!-- ------------------- 두번째 하단 시작 ---------------------------- -->
+	
+	
+	
+	<!-- ------------------- 두번째 하단 끝 ---------------------------- -->
 	
 	<!--  모달 창 시작 -->
 	<div class="modal fade" id="woModal" tabindex="-1">
@@ -156,6 +162,7 @@
 		let woGridData; //상단 그리드에 입력될 데이터를 전역으로 설정
 		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
 		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
+		let woQty; //컨트롤러에서 개수를 넘기기 위해서 전역으로 설정 후 셀렉트박스에서 값이 선택되면 저장하게 함
 		
 		$(document).ready(function(){
 			
@@ -176,6 +183,8 @@
 						$("#txtPdtCode").val(response[0].PDT_CODE);
 						$("#txtPdtName").val(response[0].PDT_NAME);
 						$("#txtWoQty").val(response[0].WO_QTY);
+						woQty = response[0].WO_QTY;
+						console.log(woQty);
 						$("#txtEmpName").val(response[0].EMP_NAME);
 						$("#txtWoStartDate").val(response[0].WO_START_DATE);
 					},
@@ -213,7 +222,8 @@
 						type: 'GET',
 						data: {
 							'pdtCode' : pdtCode,
-							'woCode' : woCode
+							'woCode' : woCode,
+							'woQty' : woQty
 							},
 						success : function(response){
 							woGridData = response;
@@ -244,8 +254,6 @@
 				//셀렉트 박스가 선택되었다면 pdtCode에 값이 있을 수밖에 없다.
 				//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
 				//pdtCode로 BOM 재귀 호출
-				
-				
 			})
 			
 			//======================================= 하단 왼쪽 위에 공정 현황 버튼 클릭 ================================================
@@ -266,7 +274,18 @@
 						console.log("error:" + error)
 					}
 				});//$.ajax
-			}) 
+			});//$("#prcBoard").on("click", function(){
+			
+			//======================================= 하단 왼쪽에 트리 버튼 클릭 ================================================
+			/*
+			$("#treeName").on("click", function(this){
+			
+				alert(this);
+				
+			});//$("#treeName").on("click", function(){
+			*/
+			
+			
 		});//$(document).ready(function(){
 			
 		//======================================= 상단 그리드 ================================================
@@ -370,7 +389,7 @@
 			//자식에 해당하는 태그 생성
 		    let html = '<ul>';
 		    for (let parent of parents) {
-		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')">사용처 보기</button>`;
+		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' onclick="showUsage('${parent}')" id="treeName">작업시작</button>`;
 		        html += buildBomTree(parent, bomList); // 상위 parent를 계속 탐색
 		        html += '</li>';
 		    }

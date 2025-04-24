@@ -71,7 +71,7 @@
 
     /* 테이블 스크롤 영역 */
     .table-responsive {
-        height: 400px; /* 높이 고정 - 상세 정보 표시를 위해 축소 */
+        height: 500px; /* 높이 고정 - 상세 정보 표시를 위해 축소 */
         overflow: auto; /* 스크롤 활성화 */
         -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */
     }
@@ -217,7 +217,7 @@
         <!-- 상세 정보 영역 -->
         <section class="section detail-section" id="detailSection" style="display: none;">
             <div class="row">
-                <div class="col-12">
+                <div class="col-12 col-md-12">
                     <h5><i class="bi bi-info-circle"></i> 입고 상세 정보</h5>
                     
                     <!-- 탭 네비게이션 -->
@@ -229,27 +229,27 @@
                                 기본정보
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="inspection-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#inspection-info" type="button" role="tab" 
-                                    aria-controls="inspection-info" aria-selected="false">
-                                검수정보
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="lot-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#lot-info" type="button" role="tab" 
-                                    aria-controls="lot-info" aria-selected="false">
-                                LOT정보
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="location-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#location-info" type="button" role="tab" 
-                                    aria-controls="location-info" aria-selected="false">
-                                위치정보
-                            </button>
-                        </li>
+<!--                        <li class="nav-item" role="presentation">-->
+<!--                            <button class="nav-link" id="inspection-tab" data-bs-toggle="tab" -->
+<!--                                    data-bs-target="#inspection-info" type="button" role="tab" -->
+<!--                                    aria-controls="inspection-info" aria-selected="false">-->
+<!--                                검수정보-->
+<!--                            </button>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item" role="presentation">-->
+<!--                            <button class="nav-link" id="lot-tab" data-bs-toggle="tab" -->
+<!--                                    data-bs-target="#lot-info" type="button" role="tab" -->
+<!--                                    aria-controls="lot-info" aria-selected="false">-->
+<!--                                LOT정보-->
+<!--                            </button>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item" role="presentation">-->
+<!--                            <button class="nav-link" id="location-tab" data-bs-toggle="tab" -->
+<!--                                    data-bs-target="#location-info" type="button" role="tab" -->
+<!--                                    aria-controls="location-info" aria-selected="false">-->
+<!--                                위치정보-->
+<!--                            </button>-->
+<!--                        </li>-->
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="history-tab" data-bs-toggle="tab" 
                                     data-bs-target="#history-info" type="button" role="tab" 
@@ -316,58 +316,58 @@
                         </div>
                         
                         <!-- 검수정보 탭 -->
-                        <div class="tab-pane fade" id="inspection-info" role="tabpanel" aria-labelledby="inspection-tab">
-                            <div id="inspectionContent">
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle"></i> 검수 정보가 없습니다. 검수등록 버튼을 클릭하여 검수 정보를 등록해주세요.
-                                </div>
-                            </div>
-                        </div>
+<!--                        <div class="tab-pane fade" id="inspection-info" role="tabpanel" aria-labelledby="inspection-tab">-->
+<!--                            <div id="inspectionContent">-->
+<!--                                <div class="alert alert-info">-->
+<!--                                    <i class="bi bi-info-circle"></i> 검수 정보가 없습니다. 검수등록 버튼을 클릭하여 검수 정보를 등록해주세요.-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
                         
                         <!-- LOT정보 탭 -->
-                        <div class="tab-pane fade" id="lot-info" role="tabpanel" aria-labelledby="lot-tab">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>LOT 번호</th>
-                                        <th>수량</th>
-                                        <th>생성일자</th>
-                                        <th>상태</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="lotInfoBody">
-                                    <!-- LOT 정보가 여기에 동적으로 추가됩니다 -->
-                                </tbody>
-                            </table>
-                        </div>
+<!--                        <div class="tab-pane fade" id="lot-info" role="tabpanel" aria-labelledby="lot-tab">-->
+<!--                            <table class="table table-bordered">-->
+<!--                                <thead>-->
+<!--                                    <tr>-->
+<!--                                        <th>LOT 번호</th>-->
+<!--                                        <th>수량</th>-->
+<!--                                        <th>생성일자</th>-->
+<!--                                        <th>상태</th>-->
+<!--                                    </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody id="lotInfoBody">-->
+<!--                                     LOT 정보가 여기에 동적으로 추가됩니다 -->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
                         
                         <!-- 위치정보 탭 -->
-                        <div class="tab-pane fade" id="location-info" role="tabpanel" aria-labelledby="location-tab">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>창고코드</th>
-                                        <th>창고명</th>
-                                        <th>위치코드</th>
-                                        <th>위치명</th>
-                                        <th>수량</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="locationInfoBody">
-                                    <!-- 위치 정보가 여기에 동적으로 추가됩니다 -->
-                                </tbody>
-                            </table>
-                        </div>
+<!--                        <div class="tab-pane fade" id="location-info" role="tabpanel" aria-labelledby="location-tab">-->
+<!--                            <table class="table table-bordered">-->
+<!--                                <thead>-->
+<!--                                    <tr>-->
+<!--                                        <th>창고코드</th>-->
+<!--                                        <th>창고명</th>-->
+<!--                                        <th>위치코드</th>-->
+<!--                                        <th>위치명</th>-->
+<!--                                        <th>수량</th>-->
+<!--                                    </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody id="locationInfoBody">-->
+<!--                                     위치 정보가 여기에 동적으로 추가됩니다 -->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
                         
                         <!-- 이력정보 탭 -->
                         <div class="tab-pane fade" id="history-info" role="tabpanel" aria-labelledby="history-tab">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>작업일시</th>
-                                        <th>작업유형</th>
-                                        <th>처리내용</th>
-                                        <th>작업자</th>
+                                        <th style="width: 170px;">작업일시</th>
+                                        <th style="width: 150px;">작업유형</th>
+                                        <th >처리내용</th>
+                                        <th style="width: 150px;">작업자</th>
                                     </tr>
                                 </thead>
                                 <tbody id="historyInfoBody">
