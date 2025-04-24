@@ -3,7 +3,7 @@
  * 
  * 원자재 재고 정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 2.1.0
+ * @version 2.2.0
  * @since 2025-04-25
  */
 const MaterialInventoryManager = (function() {
@@ -227,7 +227,7 @@ const MaterialInventoryManager = (function() {
                     {
                         header: '가용수량',
                         name: 'AVAILABLE_QTY',
-                        editor: false, // 자동 계산되므로 편집 불가
+                        editor: false, // 트리거로 자동 계산됨
                         sortable: true,
                         align: 'right',
                         formatter: function({ value }) {
@@ -275,20 +275,10 @@ const MaterialInventoryManager = (function() {
                 toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
             });
             
-            // 편집 완료 이벤트 처리 - 변경된 행 추적 및 가용수량 자동 계산
+            // 편집 완료 이벤트 처리 - 변경된 행 추적
             mInventoryGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
                 const row = mInventoryGrid.getRow(rowKey);
-                
-                // 현재수량 또는 할당수량이 변경된 경우 가용수량 자동 계산
-                if (ev.columnName === 'CURRENT_QTY' || ev.columnName === 'ALLOCATED_QTY') {
-                    const currentQty = row.CURRENT_QTY ? parseFloat(row.CURRENT_QTY) : 0;
-                    const allocatedQty = row.ALLOCATED_QTY ? parseFloat(row.ALLOCATED_QTY) : 0;
-                    const availableQty = (currentQty - allocatedQty).toString();
-                    
-                    // 가용수량 업데이트
-                    mInventoryGrid.setValue(rowKey, 'AVAILABLE_QTY', availableQty);
-                }
                 
                 // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
                 if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
@@ -325,7 +315,7 @@ const MaterialInventoryManager = (function() {
                 LOCATION_CODE: '',
                 CURRENT_QTY: '0',
                 ALLOCATED_QTY: '0',
-                AVAILABLE_QTY: '0',
+                AVAILABLE_QTY: '0', // 트리거에 의해 자동 계산됨
                 LOT_NO: '',
                 LAST_MOVEMENT_DATE: new Date()
                 // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
@@ -400,9 +390,6 @@ const MaterialInventoryManager = (function() {
 
             // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
             grid.blur();
-
-            // 가용수량 재계산
-            recalculateAvailableQty();
 
             // 변경된 데이터 추출
             const changes = await GridUtil.extractChangedData('mInventoryGrid');
@@ -527,111 +514,88 @@ const MaterialInventoryManager = (function() {
                 }
             });
             
-            return result;
-        } catch (error) {
-            console.error('데이터 삭제 오류:', error);
-            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
+			return result;
+			        } catch (error) {
+			            console.error('데이터 삭제 오류:', error);
+			            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
+			            return false;
+			        }
+			    }
 
-    // =============================
-    // 유틸리티 함수
-    // =============================
+			    // =============================
+			    // 유틸리티 함수
+			    // =============================
 
-    /**
-     * 가용수량 재계산 함수
-     * 현재수량과 할당수량을 기반으로 모든 행의 가용수량을 다시 계산합니다.
-     */
-    function recalculateAvailableQty() {
-        try {
-            const grid = GridUtil.getGrid('mInventoryGrid');
-            if (!grid) return;
+			    /**
+			     * 그리드 인스턴스 반환 함수
+			     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
+			     * 
+			     * @returns {Object} 그리드 인스턴스
+			     */
+			    function getGrid() {
+			        return mInventoryGrid;
+			    }
 
-            const rows = grid.getData();
-            
-            rows.forEach((row) => {
-                const currentQty = parseFloat(row.CURRENT_QTY) || 0;
-                const allocatedQty = parseFloat(row.ALLOCATED_QTY) || 0;
-                const availableQty = (currentQty - allocatedQty).toString();
-                
-                grid.setValue(row.rowKey, 'AVAILABLE_QTY', availableQty);
-            });
-        } catch (error) {
-            console.error('가용수량 재계산 중 오류:', error);
-        }
-    }
+			    /**
+			     * 검색 조건 저장 함수
+			     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
+			     */
+			    async function saveSearchCondition() {
+			        try {
+			            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
 
-    /**
-     * 그리드 인스턴스 반환 함수
-     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
-     * 
-     * @returns {Object} 그리드 인스턴스
-     */
-    function getGrid() {
-        return mInventoryGrid;
-    }
+			            localStorage.setItem('materialInventorySearchCondition', searchCondition);
+			            console.log('검색 조건이 저장되었습니다.');
 
-    /**
-     * 검색 조건 저장 함수
-     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
-     */
-    async function saveSearchCondition() {
-        try {
-            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
+			            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
+			            return true;
+			        } catch (error) {
+			            console.error('검색 조건 저장 오류:', error);
+			            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
+			            return false;
+			        }
+			    }
 
-            localStorage.setItem('materialInventorySearchCondition', searchCondition);
-            console.log('검색 조건이 저장되었습니다.');
+			    /**
+			     * 저장된 검색 조건 로드 함수
+			     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
+			     * 
+			     * @returns {boolean} 로드 성공 여부
+			     */
+			    async function loadSearchCondition() {
+			        try {
+			            const savedCondition = localStorage.getItem('materialInventorySearchCondition');
 
-            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
-            return true;
-        } catch (error) {
-            console.error('검색 조건 저장 오류:', error);
-            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
+			            if (!savedCondition) {
+			                console.log('저장된 검색 조건이 없습니다.');
+			                return false;
+			            }
 
-    /**
-     * 저장된 검색 조건 로드 함수
-     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
-     * 
-     * @returns {boolean} 로드 성공 여부
-     */
-    async function loadSearchCondition() {
-        try {
-            const savedCondition = localStorage.getItem('materialInventorySearchCondition');
+			            // 검색 조건 설정
+			            const searchInput = document.getElementById('mInventoryInput');
+			            if (searchInput) {
+			                searchInput.value = savedCondition;
+			            }
 
-            if (!savedCondition) {
-                console.log('저장된 검색 조건이 없습니다.');
-                return false;
-            }
+			            // 검색 실행
+			            await searchData();
 
-            // 검색 조건 설정
-            const searchInput = document.getElementById('mInventoryInput');
-            if (searchInput) {
-                searchInput.value = savedCondition;
-            }
-
-            // 검색 실행
-            await searchData();
-
-            console.log('검색 조건이 로드되었습니다.');
-            return true;
-        } catch (error) {
-            console.error('검색 조건 로드 오류:', error);
-            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-    
-    /**
-     * 로컬 검색 함수
-     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
-     */
-    function performLocalSearch() {
-        try {
-			const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
+			            console.log('검색 조건이 로드되었습니다.');
+			            return true;
+			        } catch (error) {
+			            console.error('검색 조건 로드 오류:', error);
+			            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
+			            return false;
+			        }
+			    }
+			    
+			    /**
+			     * 로컬 검색 함수
+			     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
+			     */
+			    function performLocalSearch() {
+			        try {
+			            const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
 			            
 			            // 원본 데이터 가져오기
 			            GridSearchUtil.resetToOriginalData('mInventoryGrid');
@@ -674,8 +638,7 @@ const MaterialInventoryManager = (function() {
 			        getGrid,               // 그리드 인스턴스 반환
 			        saveSearchCondition,   // 검색 조건 저장
 			        loadSearchCondition,   // 저장된 검색 조건 로드
-			        performLocalSearch,    // 로컬 검색 실행
-			        recalculateAvailableQty // 가용수량 재계산
+			        performLocalSearch     // 로컬 검색 실행
 			    };
 			})();
 

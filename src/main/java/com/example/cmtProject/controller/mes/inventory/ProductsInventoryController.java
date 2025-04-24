@@ -22,22 +22,5 @@ import lombok.extern.slf4j.Slf4j;
 
 public class ProductsInventoryController {
 	
-	@Autowired
-	private ProductsInventoryMapper pis;
-	
-	/**
-	 * 
-	 * 완재품 재고 메인페이지
-	 * 
-	 */
-	@GetMapping("/view")
-	public String meterialInventoryGET(Model model) {
-		Map<String,Object> findMap = new HashMap<>();
-		List<Map<String,Object>> pInventoryList = pis.pInventoryList(findMap);
-		model.addAttribute("pInventoryList", pInventoryList);
-		
-		return "mes/inventory/pInventoryList";
-	}
-	
 
 }
