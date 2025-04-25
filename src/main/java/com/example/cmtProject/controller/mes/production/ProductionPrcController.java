@@ -1,7 +1,6 @@
 package com.example.cmtProject.controller.mes.production;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
-import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.LotUpdateDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
@@ -276,7 +274,7 @@ public class ProductionPrcController {
 			lod.setChildLotCode(childLot);
 			lod.setParentLotCode(parentLot);
 			lod.setChildPdtCode(childPdtCode);
-			lod.setParentdPdtCode(parentPdtCode);
+			lod.setParentPdtCode(parentPdtCode);
 			lod.setCreateDate(today);
 			lod.setPrcType(prcType);
 			lod.setBomQty(bomQty);
@@ -351,7 +349,7 @@ public class ProductionPrcController {
 		
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(woCode);
 		
-		log.info("LotStructurePathDTO:" + selectLotOrigin);
+		log.info("selectLotOrigin:" + selectLotOrigin);
 		return selectLotOrigin;
 	}
 	
@@ -385,6 +383,8 @@ public class ProductionPrcController {
 	
 		LotOriginDTO lotOrigin = new LotOriginDTO();
 		
+		//log.info(lotUpdateDTO.)
+		
 		//LOT_NO
 		lotOrigin.setLotNo(lotNo);
 		
@@ -404,20 +404,26 @@ public class ProductionPrcController {
 		
 		lotService.updateLotPresentPRC(lotOrigin);
 		
-		if(!lotUpdateDTO.getChildPdtCode().equals(lotUpdateDTO.getPdtCode())) {
+		log.info("num:" + lotUpdateDTO.getNum());
+		log.info("lotNo:"+ lotNo.toString());
+		log.info("ChildPdtCode():"+lotUpdateDTO.getChildPdtCode());
+		log.info("PdtCode():"+lotUpdateDTO.getPdtCode());
+		
+		//if(!lotUpdateDTO.getChildPdtCode().equals(lotUpdateDTO.getPdtCode())) {
+		if(!lotUpdateDTO.getNum().equals("1")) {
 			Long nextLotNo = lotNo - 1;
-			
+			log.info("nextLotNo:"+nextLotNo.toString());
 			//LOT테이블의 다음 작업에 startTime 업데이트 => 전 공정의 finishTime이 이후 공정의 startTime
-			lotService.updateLotNextPRC(nextLotNo, finishTime);
+			lotService.updateLotNextPRC(nextLotNo, finishTime); 
 		}else {
 			//WORK_ORDER 테이블의 WO_STATUS_CODE도 CP로 업데이트 
 			lotService.updateWOtoCP(lotUpdateDTO.getWoCode());
 		}
 		
+		//grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(lotUpdateDTO.getWoCode());
 	
 		return selectLotOrigin;
-			
 	}
 }
 

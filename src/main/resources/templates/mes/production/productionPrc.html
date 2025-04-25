@@ -89,9 +89,12 @@
 	</div>
 	
 	<!-- -------------------  하단 두번째 시작 ---------------------------- -->
-	<button type="button" id="prcBoard" class="btn btn-primary btn-m">작업 현황</button>
-	<li class="panel"><div id="prcGrid"></div></li>
 	
+	<div style="display: flex; justify-content: space-between;">
+		<button type="button" id="prcBoardBtn" class="btn btn-primary btn-m">작업 현황</button>
+		<button type="button" id="finishJobBtn" class="btn btn-secondary" style="display: none;">수량 데이터 전송</button>
+	</div>
+	<li class="panel"><div id="prcGrid"></div></li>
 	
 	<!--  모달 창 시작 -->
 	<div class="modal fade" id="woModal" tabindex="-1">
@@ -282,7 +285,7 @@
 			});//$("#treeName").on("click", function(){
 			
 			//======================================= 두번째 하단의 작업 현황 버튼 클릭 ================================================
-			$("#prcBoard").on("click", function(){
+			$("#prcBoardBtn").on("click", function(){
 				
 				$.ajax({
 					url: '/production/prcBoard',
@@ -298,8 +301,11 @@
 						console.log("error:" + error)
 					}
 				});//$.ajax
-			});//$("#prcBoard").on("click", function(){
+			});//$("#prcBoardBtn").on("click", function(){
+				
+			//======================================= 두번째 하단의 수량 데이터 전송 버튼 클릭 ================================================
 			
+				
 		});//$(document).ready(function(){
 			
 		//======================================= jQuery 끝 ===============================================	
@@ -324,7 +330,7 @@
 				{
 					header: '레벨',
 					name: 'BOM_LEVEL',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -332,7 +338,7 @@
 				{
 	                header: '상위 코드',
 	                name: 'CHILD_ITEM_CODE',
-					width: 120,
+					width: 130,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -340,7 +346,7 @@
 				{
 	                header: '하위 코드',
 	                name: 'PARENT_PDT_CODE',
-					width: 120,
+					width: 130,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -364,7 +370,7 @@
 				{
 	                header: '계획 수량',
 	                name: 'BOM_QTY',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center"
@@ -372,15 +378,15 @@
 				{
 	                header: '생산 단위',
 	                name: 'BOM_UNIT',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center"
 	            },
 				{
-	                header: '압력 널짜',
+	                header: '생성 날짜',
 	                name: 'BOM_DATE',
-					width: 100,
+					width: 130,
 					sortable: true, 
 					filter: 'text',
 					align: "center"
@@ -452,7 +458,7 @@
 				{
 					header: '제품 코드',
 					name: 'PDT_CODE',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -476,7 +482,7 @@
 				{
 	                header: '제품 무게',
 	                name: 'PDT_WEIGHT',
-					width: 200,
+					width: 110,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -492,7 +498,7 @@
 				{
 	                header: '소재',
 	                name: 'MTL_TYPE_SYMBOL',
-					width: 100,
+					width: 200,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -521,6 +527,15 @@
 			   perPage: 10        // 페이지당 행 수
 			 },
 	        columns: [
+	        	{
+					header: 'num',
+					name: 'NUM',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					 hidden: true //화면에는 안 보이지만 데이터에는 존재
+	            },
 				{
 					header: 'LOT번호',
 					name: 'LOT_NO',
@@ -532,7 +547,7 @@
 	           {
 	                header: '상위 공정',
 	                name: 'CHILD_LOT_CODE',
-					width: 150,
+					width: 170,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -540,7 +555,7 @@
 				{
 	                header: '하위 공정',
 	                name: 'PARENT_LOT_CODE',
-					width: 150,
+					width: 170,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -548,7 +563,7 @@
 				{
 	                header: '상위 제품',
 	                name: 'CHILD_PDT_CODE',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -556,7 +571,7 @@
 				{
 	                header: '하위 제품',
 	                name: 'PARENT_PDT_CODE',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -564,7 +579,7 @@
 				{
 	                header: '생산 수량',
 	                name: 'BOM_QTY',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center",
@@ -573,7 +588,7 @@
 				{
 	                header: '수량 단위',
 	                name: 'BOM_UNIT',
-					width: 60,
+					width: 120,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -581,7 +596,7 @@
 				{
 	                header: '생성 일자',
 	                name: 'CREATE_DATE',
-					width: 100,
+					width: 120,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -589,7 +604,7 @@
 				{
 	                header: '작업 시작 시간',
 	                name: 'START_TIME',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -597,7 +612,7 @@
 				{
 	                header: '작업 종료 시간',
 	                name: 'FINISH_TIME',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -613,6 +628,7 @@
 				{
 					header: '작업 상태',
 					name: 'action',
+					width: 150,
 					align: "center",
 					formatter: function({row}) {
 						return `<button class="btn btn-sm btn-outline-danger action-btn" data-row-key="${row.rowKey}">작업 완료</button>`;
@@ -648,10 +664,14 @@
 			let bomQty = rowData.BOM_QTY;
 			let childPdtCode = rowData.CHILD_PDT_CODE
 			let parentPdtCode = rowData.PARENT_PDT_CODE;
+			let num = rowData.NUM; //1,2,3,... 1부터 시작
+			console.log("num:" + num);
 			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
 			
 			// LotOriginDTO에 없기 때문에 따로 넘긴다
 			pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정 - 완제품
+			
+			
 			
 			//-------------- Swal.fire 시작 ----------------------
 			Swal.fire({
@@ -669,7 +689,8 @@
 					contentType: 'application/json',
 			      	type: 'POST',
 			      	data: JSON.stringify({ 
-						lotNo: lotNo, 
+						num: num,
+			      		lotNo: lotNo, 
 						bomQty: bomQty,
 						childPdtCode: childPdtCode,
 						parentPdtCode: parentPdtCode,
@@ -680,7 +701,7 @@
 						
 						//e.target.disabled = true; // 버튼 비활성화, 그리드가 재랜더링 되기 때문에 바로 적용x
 						
-						// reset 이후 버튼 비활성화
+						//--------------- reset 이후 버튼 비활성화 ---------------
 				        prcGrid.on('onGridUpdated', () => {
 				          // 새로 렌더링된 버튼에서 rowKey에 해당하는 버튼만 비활성화
 				       		const btn = document.querySelector(`button.action-btn[data-row-key="${rowKey}"]`);
@@ -715,7 +736,12 @@
 						    		}
 							  });//li.childNodes.forEach(node => {
 						});//liList.forEach(li => {
-						
+							
+						//--------------- 완제품이 나오면 재고 update 버튼이 생성 ------------------
+						if(num === 1){
+							document.getElementById('finishJobBtn').style.display = 'inline-block';
+						}
+							
 					},//success: function(response) {
 					error: function(xhr, status, error) {
 				        Swal.fire({
