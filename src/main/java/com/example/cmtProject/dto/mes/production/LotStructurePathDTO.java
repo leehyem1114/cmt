@@ -23,9 +23,12 @@ public class LotStructurePathDTO {
 	private String lineCode; 
 	private String eqpCode; 
 	private String woCode; 
-	private LocalDate startTime;         
-	private LocalDate finishTime;         
+	private String startTime;         
+	private String finishTime;         
 	private String woStatusNo; 
+	private String bomQty;
+	private String bomUnit;
+	private String woQty;
 	private String path;
 	private String useYn; 
 }

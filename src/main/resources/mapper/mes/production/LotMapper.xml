@@ -29,9 +29,12 @@
 			,CHILD_PDT_CODE
 			,CREATE_DATE
 			,PRC_TYPE
+			,BOM_QTY
+			,BOM_UNIT
 			,LINE_CODE
 			,EQP_CODE
 			,WO_CODE
+			,WO_QTY
 			,START_TIME
 			,FINISH_TIME
 			,WO_STATUS_NO
@@ -40,13 +43,16 @@
 	        #{lotNo},
 	        #{parentLotCode},
 	        #{childLotCode},
-	        #{parentdPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
+	        #{parentPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
 	        #{childPdtCode},
 	        #{createDate},
 	        #{prcType},
+	        #{bomQty},
+	        #{bomUnit},
 	        #{lineCode},
 	        #{eqpCode},
 	        #{woCode},
+	        #{woQty},
 	        #{startTime},
 	        #{finishTime},
 	        #{woStatusNo},
@@ -72,30 +78,60 @@
 		ORDER SIBLINGS BY CHILD_ITEM_CODE
 	</select>
 	
-	<!-- LOT 테이블에서 PATH가져오기 -->
-	<select id="selectStructurePathAll" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
-		SELECT DISTINCT
-		    ROWNUM AS IDX,
-		    LEVEL AS LOT_LEVEL,
-		    LOT_NO,
-		    PARENT_LOT_CODE,
-		    CHILD_LOT_CODE,
-		    PARENT_PDT_CODE,
-		    CHILD_PDT_CODE,
-		    CREATE_DATE,
-		    PRC_TYPE,
-		    LINE_CODE,
-		    EQP_CODE,
-		    WO_CODE,
-		    START_TIME,
-		    FINISH_TIME,
-		    WO_STATUS_NO,
-		    LTRIM(SYS_CONNECT_BY_PATH(CHILD_LOT_CODE, ' ← '), ' ← ') AS PATH
+	<!-- LOT 테이블 origin 가져오기 -->
+	<select id="selectLotOrigin" resultType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
+		SELECT 
+			ROWNUM AS NUM
+			,LOT_NO
+			,CHILD_LOT_CODE
+			,PARENT_LOT_CODE
+			,CHILD_PDT_CODE
+			,PARENT_PDT_CODE
+			,CREATE_DATE
+			,PRC_TYPE
+			,BOM_QTY
+			,BOM_UNIT
+			,LINE_CODE
+			,EQP_CODE
+			,WO_CODE
+			,WO_QTY
+			,START_TIME
+			,FINISH_TIME
+			,WO_STATUS_NO
+			,USE_YN
 		FROM LOT
 		WHERE USE_YN = 'Y'
-		    AND WO_CODE = #{woCode}
-		    START WITH CHILD_PDT_CODE = #{pdtCode}
-		CONNECT BY PRIOR PARENT_LOT_CODE = CHILD_LOT_CODE
+		AND WO_CODE = #{woCode}
+		ORDER BY LOT_NO
 	</select>
+	
+	<!-- 작업 완료 버튼 클릭시 LOT 업데이트 -->
+	<update id="updateLotPresentPRC" parameterType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
+		UPDATE 
+			LOT
+		SET 
+			FINISH_TIME = #{finishTime},
+		    WO_STATUS_NO = #{woStatusNo},
+		    BOM_QTY = #{bomQty}
+		WHERE LOT_NO = #{lotNo} AND WO_CODE = #{woCode}
+	</update>
+	
+	<!-- 작업 완료 버튼 클릭시 이후 공정 startTime 입력 -->
+	<update id="updateLotNextPRC">
+		UPDATE 
+			LOT
+		SET
+			START_TIME = #{startTime}
+		WHERE LOT_NO = #{nextLotNo}
+	</update>
+	
+	<!-- 완제품 작업 완료시 작업 지시서 CP로 업데이트 -->
+	<update id="updateWOtoCP">
+		UPDATE 
+			WORK_ORDER 
+		SET 
+			WO_STATUS_CODE = 'CP' 
+		WHERE WO_CODE = #{woCode} 
+	</update>
 	
 </mapper>

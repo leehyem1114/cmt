@@ -1,12 +1,12 @@
 /**
- * 창고 관리자 - 창고 정보 관리 모듈
+ * 원자재 재고관리 - 재고 정보 관리 모듈
  * 
- * 단일 데이터 테이블의 CRUD 기능을 담당하는 창고 관리 모듈입니다.
+ * 원자재 재고 정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 2.0.0
- * @since 2025-04-21
+ * @version 2.2.0
+ * @since 2025-04-25
  */
-const WareHouseManager = (function() {
+const MaterialInventoryManager = (function() {
     // =============================
     // 모듈 내부 변수 - 필요에 따라 변경하세요
     // =============================
@@ -16,12 +16,12 @@ const WareHouseManager = (function() {
 
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/inventory/api/warehouses/list',              // 데이터 목록 조회
-        BATCH: '/api/warehouses/batch',                      // 데이터 배치 저장
-        DELETE: (whsNo) => `/api/warehouses/${whsNo}`,       // 데이터 삭제
+        LIST: '/api/materialInventory/list',            // 데이터 목록 조회
+        SAVE: '/api/materialInventory/save',            // 데이터 저장
+        DELETE: '/api/materialInventory/delete',        // 데이터 삭제
         EXCEL: {
-            UPLOAD: '/api/warehouses/excel/upload',          // 엑셀 업로드 API URL
-            DOWNLOAD: '/api/warehouses/excel/download'       // 엑셀 다운로드 API URL
+            UPLOAD: '/api/materialInventory/excel/upload',  // 엑셀 업로드 API URL
+            DOWNLOAD: '/api/materialInventory/excel/download' // 엑셀 다운로드 API URL
         }
     };
 
@@ -35,7 +35,7 @@ const WareHouseManager = (function() {
      */
     async function init() {
         try {
-            console.log('창고 관리자 초기화를 시작합니다.');
+            console.log('원자재 재고관리 초기화를 시작합니다.');
 
             // 그리드 초기화
             await initGrid();
@@ -49,10 +49,10 @@ const WareHouseManager = (function() {
             // 엑셀 기능 초기화
             initExcelFeatures();
 
-            console.log('창고 관리자 초기화가 완료되었습니다.');
+            console.log('원자재 재고관리 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('초기화 중 오류 발생:', error);
-            await AlertUtil.showError('초기화 오류', '창고 관리자 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '원자재 재고관리 초기화 중 오류가 발생했습니다.');
         }
     }
 
@@ -117,8 +117,8 @@ const WareHouseManager = (function() {
             ExcelUtil.setupExcelDownloadButton({
                 buttonId: 'mInventoryExcelDownBtn', 
                 gridId: 'mInventoryGrid',
-                fileName: 'warehouse-data.xlsx',
-                sheetName: '창고정보',
+                fileName: 'material-inventory-data.xlsx',
+                sheetName: '원자재재고정보',
                 beforeDownload: function() {
                     console.log('엑셀 다운로드 시작');
                     return true;
@@ -135,15 +135,13 @@ const WareHouseManager = (function() {
                 gridId: 'mInventoryGrid',
                 apiUrl: API_URLS.EXCEL.UPLOAD,
                 headerMapping: {
-                    '창고코드': 'WHS_CODE',
-                    '창고명': 'WHS_NAME',
-                    '창고 유형': 'WHS_TYPE',
-                    '위치': 'WHS_LOCATION',
-                    '용량': 'WHS_CAPACITY',
-                    '사용 정보': 'WHS_USED',
-                    '비고': 'WHS_COMMENTS',
-                    '관리자': 'WHS_MANAGER',
-                    '사용여부': 'IS_ACTIVE'
+                    '자재코드': 'MTL_CODE',
+                    '자재명': 'MTL_NAME',
+                    '창고코드': 'WAREHOUSE_CODE',
+                    '위치코드': 'LOCATION_CODE',
+                    '현재수량': 'CURRENT_QTY',
+                    '할당수량': 'ALLOCATED_QTY',
+                    'LOT번호': 'LOT_NO'
                 },
                 beforeLoad: function() {
                     console.log('엑셀 업로드 시작');
@@ -191,48 +189,75 @@ const WareHouseManager = (function() {
                     {
                         header: '자재코드',
                         name: 'MTL_CODE',
-                        editor: 'text'
+                        editor: false,
+                        sortable: true
                     },
                     {
                         header: '자재명',
                         name: 'MTL_NAME',
-                        editor: 'text'
+                        editor: false,
+                        sortable: true
                     },
                     {
                         header: '창고코드',
                         name: 'WAREHOUSE_CODE',
-                        editor: 'text'
+                        editor: false,
+                        sortable: true
                     },
                     {
-                        header: '위치 코드',
+                        header: '위치코드',
                         name: 'LOCATION_CODE',
-                        editor: 'text'
+                        editor: false,
+                        sortable: true
                     },
                     {
-                        header: '현재 수량(총수량)',
+                        header: '현재수량',
                         name: 'CURRENT_QTY',
-                        editor: 'text'
+                        editor: false,
+                        sortable: true,
+                        align: 'right'
                     },
                     {
-                        header: '계획 수량',
+                        header: '할당수량',
                         name: 'ALLOCATED_QTY',
-                        editor: 'text'
+                        editor: false,
+                        sortable: true,
+                        align: 'right'
                     },
                     {
-                        header: '가용 수량',
+                        header: '가용수량',
                         name: 'AVAILABLE_QTY',
-                        editor: 'text',
-						formatter: function({ value }) {
-						  const isLow = value <= 100;
-						  const style  = isLow ? 'color:red; font-weight:bold;' : 'color:black;';
-
-						  return `<span style="${style}">${value}</span>`;
-						}
+                        editor: false, // 트리거로 자동 계산됨
+                        sortable: true,
+                        align: 'right',
+                        formatter: function({ value }) {
+                          const isLow = parseInt(value) <= 100;
+                          const style = isLow ? 'color:red; font-weight:bold;' : 'color:black;';
+                          return `<span style="${style}">${value}</span>`;
+                        }
+                    },
+                    {
+                        header: 'LOT번호',
+                        name: 'LOT_NO',
+                        editor: false,
+                        sortable: true
+                    },
+                    {
+                        header: '마지막이동일',
+                        name: 'LAST_MOVEMENT_DATE',
+                        editor: false,
+                        sortable: true,
+                        formatter: function({ value }) {
+                            if (!value) return '';
+                            const date = new Date(value);
+                            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        }
                     },
                     {
                         header: '타입',
-                        name: 'ROW_TYPE'
-                    } // 조회/추가 구분
+                        name: 'ROW_TYPE',
+                        hidden: true
+                    }
                 ],
                 columnOptions: {
                     resizable: true
@@ -242,12 +267,12 @@ const WareHouseManager = (function() {
                     perPage: 10
                 },
                 data: gridData,
-                draggable: true,
-                displayColumnName: 'SORT_ORDER',
+                draggable: false,
                 hiddenColumns: ['ROW_TYPE'],
                 gridOptions: {
                     rowHeaders: ['rowNum', 'checkbox']
-                }
+                },
+                toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
             });
             
             // 편집 완료 이벤트 처리 - 변경된 행 추적
@@ -263,7 +288,7 @@ const WareHouseManager = (function() {
             });
 
             // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
-            GridUtil.setupKeyColumnControl('mInventoryGrid', 'WHS_CODE');
+            GridUtil.setupKeyColumnControl('mInventoryGrid', 'MTL_CODE');
             
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
             GridSearchUtil.updateOriginalData('mInventoryGrid', gridData);
@@ -284,15 +309,15 @@ const WareHouseManager = (function() {
             console.log('행 추가');
 
             const newRowData = {
-                WHS_CODE: '',
-                WHS_NAME: '',
-                WHS_TYPE: '',
-                WHS_LOCATION: '',
-                WHS_CAPACITY: '',
-                WHS_USED: '',
-                WHS_COMMENTS: '',
-                WHS_MANAGER: '',
-                IS_ACTIVE: 'Y'
+                MTL_CODE: '',
+                MTL_NAME: '',
+                WAREHOUSE_CODE: '',
+                LOCATION_CODE: '',
+                CURRENT_QTY: '0',
+                ALLOCATED_QTY: '0',
+                AVAILABLE_QTY: '0', // 트리거에 의해 자동 계산됨
+                LOT_NO: '',
+                LAST_MOVEMENT_DATE: new Date()
                 // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
             };
 
@@ -375,39 +400,39 @@ const WareHouseManager = (function() {
                 return false;
             }
 
-            // 저장할 데이터 준비
-            const batchData = modifiedData.map(row => ({
-                whsCode: row.WHS_CODE,
-                whsName: row.WHS_NAME,
-                whsType: row.WHS_TYPE || '',
-                whsLocation: row.WHS_LOCATION || '',
-                whsCapacity: row.WHS_CAPACITY || '',
-                whsUsed: row.WHS_USED || '',
-                whsComments: row.WHS_COMMENTS || '',
-                whsManager: row.WHS_MANAGER || '',
-                isActive: row.IS_ACTIVE,
-                action: row.ROW_TYPE // insert, update, delete
-            }));
-
             // 유효성 검사
-            for (const item of batchData) {
-                if (ValidationUtil.isEmpty(item.whsCode)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "창고코드는 필수입니다.");
+            for (const item of modifiedData) {
+                if (ValidationUtil.isEmpty(item.MTL_CODE)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "자재코드는 필수입니다.");
                     return false;
                 }
-                if (ValidationUtil.isEmpty(item.whsName)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "창고명은 필수입니다.");
+                if (ValidationUtil.isEmpty(item.MTL_NAME)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "자재명은 필수입니다.");
                     return false;
                 }
-                if (ValidationUtil.isEmpty(item.isActive)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "사용여부는 필수입니다.");
+                if (ValidationUtil.isEmpty(item.CURRENT_QTY)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "현재수량은 필수입니다.");
+                    return false;
+                }
+                if (ValidationUtil.isEmpty(item.ALLOCATED_QTY)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "할당수량은 필수입니다.");
+                    return false;
+                }
+                
+                // 숫자 형식 검증
+                if (isNaN(parseFloat(item.CURRENT_QTY))) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "현재수량은 숫자 형식이어야 합니다.");
+                    return false;
+                }
+                if (isNaN(parseFloat(item.ALLOCATED_QTY))) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "할당수량은 숫자 형식이어야 합니다.");
                     return false;
                 }
             }
 
             // API 호출 처리
             const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.BATCH, batchData), 
+                () => ApiUtil.post(API_URLS.SAVE, modifiedData), 
                 {
                     loadingMessage: '데이터 저장 중...',
                     successMessage: "데이터가 저장되었습니다.",
@@ -448,12 +473,16 @@ const WareHouseManager = (function() {
             // 선택된 데이터 ID 목록 생성
             const selectedDataIds = [];
             for (const rowKey of selectedRowKeys) {
-                const whsNo = grid.getValue(rowKey, "WHS_NO");
-                if (whsNo) selectedDataIds.push(whsNo);
+                const invNo = grid.getValue(rowKey, "INV_NO");
+                const mtlCode = grid.getValue(rowKey, "MTL_CODE");
+                
+                // INV_NO가 없으면 MTL_CODE로 식별
+                const identifier = invNo || mtlCode;
+                if (identifier) selectedDataIds.push(identifier);
             }
             
             if (selectedDataIds.length === 0) {
-                await AlertUtil.showWarning('알림', '유효한 창고번호를 찾을 수 없습니다.');
+                await AlertUtil.showWarning('알림', '유효한 재고번호 또는 자재코드를 찾을 수 없습니다.');
                 return false;
             }
             
@@ -468,14 +497,9 @@ const WareHouseManager = (function() {
                 onAfterDelete: async () => {
                     // 삭제 API 호출 및 처리
                     try {
-                        // 삭제 요청 생성
-                        const deleteRequests = selectedDataIds.map(whsNo => 
-                            async () => ApiUtil.del(API_URLS.DELETE(whsNo))
-                        );
-                        
-                        // 일괄 삭제 요청 실행
+                        // 일괄 삭제 요청 생성 - 한 번에 모든 데이터 삭제
                         await ApiUtil.withLoading(async () => {
-                            await Promise.all(deleteRequests.map(req => req()));
+                            await ApiUtil.post(API_URLS.DELETE, { ids: selectedDataIds });
                         }, '데이터 삭제 중...');
                         
                         // 삭제 성공 메시지
@@ -490,150 +514,150 @@ const WareHouseManager = (function() {
                 }
             });
             
-            return result;
-        } catch (error) {
-            console.error('데이터 삭제 오류:', error);
-            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
+			return result;
+			        } catch (error) {
+			            console.error('데이터 삭제 오류:', error);
+			            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
+			            return false;
+			        }
+			    }
 
-    // =============================
-    // 유틸리티 함수
-    // =============================
+			    // =============================
+			    // 유틸리티 함수
+			    // =============================
 
-    /**
-     * 그리드 인스턴스 반환 함수
-     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
-     * 
-     * @returns {Object} 그리드 인스턴스
-     */
-    function getGrid() {
-        return mInventoryGrid;
-    }
+			    /**
+			     * 그리드 인스턴스 반환 함수
+			     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
+			     * 
+			     * @returns {Object} 그리드 인스턴스
+			     */
+			    function getGrid() {
+			        return mInventoryGrid;
+			    }
 
-    /**
-     * 검색 조건 저장 함수
-     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
-     */
-    async function saveSearchCondition() {
-        try {
-            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
+			    /**
+			     * 검색 조건 저장 함수
+			     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
+			     */
+			    async function saveSearchCondition() {
+			        try {
+			            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
 
-            localStorage.setItem('warehouseSearchCondition', searchCondition);
-            console.log('검색 조건이 저장되었습니다.');
+			            localStorage.setItem('materialInventorySearchCondition', searchCondition);
+			            console.log('검색 조건이 저장되었습니다.');
 
-            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
-            return true;
-        } catch (error) {
-            console.error('검색 조건 저장 오류:', error);
-            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
+			            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
+			            return true;
+			        } catch (error) {
+			            console.error('검색 조건 저장 오류:', error);
+			            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
+			            return false;
+			        }
+			    }
 
-    /**
-     * 저장된 검색 조건 로드 함수
-     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
-     * 
-     * @returns {boolean} 로드 성공 여부
-     */
-    async function loadSearchCondition() {
-        try {
-            const savedCondition = localStorage.getItem('warehouseSearchCondition');
+			    /**
+			     * 저장된 검색 조건 로드 함수
+			     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
+			     * 
+			     * @returns {boolean} 로드 성공 여부
+			     */
+			    async function loadSearchCondition() {
+			        try {
+			            const savedCondition = localStorage.getItem('materialInventorySearchCondition');
 
-            if (!savedCondition) {
-                console.log('저장된 검색 조건이 없습니다.');
-                return false;
-            }
+			            if (!savedCondition) {
+			                console.log('저장된 검색 조건이 없습니다.');
+			                return false;
+			            }
 
-            // 검색 조건 설정
-            const searchInput = document.getElementById('mInventoryInput');
-            if (searchInput) {
-                searchInput.value = savedCondition;
-            }
+			            // 검색 조건 설정
+			            const searchInput = document.getElementById('mInventoryInput');
+			            if (searchInput) {
+			                searchInput.value = savedCondition;
+			            }
 
-            // 검색 실행
-            await searchData();
+			            // 검색 실행
+			            await searchData();
 
-            console.log('검색 조건이 로드되었습니다.');
-            return true;
-        } catch (error) {
-            console.error('검색 조건 로드 오류:', error);
-            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-    
-    /**
-     * 로컬 검색 함수
-     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
-     */
-    function performLocalSearch() {
-        try {
-            const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
-            
-            // 원본 데이터 가져오기
-            GridSearchUtil.resetToOriginalData('mInventoryGrid');
-            const grid = GridUtil.getGrid('mInventoryGrid');
-            const originalData = grid.getData();
-            
-            // 필터링
-            const filtered = originalData.filter(row => {
-                return Object.values(row).some(val => {
-                    if (val == null) return false;
-                    return String(val).toLowerCase().includes(keyword);
-                });
-            });
-            
-            // 그리드 업데이트
-            grid.resetData(filtered);
-            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
-            
-            return filtered;
-        } catch (error) {
-            console.error('로컬 검색 중 오류:', error);
-            return [];
-        }
-    }
+			            console.log('검색 조건이 로드되었습니다.');
+			            return true;
+			        } catch (error) {
+			            console.error('검색 조건 로드 오류:', error);
+			            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
+			            return false;
+			        }
+			    }
+			    
+			    /**
+			     * 로컬 검색 함수
+			     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
+			     */
+			    function performLocalSearch() {
+			        try {
+			            const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
+			            
+			            // 원본 데이터 가져오기
+			            GridSearchUtil.resetToOriginalData('mInventoryGrid');
+			            const grid = GridUtil.getGrid('mInventoryGrid');
+			            const originalData = grid.getData();
+			            
+			            // 필터링
+			            const filtered = originalData.filter(row => {
+			                return Object.values(row).some(val => {
+			                    if (val == null) return false;
+			                    return String(val).toLowerCase().includes(keyword);
+			                });
+			            });
+			            
+			            // 그리드 업데이트
+			            grid.resetData(filtered);
+			            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
+			            
+			            return filtered;
+			        } catch (error) {
+			            console.error('로컬 검색 중 오류:', error);
+			            return [];
+			        }
+			    }
 
-    // =============================
-    // 공개 API - 외부에서 접근 가능한 메서드
-    // =============================
-    return {
-        // 초기화 및 기본 기능
-        init,           // 모듈 초기화
+			    // =============================
+			    // 공개 API - 외부에서 접근 가능한 메서드
+			    // =============================
+			    return {
+			        // 초기화 및 기본 기능
+			        init,           // 모듈 초기화
 
-        // 데이터 관련 함수
-        searchData,     // 데이터 검색
-        appendRow,      // 행 추가
-        saveData,       // 데이터 저장
-        deleteRows,     // 데이터 삭제
+			        // 데이터 관련 함수
+			        searchData,     // 데이터 검색
+			        appendRow,      // 행 추가
+			        saveData,       // 데이터 저장
+			        deleteRows,     // 데이터 삭제
 
-        // 유틸리티 함수
-        getGrid,               // 그리드 인스턴스 반환
-        saveSearchCondition,   // 검색 조건 저장
-        loadSearchCondition,   // 저장된 검색 조건 로드
-        performLocalSearch     // 로컬 검색 실행
-    };
-})();
+			        // 유틸리티 함수
+			        getGrid,               // 그리드 인스턴스 반환
+			        saveSearchCondition,   // 검색 조건 저장
+			        loadSearchCondition,   // 저장된 검색 조건 로드
+			        performLocalSearch     // 로컬 검색 실행
+			    };
+			})();
 
-// =============================
-// DOM 로드 시 초기화
-// =============================
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // 창고 관리자 초기화
-        await WareHouseManager.init();
+			// =============================
+			// DOM 로드 시 초기화
+			// =============================
+			document.addEventListener('DOMContentLoaded', async function() {
+			    try {
+			        // 원자재 재고관리 초기화
+			        await MaterialInventoryManager.init();
 
-        // 저장된 검색 조건 로드 (필요 시 활성화)
-        // await WareHouseManager.loadSearchCondition();
-    } catch (error) {
-        console.error('초기화 중 오류 발생:', error);
-        if (window.AlertUtil) {
-            await AlertUtil.showError('초기화 오류', '창고 관리자 초기화 중 오류가 발생했습니다.');
-        } else {
-            alert('창고 관리자 초기화 중 오류가 발생했습니다.');
-        }
-    }
-});
+			        // 저장된 검색 조건 로드 (필요 시 활성화)
+			        // await MaterialInventoryManager.loadSearchCondition();
+			    } catch (error) {
+			        console.error('초기화 중 오류 발생:', error);
+			        if (window.AlertUtil) {
+			            await AlertUtil.showError('초기화 오류', '원자재 재고관리 초기화 중 오류가 발생했습니다.');
+			        } else {
+			            alert('원자재 재고관리 초기화 중 오류가 발생했습니다.');
+			        }
+			    }
+			});

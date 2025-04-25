@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.example.cmtProject.dto.mes.production.LotCodeDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 
 @Mapper
 public interface ProductionPrcMapper {
@@ -40,4 +41,14 @@ public interface ProductionPrcMapper {
 	List<LotCodeDTO> selectPdtCodeArray(String pdtCode);
 
 	String getPrcType(String pdtCode);
+
+	//BOM 계층에서 자식 제품 가져와서 중복 제거
+	List<String> selectChildPdtCodeList(String pdtCode);
+
+	//BOM 계층에서 부모 제품 가져와서 중복 제거
+	List<String> selectParentdPdtCodeList(String pdtCode);
+
+	void updateWoStatus(String woCode);
+
+	List<ProductTotalDTO> selectProductInfo(String pdtCode);
 }

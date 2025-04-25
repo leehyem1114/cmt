@@ -10,35 +10,33 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.service.mes.inventory.MaterialReceiptService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@RequestMapping("/materialreceipt")
+@RequestMapping(PathConstants.MATERIALRECEIPT_BASE)
 @Slf4j
 public class MaterialReceiptController {
-	
-	@Autowired
-	private MaterialReceiptService mrs;
-	
-	/**
-	 * 
-	 * 입고관리 메인페이지
-	 * 
-	 */
-	@GetMapping("view")
-	public String meterialReceiptGET(Model model) {
-		
-		Map<String, Object> findMap = new HashMap<>();
-		
-		List<Map<String, Object>> mReceipt = mrs.receiptList(findMap);
-		List<Map<String, Object>> mPuchases = mrs.puchasesList(findMap);
-		
-		model.addAttribute("mReceipt", mReceipt);	
-		model.addAttribute("mPuchases", mPuchases);	
-		
-		return "mes/inventory/materialReceipt";
-		
-	}
-} //MaterialInventoryController
+    
+    @Autowired
+    private MaterialReceiptService mrs;
+    
+    /**
+     * 입고관리 메인페이지
+     */
+    @GetMapping(PathConstants.MATERIALRECEIPT_VIEW)
+    public String materialReceiptGet(Model model) {
+        
+        Map<String, Object> findMap = new HashMap<>();
+        
+        List<Map<String, Object>> mReceipt = mrs.receiptList(findMap);
+        List<Map<String, Object>> mPuchases = mrs.puchasesList(findMap);
+        
+        model.addAttribute("mReceipt", mReceipt);    
+        model.addAttribute("mPuchases", mPuchases);    
+        
+        return PathConstants.VIEW_MATERIALRECEIPT_VIEW;
+    }
+}

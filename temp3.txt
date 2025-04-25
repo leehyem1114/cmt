@@ -1,313 +1,569 @@
-package com.example.cmtProject.controller.mes.production;
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+	<style>
+		.bom-tree li {
+		  margin-left: 20px;
+		  list-style-type: circle;
+		}
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.example.cmtProject.dto.mes.production.LotCodeDTO;
-import com.example.cmtProject.dto.mes.production.LotDTO;
-import com.example.cmtProject.dto.mes.production.LotOrderDTO;
-import com.example.cmtProject.dto.mes.production.LotOriginDTO;
-import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
-import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
-import com.example.cmtProject.service.mes.production.LotService;
-import com.example.cmtProject.service.mes.production.ProductionPrcService;
-
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@Controller
-@RequestMapping("/production")
-public class ProductionPrcController {
-
-	@Autowired
-	private ProductionPrcService productionPrcService;
-	
-	@Autowired
-	private LotService lotService;
-	
-	//공정 현황 메인 페이지
-	@GetMapping("/productionPrc")
-	public String getMethodName(Model model) {
-		
-		//작업상태가 StandBy인 것만 가져온다(모달 셀렉트 박스에서 workOrderSBList 사용)
-		List<WorkOrderDTO> workOrderSBList = productionPrcService.selectWoStandByList();
-		//log.info("workOrderList:"+workOrderSBList);
-		
-		model.addAttribute("workOrderSBList", workOrderSBList);
-		
-		return "mes/production/productionPrc";
-	}
-	
-	//모달 셀렉트 박스에서 실행
-	@GetMapping("/woCodeSelected")
-	@ResponseBody
-	public List<WorkOrderDTO> woCodeSelected(@RequestParam("data") String data) {
-		
-		//모달 셀렉트 박스에서 선택된 woCode에 해당하는 데이터를 가져온다 
-		List<WorkOrderDTO> selectWoCodeList = productionPrcService.selectWoCodeList(data);
-		
-		//log.info("selectWoCodeList:"+selectWoCodeList);
-		return selectWoCodeList;
-	}
-	
-	//모달 시작 버튼에서 실행
-	@GetMapping("/pdtCodeSelected")
-	@ResponseBody
-	public List<BomInfoDTO> pdtCodeSelected(@RequestParam("pdtCode") String pdtCode,
-	        @RequestParam("woCode") String woCode) {
-		
-		//PARENT_PDT_CODE => 앞 과정에서 투입되는 제품
-		//CHILD_ITEM_CODE => 현재 제품/최종 제품
-		
-		/*
-		결과 => 
-		PARENT_PDT_CODE CHILD_ITEM_CODE
-				WIP004	 MTL-005
-				WIP005	 MTL-006
-				WIP009	 WIP004
-				WIP009	 WIP005
-				WIP009	 MTL-009
-		*/
-		List<BomInfoDTO> selectPdtCodeList = productionPrcService.selectPdtCodeList(pdtCode);
-		log.info("selectPdtCodeList : "+selectPdtCodeList);
-		/*
-		
-		결과 => 재귀의 결과에 중복 제거한 pdtCode만 가져오기
-		WIP009
-		WIP004
-		WIP005
-		MTL-009
-		MTL-005
-		MTL-006
-		
-		위에서 가져온 pdtCode에서 일률적으로 LOT번호를 생성 후 해당 데이터에 LOT번호를 삽입 
-		*/
-		
-		//루프를 돌면서 insert를 해도 바로 적용된 order값을 가져오지 못하기 때문에 내가 직접 order를 증가시킨다.
-		LocalDate today = LocalDate.now(); //2025-04-21
-		String todayStr = today.format(DateTimeFormatter.ofPattern("yyyyMMdd")); //20250421
-		
-		//3)LOT테이블에서 오늘 날짜의 해당 공정에 해당하는 ORDER순서 가져오기
-		//LOT-20250421-PR-02 이 형식에서 벗어나면 안된다, 값이 없는 경우 null 발생
-		LotOrderDTO lotOrderFP = lotService.getLotOrderPrcType(todayStr, "FP");
-		LotOrderDTO lotOrderPR = lotService.getLotOrderPrcType(todayStr, "PR");
-		LotOrderDTO lotOrderWE = lotService.getLotOrderPrcType(todayStr, "WE");
-		LotOrderDTO lotOrderPA = lotService.getLotOrderPrcType(todayStr, "PA");
-		LotOrderDTO lotOrderAS = lotService.getLotOrderPrcType(todayStr, "AS");
-	
-		int fpInt = lotOrderFP != null ?  lotOrderFP.getMaxSeq() : 0;
-		int prInt = lotOrderPR != null ?  lotOrderPR.getMaxSeq() : 0;
-		int weInt = lotOrderWE != null ?  lotOrderWE.getMaxSeq() : 0;
-		int paInt = lotOrderPA != null ?  lotOrderPA.getMaxSeq() : 0;
-		int asInt = lotOrderAS != null ?  lotOrderAS.getMaxSeq() : 0;
-		int mtlInt = 0;
-		System.out.println("prInt:" + prInt + " ,weInt:" + weInt + " ,paInt:" + paInt + " ,asInt:" + asInt);
-		//log.info(lotOrder.toString());
-		
-		Map<String, String> checkLot = new HashMap<>();
-		for(BomInfoDTO b : selectPdtCodeList) {
-			/*
-			BomInfoDTO(bomNo=null, bomLevel=1, parentPdtCode=WIP013, childItemCode=FP001, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
-			BomInfoDTO(bomNo=null, bomLevel=2, parentPdtCode=WIP010, childItemCode=WIP013, itemType=SEMI_FINISHED, bomQty=1, bomUnit=EA, bomPrcType=SA, bomDate=null, comments=null, useYN=null), 
-			BomInfoDTO(bomNo=null, bomLevel=3, parentPdtCode=MTL-010, childItemCode=WIP010, itemType=RAW_MATERIAL, bomQty=1, bomUnit=EA, bomPrcType=PR, bomDate=null, comments=null, useYN=null), 
-			 * */	
-		
-			//================ 부모 컬럼 lot생성=========================================================
-			int parentOrderNum = 0;
-			
-			String parentpdtCode = b.getParentPdtCode();
-			System.out.println("parentpdtCode:" + parentpdtCode);
-			
-			String parentPrcType = "";
-			
-			//MTL-001 원자재인지 확인
-			if (parentpdtCode.toLowerCase().startsWith("mtl")) {
-				parentPrcType = "IN";
-				parentOrderNum = ++mtlInt;
-	        }else {
-	        	
-	        	parentPrcType = productionPrcService.getPrcType(parentpdtCode);
-				System.out.println("parentPrcType:" + parentPrcType);
-				
-				if(parentPrcType != null) {
-					
-		        	if(parentPrcType.equals("FP")) {
-						parentOrderNum = ++fpInt;
-					}else if(parentPrcType.equals("PR")) {
-						parentOrderNum = ++prInt;
-					}else if(parentPrcType.equals("WE")) {
-						parentOrderNum = ++weInt;
-					}else if(parentPrcType.equals("PA")) {
-						parentOrderNum = ++paInt;
-					}else if(parentPrcType.equals("AS")) {
-						parentOrderNum = ++asInt;
-					}else {
-						log.error("Parent 목록에 없는 공정 타입입니다.");
-					}
-			        
-				}else {
-					log.error("parentPrcType is NULL");
-				}//if(parentPrcType != null) {
-	        	
-	        }//else {
-	
-		    String parentLot = "";
-		    System.out.println("=============parentpdtCode:"+parentpdtCode);
-		    if (checkLot.containsKey(parentpdtCode)) {
-		    	 parentLot = checkLot.get(parentpdtCode);
-		    	 System.out.println("containsKey:"+parentLot);
-	        } else {
-	        	parentLot = makeLotCode(parentPrcType, todayStr, parentOrderNum);
-	        	checkLot.put(parentpdtCode, parentLot);
-	        	System.out.println("parentLot:"+parentLot);
-	        }
-		    System.out.println("================map : " + checkLot);
-			//================ 자식 컬럼 lot생성=========================================================
-			
-			//자식 컬럼 lot생성
-			int childOrderNum = 0;
-			String childItemCode = b.getChildItemCode(); //이후 단계
-			
-			String childPrcType = "";
-			
-			//MTL-001 원자재인지 확인
-			if (childItemCode.toLowerCase().startsWith("mtl")) {
-				childPrcType = "IN";
-				childOrderNum = ++mtlInt;
-	        }else {
-			
-	        	childPrcType = productionPrcService.getPrcType(childItemCode);
-				System.out.println("parentPrcType:" + parentPrcType);
-			
-				if(childPrcType != null) {
-					
-		        	if(childPrcType.equals("FP")) {
-		        		System.out.println("============ childItemCode:"+childItemCode+" ,childPrcType:"+childPrcType);
-		        		childOrderNum = ++fpInt;
-					}else if(childPrcType.equals("PR")) {
-						childOrderNum = ++prInt;
-					}else if(childPrcType.equals("WE")) {
-						childOrderNum = ++weInt;
-					}else if(childPrcType.equals("PA")) {
-						childOrderNum = ++paInt;
-					}else if(childPrcType.equals("AS")) {
-						childOrderNum = ++asInt;
-					}else {
-						log.error("Child 목록에 없는 공정 타입입니다.");
-					}
-			        
-				}else {
-					log.error("childPrcType is NULL");
-				}//if(childPrcType != null) {
-			
-				String childLot = "";
-				System.out.println("childItemCode:"+childItemCode);
-			    if (checkLot.containsKey(childItemCode)) {
-			    	childLot = checkLot.get(childItemCode);
-			    	System.out.println("childLot:"+childLot);
-		        } else {
-		        	childLot = makeLotCode(childPrcType, todayStr, childOrderNum);
-		        	checkLot.put(childItemCode, childLot);
-		        	System.out.println("childItemCode:"+childItemCode+" ,childLot:"+childLot);
-		        }
-			
-				
-				/*
-				 * ========================= 위에서 생성한 lot를 lot테이블에 입력 =================================== 
-				 * */
-				
-				Long lotNoMax = lotService.getLotNo(); 
-				
-				lotNoMax++;
-				Long lotNo = lotNoMax;
-				String lotCode = parentLot; //이후 단계 
-				
-				String parentPdtCode = b.getParentPdtCode();
-				String childPdtCode = b.getChildItemCode();
-				
-				String createDate = String.valueOf(today);
-				
-				String prcType = b.getBomPrcType();
-				
-				//LINE_CODE
-				//EQP_CODE
-				
-				//String woCode = woCode;
-				String childLotCode = childLot;
-				
-				LocalTime nowTime = LocalTime.now();
-				String startTime = String.valueOf(nowTime);
-				
-				String woStatusNo = "RN";
-				
-				String useYN = "Y";
-				
-				LotOriginDTO lod = new LotOriginDTO();
-				lod.setLotNo(Long.valueOf(lotNo));
-				lod.setChildLotCode(childLot);
-				lod.setParentLotCode(parentLot);
-				lod.setChildPdtCode(childPdtCode);
-				lod.setParentdPdtCode(parentPdtCode);
-				lod.setCreateDate(today);
-				lod.setPrcType(prcType);
-				lod.setLineCode("");
-				lod.setEqpCode("");
-				lod.setWoCode(woCode);
-				lod.setStartTime(nowTime);
-				lod.setFinishTime(nowTime);
-				lod.setWoStatusNo(woStatusNo);
-				lod.setUseYn(useYN);
-				
-				lotService.insertLot(lod);
-				
-				
-	        }//else {
-		}//for(BomInfoDTO b : selectPdtCodeList) {
-		
-		return selectPdtCodeList;
-	}
-
-	
-	private String makeLotCode(String prcType, String todayStr, int orderNum) {
-
-		
-		System.out.println("prcType:" + prcType + " ,todayStr:" + todayStr + " ,orderNum:" + orderNum);
-				
-		String lot = "";
-		
-		//LOT-20250421-PR-02 
-		if(orderNum > 100) {
-			lot = "LOT-" + todayStr + "-" + prcType + "-" + orderNum;
-		}else if(orderNum >= 10) {
-			lot = "LOT-" + todayStr + "-" + prcType + "-0" + orderNum;
-		}else if(orderNum >= 1) {
-			lot = "LOT-" + todayStr + "-" + prcType + "-00" + orderNum;
-		} /* == 0 조건이 있으면 값이 이상하게 들어간다
-			 * else if(orderNum == 0) { lot = "LOT-" + todayStr + "-" + prcType + "-01" +
-			 * orderNum; }
-			 */
-		else{
-			log.error("orderType가 0과 음수가 나옴");
+		.timeline .step {
+		  margin: 10px 0;
+		  padding: 10px;
+		  border-left: 3px solid #007bff;
+		  padding-left: 15px;
 		}
 		
-		System.out.println("lot:" + lot);
-		return lot;
-				
-	}
+	</style>
+</head>
+<body>
+	<div layout:fragment="content">
+
+	<!-- ------------------- 상단 작업 시지 현황 시작 ---------------------------- -->
+	<h3>작업 시지 현황</h3>
+	<div class="container mt-5">
+	    <div class="row mb-4 d-flex justify-content-between">
+	        <div class="col-md-3">
+				<button class="form-control btn btn-primary btn-m" data-bs-toggle="modal" data-bs-target="#woModal">
+				<i class="fa-solid fa-magnifying-glass"></i>공정 작업 등록</button>
+				<input type="text" id="woCode">
+	        </div>
+			<div class="col-md-3">
+				<input type="month" class="form-control" placeholder="등록월">
+				<!--<button class="btn btn-outline-secondary" type="button">
+					<i class="bi bi-search"></i>
+				</button>-->
+	        </div>
+			
+	        <div class="col-md-3">
+	            <div class="input-group">
+					<select class="form-select form-select-sm" id="soCode">
+						<option value="">-- 공정을 선택하세요--</option>
+			            <option>PR(프레스)</option>
+						<option>WE(용접)</option>
+						<option>PA(도장)</option>
+						<option>AS(조립)</option>
+			        </select>
+	            </div>
+				<div class="input-group">
+					<select class="form-select form-select-sm" id="soCode">
+						<option value="">-- 라인을 선택하세요--</option>
+			            <option>1line</option>
+						<option>2line</option>
+						<option>3line</option>
+						<option>4line</option>
+			        </select>
+	            </div>	
+			</div>
+	    </div><!-- <div class="row mb-3"> -->
+	</div><!-- <div class="container mt-5"> -->
+	
+	<div id="woGrid"></div>
 
 	
-}
+	<!-- ------------------- 하단 첫번째 시작 ---------------------------- -->
+	<br>
+	<div class="container-fluid">
+	  	<div class="row">
+			<!-- bom-tree -->
+	    	<!-- 왼쪽 그리드 -->
+		    <div class="col-md-4 border-end">
+				<ul id="bom-tree"></ul>
+		    </div>
 
+		    <!-- 오른쪽 그리드 -->
+		    <div class="col-md-8">
+				
+				<input type="text">
+				<br>
+				<div id="prcessingGrid"></div>
+	    	</div>
+	 	</div>
+	</div>
+	
+	<!-- -------------------  하단 두번째 시작 ---------------------------- -->
+	<button type="button" id="prcBoard" class="btn btn-primary btn-m">공정현황</button>
+	<li class="panel"><div id="prcGrid"></div></li>
+	
+	<!-- ----------================================================ -->
+	
+	<!--  모달 창 시작 -->
+	<div class="modal fade" id="woModal" tabindex="-1">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="woModalLabel">시작 작업 목록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <form>
+	                <div class="modal-body">
+						
+						<!-- 셀렉트 박스 -->
+						<div class="form-group">
+							<label for="empName">진행 중인 계획코드</label>
+							<select class="form-select form-select-sm" id="woCodeSelected">
+								<option value="">--선택하세요--</option>
+							    <option th:each="code : ${workOrderSBList}"
+									th:value="${code.woCode}"
+									th:text="${code.woCode}"
+								></option>
+							</select>
+						</div>
+						
+						<!-- 품목 코드 -->
+						<div class="form-group" >
+							<label for="deptName">품목코드</label>
+							<input type="text" class="form-control" id="txtPdtCode" readonly="true">
+						</div>
+						
+						<!-- 품목 이름 -->
+						<div class="form-group" >
+							<label for="deptName">품목이름</label>
+							<input type="text" class="form-control" id="txtPdtName" readonly="true">
+						</div>
+												
+						<!-- 수량 -->
+						<div class="form-group" >
+							<label for="deptName">수량</label>
+							<input type="text" class="form-control" id="txtWoQty" readonly="true">
+						</div>
+						
+						<!-- 작업 담당자 -->
+						<div class="form-group" >
+							<label for="deptName">작업 담당자</label>
+							<input type="text" class="form-control" id="txtEmpName" readonly="true">
+						</div>
+						
+						<!-- 작업 시작일 -->
+						<div class="form-group" >
+							<label for="deptName">작업 시작일</label>
+							<input type="text" class="form-control" id="txtWoStartDate" readonly="true">
+						</div>
+                    </div>
+                    
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                    <button type="button" class="btn btn-primary" id="modalStartBtn">시작</button>
+	                </div>
+	            </form>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
 
+	<script th:inline="javascript">
+		let woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
+		let pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정 
+		let woGridData; //상단 그리드에 입력될 데이터를 전역으로 설정
+		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
+		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
+		let woQty; //컨트롤러에서 개수를 넘기기 위해서 전역으로 설정 후 셀렉트박스에서 값이 선택되면 저장하게 함
+		let prcessingGridData; //두번째 하단의 그리드 데이터
+		
+		$(document).ready(function(){
+			
+			//======================================= 모달 안에 셀렉트 박스 이벤트 ================================================
+			$("#woCodeSelected").on('change', function(){
+				
+				woCode = $(this).val();
+				
+				$.ajax({
+					url: '/production/woCodeSelected',
+					type: 'GET',
+					data: {data: woCode},
+					success : function(response){
+						console.log(response);
+						
+						pdtCode = response[0].PDT_CODE;
+						
+						$("#txtPdtCode").val(response[0].PDT_CODE);
+						$("#txtPdtName").val(response[0].PDT_NAME);
+						$("#txtWoQty").val(response[0].WO_QTY);
+						woQty = response[0].WO_QTY;
+						console.log(woQty);
+						$("#txtEmpName").val(response[0].EMP_NAME);
+						$("#txtWoStartDate").val(response[0].WO_START_DATE);
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+				});//$.ajax
+			});//$("#woCodeSelected").on('change', function(){
+				
+			//======================================= 모달 하단의 시작 버튼 ================================================	
+			$("#modalStartBtn").on('click', function(){
+					
+				//셀렉트 박스에 선택된 값이 없는 경우 return
+				if($("#woCodeSelected").val() === null || $("#woCodeSelected").val() === ""){
+					Swal.fire({
+					  icon: "warning",
+					  title: "선택된 계획 코드가 없습니다.",
+					});
+					
+					return;
+				}
+				
+				Swal.fire({
+					title: 'LOT번호가 부여되고 공정이 시작됩니다.',
+				   	text: "이 작업은 되돌릴 수 없습니다!",
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				  if (result.isConfirmed) {
+					
+					$.ajax({
+						url: '/production/pdtCodeSelected',
+						type: 'GET',
+						data: {
+							'pdtCode' : pdtCode,
+							'woCode' : woCode,
+							'woQty' : woQty
+							},
+						success : function(response){
+							woGridData = response;
+							woGrid.resetData(response);
+							
+							//PARENT_PDT_CODE와 CHILD_ITEM_CODE로 배열 생성
+							bomList = response.map(item => ({
+					            parent: item.PARENT_PDT_CODE,
+					            child: item.CHILD_ITEM_CODE
+					        }));
+							console.log(bomList);
+							
+							//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
+							//bomList는 전역으로 선언해서 makeTree에서 바로 사용
+							makeTree();
+						},
+						error : function(error){
+							console.log("error:" + error)
+						}
+					});//$.ajax
+					
+					
+					$('#woModal').modal('hide');
+						
+				  	}//if (result.isConfirmed) {
+				});
+				
+				//셀렉트 박스가 선택되었다면 pdtCode에 값이 있을 수밖에 없다.
+				//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
+				//pdtCode로 BOM 재귀 호출
+			})
+			
+			//======================================= 두번째 하단의 작업 현황 버튼 클릭 ================================================
+			$("#prcBoard").on("click", function(){
+				
+				$.ajax({
+					url: '/production/prcBoard',
+					type: 'POST',
+					data: {
+						'pdtCode' : pdtCode,
+						'woCode' : woCode
+						},
+					success : function(response){
+							console.log(response);
+							prcGrid.resetData(response);
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+				});//$.ajax
+			});//$("#prcBoard").on("click", function(){
+			
+			//======================================= 하단 왼쪽에 트리 버튼 클릭 ================================================
+			
+			$("#bom-tree").on("click", ".btn-outline-success", function() {
+			    
+				let selectedPdtCode = $(this).attr("pdtCodeTree");
+				alert(selectedPdtCode)
+			
+			});//$("#treeName").on("click", function(){
+			
+		
+			
+		});//$(document).ready(function(){
+			
+		//======================================= 상단 그리드 ================================================
+		
+		let woGrid = new tui.Grid({
+	        el: document.getElementById('woGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: '레벨',
+					name: 'BOM_LEVEL',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '자식 코드',
+	                name: 'CHILD_ITEM_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '부모 코드',
+	                name: 'PARENT_PDT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '코드 유형',
+	                name: 'ITEM_TYPE',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '공정 단계',
+	                name: 'BOM_PRC_TYPE',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '수량',
+	                name: 'BOM_QTY',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '비고',
+	                name: 'COMMENTS',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+		
+		//======================================= 하단 왼쪽 트리 ================================================
+	
+		function makeTree(){
+			const rootCode = pdtCode; //pdtCode 전역으로 선언
+			console.log("=================================================");
+			console.log(bomList);
+			//마지막 부모 태그 생성, bomList 전역으로 선언
+			const treeHtml = `<li>${rootCode} <button class='btn btn-outline-primary btn-sm' onclick="createLot('${rootCode}')">LOT 생성</button>` +
+			                 buildBomTree(rootCode, bomList) +
+			                 '</li>';
+
+			$('#bom-tree').html(treeHtml);
+					
+		}
+		
+		function buildBomTree(root, bomList) {
+		    // root를 자식으로 포함하는 모든 부모 찾기
+		    const parents = bomList.filter(rel => rel.child === root).map(rel => rel.parent);
+		    if (parents.length === 0) return '';
+
+			//자식에 해당하는 태그 생성
+		    let html = '<ul>';
+		    for (let parent of parents) {
+		        html += `<li>${parent} <button class='btn btn-outline-success btn-sm' id='prcname' pdtCodeTree='${parent}'>제품정보</button>`;
+		        html += buildBomTree(parent, bomList); // 상위 parent를 계속 탐색
+		        html += '</li>';
+		    }
+		    html += '</ul>';
+		    return html;
+		}
+
+		//======================================= 하단 오른쪽 그리드 ================================================
+		
+		
+		let prcGrid = new tui.Grid({
+	        el: document.getElementById('prcGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: 'LOT번호',
+					name: 'LOT_NO',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	           {
+	                header: '자식 로트 코드',
+	                name: 'CHILD_LOT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '부모 로트 코드',
+	                name: 'PARENT_LOT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '자식 제품 코드',
+	                name: 'CHILD_PDT_CODE',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '부모 제품 코드',
+	                name: 'PARENT_PDT_CODE',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '생성 일자',
+	                name: 'CREATE_DATE',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '비고',
+	                name: 'COMMENTS',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+		
+		//======================================= 두번째 하단 그리드 ================================================
+
+		let prcessingGrid = new tui.Grid({
+	        el: document.getElementById('prcessingGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: '레벨',
+					name: 'BOM_LEVEL',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '자식 코드',
+	                name: 'CHILD_ITEM_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '부모 코드',
+	                name: 'PARENT_PDT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '코드 유형',
+	                name: 'ITEM_TYPE',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '공정 단계',
+	                name: 'BOM_PRC_TYPE',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '수량',
+	                name: 'BOM_QTY',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '비고',
+	                name: 'COMMENTS',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+	
+
+	</script>
+	</div> <!-- /layout:fragment -->		
+	
+	<th:block layout:fragment="script">
+		<script type="text/javascript">		
+			
+		</script>
+	</th:block>
+</body>
+</html>

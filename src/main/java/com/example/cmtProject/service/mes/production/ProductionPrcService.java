@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.cmtProject.dto.mes.production.LotCodeDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.mapper.mes.production.ProductionPrcMapper;
 
 @Service
@@ -39,6 +40,26 @@ public class ProductionPrcService {
 	public String getPrcType(String pdtCode) {
 		// TODO Auto-generated method stub
 		return productionPrcMapper.getPrcType(pdtCode);
+	}
+
+	public List<String> selectChildPdtCodeList(String pdtCode) {
+		// TODO Auto-generated method stub
+		return productionPrcMapper.selectChildPdtCodeList(pdtCode);
+	}
+
+	public List<String> selectParentdPdtCodeList(String pdtCode) {
+		// TODO Auto-generated method stub
+		return productionPrcMapper.selectParentdPdtCodeList(pdtCode);
+	}
+
+	public void updateWoStatus(String woCode) {
+		// TODO Auto-generated method stub
+		productionPrcMapper.updateWoStatus(woCode);
+	}
+
+	public List<ProductTotalDTO> selectProductInfo(String pdtCode) {
+		// TODO Auto-generated method stub
+		return productionPrcMapper.selectProductInfo(pdtCode);
 	}
 
 }
