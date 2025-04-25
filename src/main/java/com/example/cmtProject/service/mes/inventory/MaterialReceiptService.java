@@ -15,6 +15,7 @@ import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
+import com.example.cmtProject.service.mes.qualityControl.IqcService;
 
 import lombok.extern.slf4j.Slf4j;
 
