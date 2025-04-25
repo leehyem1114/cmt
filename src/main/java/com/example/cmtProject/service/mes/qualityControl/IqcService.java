@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
+import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
 import com.example.cmtProject.mapper.mes.qualityControl.IqcMapper;
 
 import jakarta.transaction.Transactional;
@@ -23,6 +24,7 @@ public class IqcService {
 	
 	@Autowired
 	private IqcMapper iqcMapper;
+	private InventoryUpdateMapper ium;
 
 	// 모든 입고 검사 목록
 	public List<IqcDTO> getAllIqc() {
@@ -84,6 +86,17 @@ public class IqcService {
 	public void updateIqcInspectionStatusComplete(IqcDTO iqcDTO) {
 		iqcDTO.setIqcEndTime(LocalDateTime.now());
 		iqcMapper.updateIqcInspectionStatusComplete(iqcDTO);
+		
+		System.out.println("$$$$$$$$$$$$$$$$"+iqcDTO);
+		
+		//==============================================
+		String code = iqcDTO.getReceiptCode();
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("receiptCode", code);  
+	    System.out.println("@#%$#%$%^$%^R%^R$%&$%R"+params);
+		ium.updateReceiptStatus(params);	
+		System.out.println("@#%$#%$%^$%^R%^R$%&$%R"+params);
+		//==============================================
 	}
 
 	

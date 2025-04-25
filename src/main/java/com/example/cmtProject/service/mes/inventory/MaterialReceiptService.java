@@ -427,8 +427,11 @@ public class MaterialReceiptService {
             updateMap.put("receiptDate", todayStr); // 검수 요청일을 입고일로 설정
             updateMap.put("updatedBy", params.get("updatedBy"));
             updateMap.put("updatedDate", todayStr);
+            updateMap.put("receiptCode", params.get("receiptCode"));
+            
             
             int result = mRmapper.updateReceiptStatusAndDate(updateMap);
+            iqcService.insertIqcInspection(updateMap);
             
             if (result > 0) {
                 // 이력 기록
