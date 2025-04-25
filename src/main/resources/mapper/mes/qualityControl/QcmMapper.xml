@@ -124,6 +124,18 @@
 	    )
 	</insert>
 	
+	<!-- 특정 QCM이름 가져오기 -->
+	<select id="getQcmNamesByMtlName" resultType="map">
+		SELECT 
+			QCM_NAME,
+			QCM_UNIT_LENGTH,
+			QCM_UNIT_WEIGHT 
+		FROM QCM 
+		WHERE MTL_NAME = #{mtlName}
+	</select>
+	
+	
+	
 	<!-- 엑셀 데이터 업데이트 -->
 	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.QcmDTO">
 		UPDATE QCM

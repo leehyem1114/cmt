@@ -43,7 +43,7 @@
 	        #{lotNo},
 	        #{parentLotCode},
 	        #{childLotCode},
-	        #{parentdPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
+	        #{parentPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
 	        #{childPdtCode},
 	        #{createDate},
 	        #{prcType},
@@ -79,9 +79,10 @@
 	</select>
 	
 	<!-- LOT 테이블 origin 가져오기 -->
-	<select id="selectLotOrigin" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
+	<select id="selectLotOrigin" resultType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
 		SELECT 
-			LOT_NO
+			ROWNUM AS NUM
+			,LOT_NO
 			,CHILD_LOT_CODE
 			,PARENT_LOT_CODE
 			,CHILD_PDT_CODE

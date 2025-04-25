@@ -2,11 +2,13 @@ package com.example.cmtProject.controller.mes.qualityControl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,14 +19,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
-import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
+import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
-import com.example.cmtProject.entity.mes.qualityControl.Iqc;
-import com.example.cmtProject.repository.mes.qualityControl.IqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
+import com.example.cmtProject.service.mes.qualityControl.QcmService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -42,8 +44,7 @@ public class IqcController {
 	private IqcService iqcService;
 	
 	@Autowired
-	private IqcRepository iqcRepository;
-	
+	private QcmService qcmService;
 	
 	
 	@GetMapping("/inspection-info")
@@ -62,15 +63,24 @@ public class IqcController {
     	List<IqcDTO> iqcList = iqcService.getAllIqc();
     	model.addAttribute("iqcList", iqcList);
     	
-    	
     	return "mes/qualityControl/iqcList";
+	}
+	
+	
+	@GetMapping("/names-by-mtl")
+	@ResponseBody
+	public List<Map<String, Object>> getQcmNamesByMtl(@RequestParam("mtlName") String mtlName) {
+	    return qcmService.getQcmNamesByMtlName(mtlName);
 	}
 	
 	// 그리드에서 바로 수정
 	@ResponseBody
 	@PostMapping("/edit")
 	public void qcmEditexep(@ModelAttribute IqcDTO iqcDTO) throws JsonMappingException, JsonProcessingException {
-			iqcService.iqcRemarksUpdate(iqcDTO); 
+		if ("".equals(iqcDTO.getQcmName())) {
+			iqcDTO.setQcmName(null);
+	    }
+		iqcService.iqcRemarksAndQcmNameUpdate(iqcDTO); 
 	}
 	
 	// 삭제 메서드
@@ -84,6 +94,47 @@ public class IqcController {
 
         return ResponseEntity.ok("success");
     }
+    
+    // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
+    @ResponseBody
+    @PostMapping("/status-action")
+    public ResponseEntity<?> postMethodName(Model model, 
+    											@RequestBody Map<String, String> payload,
+    											@AuthenticationPrincipal PrincipalDetails principalDetails) {
+
+    	// 유저정보
+    	Employees loginUser = principalDetails.getUser();
+    	
+    	IqcDTO iqcDTO = new IqcDTO();
+    	
+    	iqcDTO.setIqcCode(payload.get("iqcCode"));
+        String status = payload.get("status");
+
+        // TODO: 상태에 따라 분기 처리
+        if ("검사중".equals(status)) {
+        	iqcService.updateIqcInspectionStatusProcessing(loginUser, iqcDTO);
+        } else if ("검사완료".equals(status)) {
+        	iqcService.updateIqcInspectionStatusComplete(iqcDTO);
+        }
+    	
+        
+        return ResponseEntity.ok(Collections.singletonMap("result", "success"));
+    }
+    
+    
+    @PostMapping("/auto-inspect")
+    @ResponseBody
+    public ResponseEntity<?> autoInspect(@RequestBody Map<String, String> request) {
+        String iqcCode = request.get("iqcCode");
+        try {
+            IqcDTO result = iqcService.autoInspect(iqcCode);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("message", e.getMessage()));
+        }
+    }
+    
 	
 	
 	

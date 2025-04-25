@@ -179,9 +179,12 @@
 		  L.PRC_TYPE,
 		  L.START_TIME,
 		  L.FINISH_TIME,
+
 		  W.EMP_NAME,
 		  W.WO_STATUS_CODE,
 		  S.WO_STATUS_NAME,
+
+
 		  L.WO_QTY,
 		  P.PRC_TYPE_NAME,
 		  E.EMP_NAME

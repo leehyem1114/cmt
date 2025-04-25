@@ -69,32 +69,53 @@
 	
 	<!-- 원자재 재고 조회 -->
 	<select id="getMaterialInventory" resultType="Map">
-		SELECT MTL_CODE, SUM(CURRENT_QTY)
+		SELECT MTL_CODE, TO_NUMBER(AVAILABLE_QTY) AS AVAILABLE_QTY 
 		FROM MATERIAL_INVENTORY
-		GROUP BY MTL_CODE
+		
 	</select>
 	
 	<!-- 수주에 따른 BOM 조회 -->
 	<select id="getMfgPlanBomList" resultType="Map">
-		SELECT 
-			BOM_NO,
-			PARENT_PDT_CODE,
-			CHILD_ITEM_CODE,
-			ITEM_TYPE,
-			BOM_QTY,
-			BOM_UNIT,
-			BOM_PRC_TYPE,
-			PRIOR BOM_QTY * BOM_QTY AS TOTAL_QTY
-		FROM BOM
-		START WITH PARENT_PDT_CODE IN (
-			SELECT SO.PDT_CODE
-			FROM MFG_PLANS MP
-			JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
-			JOIN COMMONCODE_DETAIL CD ON MP.MP_STATUS = CD.CMN_DETAIL_CODE
-			WHERE CMN_CODE = 'MP_STATUS'
-				AND CD.CMN_DETAIL_CODE IN ('MPS002', 'MPS003') 
+		SELECT
+		    B.PARENT_PDT_CODE,
+		    B.CHILD_ITEM_CODE,
+		    TO_NUMBER(B.BOM_QTY) AS BOM_QTY,
+		    B.USE_YN
+		FROM BOM B
+		WHERE B.USE_YN = 'Y'
+		START WITH B.CHILD_ITEM_CODE = (
+		    SELECT PDT_CODE
+		    FROM SALES_ORDER
+		    WHERE SO_CODE = 'SO-20250301-002'
 		)
-		CONNECT BY PRIOR CHILD_ITEM_CODE = PARENT_PDT_CODE
+		CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
+		ORDER SIBLINGS BY B.PARENT_PDT_CODE
+	</select>
+	
+	<!-- 원자재 재고 조회 -->
+	<select id="selectAvailableQty" resultType="string" parameterType="map">
+		SELECT CASE WHEN COUNT(A.YN) > 0 THEN '재고 부족'
+                                         ELSE '등록 가능' end as yn
+        FROM (SELECT A.*
+                     , CASE WHEN B.AVAILABLE_QTY > 1 THEN 'Y'
+                                                     ELSE 'N' END AS YN
+              FROM (SELECT
+                    	B.PARENT_PDT_CODE,
+                        B.BOM_QTY,
+                        B.USE_YN
+                    FROM BOM B
+                    WHERE B.USE_YN = 'Y'
+                    START WITH B.CHILD_ITEM_CODE = (
+                    	SELECT PDT_CODE
+                        FROM SALES_ORDER
+                        WHERE SO_CODE = #{soCode}
+                    )
+                    CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
+                    ORDER SIBLINGS BY B.PARENT_PDT_CODE) A
+                    LEFT JOIN (SELECT MTL_CODE, TO_NUMBER(AVAILABLE_QTY) AS AVAILABLE_QTY 
+                               FROM MATERIAL_INVENTORY) B        
+                    ON A.PARENT_PDT_CODE = B.MTL_CODE) A
+         WHERE A.YN = 'N' 
 	</select>
 	
 	<!-- 생산 계획 등록 -->
