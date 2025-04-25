@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO;
+import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgHistoryMapper;
+import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper;
 import com.example.cmtProject.repository.mes.manufacturingMgt.MfgPlanRepository;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
@@ -52,6 +54,9 @@ public class MfgPlanController {
 	
 	@Autowired
 	private MfgPlanRepository mfgPlanRepository;
+	
+	@Autowired
+	private MfgPlanMapper mfgPlanMapper;
 	
 	// 생산 계획 조회
 	@GetMapping("/mfg-plan")
@@ -97,29 +102,40 @@ public class MfgPlanController {
 	    return "mes/manufacturingMgt/mfgPlan";
 	}
 	
-	// 원자재 재고 조회
-	@GetMapping("/selectCurrentQty")
+	// 재고 조회
+	@GetMapping("/selectAvailableQty")
 	@ResponseBody
-	public boolean selectCurrentQty(@RequestParam("pdtCode") String pdtCode,@RequestParam("soQty") Long soQty) {
-		boolean isAvailable = mfgPlanService.isCurrentQtyEnough(pdtCode, soQty);
-		return isAvailable;
+	public String selectAvailableQty(@RequestParam("soCode") String soCode,@RequestParam("soQty") Long soQty) {
+
+	    return mfgPlanMapper.selectAvailableQty(soCode, soQty);
 	}
 	
 	// 생산 계획 등록
 	@PostMapping("/mfgPlanRegi")
 	@ResponseBody
 	public String mfgPlanRegi(@RequestBody MfgPlanDTO mfgPlanDTO) {
-	    // 현재 로그인한 사용자 정보 가져오기
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    String currentUserId = auth.getName();
+//	    // 현재 로그인한 사용자 정보 가져오기
+//	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//	    String currentUserId = auth.getName();
+//
+//	    // ADMIN 권한 여부 확인
+//	    boolean isAdmin = auth.getAuthorities().stream()
+//	            .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+//
+//	    // empId: 사원은 본인 ID, 관리자는 null (전체 조회)
+//	    String empIdForQuery = isAdmin ? null : currentUserId;
+	    
+	    // 재고 부족 시 등록 안 함
+	    String soCode = mfgPlanDTO.getSoCode();
+	    Long soQty = mfgPlanDTO.getSoQty();
+	    
+	    String result = mfgPlanMapper.selectAvailableQty(soCode, soQty);
 
-	    // ADMIN 권한 여부 확인
-	    boolean isAdmin = auth.getAuthorities().stream()
-	            .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+	    if (!"등록 가능".equals(result)) {
+	        return "fail";
+	    }
 
-	    // empId: 사원은 본인 ID, 관리자는 null (전체 조회)
-	    String empIdForQuery = isAdmin ? null : currentUserId;
-	
+	    // 재고 충분하면 등록 진행
 	    mfgPlanService.registMpPlan(mfgPlanDTO);
 		
 		return "success";
