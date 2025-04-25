@@ -42,6 +42,10 @@ public class WorkOrderDTO {
     private String woStatusCode;
     private String woStatusName;
     private String prcTypeName;
+    
+    //======================
+    private String workDate;
+    private int completeCount;
 
     
     

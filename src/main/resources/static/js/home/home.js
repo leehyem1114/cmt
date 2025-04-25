@@ -66,6 +66,14 @@
                category: 'time',
                start: '2025-05-7',
                end: '2025-05-7',
+           },
+			{
+               id: '8',
+               calendarId: 'luck',
+               title: '자료제출',
+               category: 'time',
+               start: '2025-05-2',
+               end: '2025-05-2',
            }
         ];
 
