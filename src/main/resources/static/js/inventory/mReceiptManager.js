@@ -37,6 +37,8 @@ const MaterialReceiptManager = (function() {
     const RECEIPT_STATUS = {
         WAITING: '입고대기',
         INSPECTING: '검수중',
+		INSPECT_PASSED: '검수합격',
+		INSPECT_FAILED: '검수 불합격',
         COMPLETED: '입고완료',
         CANCELED: '취소'
     };
@@ -237,7 +239,11 @@ const MaterialReceiptManager = (function() {
                                 badgeClass = 'badge-inspecting';
                             } else if (status === RECEIPT_STATUS.COMPLETED) {
                                 badgeClass = 'badge-completed';
-                            } else if (status === RECEIPT_STATUS.CANCELED) {
+                            } else if(status === RECEIPT_STATUS.INSPECT_PASSED){
+								badgeClass = 'badge-completed'
+							}else if(status === RECEIPT_STATUS.INSPECT_FAILED){
+								badgeClass = 'badge-canceled';
+							} else if (status === RECEIPT_STATUS.CANCELED) {
                                 badgeClass = 'badge-canceled';
                             }
                             
@@ -728,7 +734,7 @@ const MaterialReceiptManager = (function() {
 	                
 	                // 검수가 완료된 항목만 입고완료 할수있도록 확인
 	                // 검수중인 항목은 검수 정보 확인
-	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.INSPECTING) {
+	                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.INSPECT_PASSED) {
 	                    try {
 	                        // 검수 완료 여부 확인
 	                        const response = await ApiUtil.get(
