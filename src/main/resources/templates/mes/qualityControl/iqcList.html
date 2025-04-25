@@ -372,203 +372,214 @@
 	    
 	    
 	    
-	    // 더블클릭시 원자재에 따른 검사 목록 가져오기
-	    grid.on('dblclick', async (ev) => {	    	
-    	  if (!ev || typeof ev.rowKey !== 'number' || ev.columnName !== 'qcmName') return;
-    	  
-    	  
-    	  const row = grid.getRow(ev.rowKey);
-    	  const mtlName = row.mtlName;
-    	  const status = row.iqcInspectionStatus;
+	 // =======================
+	 // 초기 바인딩
+	 // =======================
 
-    	  // 검사중 상태일 때 백엔드로 검사 요청
-    	  if (status === '검사중') {
-    	    const iqcCode = row.iqcCode;
+	 // 상태 변경 버튼 클릭 이벤트
+	 document.getElementById('gridTop').addEventListener('click', onGridTopClick);
 
-    	    const response = await fetch('/iqc/auto-inspect', {
-    	      method: 'POST',
-    	      headers: {
-    	        'Content-Type': 'application/json'
-    	      },
-    	      body: JSON.stringify({ iqcCode })
-    	    });
+	 // 그리드 더블클릭 이벤트
+	 grid.on('dblclick', onGridDblClick);
 
-    	    const result = await response.json();
+	 // =======================
+	 // 핸들러 함수들
+	 // =======================
 
-    	    if (!response.ok) {
-    	      Swal.fire('검사 실패', result.message || '서버 오류', 'error');
-    	      return;
-    	    }
+	 // [1] 상태 버튼 클릭 시
+	 function onGridTopClick(e) {
+	   if (e.target.tagName !== 'BUTTON' || e.target.dataset.action !== 'status') return;
 
-    	    // 측정값과 검사 결과를 그리드에 반영
-    	    grid.setValue(ev.rowKey, 'iqcMeasuredWeightValue', result.iqcMeasuredWeightValue ?? '');
-			grid.setValue(ev.rowKey, 'iqcMeasuredLengthValue', result.iqcMeasuredLengthValue ?? '');
-			grid.setValue(ev.rowKey, 'iqcInspectionResult', result.iqcInspectionResult);
+	   const iqcCode = e.target.dataset.code;
+	   const status = e.target.dataset.status;
 
-    	    Swal.fire({
-    	      icon: result.iqcInspectionResult === '합격' ? 'success' : 'error',
-    	      title: `자동 검사 결과: ${result.iqcInspectionResult}`,
-    	      text: `측정값: ${result.measuredValue}`
-    	    });
+	   const rowKey = grid.getData().findIndex(row => row.iqcCode === iqcCode);
+	   const row = grid.getRow(rowKey);
 
-    	    return;
-    	  }
-    	  if (status === '검사완료') {
-    	    Swal.fire({
-    	      icon: 'warning',
-    	      title: '검사 항목 수정 불가',
-    	      text: '검사완료 상태에서는 검사 항목을 변경할 수 없습니다.',
-    	    });
-    	    return;
-    	  }
+	   if (!row.qcmName || row.qcmName.trim() === '') {
+	     Swal.fire({
+	       icon: 'warning',
+	       title: '검사항목이 없습니다.',
+	       text: '검사항목을 선택한 후 상태를 변경할 수 있습니다.'
+	     });
+	     return;
+	   }
 
-    	  if (!mtlName) {
-    	    alert("원자재 이름이 없습니다.");
-    	    return;
-    	  }
+	   handleStatusClick(iqcCode, status, row);
+	 }
 
-    	  // 서버에서 검사 항목 이름 목록 받아오기
-    	  const qcmNames = await fetchQcmNamesByMtlName(mtlName);
-    	  if (qcmNames.length === 0) {
-    	    Swal.fire("해당 원자재에 검사 항목이 <br>없습니다.");
-    	    return;
-    	  }
+	 // [2] 상태 전환 핸들러
+	 function handleStatusClick(iqcCode, status, row) {
+	   if (status === '검사전') {
+	     Swal.fire({
+	       title: `'검사중' 상태로 변경하시겠습니까?`,
+	       icon: 'warning',
+	       showCancelButton: true,
+	       confirmButtonText: '변경',
+	       cancelButtonText: '취소'
+	     }).then(result => {
+	       if (result.isConfirmed) updateStatus(iqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.');
+	     });
 
-//     	  선택 옵션 객체로 변환: { '길이': '길이', '중량': '중량' }
-    	  const inputOptions = {
-    		  '': '선택 안함', // ✅ value는 '', 표시되는 텍스트는 '선택 안함'
-    		  ...qcmNames.reduce((acc, item) => {
-    			acc[item.qcmName] = item.qcmName; // key, value 둘 다 검사 항목 이름
-    		    return acc;
-    		  }, {})
-    		};
+	   } else if (status === '검사중') {
+	     // 검사완료로 바꾸기 전 측정값 검사
+	     if ((!row.iqcMeasuredWeightValue && !row.iqcMeasuredLengthValue) || !row.iqcInspectionResult) {
+	       Swal.fire({
+	         icon: 'warning',
+	         title: '검사값 미입력',
+	         text: '측정값 또는 검사결과가 없습니다. 검사를 먼저 진행하세요.'
+	       });
+	       return;
+	     }
 
-    	  // select 팝업 표시
-    	  const { value: selectedQcm } = await Swal.fire({
-    	    title: `${mtlName}의 검사 항목 선택`,
-    	    input: 'select',
-    	    inputOptions: inputOptions,
-// 			inputOptions: qcmNames,
-    	    inputPlaceholder: '검사 항목을 선택하세요',
-    	    showCancelButton: true
-    	  });
-    	  
-    	  if (selectedQcm !== undefined) {
-    		  const selectedItem = qcmNames.find(item => item.qcmName === selectedQcm);
-    		  
-    		  console.log(qcmNames);
+	     Swal.fire({
+	       title: `'검사완료' 상태로 변경하시겠습니까?`,
+	       icon: 'warning',
+	       showCancelButton: true,
+	       confirmButtonText: '변경',
+	       cancelButtonText: '취소'
+	     }).then(result => {
+	       if (result.isConfirmed) updateStatus(iqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.');
+	     });
 
-    		    grid.setValue(ev.rowKey, 'qcmName', selectedQcm); // ''도 반영됨
-    		    grid.setValue(ev.rowKey, 'qcmUnitLength', selectedItem?.qcmUnitLength || '');
-    		    grid.setValue(ev.rowKey, 'qcmUnitWeight', selectedItem?.qcmUnitWeight || '');
-    		  }
-    	});
-	    
-	    // 원자재 이름에 따른 검사 목록 가져오는 함수
-	    async function fetchQcmNamesByMtlName(mtlName) {
-    	  try {
-    	    const res = await fetch(`/iqc/names-by-mtl?mtlName=${encodeURIComponent(mtlName)}`);
+	   } else if (status === '검사완료') {
+	     Swal.fire({
+	       icon: 'info',
+	       title: '상태 변경 불가',
+	       text: '검사완료 상태에서는 더 이상 상태를 변경할 수 없습니다.'
+	     });
+	   }
+	 }
 
-    	    debugger;
-    	    
-    	    if (!res.ok) throw new Error("서버 오류");
-    	    const list = await res.json(); // [{qcmName: '길이'}, ...]
-//     	    return list;
-    	    return list.map(item => ({
-    	        qcmName: item.QCM_NAME,
-    	        qcmUnitLength: item.QCM_UNIT_LENGTH,
-    	        qcmUnitWeight: item.QCM_UNIT_WEIGHT
-    	      }));
-    	  } catch (err) {
-    	    console.error(err);
-    	    return [];
-    	  }
-    	}
-	    
-	    
-	    
-	    
-	    
-	    	document.getElementById('gridTop').addEventListener('click', function (e) {
-	    	  if (e.target.tagName === 'BUTTON' && e.target.dataset.action === 'status') {
-	    	    const iqcCode = e.target.dataset.code;
-	    	    const status = e.target.dataset.status;
+	 // [3] 그리드 더블클릭 시
+	 async function onGridDblClick(ev) {
+	   if (!ev || typeof ev.rowKey !== 'number' || ev.columnName !== 'qcmName') return;
 
-	    	    // 버튼이 있는 행 찾기
-	    	    const rowKey = grid.getData().findIndex(row => row.iqcCode === iqcCode);
-	    	    const row = grid.getRow(rowKey);
+	   const row = grid.getRow(ev.rowKey);
+	   const mtlName = row.mtlName;
+	   const status = row.iqcInspectionStatus;
 
-	    	    // ✅ 검사 항목(qcmName)이 없으면 차단
-	    	    if (!row.qcmName || row.qcmName.trim() === '') {
-	    	      Swal.fire({
-	    	        icon: 'warning',
-	    	        title: '검사항목이 없습니다.',
-	    	        text: '검사항목을 선택한 후 상태를 변경할 수 있습니다.'
-	    	      });
-	    	      return;
-	    	    }
+	   if (!mtlName) {
+	     alert("원자재 이름이 없습니다.");
+	     return;
+	   }
 
-	    	    // ✅ 검사 항목이 있을 때만 핸들러 실행
-	    	    handleStatusClick(iqcCode, status);
-	    	  }
-	    	});
+	   if (status === '검사중') {
+	     await autoInspect(row, ev.rowKey);
+	     return;
+	   }
 
-	    	function handleStatusClick(iqcCode, status) {
-	    	  if (status === '검사전') {
-	    	    // 검사전 → 검사중
-	    	    Swal.fire({
-	    	      title: `'검사중' 상태로 변경하시겠습니까?`,
-	    	      icon: 'warning',
-	    	      showCancelButton: true,
-	    	      confirmButtonText: '변경',
-	    	      cancelButtonText: '취소'
-	    	    }).then(result => {
-	    	      if (!result.isConfirmed) return;
+	   if (status === '검사완료') {
+	     Swal.fire({
+	       icon: 'warning',
+	       title: '검사 항목 수정 불가',
+	       text: '검사완료 상태에서는 검사 항목을 변경할 수 없습니다.',
+	     });
+	     return;
+	   }
 
-	    	      updateStatus(iqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.');
-	    	    });
-	    	  } else if (status === '검사중') {
-	    	    // 검사중 → 검사완료
-	    	    Swal.fire({
-	    	      title: `'검사완료' 상태로 변경하시겠습니까?`,
-	    	      icon: 'warning',
-	    	      showCancelButton: true,
-	    	      confirmButtonText: '변경',
-	    	      cancelButtonText: '취소'
-	    	    }).then(result => {
-	    	      if (!result.isConfirmed) return;
+	   // 검사 항목 선택
+	   const qcmNames = await fetchQcmNamesByMtlName(mtlName);
+	   if (qcmNames.length === 0) {
+	     Swal.fire("해당 원자재에 검사 항목이 <br>없습니다.");
+	     return;
+	   }
 
-	    	      updateStatus(iqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.');
-	    	    });
-	    	  } else if (status === '검사완료') {
-	    	    // 검사완료 상태는 변경 불가
-	    	    Swal.fire({
-	    	      icon: 'info',
-	    	      title: '상태 변경 불가',
-	    	      text: '검사완료 상태에서는 더 이상 상태를 변경할 수 없습니다.'
-	    	    });
-	    	  }
-	    	}
+	   const inputOptions = {
+	     '': '선택 안함',
+	     ...qcmNames.reduce((acc, item) => {
+	       acc[item.qcmName] = item.qcmName;
+	       return acc;
+	     }, {})
+	   };
 
-	    	function updateStatus(iqcCode, newStatus, successMsg) {
-	    	  fetch('/iqc/status-action', {
-	    	    method: 'POST',
-	    	    headers: { 'Content-Type': 'application/json' },
-	    	    body: JSON.stringify({ iqcCode, status: newStatus })
-	    	  })
-	    	    .then(res => res.json())
-	    	    .then(data => {
-	    	      Swal.fire({
-	    	        title: '성공',
-	    	        text: successMsg,
-	    	        icon: 'success'
-	    	      }).then(() => location.reload());
-	    	    })
-	    	    .catch(err => {
-	    	      console.error('전송 실패:', err);
-	    	      Swal.fire('오류', '상태 변경에 실패했습니다.', 'error');
-	    	    });
-	    	}
+	   const { value: selectedQcm } = await Swal.fire({
+	     title: `${mtlName}의 검사 항목 선택`,
+	     input: 'select',
+	     inputOptions,
+	     inputPlaceholder: '검사 항목을 선택하세요',
+	     showCancelButton: true
+	   });
+
+	   if (selectedQcm !== undefined) {
+	     const selectedItem = qcmNames.find(item => item.qcmName === selectedQcm);
+	     grid.setValue(ev.rowKey, 'qcmName', selectedQcm);
+	     grid.setValue(ev.rowKey, 'qcmUnitLength', selectedItem?.qcmUnitLength || '');
+	     grid.setValue(ev.rowKey, 'qcmUnitWeight', selectedItem?.qcmUnitWeight || '');
+	   }
+	 }
+
+	 // =======================
+	 // 헬퍼 함수들
+	 // =======================
+
+	 // 검사중일 때 자동 검사 API 호출
+	 async function autoInspect(row, rowKey) {
+	   const iqcCode = row.iqcCode;
+
+	   const response = await fetch('/iqc/auto-inspect', {
+	     method: 'POST',
+	     headers: { 'Content-Type': 'application/json' },
+	     body: JSON.stringify({ iqcCode })
+	   });
+
+	   const result = await response.json();
+
+	   if (!response.ok) {
+	     Swal.fire('검사 실패', result.message || '서버 오류', 'error');
+	     return;
+	   }
+
+	   grid.setValue(rowKey, 'iqcMeasuredWeightValue', result.iqcMeasuredWeightValue ?? '');
+	   grid.setValue(rowKey, 'iqcMeasuredLengthValue', result.iqcMeasuredLengthValue ?? '');
+	   grid.setValue(rowKey, 'iqcInspectionResult', result.iqcInspectionResult);
+
+	   Swal.fire({
+	     icon: result.iqcInspectionResult === '합격' ? 'success' : 'error',
+	     title: `자동 검사 결과: ${result.iqcInspectionResult}`,
+	     text: `측정값 - 무게: ${result.iqcMeasuredWeightValue ?? '-'}, 길이: ${result.iqcMeasuredLengthValue ?? '-'}`
+	   });
+	 }
+
+	 // 상태 변경 서버 요청
+	 function updateStatus(iqcCode, newStatus, successMsg) {
+	   fetch('/iqc/status-action', {
+	     method: 'POST',
+	     headers: { 'Content-Type': 'application/json' },
+	     body: JSON.stringify({ iqcCode, status: newStatus })
+	   })
+	   .then(res => res.json())
+	   .then(data => {
+	     Swal.fire({
+	       title: '성공',
+	       text: successMsg,
+	       icon: 'success'
+	     }).then(() => location.reload());
+	   })
+	   .catch(err => {
+	     console.error('전송 실패:', err);
+	     Swal.fire('오류', '상태 변경에 실패했습니다.', 'error');
+	   });
+	 }
+
+	 // 서버에서 원자재별 검사항목 가져오기
+	 async function fetchQcmNamesByMtlName(mtlName) {
+	   try {
+	     const res = await fetch(`/iqc/names-by-mtl?mtlName=${encodeURIComponent(mtlName)}`);
+	     if (!res.ok) throw new Error("서버 오류");
+	     const list = await res.json();
+
+	     return list.map(item => ({
+	       qcmName: item.QCM_NAME,
+	       qcmUnitLength: item.QCM_UNIT_LENGTH,
+	       qcmUnitWeight: item.QCM_UNIT_WEIGHT
+	     }));
+	   } catch (err) {
+	     console.error(err);
+	     return [];
+	   }
+	 }
+
 
 	    
 	    
