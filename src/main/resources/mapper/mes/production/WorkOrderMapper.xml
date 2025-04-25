@@ -198,7 +198,7 @@
 	
   <select id="selectCompleteStatsLast7Days"  resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
     SELECT TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') AS workDate,
-           COUNT(*) AS completeCount
+           COUNT(*) AS completeCount 
     FROM WORK_ORDER
     WHERE WO_END_DATE BETWEEN SYSDATE - 6 AND SYSDATE
       AND WO_STATUS_CODE = 'CP'
