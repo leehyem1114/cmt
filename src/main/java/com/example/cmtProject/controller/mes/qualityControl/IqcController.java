@@ -109,6 +109,7 @@ public class IqcController {
     	
     	iqcDTO.setIqcCode(payload.get("iqcCode"));
         String status = payload.get("status");
+        iqcDTO.setReceiptCode(payload.get("receiptCode"));
 
         // TODO: 상태에 따라 분기 처리
         if ("검사중".equals(status)) {

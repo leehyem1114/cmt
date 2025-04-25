@@ -5,7 +5,7 @@
 	
 	
   <!-- 입고 검사 업데이트 쿼리 -->
-  <update id="updateReceiptStatus" parameterType="int">
+  <update id="updateReceiptStatus" parameterType="String">
     UPDATE MATERIAL_RECEIPT mr
     SET mr.RECEIPT_STATUS = 
         CASE 
@@ -25,7 +25,7 @@
             ) THEN '검사불합격'
             ELSE mr.RECEIPT_STATUS
         END
-    WHERE mr.RECEIPT_NO = #{receiptNo}
+    WHERE mr.RECEIPT_CODE = #{receiptCode}
     AND EXISTS (
         SELECT 1 
         FROM IQC i 
