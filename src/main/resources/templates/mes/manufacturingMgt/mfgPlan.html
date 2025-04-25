@@ -134,10 +134,10 @@
 	            					<input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
                                     
                                     <!-- 엑셀 파일 입력 및 버튼 -->
-<!--                                     <input type="file" class="form-control file-input" id="fileInput" accept=".xlsx,.xls">
+                                    <input type="file" class="form-control file-input" id="wareHouseFileInput" accept=".xlsx,.xls">
                                     <button type="button" id="ExcelUpBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
-                                    </button> -->
+                                    </button>
                                     <button type="button" id="ExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
@@ -145,7 +145,7 @@
                                 
                                 <!-- 오른쪽: CRUD 버튼 -->
                                 <div class="button-group">
-                                	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">계획 등록</button>
+                                	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">생산 계획 등록</button>
                                     <button type="button" id="mpSaveBtn" class="btn btn-outline-success">저장</button>
                                     <button type="button" id="mpDeleteBtn" class="btn btn-outline-danger" onclick="deleteMp()">삭제</button>
                                 </div>
@@ -238,7 +238,7 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false
             },
             {
 				header: '우선순위',
@@ -317,22 +317,6 @@
 	let mpCode = "";
 	
 	document.getElementById('mfgPlanModal').addEventListener('shown.bs.modal', () => {
-		
-		const today = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
-		
-		$.ajax({
-			url: '/mp/makeMpCode',
-			method: 'GET',
-			data: { data: today },
-			success: function (code) {
-				mpCode = code; // 등록 시 사용할 예정
-				console.log("자동 생성된 MP 코드:", mpCode);
-			},
-			error: function () {
-				alert("생산계획코드 자동 생성 실패");
-			}
-		});
-
 		
 		if (!grid2) {	
 			grid2 = new tui.Grid({
@@ -497,6 +481,7 @@
 		            },
 		            success: function(isAvailable) {
 		                grid2.setValue(rowKey, 'selectPdtQty', isAvailable);
+		                
 		            },
 		            error: function(xhr, status, error) {
 		                console.error('재고 확인 중 오류:', error);
@@ -517,31 +502,51 @@
 	});*/
 	
 	
-	
+	// TODO
 	//상품 계획 등록 시작 -------------------------------------------
-	$('#mfgPlanRegiBtn').on('click', function () {
+	$('#mfgPlanRegiBtn').on('click', async function () {
+		// 로그인한 유저 정보
+		const empId = document.getElementById('currentUserId')?.value;
+	
 		const checkedRows = grid2.getCheckedRows(); // 선택된 행 가져오기
-		const data = { ...checkedRows[0] };
-		console.log("dsafasdfadsfadsfsfd", data);
 		
-		// 로그인한 유저
-		data.empId = document.getElementById('currentUserId')?.value;
+		// 생산계획번호 자동 생성
+// 		const today = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
+// 		const mpCodePromises = checkedRows.map(() => 
 		
-		// 자동 생성된 생산계획코드
-		data.mpCode = mpCode;
-		
+// 			$.ajax({
+// 				url: '/mp/makeMpCode',
+// 				method: 'GET',
+// 				data: { data: today },
+// 				success: function (code) {
+// 					debugger;
+// 					mpCode = code; // 등록 시 사용할 예정
+// 					console.log("자동 생성된 MP 코드:", mpCode);
+// 				},
+// 				error: function () {
+// 					alert("생산계획코드 자동 생성 실패");
+// 				}
+// 			})
+// 		);
+// 		const mpCodes = await Promise.all(mpCodePromises);
+
+		const dataList = checkedRows.map((row, index) => ({
+	        ...row,
+	        empId: empId,
+// 	        mpCode: mpCodes[index] // 각 수주별 개별 mpCode
+	    }));
+	
 		
 		// 체크를 해야만 값이 넘어오고
 		// 여러 건 체크했을 때도 값이 넘어와야 하고
 		// { ...checkedRows[0] } => 0번 row가 이상함! 0번 row.........
 		// 2개 체크해서 버튼 눌러도 0번 row만 넘어옴;;
 		
-		
 		$.ajax({
 			url: "/mp/mfgPlanRegi",
 			method : "POST",
 			contentType: "application/json",
-			data: JSON.stringify(data), // JSON 문자열로 전송
+			data: JSON.stringify(dataList), // JSON 문자열로 전송
 			success : function (response){
 				alert(response);
 				location.reload();
@@ -711,23 +716,6 @@
 	
 	let file;
 	let reader;
-	
-	//파일이 선택시 실행
-	document.getElementById('fileInput').addEventListener('change', function (e) {	
-		
-	    file = e.target.files[0];
-	    reader = new FileReader();
-		
-		if (!file) {
-			Swal.fire({
-	            icon: 'warning',
-	            title: '파일 없음',
-	            text: '파일을 선택해 주세요.',
-	            confirmButtonText: '확인'
-	        });
-	        return;
-		}
-	});
 
 	//버튼 클릭 시 선택된 엑셀 파일을 그리드에 출력
 	document.getElementById('ExcelUpBtn').addEventListener('click', function (e) {

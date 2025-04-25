@@ -135,10 +135,6 @@
 									<input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
 
 									<!-- 엑셀 파일 입력 및 버튼 -->
-									<input type="file" class="form-control file-input" id="fileInput" accept=".xlsx,.xls">
-									<button type="button" id="ExcelUpBtn" class="btn btn-excel">
-										<i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
-									</button>
 									<button type="button" id="ExcelDownBtn" class="btn btn-excel">
 										<i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
 									</button>
@@ -146,6 +142,7 @@
 
 								<!-- 오른쪽: CRUD 버튼 -->
 								<div class="button-group">
+									<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgScheduleModal">제조 계획 등록</button>
 									<button type="button" id="msSaveBtn" class="btn btn-outline-success">저장</button>
 									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger">삭제</button>
 								</div>
@@ -164,7 +161,26 @@
 				</div>
 			</div>
 		</section>
-
+		
+	<!--  모달 창 시작 -->
+	<div class="modal fade" id="mfgScheduleModal" tabindex="-1" aria-labelledby="mfgScheduleModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-full">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="mfgScheduleModalLabel">제조 계획 등록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	            	<div id="mpGrid"></div>
+				</div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                <button type="button" id="mfgScheduleRegiBtn" class="btn btn-primary">등록</button>
+		        </div>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
 
 		<!-- 
         페이지별 JavaScript 추가 영역.
@@ -173,7 +189,7 @@
     -->	
 	<script th:inline="javascript">
 	
-	//================================== 그리드 상단 상품 부분 ================================= 
+	//================================== 그리드 상단 부분 ================================= 
 	let msList = /*[[${msList}]]*/ [];
 	
 	let grid = new tui.Grid({
@@ -298,6 +314,7 @@
 		autoEdit: true,
 		editingEvent: 'dblclick' 
     });
+
 	
 	let selectedEv = null;
 	
@@ -439,6 +456,100 @@
 		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
 	    grid.refreshLayout();
 	});*/
+	
+	
+	// 제조 계획 등록 시 생산 계획 그리드
+	let mpList = /*[[${mpList}]]*/ [];
+	console.log("-----------------확인", mpList);
+	let grid2 = null;	
+		
+	document.getElementById('mfgScheduleModal').addEventListener('shown.bs.modal', () => {
+		if (!grid2) {	
+			grid2 = new tui.Grid({
+				el: document.getElementById('mpGrid'), 
+				data : mpList,
+				rowHeaders: ['checkbox'],
+				pageOptions: {
+					useClient: true,
+					perPage: 5
+				},
+				columns: [
+					{
+						header: '상품계획코드',
+						name: 'mpCode',
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '등록직원사번',
+						name: 'empId',
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '등록직원명',
+						name: 'empName',
+						sortable: true,
+						align: "center"
+					},				
+					{
+						header: '제품코드',
+						name: 'pdtCode',
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '제품명',
+						name: 'pdtName', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '주문수량',
+						name: 'soQty',
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '주문단위',
+						name: 'qtyUnitName',
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '우선순위',
+						name: 'mpPriority', 
+						sortable: true,
+						align: "center"
+					},
+					{
+						header: '생산 시작 예정일',
+						name: 'mpStartDate',
+						sortable: true,
+						align: "center",
+						editor: {
+							type: 'datePicker',
+							options: {
+								format: 'yyyy-MM-dd'
+							}
+						}
+					},
+					{
+						header: '생산 완료 예정일',
+						name: 'mpEndDate', 
+						sortable: true,
+						align: "center",
+						editor: {
+							type: 'datePicker',
+							options: {
+								format: 'yyyy-MM-dd'
+							}
+						}
+					}
+				]
+			});
+		}	
+	});
 	
 	
 	

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO;
+import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
 
 @Mapper
 public interface MfgScheduleMapper {
@@ -24,6 +25,9 @@ public interface MfgScheduleMapper {
 
 	// 엑셀 데이터 저장
 	void saveExcelData(MfgScheduleDTO dto);
+
+	// 제조 계획 등록 시 생산 계획 내역 조회
+	List<MfgSchedulePlanDTO> getMpList();
 
 
 }
