@@ -50,7 +50,7 @@
             CREATED_DATE, <!-- 생성일자 -->
             UPDATED_DATE <!-- 수정일자 -->
         ) VALUES (
-            SEQ_MATERIAL_RECEIPT_NO.NEXTVAL,
+            SEQ_MATERIAL_RECEIPT.NEXTVAL,
             #{receiptCode},
             #{poCode},
             #{mtlCode},

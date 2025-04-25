@@ -7,7 +7,7 @@
     <insert id="insertHistory" parameterType="java.util.Map">
         INSERT INTO MATERIAL_RECEIPT_HISTORY (
             HISTORY_NO, 
-            RECEIPT_NO, 
+            RECEIPT_CODE, 
             ACTION_TYPE, 
             ACTION_DATE, 
             ACTION_DESCRIPTION, 
@@ -16,7 +16,7 @@
             CREATED_DATE
         ) VALUES (
             SEQ_MATERIAL_RECEIPT_HISTORY.NEXTVAL, 
-            #{receiptNo}, 
+            #{receiptCode}, 
             #{actionType}, 
             SYSDATE, 
             #{actionDescription}, 
@@ -30,7 +30,7 @@
     <select id="getHistoryByReceiptNo" parameterType="java.lang.Long" resultType="java.util.Map">
         SELECT 
             HISTORY_NO, 
-            RECEIPT_NO, 
+            RECEIPT_CODE, 
             ACTION_TYPE, 
             ACTION_DATE, 
             ACTION_DESCRIPTION, 
@@ -38,7 +38,7 @@
         FROM 
             MATERIAL_RECEIPT_HISTORY
         WHERE 
-            RECEIPT_NO = #{receiptNo}
+            RECEIPT_CODE = #{receiptCode}
         ORDER BY 
             ACTION_DATE ASC, HISTORY_NO ASC
     </select>
