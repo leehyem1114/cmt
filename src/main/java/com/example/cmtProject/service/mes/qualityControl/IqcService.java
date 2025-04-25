@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.qualityControl.IqcMapper;
 
@@ -80,7 +81,56 @@ public class IqcService {
 	@Transactional
 	// 검사중에서 검사완료로 업데이트
 	public void updateIqcInspectionStatusComplete(IqcDTO iqcDTO) {
-		
+		iqcDTO.setIqcEndTime(LocalDateTime.now());
+		iqcMapper.updateIqcInspectionStatusComplete(iqcDTO);
+	}
+
+	
+	// 검사완료로 넘어갈때 측정값 저장
+	@Transactional
+	public IqcDTO autoInspect(String iqcCode) {
+	    QcmDTO qcm = iqcMapper.selectQcmInfoByIqcCode(iqcCode);
+
+	    if (qcm == null || qcm.getQcmMinValue() == null || qcm.getQcmMaxValue() == null) {
+	        throw new IllegalArgumentException("검사 기준 정보가 없습니다.");
+	    }
+
+	    double min = qcm.getQcmMinValue();
+	    double max = qcm.getQcmMaxValue();
+
+	    Double weightValue = null;
+	    Double lengthValue = null;
+	    String result = "";
+
+	    // 무게 검사일 경우
+	    if (qcm.getQcmUnitWeight() != null) {
+	        weightValue = generateRandom(min, max);
+	        result = isPass(weightValue, min, max) ? "합격" : "불합격";
+	    }
+
+	    // 길이 검사일 경우
+	    if (qcm.getQcmUnitLength() != null) {
+	        lengthValue = generateRandom(min, max);
+	        result = isPass(lengthValue, min, max) ? "합격" : "불합격";
+	    }
+
+	    // 저장
+	    System.out.println(iqcCode + weightValue + lengthValue + result);
+	    iqcMapper.updateMeasuredValues(iqcCode, weightValue, lengthValue, result);
+
+	    return new IqcDTO(weightValue, lengthValue, result);
+	}
+
+	// 랜덤값 생성 (소수점 1자리)
+	private double generateRandom(double min, double max) {
+	    double extendedMin = min - 1;
+	    double extendedMax = max + 1;
+	    return Math.round((Math.random() * (extendedMax - extendedMin) + extendedMin) * 10.0) / 10.0;
+	}
+
+	// 합격 여부 판정
+	private boolean isPass(double value, double min, double max) {
+	    return value >= min && value <= max;
 	}
 
 	

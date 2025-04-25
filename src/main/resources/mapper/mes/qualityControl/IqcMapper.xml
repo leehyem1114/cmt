@@ -42,7 +42,9 @@
 	<update id="iqcRemarksAndQcmNameUpdate" parameterType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
 		UPDATE IQC
 		SET IQC_REMARKS = #{iqcRemarks},
-			QCM_NAME = #{qcmName}
+			QCM_NAME = #{qcmName, jdbcType=VARCHAR},
+			QCM_UNIT_WEIGHT = #{qcmUnitWeight},
+			QCM_UNIT_LENGTH = #{qcmUnitLength}
 		WHERE IQC_NO = #{iqcNo}
 	</update>
 	
@@ -144,6 +146,35 @@
 			IQC_START_TIME = #{iqc.iqcStartTime}
 		WHERE IQC_CODE = #{iqc.iqcCode}
 	</update>
+	
+	
+	<!-- 검사중에서 검사완료로 업데이트 -->
+	<update id="updateIqcInspectionStatusComplete" parameterType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
+		UPDATE IQC
+		SET 
+			IQC_INSPECTION_STATUS = '검사완료',
+			IQC_END_TIME = #{iqcEndTime}
+		WHERE IQC_CODE = #{iqcCode}
+	</update>
+	
+	<select id="selectQcmInfoByIqcCode" resultType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
+	    SELECT 
+	        Q.QCM_MIN_VALUE
+	        Q.QCM_MAX_VALUE
+	    FROM IQC I
+	    JOIN QCM Q ON I.QCM_CODE = Q.QCM_CODE
+	    WHERE I.IQC_CODE = #{iqcCode}
+	</select>
+	
+	<update id="updateMeasuredValues">
+	    UPDATE IQC
+	    SET
+	        IQC_MEASURED_WEIGHT_VALUE = #{weightValue},
+	        IQC_MEASURED_LENGTH_VALUE = #{lengthValue},
+	        IQC_INSPECTION_RESULT = #{result}
+	    WHERE IQC_CODE = #{iqcCode}
+	</update>
+	
 
 
 </mapper>

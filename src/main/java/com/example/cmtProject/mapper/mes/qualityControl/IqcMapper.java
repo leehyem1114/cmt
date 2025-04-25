@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
@@ -27,6 +28,15 @@ public interface IqcMapper {
 	void insertIqcInspectionList(Map<String, Object> row);
 	
 	void updateIqcInspectionStatusProcessing(@Param("emp") Employees loginUser, @Param("iqc") IqcDTO iqcDTO);
+
+	void updateIqcInspectionStatusComplete(IqcDTO iqcDTO);
+
+	QcmDTO selectQcmInfoByIqcCode(String iqcCode);
+
+	void updateMeasuredValues(@Param("iqcCode") String iqcCode,
+		    				  @Param("weightValue") Double weightValue,
+		    				  @Param("lengthValue") Double lengthValue,
+		    				  @Param("result") String result);
 
 
 

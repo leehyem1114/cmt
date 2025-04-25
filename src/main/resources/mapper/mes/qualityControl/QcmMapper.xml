@@ -126,7 +126,12 @@
 	
 	<!-- 특정 QCM이름 가져오기 -->
 	<select id="getQcmNamesByMtlName" resultType="map">
-		SELECT QCM_NAME FROM QCM WHERE MTL_NAME = #{mtlName}
+		SELECT 
+			QCM_NAME,
+			QCM_UNIT_LENGTH,
+			QCM_UNIT_WEIGHT 
+		FROM QCM 
+		WHERE MTL_NAME = #{mtlName}
 	</select>
 	
 	

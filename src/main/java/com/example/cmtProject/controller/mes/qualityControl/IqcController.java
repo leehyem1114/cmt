@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -76,11 +77,13 @@ public class IqcController {
 	    return qcmService.getQcmNamesByMtlName(mtlName);
 	}
 	
-	
 	// 그리드에서 바로 수정
 	@ResponseBody
 	@PostMapping("/edit")
 	public void qcmEditexep(@ModelAttribute IqcDTO iqcDTO) throws JsonMappingException, JsonProcessingException {
+		if ("".equals(iqcDTO.getQcmName())) {
+			iqcDTO.setQcmName(null);
+	    }
 		iqcService.iqcRemarksAndQcmNameUpdate(iqcDTO); 
 	}
 	
@@ -112,14 +115,29 @@ public class IqcController {
         String status = payload.get("status");
 
         // TODO: 상태에 따라 분기 처리
-        if ("검사전".equals(status)) {
+        if ("검사중".equals(status)) {
         	iqcService.updateIqcInspectionStatusProcessing(loginUser, iqcDTO);
-        } else if ("검사중".equals(status)) {
+        } else if ("검사완료".equals(status)) {
         	iqcService.updateIqcInspectionStatusComplete(iqcDTO);
         }
     	
         
         return ResponseEntity.ok(Collections.singletonMap("result", "success"));
+    }
+    
+    
+    @PostMapping("/auto-inspect")
+    @ResponseBody
+    public ResponseEntity<?> autoInspect(@RequestBody Map<String, String> request) {
+        String iqcCode = request.get("iqcCode");
+        try {
+        	System.out.println("@@@@@@@@@@@@@" + iqcCode);
+            IqcDTO result = iqcService.autoInspect(iqcCode);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("message", e.getMessage()));
+        }
     }
     
 	
