@@ -25,7 +25,9 @@
             ) THEN '검사불합격'
             ELSE mr.RECEIPT_STATUS
         END
-    WHERE mr.RECEIPT_CODE = #{receiptCode}
+
+    WHERE mr.RECEIPT_CODE = #{receiptCode}  <!-- no - > code 변경 -->
+
     AND EXISTS (
         SELECT 1 
         FROM IQC i 
