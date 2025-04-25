@@ -24,6 +24,8 @@ public class IqcService {
 	
 	@Autowired
 	private IqcMapper iqcMapper;
+
+	@Autowired
 	private InventoryUpdateMapper ium;
 
 	// 모든 입고 검사 목록
@@ -87,16 +89,11 @@ public class IqcService {
 		iqcDTO.setIqcEndTime(LocalDateTime.now());
 		iqcMapper.updateIqcInspectionStatusComplete(iqcDTO);
 		
-		System.out.println("$$$$$$$$$$$$$$$$"+iqcDTO);
-		
-		//==============================================
-		String code = iqcDTO.getReceiptCode();
-	    Map<String, Object> params = new HashMap<>();
-	    params.put("receiptCode", code);  
-	    System.out.println("@#%$#%$%^$%^R%^R$%&$%R"+params);
-		ium.updateReceiptStatus(params);	
-		System.out.println("@#%$#%$%^$%^R%^R$%&$%R"+params);
-		//==============================================
+        String code = iqcDTO.getReceiptCode();
+        Map<String, Object> params = new HashMap<>();
+        params.put("receiptCode", code);
+        ium.updateReceiptStatus(params);
+
 	}
 
 	

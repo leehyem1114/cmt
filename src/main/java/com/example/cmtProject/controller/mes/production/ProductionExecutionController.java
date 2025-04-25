@@ -33,8 +33,9 @@ public class ProductionExecutionController {//	생산 중 실적 등록, 자재 
 	
 	@GetMapping("/lotDetail")
 	@ResponseBody
-	public LotDTO lotDetail(@RequestParam("lotNo") Long lotNo, Model model) {
+	public LotDTO lotDetail(@RequestParam("lotNo") Long lotNo) {
 		LotDTO detail = orderService.getLotNoDetail(lotNo);
+		System.out.println("삭제완");
 		return detail;
 	}
 	@GetMapping("/lotProcessHistory")

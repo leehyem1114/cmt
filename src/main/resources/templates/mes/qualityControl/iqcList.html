@@ -397,6 +397,7 @@
 	   // 버튼이 있는 행 찾기
 	   const rowKey = grid.getData().findIndex(row => row.iqcCode === iqcCode);
 	   const row = grid.getRow(rowKey);
+	   const receiptCode = row.receiptCode; // 또는 e.target.dataset.receiptCode;
 
 	   // 검사 항목(qcmName) 없는 경우 차단
 	   if (!row.qcmName || row.qcmName.trim() === '') {
@@ -408,11 +409,12 @@
 	     return;
 	   }
 
-	   handleStatusClick(iqcCode, status, row, rowKey);
+	   handleStatusClick(iqcCode, status, row, rowKey, receiptCode); // ✅ 전달
+
 	 }
 
 	 // [2] 상태 전환 핸들러
-	 async function handleStatusClick(iqcCode, status, row, rowKey) {
+	 async function handleStatusClick(iqcCode, status, row, rowKey, receiptCode) {
 	   if (status === '검사전') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
@@ -422,7 +424,7 @@
 	       cancelButtonText: '취소'
 	     }).then(result => {
 	       if (result.isConfirmed) {
-	         updateStatus(iqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.');
+	         updateStatus(iqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', receiptCode);
 	       }
 	     });
 
@@ -439,13 +441,14 @@
 	       // ✅ 검사완료 가기 전에 자동검사 먼저
 	       const autoSuccess = await autoInspect(row, rowKey);
 	       
+	       
 	       if (!autoSuccess) {
 	         Swal.fire('자동 검사 실패', '자동 검사에 실패했습니다.', 'error');
 	         return;
 	       }
 
 	       // ✅ 자동검사 성공했으면 상태 변경
-	       updateStatus(iqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.');
+	       updateStatus(iqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', receiptCode);
 	     });
 
 	   } else if (status === '검사완료') {
@@ -535,11 +538,11 @@
 	 }
 
 	 // 상태 변경 서버 요청
-	 function updateStatus(iqcCode, newStatus, successMsg) {
+	 function updateStatus(iqcCode, newStatus, successMsg, receiptCode) {
 	   fetch('/iqc/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ iqcCode, status: newStatus })
+	     body: JSON.stringify({ iqcCode, status: newStatus, receiptCode })
 	   })
 	     .then(res => res.json())
 	     .then(data => {
