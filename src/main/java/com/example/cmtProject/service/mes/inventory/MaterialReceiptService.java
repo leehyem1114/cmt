@@ -429,6 +429,7 @@ public class MaterialReceiptService {
             updateMap.put("updatedDate", todayStr);
             
             int result = mRmapper.updateReceiptStatusAndDate(updateMap);
+            iqcService.insertIqcInspection(updateMap);
             
             if (result > 0) {
                 // 이력 기록
