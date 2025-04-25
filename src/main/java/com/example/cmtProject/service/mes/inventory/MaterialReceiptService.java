@@ -38,6 +38,9 @@ public class MaterialReceiptService {
 	@Autowired
 	private MaterialReceiptStockMapper mRsmapper;
 	
+	@Autowired
+	private IqcService iqcService;
+	
 	/**
 	 * 입고 목록 조회
 	 * 
@@ -176,6 +179,7 @@ public class MaterialReceiptService {
 	        resultMap.put("historyList", historyList != null ? historyList : new ArrayList<>());
 	        
 	        // 검수 정보 조회 (있는 경우)
+
 //	        Map<String, Object> inspectionData = mRmapper.getInspectionInfo(receiptNo);
 //	        resultMap.put("hasInspection", inspectionData != null);
 //	        if (inspectionData != null) {

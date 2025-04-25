@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class IqcDTO {
 	
+	public IqcDTO(Double iqcMeasuredWeightValue, Double iqcMeasuredLengthValue, String iqcInspectionResult) {
+	    this.iqcMeasuredWeightValue = iqcMeasuredWeightValue;
+	    this.iqcMeasuredLengthValue = iqcMeasuredLengthValue;
+	    this.iqcInspectionResult = iqcInspectionResult;
+	}
 	private Long iqcNo;                 // 입고 검사 NO
     private String iqcCode;             // 입고 검사 코드
     private String empId;               // 사용자 ID
