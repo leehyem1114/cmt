@@ -240,7 +240,7 @@ const MaterialReceiptManager = (function() {
                             } else if (status === RECEIPT_STATUS.COMPLETED) {
                                 badgeClass = 'badge-completed';
                             } else if(status === RECEIPT_STATUS.INSPECT_PASSED){
-								badgeClass = 'badge-completed'
+								badgeClass = 'badge-inspectPass'
 							}else if(status === RECEIPT_STATUS.INSPECT_FAILED){
 								badgeClass = 'badge-canceled';
 							} else if (status === RECEIPT_STATUS.CANCELED) {
@@ -388,9 +388,13 @@ const MaterialReceiptManager = (function() {
             badgeClass = 'badge-inspecting';
         } else if (status === RECEIPT_STATUS.COMPLETED) {
             badgeClass = 'badge-completed';
-        } else if (status === RECEIPT_STATUS.CANCELED) {
+        } else if (status === RECEIPT_STATUS.INSPECT_PASSED){
+            badgeClass = 'badge-inspectPass';
+		} else if (status === RECEIPT_STATUS.INSPECT_FAILED){
             badgeClass = 'badge-canceled';
-        }
+		} else if (status === RECEIPT_STATUS.CANCELED) {
+            badgeClass = 'badge-canceled';
+		}
         
         document.getElementById('receiptStatus').innerHTML = `<span class="badge ${badgeClass}">${status}</span>`;
         document.getElementById('poCode').textContent = detailData.PO_CODE || '';
