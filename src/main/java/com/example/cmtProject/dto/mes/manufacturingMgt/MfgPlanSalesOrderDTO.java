@@ -14,7 +14,7 @@ public class MfgPlanSalesOrderDTO { // 생산 계획 등록 시 수주 목록 DT
 	private String soCode; // 수주코드
 	private String pdtCode; // 제품코드
 	private String pdtName; // 제품명
-	private String soQty; // 주문량
+	private Long soQty; // 주문량
 	private String qtyUnitName; // 주문단위명
 	private Long leadTime;  // 소요시간
 	private String cltName; // 거래처명
