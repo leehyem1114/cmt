@@ -35,7 +35,7 @@
 	        </div>
 	        <div class="col-md-4">
 	            <div class="input-group">
-	                <input type="text" class="form-control" placeholder="상품명을 입력해주세요.">
+	                <input type="text" class="form-control" placeholder="제품명을 입력해주세요.">
 	                <button class="btn btn-outline-secondary" type="button">
 	                    <i class="bi bi-search"></i>
 	                </button>
@@ -46,18 +46,17 @@
 		<div class="text-end filediv">
             <input type="file" id="fileUpload" hidden>
             <input type="file" class="form-control" id="fileInput" accept=".xlsx" style="width: 400px;">
-            <button class="btn btn-upload" style="margin-right: 10px;margin-left: 10px;" id="pdtExcelUpBtn">상품 엑셀 파일 업로드</button>
-            <button class="btn btn-download" id="pdtExcelDownBtn">상품 엑셀 다운로드</button>
+            <button class="btn btn-upload" style="margin-right: 10px;margin-left: 10px;" id="pdtExcelUpBtn">제품 엑셀 파일 업로드</button>
+            <button class="btn btn-download" id="pdtExcelDownBtn">제품 엑셀 다운로드</button>
 			<div class="text-end mb-2">
-		        <!--<button class="btn btn-outline-primary" style="margin-left: 400px;">상품등록</button>-->
-				<button type="button" class="btn btn-outline-primary" style="margin-left: 400px;" id="registerPdt"> <!-- data-bs-toggle="modal" data-bs-target="#empModal">-->
-				    상품 등록
+				<button type="button" class="btn btn-outline-primary" style="margin-left: 400px;"  data-bs-toggle="modal" data-bs-target="#pdtModal">
+				    제품 등록
 				</button>
 		    </div>
         </div>
 					
 		<!-- grid 사용, window.pdtGrid로 접근하기위해 이름을 ptdGrid로 설정  -->
-	    <h6 class="section-title">상품</h6>
+	    <h6 class="section-title">제품</h6>
 		<div id="pdtGrid"></div>
 
 		<!-- grid 사용 -->
@@ -71,35 +70,81 @@
 	</div><!-- <div class="container mt-5"> -->
 
 	<!--  모달 창 시작 -->
-	<div class="modal fade" id="empModal" tabindex="-1" aria-labelledby="empModalLabel" aria-hidden="true">
+	<div class="modal fade" id="pdtModal" tabindex="-1" aria-labelledby="pdtModalLabel" aria-hidden="true">
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">
 	            <div class="modal-header">
-	                <h5 class="modal-title" id="empModalLabel">상품 등록</h5>
-	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	                <h5 class="modal-title" id="pdtModalLabel">제품 등록</h5>
 	            </div>
-	            <form action="empRegi" method="post">
+	            <form method="post" th:action="@{/bom/pdtRegister}" th:object="${ProductsDTO}">
 	                <div class="modal-body">
-						<label for="empName">상품명</label>
+						
 	                    <div class="form-group">
-	                        <input type="text" id="empName" class="form-control" name="" placeholder="이름 입력" required>
+		                    <label for="empName">제품 코드</label>
+	                        <input type="text" id="pdtCodeTxt" class="form-control" th:field="*{pdtCode}" placeholder="제품 코드" required>
 	                    </div>
-						<label for="deptName">단위</label>
+	                    
+	                    <div class="form-group">
+		                    <label for="empName">제품명</label>
+	                        <input type="text" id="pdtNameTxt" class="form-control" th:field="*{pdtName}" placeholder="제품명" required>
+	                    </div>
+	                    
+	                    <div class="form-group">
+		                    <label for="empName">제품 가격</label>
+	                        <input type="text" id="pdtPriceTxt" class="form-control" th:field="*{pdtShippingPrice}" placeholder="제품 가격" required>
+	                    </div>
+	                    
+	                    <div class="form-group" required>
+	                    	<label for="pdtTypeSel">제품 유형</label>
+	                       	<select id="pdtTypeSel" class="form-select" th:field="*{pdtType}">
+							<option th:each="pdtType : ${productTypeList}"
+									th:value="${pdtType.pdtTypeCode}"
+									th:text="${pdtType.pdtTypeName}">적용</option>
+				            </select>
+	                    </div>
+                    	 
 						<div class="form-group" >
-                       	<select id="empLevel" class="form-select">
-							<option>단위 선택</option>
-	                    	
-                       	</select>
-                    </div>
-                    <label for="deptName">상품 유형</label>
-                    <div class="form-group" required>
-                       <select id="deptName" name="" class="form-select">
-						<option>상품유형</option>
-						<option value="완제품">완제품</option>
-						<option value="반제품">반제품</option>
-						<option value="원자재">원자재</option>
-                       </select>
-                    </div>
+							<label for="mtlType">자재 타입</label>
+	                       	<select id="mtlType" class="form-select" th:field="*{mtlTypeCode}">
+				                <option th:each="mtlType : ${materialTypeList}"
+									th:value="${mtlType.mtlTypeCode}"
+									th:text="${mtlType.mtlTypeName}">적용</option>
+				            </select>
+                    	</div>    
+                    	
+                    	<div class="form-group">
+		                    <label for="weightTxt">무게</label>
+	                        <input type="text" id="weightTxt" class="form-control" th:field="*{pdtWeight}" placeholder="무게" required>
+	                    </div>
+                    
+                    	<div class="form-group" >
+							<label for="wtUnitSel">무게 단위</label>
+	                       	<select id="wtUnitSel" class="form-select" th:field="*{wtTypeCode}">
+				                <option th:each="wtUnit : ${weightUnitList}"
+									th:value="${wtUnit.wtTypeCode}"
+									th:text="${wtUnit.wtTypeSymbol}">적용</option>
+				            </select>
+                    	</div>  
+                    	 
+                    	 <div class="form-group">
+		                    <label for="lengthTxt">길이</label>
+	                        <input type="text" id="lengthTxt" class="form-control" th:field="*{pdtSize}" placeholder="길이" required>
+	                    </div>
+                   		 
+	                    <div class="form-group" >
+							<label for="lenUnitSel">길이 단위</label>
+	                       	<select id="lenUnitSel" class="form-select" th:field="*{ltTypeCode}">
+				                <option th:each="lenUnit : ${lengthUnitList}"
+									th:value="${lenUnit.ltTypeCode}"
+									th:text="${lenUnit.ltTypeSymbol}">적용</option>
+				            </select>
+                    	</div> 
+	                    
+	                    <div class="form-group">
+		                    <label for="commentTxt">비고</label>
+	                        <input type="text" th:field="*{pdtComments}" class="form-control" placeholder="비고">
+	                    </div>
+	                    
 	                </div>
 	                <div class="modal-footer">
 	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
@@ -113,24 +158,28 @@
 		
 	<script th:inline="javascript">
 		
-	//================================== 그리드 상단 상품 부분 ================================= 
+	//================================== 그리드 상단 제품 부분 ================================= 
 	let gridData = /*[[${productList}]]*/ [];
-	console.log(gridData)
 	let materialTypeList = /*[[${materialTypeList}]]*/ [];
 	let lengthUnitList = /*[[${lengthUnitList}]]*/ [];
 	let weightUnitList = /*[[${weightUnitList}]]*/ [];
 	let productTypeList = /*[[${productTypeList}]]*/ []
 	
+	console.log(materialTypeList);
+	console.log(lengthUnitList);
+	console.log(weightUnitList);
+	console.log(productTypeList);
+	
 	let materialTypeSelected = materialTypeList.map(item => ({text: item.mtlTypeName, label: item.mtlTypeName, value: item.mtlTypeCode}));
 	let lengthUnitSelected = lengthUnitList.map(item => ({text: item.ltTypeSymbol, label: item.ltTypeSymbol, value: item.ltTypeCode}));
 	let weightUnitSelected = weightUnitList.map(item => ({text: item.wtTypeSymbol, label: item.wtTypeSymbol, value: item.wtTypeCode}));
 	let productTypeSelected = productTypeList.map(item => ({text: item.pdtTypeName, label: item.pdtTypeName, value: item.pdtTypeCode}));
-	
+	/*
 	console.log(materialTypeList);
 	console.log(lengthUnitList);
 	console.log(weightUnitSelected);
 	console.log(productTypeSelected);
-	
+	*/
 	let grid = new tui.Grid({
         el: document.getElementById('pdtGrid'), 
 		//data : /*[[${productList}]]*/ [],
@@ -147,7 +196,7 @@
 		 },
         columns: [
 			{
-				header: '상품번호',
+				header: '제품번호',
 				name: 'pdtNo',
 				width: 100,
 				sortable: true, 
@@ -155,15 +204,35 @@
 				align: "center" 
             },
            {
-                header: '상품코드',
+                header: '제품코드',
                 name: 'pdtCode',
 				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
-			{  
-	            header: '상품 타입',
+			
+			{
+                header: '제품명',
+                name: 'pdtName',
+				width: 200,
+				fontSize: '40',
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+            {
+				header: '제품가격',
+                name: 'pdtShippingPrice',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: "text"
+            },
+            {  
+	            header: '제품유형',
 	            name: 'pdtTypeName', 
 				width: 100,
 				sortable: true, 
@@ -181,26 +250,7 @@
 			    }
 			},
 			{
-                header: '상품 이름',
-                name: 'pdtName',
-				width: 200,
-				fontSize: '40',
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            },
-            {
-				header: '상품 가격',
-                name: 'pdtShippingPrice',
-				width: 100,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            },
-			{
-				header: '자재 타입',
+				header: '자재타입',
                	name: 'mtlTypeCode', 
 				width: 200,
 				sortable: true, 
@@ -227,7 +277,7 @@
 				editor: "text"
 			},
 			{
-				header: '무게 단위',
+				header: '단위',
                	name: 'wtTypeCode',
 				width: 80,
 				sortable: true, 
@@ -254,7 +304,7 @@
 				editor: "text"
 			},
 			{
-				header: '길이 단위',
+				header: '단위',
                	name: 'ltTypeCode',
 				width: 80,
 				sortable: true, 
@@ -297,14 +347,14 @@
 		selectedEv = ev;
 		grid.addRowClassName(selectedEv.rowKey, 'selecedRowClass');
 		
-		//클릭해서 하단 BOM에 선택된 상품 정보 출력
+		//클릭해서 하단 BOM에 선택된 제품 정보 출력
 		let evValue = ev;
 
 		let rk = evValue.rowKey;
 		let rowData = grid.getRow(rk);
 		let pdtCode = rowData.pdtCode;
 		console.log(pdtCode)
-		//상품 그리드에서 선택된 제품에 해당하는 BOM 데이터 불러오기
+		//제품 그리드에서 선택된 제품에 해당하는 BOM 데이터 불러오기
 		$.ajax({
 		url: '/bom/bom-selected', 
         type: 'GET',
@@ -324,6 +374,8 @@
 	        bomGrid.setColumns(bomData.COLUMNS);
 			bomGrid.resetData(bomData.DATA); */
 			 
+			console.log(bomData);
+			
 			bomGrid.resetData(bomData);
         },
         error: function (err) {
@@ -384,25 +436,25 @@
 		 },
         columns: [
 			{
-				header: 'BOM 고유 번호',
+				header: 'BOM 번호',
 				name: 'BOM_NO',
 				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
-           {
-                header: '부모 코드',
-                name: 'PARENT_PDT_CODE',
-				width: 200,
+            {
+                header: '상위 코드',
+                name: 'CHILD_ITEM_CODE',
+				width: 220,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
-			{
-                header: '자식 코드',
-                name: 'CHILD_ITEM_CODE',
-				width: 200,
+           {
+                header: '하위 코드',
+                name: 'PARENT_PDT_CODE',
+				width: 220,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
@@ -410,7 +462,7 @@
 			{
                 header: '코드 유형',
                 name: 'ITEM_TYPE',
-				width: 200,
+				width: 220,
 				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
@@ -419,7 +471,7 @@
 			{
                 header: '투입수량',
                 name: 'BOM_QTY',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center",
@@ -428,7 +480,7 @@
             {
 				header: '투입단위',
                 name: 'BOM_UNIT',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -437,7 +489,7 @@
 			{
                 header: '투입공정 단계',
                 name: 'BOM_PRC_TYPE',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -602,10 +654,10 @@
 	
 	$(document).ready(function(){
 		
-		//삭제 버튼 클릭시 상품과 BOM에서 삭제가 됨
+		//삭제 버튼 클릭시 제품과 BOM에서 삭제가 됨
 		$('#deleteBtn').on('click', function(){
 			
-			//상품 그리드 선택
+			//제품 그리드 선택
 			var gridChecked = grid.getCheckedRows();
 			var gridArray = gridChecked.map(row => row.pdtNo)
 			console.log(gridArray)
@@ -625,7 +677,7 @@
 			
 			if(gridArray.length > 0){
 				Swal.fire({
-					title: '선택된 상품을 삭제 하시겠습니까?',
+					title: '선택된 제품을 삭제 하시겠습니까?',
 				   	text: '이 작업은 되돌릴 수 없습니다!',
 				  	icon: 'warning',
 				  	showCancelButton: true,
@@ -695,7 +747,7 @@
 			}
 		})//$('#deleteBtn').on('click', function(){
 		
-		//상품 등록
+		//제품 등록
 		$('#registerPdt').on('click', function(){
 			grid.prependRow({
 			  pdtNo: 'P002',

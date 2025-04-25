@@ -104,7 +104,6 @@ public class saleController {
  		salesOrderModels.commonSalesOrderModels(model);
 
 		return "erp/salesMgt/salesOrderForm";
- 		//return "erp/salesMgt/aaa";
 	}
 	
 	//상품코드에 해당하는 상품명 가져오기
