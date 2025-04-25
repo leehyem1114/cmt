@@ -38,7 +38,12 @@
 	    display: inline-block;
 	  }
 	  
+
+	  .item{ display: flex; margin: 10px;  margin-left: 10px; pointer-events: none;}
+	  
+
 	  .form-item {color:#333; font-weight:600; margin-left : 10px;}
+
 	</style>
 </head>
 <body>
@@ -112,7 +117,11 @@
                         <div class="card-body">
                             <form class="form"  action="/production/lotTracking" id="lotDetailForm" style="display:none">
                         		<i class="fa-solid fa-gear"></i>  LOT No. <span id="lotNo"></span><br>
-                        		<i class="fa-regular fa-folder-open"></i> LOT CODE<h4 class="card-title" id="lotCode" style="margin:10px;"></h4>
+                        		<i class="fa-regular fa-folder-open"></i> LOT CODE<br>
+                        		<div class="item">
+	                        		<h4 class="card-title" id="lotCode" style="margin:10px;"></h4>
+	                        		<button class="btn btn-outline-success" id="woStatusName" ></button> <br>
+                        		</div>
                                 <div class="row">
                                     <div class="col-md-6 col-12">
                                         <div class="form-group">
@@ -191,6 +200,20 @@
 					        { header: '품목', name: 'PDT_NAME' ,align: 'center'},
 					        { header: '수량', name: 'woQty' ,align: 'center'},
 					        { header: '공정', name: 'PRC_TYPE_NAME' ,align: 'center'},
+					        {
+				        	  header: '작업 상태',
+				        	  name: 'WO_STATUS_NAME',
+				        	  align: 'center',
+				        	  formatter: function({ value }) {
+				        		    let btnClass = 'btn-secondary';
+
+				        		    if (value === '공정 작업대기') btnClass = 'btn-outline-warning';
+				        		    else if (value === '진행중') btnClass = 'btn-outline-primary';
+				        		    else if (value === '완료') btnClass = 'btn-outline-success';
+
+				        		    return `<button class="btn btn-sm ${btnClass}">${value}</button>`;
+				        	  }
+				        	},
 					        { header: '작업 시작일', name: 'START_TIME',sortable: true,align: 'center' },
 					        { header: '작업 종료일', name: 'FINISH_TIME' ,align: 'center'},
 					        { header: '작업담당자', name: 'EMP_NAME' ,align: 'center'}
@@ -200,6 +223,12 @@
 	            </div><!-- 공정이력 -->
 	            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
 	                <p class="mt-2">품질이력 조회해서 그리드 넣기</p>
+	                
+	                <button class="btn btn-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> 불합격</button>
+	                <button class="btn btn-success rounded-pill"><i class="fa-regular fa-circle-check"></i> 합격</button>
+	                
+	                
+	                
 	            </div>
 	        </div><!-- /tab-content -->
 	    </div><!-- /card-body -->
@@ -298,11 +327,24 @@
 			    method: 'GET',
 			    data: { lotNo: selectedLotNo },
 			    success: function (response) {
+			    	console.log('디테일???',response);
+			    	
 			      $('#lotNotice').hide();
 			      $('#lotDetailForm').show();
 
 			      $('#lotCode').text(response.CHILD_LOT_CODE);
 			      $('#lotNo').text(response.LOT_NO);
+
+			      $('#pdtName').val(response.PDT_NAME);
+			      $('#prcType').val(response.PRC_TYPE_NAME);
+			      $('#startTime').val(response.START_TIME);
+			      $('#finishTime').val(response.FINISH_TIME);
+			      $('#woCode').val(response.WO_CODE);
+			      $('#empName').val(response.EMP_NAME);
+			      $('#workOrderStatus').val(response.WORK_ORDER_STATUS);
+			      $('#woStatusCode').val(response.WO_STATUS_CODE);
+			      $('#woStatusName').text(response.WO_STATUS_NAME);
+
 			      $('#pdtName').text(response.PDT_NAME);
 			      $('#prcType').text(response.PRC_TYPE_NAME);
 			      $('#startTime').text(response.START_TIME);
@@ -310,6 +352,7 @@
 			      $('#woCode').text(response.WO_CODE);
 			      $('#empName').text(response.EMP_NAME);
 			      $('#workOrderStatus').text(response.WORK_ORDER_STATUS);
+
 			    },
 			    error: function (error) {
 			      alert('서버 오류: ' + error.responseText);

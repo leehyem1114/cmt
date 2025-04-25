@@ -63,8 +63,14 @@ public class WorkOrderService {
 		return orderMapper.selectAllLotTree();
 	}
 	public List<LotDTO> getLotProcessHistoryList(String childLotCode) {
-		System.out.println("넘어온 lotCode"+childLotCode);
+		System.out.println("넘어온 lotCode : "+childLotCode);
 		return orderMapper.selectLotProcessListByLotNo(childLotCode);
+	}
+	
+	//그래프
+
+	public List<WorkOrderDTO> getCompleteStatsLast7Days() {
+	    return orderMapper.selectCompleteStatsLast7Days();
 	}
 	
 }
