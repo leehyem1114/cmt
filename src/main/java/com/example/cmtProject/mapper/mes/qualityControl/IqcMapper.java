@@ -38,7 +38,7 @@ public interface IqcMapper {
 		    				  @Param("lengthValue") Double lengthValue,
 		    				  @Param("result") String result);
 
-
+//	void updateMeasuredValues(Map<String, Object> param);
 
 
 

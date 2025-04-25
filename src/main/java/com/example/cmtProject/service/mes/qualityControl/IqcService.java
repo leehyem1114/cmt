@@ -3,6 +3,7 @@ package com.example.cmtProject.service.mes.qualityControl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -106,26 +107,36 @@ public class IqcService {
 	    if (qcm.getQcmUnitWeight() != null) {
 	        weightValue = generateRandom(min, max);
 	        result = isPass(weightValue, min, max) ? "합격" : "불합격";
+	        lengthValue = 0.0;
 	    }
 
 	    // 길이 검사일 경우
 	    if (qcm.getQcmUnitLength() != null) {
 	        lengthValue = generateRandom(min, max);
 	        result = isPass(lengthValue, min, max) ? "합격" : "불합격";
+	        weightValue = 0.0;
 	    }
 
+
+//	    Map<String, Object> map = new HashMap<String, Object>();
+//	    map.put("iqcCode", iqcCode);
+//	    map.put("weightValue", weightValue);
+//	    map.put("lengthValue", lengthValue);
+//	    map.put("result", result);
+	    
 	    // 저장
-	    System.out.println(iqcCode + weightValue + lengthValue + result);
 	    iqcMapper.updateMeasuredValues(iqcCode, weightValue, lengthValue, result);
+//	    iqcMapper.updateMeasuredValues(map);
 
 	    return new IqcDTO(weightValue, lengthValue, result);
 	}
 
 	// 랜덤값 생성 (소수점 1자리)
 	private double generateRandom(double min, double max) {
-	    double extendedMin = min - 1;
-	    double extendedMax = max + 1;
-	    return Math.round((Math.random() * (extendedMax - extendedMin) + extendedMin) * 10.0) / 10.0;
+	    double extendedMin = min - 0.1;
+	    double extendedMax = max + 0.1;
+	    double raw = Math.random() * (extendedMax - extendedMin) + extendedMin;
+	    return Math.round(raw * 100.0) / 100.0; // ✅ 2자리 반올림
 	}
 
 	// 합격 여부 판정

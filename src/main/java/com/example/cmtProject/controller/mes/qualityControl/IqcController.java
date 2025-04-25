@@ -23,12 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
-import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
-import com.example.cmtProject.entity.mes.qualityControl.Iqc;
-import com.example.cmtProject.mapper.mes.qualityControl.QcmMapper;
-import com.example.cmtProject.repository.mes.qualityControl.IqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
 import com.example.cmtProject.service.mes.qualityControl.QcmService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -131,7 +127,6 @@ public class IqcController {
     public ResponseEntity<?> autoInspect(@RequestBody Map<String, String> request) {
         String iqcCode = request.get("iqcCode");
         try {
-        	System.out.println("@@@@@@@@@@@@@" + iqcCode);
             IqcDTO result = iqcService.autoInspect(iqcCode);
             return ResponseEntity.ok(result);
         } catch (Exception e) {

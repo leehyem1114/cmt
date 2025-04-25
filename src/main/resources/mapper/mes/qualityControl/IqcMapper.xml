@@ -157,19 +157,21 @@
 		WHERE IQC_CODE = #{iqcCode}
 	</update>
 	
-	<select id="selectQcmInfoByIqcCode" resultType="com.example.cmtProject.dto.mes.qualityControl.IqcDTO">
+	<select id="selectQcmInfoByIqcCode" parameterType="string" resultType="com.example.cmtProject.dto.mes.qualityControl.QcmDTO">
 	    SELECT 
-	        Q.QCM_MIN_VALUE
-	        Q.QCM_MAX_VALUE
+	        Q.QCM_MIN_VALUE,
+	        Q.QCM_MAX_VALUE,
+	        Q.QCM_UNIT_WEIGHT,
+      		Q.QCM_UNIT_LENGTH
 	    FROM IQC I
-	    JOIN QCM Q ON I.QCM_CODE = Q.QCM_CODE
+	    JOIN QCM Q ON I.QCM_NAME = Q.QCM_NAME
 	    WHERE I.IQC_CODE = #{iqcCode}
 	</select>
 	
-	<update id="updateMeasuredValues">
+	<update id="updateMeasuredValues" parameterType="map">
 	    UPDATE IQC
 	    SET
-	        IQC_MEASURED_WEIGHT_VALUE = #{weightValue},
+	    	IQC_MEASURED_WEIGHT_VALUE = #{weightValue},
 	        IQC_MEASURED_LENGTH_VALUE = #{lengthValue},
 	        IQC_INSPECTION_RESULT = #{result}
 	    WHERE IQC_CODE = #{iqcCode}
