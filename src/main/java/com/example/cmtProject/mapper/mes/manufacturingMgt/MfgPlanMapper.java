@@ -44,6 +44,9 @@ public interface MfgPlanMapper {
 	// 엑셀 데이터 저장
 	void saveExcelData(MfgPlanDTO dto);
 
+	void insertMfgPlan(MfgPlanDTO dto);
+
+
 	
 
 

@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.controller.erp.saleMgt.commonModel.SalesOrderModels;
-import com.example.cmtProject.dto.erp.saleMgt.SalesOrderDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderEditDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderMainDTO;
 import com.example.cmtProject.dto.erp.saleMgt.SalesOrderSearchDTO;
@@ -36,10 +34,10 @@ import com.example.cmtProject.repository.erp.saleMgt.SalesOrderStatusRepository;
 import com.example.cmtProject.repository.mes.standardInfoMgt.ProductsRepository;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -178,7 +176,6 @@ public class saleController {
 		return soCode;
 	}
 	
-	//수주 등록 실행
 	@Transactional
 	@PostMapping("/soregister")
 	public String soRegister(@ModelAttribute SalesOrder salesOrder) {

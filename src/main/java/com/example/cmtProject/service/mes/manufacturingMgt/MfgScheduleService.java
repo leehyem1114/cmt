@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO;
+import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
 import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgScheduleMapper;
 
 import jakarta.transaction.Transactional;
@@ -30,7 +31,9 @@ public class MfgScheduleService {
 	// 제조 계획 등록
 	public void registMsPlan(List<MfgScheduleDTO> msList) {
 		mfgScheduleMapper.registMsPlan(msList);
-	}
+		// 제조 계획 등록 시
+		// update 실행
+	} 
 
 	// 제조 계획 상세 조회
 	public List<MfgScheduleDetailDTO> getMsdDetailList(String msCode) {
@@ -41,6 +44,11 @@ public class MfgScheduleService {
 	@Transactional
 	public void saveExcelData(MfgScheduleDTO dto) {
 		mfgScheduleMapper.saveExcelData(dto);
+	}
+
+	// 제조 계획 등록 시 생산 계획 내역 조회
+	public List<MfgSchedulePlanDTO> getMpList() {
+		return mfgScheduleMapper.getMpList();
 	}
 
 

@@ -1,6 +1,5 @@
 package com.example.cmtProject.service.mes.manufacturingMgt;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -109,6 +108,12 @@ public class MfgPlanService {
 	@Transactional
 	public void saveExcelData(MfgPlanDTO dto) {
 		mfgPlanMapper.saveExcelData(dto);
+	}
+
+	// 다건 저장
+	public void registMpPlanBatch(MfgPlanDTO dto) {
+		mfgPlanMapper.insertMfgPlan(dto);
+		
 	}
 
 
