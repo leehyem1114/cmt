@@ -18,7 +18,7 @@ import lombok.ToString;
 @Table(name = "PRODUCTS")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder  
+@Builder 
 public class Products {
 	
 	@Id
@@ -59,5 +59,7 @@ public class Products {
     
     @Column(name = "PDT_TYPE")
     private String pdtType;
+        
 }
+
 

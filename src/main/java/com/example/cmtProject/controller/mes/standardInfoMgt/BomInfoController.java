@@ -189,7 +189,7 @@ public class BomInfoController {
 		
 		List<BomInfoTotalDTO> bomtotal = bomInfoService.getBomInfoTotalList(pdtCode);
 		
-		log.info("bomtotal"+bomtotal);
+		//log.info("bomtotal"+bomtotal);
 		
 		
 		List<Map<String, Object>> bomData = bomtotal.stream()
@@ -232,10 +232,10 @@ public class BomInfoController {
 	    String filePath = "/excel/" + fileName;
 
 	    // /static/ 디렉토리 기준으로 파일을 읽어옴
-	    log.info("filePath:"+filePath);
+	    //log.info("filePath:"+filePath);
 	    InputStream inputStream = new ClassPathResource(filePath).getInputStream();
 
-	    log.info("inputStream:"+inputStream);
+	    //log.info("inputStream:"+inputStream);
 	    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	    response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
@@ -249,7 +249,7 @@ public class BomInfoController {
 	@GetMapping("/pdteditexe")
 	public int pdteditexep(@ModelAttribute ProductsEditDTO pdtEditDto) throws JsonMappingException, JsonProcessingException {
 		
-		log.info(pdtEditDto.toString());
+		//log.info(pdtEditDto.toString());
 		
 		int resultEdit = productsService.pdtMainUpdate(pdtEditDto); 
 		
@@ -261,7 +261,7 @@ public class BomInfoController {
 	@GetMapping("/bomeditexe")
 	public int bomeditexep(@ModelAttribute BomEditDTO bomEditDto) throws JsonMappingException, JsonProcessingException {
 		
-		log.info(bomEditDto.toString());
+		//log.info(bomEditDto.toString());
 		
 		int resultEdit = bomInfoService.bomMainUpdate(bomEditDto); 
 		
@@ -269,17 +269,20 @@ public class BomInfoController {
 		return 1;
 	}
 	
-	//BOM페이지에서 상품 등록 pdtRegister
+	//BOM페이지에서 상품 등록 
 	@PostMapping("/pdtRegister")
 	public String pdtRegister(@ModelAttribute ProductsDTO productsDTO) {
 		
-		log.info(productsDTO.toString());
+		productsDTO.setPdtNo(null);
+		productsDTO.setPdtUseyn("Y");
+		ProductsDTO dto = productsDTO;
 		
-		/*
-		salesOrderRepository.save(salesOrder);
-		salesOrderRepository.flush();
-		*/
-		//return "erp/salesMgt/submitSuccess";
-		return "redirect:/somePage";
+		//DTO를 builder를 이용해서 entity로 변환
+		Products entity = dto.toEntity();
+		
+		productsRepository.save(entity);
+		log.info(entity.toString());
+		
+		return "redirect:bom-info";
 	}
 }

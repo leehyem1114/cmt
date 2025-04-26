@@ -537,6 +537,15 @@
 					 hidden: true //화면에는 안 보이지만 데이터에는 존재
 	            },
 				{
+					header: '작업 상태',
+					name: 'action',
+					width: 150,
+					align: "center",
+					formatter: function({row}) {
+						return `<button class="btn btn-sm btn-outline-danger action-btn" data-row-key="${row.rowKey}">작업 완료</button>`;
+					}
+			    },
+				{
 					header: 'LOT번호',
 					name: 'LOT_NO',
 					width: 100,
@@ -625,15 +634,7 @@
 					filter: 'text',
 					align: "center" 
 	            },
-				{
-					header: '작업 상태',
-					name: 'action',
-					width: 150,
-					align: "center",
-					formatter: function({row}) {
-						return `<button class="btn btn-sm btn-outline-danger action-btn" data-row-key="${row.rowKey}">작업 완료</button>`;
-					}
-			    },
+				
 				{
 	                header: '작업 지시서',
 	                name: 'WO_CODE',
@@ -655,16 +656,17 @@
 
 		gridElement.addEventListener('click', function(e) {
 			if (e.target && e.target.classList.contains('action-btn')) {
-			const rowKey = e.target.getAttribute('data-row-key');
+			const rowKey = e.target.getAttribute('data-row-key'); // 0부터 시작 상단:0
 			const rowData = prcGrid.getRow(rowKey);
-			
+			console.log("rowKey:" + rowKey);
 		    // rowData에서 필요한 값 추출
 			// LotOriginDTO에 있는 변수
 		    let lotNo = rowData.LOT_NO;
 			let bomQty = rowData.BOM_QTY;
 			let childPdtCode = rowData.CHILD_PDT_CODE
 			let parentPdtCode = rowData.PARENT_PDT_CODE;
-			let num = rowData.NUM; //1,2,3,... 1부터 시작
+			let num = rowData.NUM; //1,2,3,... 1부터 시작 상단:1
+			
 			console.log("num:" + num);
 			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
 			
@@ -701,16 +703,50 @@
 						
 						//e.target.disabled = true; // 버튼 비활성화, 그리드가 재랜더링 되기 때문에 바로 적용x
 						
-						//--------------- reset 이후 버튼 비활성화 ---------------
+						//--------------- reset 이후 버튼 비활성화 - 단일 ---------------
+						/*
 				        prcGrid.on('onGridUpdated', () => {
-				          // 새로 렌더링된 버튼에서 rowKey에 해당하는 버튼만 비활성화
-				       		const btn = document.querySelector(`button.action-btn[data-row-key="${rowKey}"]`);
-				          	if (btn) btn.disabled = true;
-				        });
+							alert("df")
+				          	// 새로 렌더링된 버튼에서 rowKey에 해당하는 버튼만 비활성화
+						  	requestAnimationFrame(() => {
+						          const gridBtn = document.querySelector(`button.action-btn[data-row-key="2"]`);
+						          console.log(gridBtn);
+							          if (gridBtn) {
+							            gridBtn.disabled = true;
+							          } else {
+							            console.warn('버튼을 찾지 못했습니다:', rowKey);
+							          }
+							});//requestAnimationFrame(() => {
+				        });//prcGrid.on('onGridUpdated', () => {
 						
 						prcGrid.resetData(response);
 						
-						//--------------- 트리 작업 목록 줄 긋기 ------------------
+						*/
+						//--------------- reset 이후 버튼 비활성화 - 배열 ---------------
+						
+						let rowKeyArr = [4, 3,2]; // 비활성화하고 싶은 rowKey 배열
+
+						prcGrid.on('onGridUpdated', () => {
+							
+						    rowKeyArr.forEach(rowKey => {
+								
+						        const btn = document.querySelector(`button.action-btn[data-row-key="${rowKey}"]`);
+						        if (btn) {
+						            btn.disabled = true;
+						        }
+						    });//rowKeyArr.forEach(rowKey => {
+						});//prcGrid.on('onGridUpdated', () => {
+						
+						
+						prcGrid.resetData(response);
+						
+						//------------------------------------------------------
+						
+						
+						
+						
+						//--------------- 트리 작업 목록 줄 긋기 - 단일 ------------------
+						/*
 						let input = parentPdtCode;
 						input = input.trim(); // 입력된 문자열 공백 제거
 						
@@ -735,13 +771,54 @@
 										li.removeChild(node);
 						    		}
 							  });//li.childNodes.forEach(node => {
-						});//liList.forEach(li => {
+						});//liList.forEach(li => {*/
 							
+
+						//--------------- 트리 작업 목록 줄 긋기 - 배열 ------------------
+						
+						let parentPdtCodeList = ['MTL-009', 'WIP004', 'MTL-005', 'WIP005', 'MTL-006'];
+						
+						let inputList = parentPdtCodeList.map(item => item.trim());  // 배열 모든 항목 공백 제거
+
+						let liList = document.querySelectorAll('#bom-tree li');
+
+						liList.forEach(li => {
+						  li.childNodes.forEach(node => {
+						    if (node.nodeType === Node.TEXT_NODE) {
+						      let nodeValue = node.nodeValue.replace(/\s/g, ''); // 기존 공백 제거
+
+						      inputList.forEach(input => {  // 🔥 배열을 반복해서 각각 체크
+						        if (nodeValue.includes(input)) {
+						          const before = node.nodeValue.split(input)[0];
+						          const after = node.nodeValue.split(input)[1];
+
+						          const span = document.createElement('span');
+						          span.style.textDecoration = 'line-through';
+						          span.textContent = input;
+
+						          const beforeText = document.createTextNode(before);
+						          const afterText = document.createTextNode(after);
+
+						          li.insertBefore(beforeText, node);
+						          li.insertBefore(span, node);
+						          li.insertBefore(afterText, node);
+						          li.removeChild(node);
+						        }
+						      });
+						    }
+						  });
+						});
+						
+						
 						//--------------- 완제품이 나오면 재고 update 버튼이 생성 ------------------
 						if(num === 1){
 							document.getElementById('finishJobBtn').style.display = 'inline-block';
 						}
 							
+						
+						
+						
+						
 					},//success: function(response) {
 					error: function(xhr, status, error) {
 				        Swal.fire({
