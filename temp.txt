@@ -1,137 +1,863 @@
-columns: [
-			{
-				header: '상품번호',
-				name: 'pdtNo',
-				width: 100,
-				sortable: true, 
-				filter: 'text',
-				align: "center" 
-            },
-           {
-                header: '상품코드',
-                name: 'pdtCode',
-				width: 100,
-				sortable: true, 
-				filter: 'text',
-				align: "center" 
-            },
-			{  
-	            header: '상품 타입',
-	            name: 'pdtTypeName', 
-				width: 100,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: {
-					type: 'select',
-					options: {
-						listItems: productTypeSelected 
-					}
-				},
-				formatter: ({ value }) => {
-			    	const pdtValue = productTypeSelected.find(item => item.value === value);
-			    	return pdtValue ? pdtValue.label : value; 
-			    }
-			},
-			{
-                header: '상품 이름',
-                name: 'pdtName',
-				width: 200,
-				fontSize: '40',
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            },
-            {
-				header: '상품 가격',
-                name: 'pdtShippingPrice',
-				width: 100,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            },
-			{
-				header: '자재 타입',
-               	name: 'mtlTypeCode', 
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: {
-					type: 'select',
-					options: {
-						listItems: materialTypeSelected 
-					}
-				},
-				formatter: ({ value }) => {
-			    	const matValue = materialTypeSelected.find(item => item.value === value);
-			    	return matValue ? matValue.label : value; 
-			    }
-			},
-			{
-				header: '무게',
-               	name: 'pdtWeight',
-				width: 80,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-			},
-			{
-				header: '무게 단위',
-               	name: 'wtTypeCode',
-				width: 80,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: {
-					type: 'select',
-					options: {
-						listItems: weightUnitSelected 
-					}
-				},
-				formatter: ({ value }) => {
-			    	const weiValue = weightUnitSelected.find(item => item.value === value);
-			    	return weiValue ? weiValue.label : value; 
-			    }
-			},
-			{
-				header: '길이',
-               	name: 'pdtSize',
-				width: 80,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-			},
-			{
-				header: '길이 단위',
-               	name: 'ltTypeCode',
-				width: 80,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: {
-					type: 'select',
-					options: {
-						listItems: lengthUnitSelected 
-					}
-				},
-				formatter: ({ value }) => {
-			    	const lenValue = lengthUnitSelected.find(item => item.value === value);
-			    	return lenValue ? lenValue.label : value; 
-			    }
-			},
+
+
+
+
+버튼 되지 않는
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	      layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+
+	<style>
+		.bom-tree li {
+		  margin-left: 20px;
+		  list-style-type: circle;
+		}
+
+		.timeline .step {
+		  margin: 10px 0;
+		  padding: 10px;
+		  border-left: 3px solid #007bff;
+		  padding-left: 15px;
+		}
+		
+	</style>
+</head>
+<body>
+	<div layout:fragment="content">
+
+	<!-- ------------------- 상단 작업 시지 현황 시작 ---------------------------- -->
+	<h3>공정 현황</h3>
+	<div class="container mt-5">
+	    <div class="row mb-4 d-flex justify-content-between">
+	        <div class="col-md-3">
+				<button class="form-control btn btn-primary btn-m" data-bs-toggle="modal" data-bs-target="#woModal">
+				<i class="fa-solid fa-magnifying-glass"></i>공정 작업 등록</button>
+				<br>
+				<br>
+				<div style="display: flex;width: 400px;">
+					<label for="woCodeTxt">현재 작업 코드  : &nbsp;</label>
+					<input type="text" id="woCodeTxt" value="" readonly="true">
+				</div>
+	        </div>
+			<div class="col-md-3">
+				<input type="month" class="form-control" placeholder="등록월">
+				<!--<button class="btn btn-outline-secondary" type="button">
+					<i class="bi bi-search"></i>
+				</button>-->
+	        </div>
 			
-			{
-	            header: '비고',
-	            name: 'pdtComments',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-	        },
-        ], // 열 설정
+	        <div class="col-md-3">
+	            <div class="input-group">
+					<select class="form-select form-select-sm" id="soCode">
+						<option value="">-- 공정을 선택하세요--</option>
+			            <option>PR(프레스)</option>
+						<option>WE(용접)</option>
+						<option>PA(도장)</option>
+						<option>AS(조립)</option>
+			        </select>
+	            </div>
+				<div class="input-group">
+					<select class="form-select form-select-sm" id="soCode">
+						<option value="">-- 라인을 선택하세요--</option>
+			            <option>1line</option>
+						<option>2line</option>
+						<option>3line</option>
+						<option>4line</option>
+			        </select>
+	            </div>	
+			</div>
+	    </div><!-- <div class="row mb-3"> -->
+	</div><!-- <div class="container mt-5"> -->
+	
+	<div id="woGrid"></div>
+
+	
+	<!-- ------------------- 하단 첫번째 시작 ---------------------------- -->
+	<br>
+	<div class="container-fluid">
+	  	<div class="row">
+			<!-- bom-tree -->
+			<!-- 왼쪽 그리드 -->
+		    <div class="col-md-4 border-end">
+				<ul id="bom-tree"></ul>
+		    </div>
+
+		    <!-- 오른쪽 그리드 -->
+		    <div class="col-md-8">
+				<li class="panel">제품 정보<div id="productGrid"></div></li>
+	    	</div>
+	 	</div>
+	</div>
+	
+	<!-- -------------------  하단 두번째 시작 ---------------------------- -->
+	
+	<div style="display: flex; justify-content: space-between;">
+		<button type="button" id="prcBoardBtn" class="btn btn-primary btn-m">작업 현황</button>
+		<button type="button" id="finishJobBtn" class="btn btn-secondary" style="display: none;">수량 데이터 전송</button>
+	</div>
+	<li class="panel"><div id="prcGrid"></div></li>
+	
+	<!--  모달 창 시작 -->
+	<div class="modal fade" id="woModal" tabindex="-1">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="woModalLabel">시작 작업 목록</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <form>
+	                <div class="modal-body">
+						
+						<!-- 셀렉트 박스 -->
+						<div class="form-group">
+							<label for="empName">진행 중인 계획코드</label>
+							<select class="form-select form-select-sm" id="woCodeSelected">
+								<option value="">--선택하세요--</option>
+							    <option th:each="code : ${workOrderSBList}"
+									th:value="${code.woCode}"
+									th:text="${code.woCode}"
+								></option>
+							</select>
+						</div>
+						
+						<!-- 품목 코드 -->
+						<div class="form-group" >
+							<label for="deptName">품목코드</label>
+							<input type="text" class="form-control" id="txtPdtCode" readonly="true">
+						</div>
+						
+						<!-- 품목 이름 -->
+						<div class="form-group" >
+							<label for="deptName">품목이름</label>
+							<input type="text" class="form-control" id="txtPdtName" readonly="true">
+						</div>
+												
+						<!-- 수량 -->
+						<div class="form-group" >
+							<label for="deptName">수량</label>
+							<input type="text" class="form-control" id="txtWoQty" readonly="true">
+						</div>
+						
+						<!-- 작업 담당자 -->
+						<div class="form-group" >
+							<label for="deptName">작업 담당자</label>
+							<input type="text" class="form-control" id="txtEmpName" readonly="true">
+						</div>
+						
+						<!-- 작업 시작일 -->
+						<div class="form-group" >
+							<label for="deptName">작업 시작일</label>
+							<input type="text" class="form-control" id="txtWoStartDate" readonly="true">
+						</div>
+                    </div>
+                    
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                    <button type="button" class="btn btn-primary" id="modalStartBtn">시작</button>
+	                </div>
+	            </form>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
+
+	<script th:inline="javascript">
+		let woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
+		let pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정 
+		let woGridData; //상단 그리드에 입력될 데이터를 전역으로 설정
+		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
+		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
+		let woQty; //컨트롤러에서 개수를 넘기기 위해서 전역으로 설정 후 셀렉트박스에서 값이 선택되면 저장하게 함
+		
+		
+		$(document).ready(function(){
+			
+			//======================================= 모달 안에 셀렉트 박스 이벤트 ================================================
+			$("#woCodeSelected").on('change', function(){
+				
+				woCode = $(this).val();
+				
+				$.ajax({
+					url: '/production/woCodeSelected',
+					type: 'GET',
+					data: {data: woCode},
+					success : function(response){
+						
+						pdtCode = response[0].PDT_CODE;
+						
+						$("#txtPdtCode").val(response[0].PDT_CODE);
+						$("#txtPdtName").val(response[0].PDT_NAME);
+						$("#txtWoQty").val(response[0].WO_QTY);
+						woQty = response[0].WO_QTY;
+						
+						$("#txtEmpName").val(response[0].EMP_NAME);
+						$("#txtWoStartDate").val(response[0].WO_START_DATE);
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+				});//$.ajax
+			});//$("#woCodeSelected").on('change', function(){
+				
+			//======================================= 모달 하단의 시작 버튼 ================================================	
+			$("#modalStartBtn").on('click', function(){
+					
+				//셀렉트 박스에 선택된 값이 없는 경우 return
+				if($("#woCodeSelected").val() === null || $("#woCodeSelected").val() === ""){
+					Swal.fire({
+					  icon: "warning",
+					  title: "선택된 계획 코드가 없습니다.",
+					});
+					
+					return;
+				}
+				
+				Swal.fire({
+					title: 'LOT번호가 부여되고 공정이 시작됩니다.',
+				   	text: "이 작업은 되돌릴 수 없습니다!",
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				  if (result.isConfirmed) {
+					
+					//셀렉트 박스가 선택되었다면 pdtCode에 값이 있을 수밖에 없다.
+					//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
+					//pdtCode로 BOM 재귀 호출
+									
+					$.ajax({
+						url: '/production/pdtCodeSelected',
+						type: 'GET',
+						data: {
+							'pdtCode' : pdtCode,
+							'woCode' : woCode,
+							'woQty' : woQty
+							},
+						success : function(response){
+							woGridData = response;
+							woGrid.resetData(response);
+							
+							//PARENT_PDT_CODE와 CHILD_ITEM_CODE로 배열 생성
+							bomList = response.map(item => ({
+					            parent: item.PARENT_PDT_CODE,
+					            child: item.CHILD_ITEM_CODE
+					        }));
+							
+							//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
+							//bomList는 전역으로 선언해서 makeTree에서 바로 사용
+							makeTree();
+						},
+						error : function(error){
+							console.log("error:" + error)
+						}
+					});//$.ajax
+					
+					$("#woCodeTxt").val(woCode);
+					
+					$('#woModal').modal('hide');
+						
+				  	}//if (result.isConfirmed) {
+				});//}).then((result) => {
+					
+			});//$("#modalStartBtn").on('click', function(){
+			
+			//======================================= 첫번째 하단 왼쪽에 트리 버튼 클릭 ================================================
+			
+			$("#bom-tree").on("click", ".btn", function() {
+			    
+				let selectedPdtCode = $(this).attr("pdtCodeTree");
+				
+				$.ajax({
+					url: '/production/pdtInfo',
+					type: 'POST',
+					data: {
+						'pdtCode' : selectedPdtCode
+						},
+					success : function(response){
+							productGrid.resetData(response);
+							
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+				});//$.ajax
+			
+			});//$("#treeName").on("click", function(){
+			
+			//======================================= 두번째 하단의 작업 현황 버튼 클릭 ================================================
+			$("#prcBoardBtn").on("click", function(){
+				
+				$.ajax({
+					url: '/production/prcBoard',
+					type: 'POST',
+					data: {
+						'pdtCode' : pdtCode,
+						'woCode' : woCode
+						},
+					success : function(response){
+							prcGrid.resetData(response);
+					},
+					error : function(error){
+						console.log("error:" + error)
+					}
+				});//$.ajax
+			});//$("#prcBoardBtn").on("click", function(){
+				
+			//======================================= 두번째 하단의 수량 데이터 전송 버튼 클릭 ================================================
+			
+				
+		});//$(document).ready(function(){
+			
+		//======================================= jQuery 끝 ===============================================	
+		
+		//======================================= 상단 그리드 ================================================
+		
+		let woGrid = new tui.Grid({
+	        el: document.getElementById('woGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        //rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: '레벨',
+					name: 'BOM_LEVEL',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '상위 코드',
+	                name: 'CHILD_ITEM_CODE',
+					width: 130,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '하위 코드',
+	                name: 'PARENT_PDT_CODE',
+					width: 130,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '코드 유형',
+	                name: 'ITEM_TYPE',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '공정 단계',
+	                name: 'BOM_PRC_TYPE',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '계획 수량',
+	                name: 'BOM_QTY',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center"
+	            },
+				{
+	                header: '생산 단위',
+	                name: 'BOM_UNIT',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center"
+	            },
+				{
+	                header: '생성 날짜',
+	                name: 'BOM_DATE',
+					width: 130,
+					sortable: true, 
+					filter: 'text',
+					align: "center"
+	            },
+				{
+	                header: '작업 경로',
+	                name: 'PATH',
+					width: 400,
+					sortable: true, 
+					filter: 'text',
+	            },
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+		
+		//======================================= 첫번째 하단 왼쪽 트리 ================================================
+	
+		function makeTree(){
+			const rootCode = pdtCode; //pdtCode 전역으로 선언
+			//마지막 부모 태그 생성, bomList 전역으로 선언
+			const treeHtml = `<li>${rootCode} <button class='btn btn-outline-primary btn-sm' id='prcname' pdtCodeTree='${rootCode}'>생산 제품</button>` +
+			                 buildBomTree(rootCode, bomList) +
+			                 '</li>';
+
+			$('#bom-tree').html(treeHtml);
+					
+		}
+		
+		function buildBomTree(root, bomList) {
+		    // root를 자식으로 포함하는 모든 부모 찾기
+		    const parents = bomList.filter(rel => rel.child === root).map(rel => rel.parent);
+		    if (parents.length === 0) return '';
+			
+		    // 자식에 해당하는 태그 생성
+		    let html = '<ul>';
+		    for (let parent of parents) {
+		        html += `<li>${parent}`;
+
+		        // parent가 'MTL'로 시작하지 않는 경우에만 버튼 생성
+		        if (!parent.startsWith("MTL")) {
+		            html += ` <button class='btn btn-outline-success btn-sm' id='prcname' pdtCodeTree='${parent}'>제품정보</button>`;
+		        }
+
+		        html += buildBomTree(parent, bomList); // 상위 parent를 계속 탐색
+		        html += '</li>';
+		    }
+		    html += '</ul>';
+		    return html;
+		}
+
+		//======================================= 첫번째 하단 오른쪽 그리드 ================================================
+
+		let productGrid = new tui.Grid({
+	        el: document.getElementById('productGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+				{
+					header: '제품 코드',
+					name: 'PDT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '제품 이름',
+	                name: 'PDT_NAME',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '제품 타입',
+	                name: 'PDT_TYPE_NAME',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '제품 무게',
+	                name: 'PDT_WEIGHT',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '단위',
+	                name: 'WT_TYPE_SYMBOL',
+					width: 110,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '소재',
+	                name: 'MTL_TYPE_SYMBOL',
+					width: 200,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            }
+			
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });
+	
+
+		//======================================= 두번째 하단 그리드 ================================================
+				
+		let prcGrid = new tui.Grid({
+	        el: document.getElementById('prcGrid'), 
+			//data : /*[[${productList}]]*/ [],
+			data: woGridData,
+	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			//selectionUnit: 'row', //행 단위선택
+			scrollX: true,
+	        scrollY: true,
+			//width: 1600,  // 전체 너비 지정
+			//bodyHeight: 250, // 세로 스크롤을 위한 높이 지정
+			pageOptions: {
+			   useClient: true,   // 클라이언트 사이드 페이징 사용
+			   perPage: 10        // 페이지당 행 수
+			 },
+	        columns: [
+	        	{
+					header: 'num',
+					name: 'NUM',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					 hidden: true //화면에는 안 보이지만 데이터에는 존재
+	            },
+				{
+					header: 'LOT번호',
+					name: 'LOT_NO',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+	           {
+	                header: '상위 공정',
+	                name: 'CHILD_LOT_CODE',
+					width: 170,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '하위 공정',
+	                name: 'PARENT_LOT_CODE',
+					width: 170,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '상위 제품',
+	                name: 'CHILD_PDT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '하위 제품',
+	                name: 'PARENT_PDT_CODE',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '생산 수량',
+	                name: 'BOM_QTY',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					editor: "text"
+	            },
+				{
+	                header: '수량 단위',
+	                name: 'BOM_UNIT',
+					width: 120,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '생성 일자',
+	                name: 'CREATE_DATE',
+					width: 120,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '작업 시작 시간',
+	                name: 'START_TIME',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '작업 종료 시간',
+	                name: 'FINISH_TIME',
+					width: 150,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+	                header: '전체 수량',
+	                name: 'WO_QTY',
+					width: 60,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
+					header: '작업 상태',
+					name: 'action',
+					width: 150,
+					align: "center",
+					formatter: function({row}) {
+						return `<button class="btn btn-sm btn-outline-danger action-btn" data-row-key="${row.rowKey}">작업 완료</button>`;
+					}
+			    },
+				{
+	                header: '작업 지시서',
+	                name: 'WO_CODE',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            }
+	        ], // 열 설정
+			autoEdit: true,
+			editingEvent: 'dblclick' 
+	    });//let prcGrid = new tui.Grid({
+		
+		//======================================= 두번째 하단 그리드 안에 버튼 클릭 이벤트 ================================================
+		
+		// 그리드 이벤트 : grid.reloadData(), grid.setValue(), grid.removeRow() 등 추가
+					
+		const gridElement = document.getElementById('prcGrid');
+
+		gridElement.addEventListener('click', function(e) {
+			if (e.target && e.target.classList.contains('action-btn')) {
+			const rowKey = e.target.getAttribute('data-row-key'); // 0부터 시작 상단:0
+			const rowData = prcGrid.getRow(rowKey);
+			console.log("rowKey:" + rowKey);
+		    // rowData에서 필요한 값 추출
+			// LotOriginDTO에 있는 변수
+		    let lotNo = rowData.LOT_NO;
+			let bomQty = rowData.BOM_QTY;
+			let childPdtCode = rowData.CHILD_PDT_CODE
+			let parentPdtCode = rowData.PARENT_PDT_CODE;
+			let num = rowData.NUM; //1,2,3,... 1부터 시작 상단:1
+			
+			console.log("num:" + num);
+			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
+			
+			// LotOriginDTO에 없기 때문에 따로 넘긴다
+			pdtCode; //셀렉트 박스에서 선택된 pdtCode 값을 전역으로 설정 - 완제품
+			
+			
+			
+			//-------------- Swal.fire 시작 ----------------------
+			Swal.fire({
+				title: `생상된 자재의 수량은 ${bomQty}개 입니다.`,
+			   	text: "작업을 완료 합니까?",
+			  	icon: 'warning',
+			  	showCancelButton: true,
+			  	confirmButtonText: '확인',
+			  	cancelButtonText: '취소'
+			}).then((result) => {
+			if (result.isConfirmed) {
+				
+			    $.ajax({
+			    	url: '/production/jobCmpl',
+					contentType: 'application/json',
+			      	type: 'POST',
+			      	data: JSON.stringify({ 
+						num: num,
+			      		lotNo: lotNo, 
+						bomQty: bomQty,
+						childPdtCode: childPdtCode,
+						parentPdtCode: parentPdtCode,
+						woCode: woCode,
+						pdtCode: pdtCode
+					}),  
+			      	success: function(response) {
+						
+						//e.target.disabled = true; // 버튼 비활성화, 그리드가 재랜더링 되기 때문에 바로 적용x
+						
+						//--------------- reset 이후 버튼 비활성화 ---------------
+						
+				        prcGrid.on('onGridUpdated', () => {
+							alert("df")
+				          // 새로 렌더링된 버튼에서 rowKey에 해당하는 버튼만 비활성화
+						  requestAnimationFrame(() => {
+						          const gridBtn = document.querySelector(`button.action-btn[data-row-key="2"]`);
+						          console.log(gridBtn);
+						          if (gridBtn) {
+						            gridBtn.disabled = true;
+						          } else {
+						            console.warn('버튼을 찾지 못했습니다:', rowKey);
+						          }
+						        });
+						  
+						  
+				        });
+						
+						//---------------------------------------------------
+						
+						
+						prcGrid.resetData(response);
+						
+						/*
+						let rowKeyArr = [4, 3,2]; // 비활성화하고 싶은 rowKey 배열
+
+						prcGrid.on('onGridUpdated', () => {
+							
+						    rowKeyArr.forEach(rowKey => {
+								
+								alert(rowKey)
+								
+						        const btn = document.querySelector(`button.action-btn[data-row-key="${rowKey}"]`);
+						        if (btn) {
+						            btn.disabled = true;
+						        }
+						    });
+						});
+						*/
+						//------------------------------------------------------
+						
+						
+						
+						
+						//--------------- 트리 작업 목록 줄 긋기 ------------------
+						/*
+						let input = parentPdtCode;
+						input = input.trim(); // 입력된 문자열 공백 제거
+						
+						let liList = document.querySelectorAll('#bom-tree li');
+						
+						liList.forEach(li => {
+							li.childNodes.forEach(node => {
+							//문자열 내 모든 공백 제거 (\s는 공백 문자 전체를 의미, g는 전체 대상)
+						    	if (node.nodeType === Node.TEXT_NODE &&node.nodeValue.replace(/\s/g, '').includes(input)) {
+										const before = node.nodeValue.split(input)[0];
+										const after = node.nodeValue.split(input)[1];
+										const span = document.createElement('span');
+										span.style.textDecoration = 'line-through';
+										span.textContent = input;
+										
+										const beforeText = document.createTextNode(before);
+										const afterText = document.createTextNode(after);
+										
+										li.insertBefore(beforeText, node);
+										li.insertBefore(span, node);
+										li.insertBefore(afterText, node);
+										li.removeChild(node);
+						    		}
+							  });//li.childNodes.forEach(node => {
+						});//liList.forEach(li => {*/
+							
+
+						//--------------- 트리 작업 목록 줄 긋기 ------------------
+						/*
+						let parentPdtCodeList = ['MTL-009', 'WIP004', 'MTL-005', 'WIP005', 'MTL-006'];
+						
+						let inputList = parentPdtCodeList.map(item => item.trim());  // 배열 모든 항목 공백 제거
+
+						let liList = document.querySelectorAll('#bom-tree li');
+
+						liList.forEach(li => {
+						  li.childNodes.forEach(node => {
+						    if (node.nodeType === Node.TEXT_NODE) {
+						      let nodeValue = node.nodeValue.replace(/\s/g, ''); // 기존 공백 제거
+
+						      inputList.forEach(input => {  // 🔥 배열을 반복해서 각각 체크
+						        if (nodeValue.includes(input)) {
+						          const before = node.nodeValue.split(input)[0];
+						          const after = node.nodeValue.split(input)[1];
+
+						          const span = document.createElement('span');
+						          span.style.textDecoration = 'line-through';
+						          span.textContent = input;
+
+						          const beforeText = document.createTextNode(before);
+						          const afterText = document.createTextNode(after);
+
+						          li.insertBefore(beforeText, node);
+						          li.insertBefore(span, node);
+						          li.insertBefore(afterText, node);
+						          li.removeChild(node);
+						        }
+						      });
+						    }
+						  });
+						});
+
+					
+						*/
+						//--------------- 완제품이 나오면 재고 update 버튼이 생성 ------------------
+						if(num === 1){
+							document.getElementById('finishJobBtn').style.display = 'inline-block';
+						}
+							
+						
+						
+						
+						
+					},//success: function(response) {
+					error: function(xhr, status, error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: '에러 발생',
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				        });
+			        console.error('에러:', error);
+			      }// error: function(xhr, status, error) {
+			    });//$.ajax({
+				
+			}//if (result.isConfirmed) {
+			});//}).then((result) => {
+				
+			}//if (e.target && e.target.classList.contains('action-btn')) {
+		});//gridElement.addEventListener('click', function(e) {
+
+	</script>
+	</div> <!-- /layout:fragment -->		
+	
+	<th:block layout:fragment="script">
+		<script type="text/javascript">		
+			
+		</script>
+	</th:block>
+</body>
+</html>
+
+
+

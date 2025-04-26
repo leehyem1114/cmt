@@ -36,6 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductionPrcController {
 	
 	/*
+	 * - 공정 상황 설명 -
+	 * 
 	 * 대기(SB) -> 공정 작업 대기(PS) -> 진행중(공정 작업 중)(RN) -> 완료(CP)
 	 * 
 		작업 등록을 클릭하면 모달창이 뜨고 작업 지시 등록을 누르면 SB
@@ -56,6 +58,24 @@ public class ProductionPrcController {
 		UPDATE LOT SET WO_STATUS_NO = 'PS' -- 넘어온 데이터 작업을 위해 PS로 변경
 	*/
 	
+	/*
+	 * - 권한과 공정에 따른 버튼 활성화/비활성화 -
+	 * 
+	 * 공정 작업 중 테이블 생성 -> 테이블에 데이터가 있으면 '공정 작업 등록' 버튼 막고, 해당 데이터를 불러오고 
+	 * 					->	없으면 '공정 작업 등록 버튼' 클릭 가능 
+	 * 
+	 * 데이터가 있는 경우 처리 
+	 * server:
+	 * 	- 상단 그리드 : 작업 코드에 해당하는 데이터 불러오기 
+	 * 	- 두번째 하단 그리드 : db에서 상태를 가져온다
+	 * 
+	 * client:
+	 * 	- parentPdtCodeList(첫번째 하단 왼쪽 트리 값들) : db에서 lot의 cp인 parentPdtCode
+	 * 	- rowKey : 두번째 하단 버튼 비활성화 값 
+	 * 	- rum : 마지막 공정인지 아닌지 체크		
+	 * 	
+	 * 저장할 데이터 : 작업코드, rowKey, rum
+	 * */
 
 	@Autowired
 	private ProductionPrcService productionPrcService;
@@ -289,14 +309,14 @@ public class ProductionPrcController {
 			lod.setUseYn(useYN);
 			
 			//---------------------------------- 하단 그리드 작업 중으로 주석 처리
-			lotService.insertLot(lod);
+			//lotService.insertLot(lod);
 			
 			checkLast++;
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
 		//---------------------------------- 하단 그리드 작업 중으로 주석 처리
 		//작업지시에서 받아온 작업 RN으로 변경
-		productionPrcService.updateWoStatus(woCode);
+		//productionPrcService.updateWoStatus(woCode);
 		
 		return selectPdtCodeList;
 	}
@@ -357,6 +377,7 @@ public class ProductionPrcController {
 	
 	//LOT_NO - 1 에 START_TIME 등록
 	
+	//두번째 하단 그리드 안에 버튼 클릭시
 	@PostMapping("/jobCmpl")
 	@ResponseBody
 	public List<LotOriginDTO> jobCmpl(@RequestBody LotUpdateDTO lotUpdateDTO) {

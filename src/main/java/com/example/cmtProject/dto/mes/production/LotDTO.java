@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class LotDTO {
 	
+	private Long num;
 	private Long lotNo;
 	private String childLotCode;
     private String parentLotCode;
