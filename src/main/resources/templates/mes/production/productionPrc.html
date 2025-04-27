@@ -45,7 +45,13 @@
 	<div layout:fragment="content">
 
 	<!-- ------------------- 상단 작업 시지 현황 시작 ---------------------------- -->
-	<h3>공정 현황</h3>
+	<div style="display: flex;justify-content: space-between">
+		<h3>공정 현황</h3>
+		<div>
+			<button sec:authorize="hasRole('ADMIN')" class="btn btn-danger btn-m" data-bs-toggle="modal" data-bs-target="#adminModal">관리자 권한 버튼</button>
+			<button type="button" sec:authorize="hasRole('ADMIN')" class="btn btn-danger btn-m" id="adminWoModal">관리자 공정 작업 등록</button>
+		</div>
+	</div>
 	<div class="container mt-5">
 	    <div class="row mb-4 d-flex justify-content-between">
 	        <div class="col-md-3">
@@ -119,7 +125,7 @@
 	</div>
 	<li class="panel"><div id="prcGrid"></div></li>
 	
-	<!--  모달 창 시작 -->
+	<!-- 공정 작업 모달 창 시작 -->
 	<div class="modal fade" id="woModal" tabindex="-1">
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">
@@ -182,6 +188,33 @@
 	    </div><!-- modal-dialog modal-lg -->
 	</div><!-- modal -->
 	<!-- 모달 끝 -->
+	
+	<!-- admin 모달 창 시작 -->
+	<div class="modal fade" id="adminModal" tabindex="-1">
+	    <div class="modal-dialog modal-sm">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title">관리자 권한 메뉴</h5>
+	            </div>
+	            <form>
+	                <div class="modal-body">
+						
+						<div class="form-group" >
+							<button type="button" class="btn btn-primary" id="adminInitBtn">작업 설정 초기화</button>
+						</div>
+						
+						<div class="form-group" >
+							<button type="button" class="btn btn-primary" id="adminSendQtyDataBtn">수량 데이터 전송</button>
+						</div>
+												
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                </div>
+	            </form>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
 
 	<script th:inline="javascript">
 		let woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
@@ -190,7 +223,7 @@
 		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
 		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
 		let woQty; //컨트롤러에서 개수를 넘기기 위해서 전역으로 설정 후 셀렉트박스에서 값이 선택되면 저장하게 함
-		
+		let username = [[${username}]];
 		
 		//--------------------------- 현재 공정 저장 ---------------------------
 		/*
@@ -227,15 +260,16 @@
 		
 		if(savePRC){
 		
-	        Swal.fire({
-	        	icon: 'warning',
-	          	title: '진행 중이 작업이 있습니다.',
-	          	text: '작업을 완료 하십시오.',
-	      	});
-			
+			if(username !== '991114'){
+				Swal.fire({
+		        	icon: 'warning',
+		          	title: '진행 중이 작업이 있습니다.',
+		          	text: '작업을 완료 하십시오.',
+		      	});
+			}
+	       
 			presentBtnRow =  savePRC.rnRowNum - 1;
 			rnRowNum = savePRC.rnRowNum; //완제품이 나오면 null 반환
-			console.log("---------------------"+rnRowNum)
 		}
 		
 		$(document).ready(function(){
@@ -248,11 +282,15 @@
 			//데이터가 없으면 공정 작업 등록 버튼 풀기
 			//admin인 경우 공정 작업 등록 버튼 풀기, 그리드에 데이터 출력
 			//*두번째 하단 그리드 버튼은 데이터가 있든 없든 db에서 받아오기 때문에 상관x
-		
+			
+			//====================================== admin 권한 처리 =====================================================
+			//현재 작업 설정 초기화 - save_prc테이블 삭제
+			//수량 데이터 전송 - 현재 작업지시서에 해당하는 CP 찾아서 알림과 함께 데이터 전송
+			
 			if(savePRC){ //SAVE_PRC 테이블에 저장된 작업지시서가 있는 경우
 				
 				// - 모달 속성 삭제 -
-				const woModalBtn = document.getElementById('woModalBtn');
+				let woModalBtn = document.getElementById('woModalBtn');
 				if (woModalBtn) {
 				    woModalBtn.removeAttribute('data-bs-toggle');
 				    woModalBtn.removeAttribute('data-bs-target');
@@ -453,7 +491,7 @@
 					//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
 					//pdtCode로 BOM 재귀 호출
 					
-					//================= 상단 그리드 출력을 위한 비동기 ========================		
+					//-------------------- 상단 그리드 출력을 위한 비동기 --------------------		
 					$.ajax({
 						url: '/production/pdtCodeSelected',
 						type: 'GET',
@@ -485,7 +523,7 @@
 				      	}// error: function(error) {
 					});//$.ajax
 					
-					//================= presentBtnRow 값을 설정하기 위한 비동기 ========================
+					//-------------------- presentBtnRow 값을 설정하기 위한 비동기 --------------------
 					
 					//총 데이터 ROWNUM 중 가장 큰 값을 가져온다
 					
@@ -558,9 +596,21 @@
 				//작업 현황 버튼을 눌렀을 때 불러와서 presentBtnRow에 값 대입 
 				//이런 경우 기존 작업이 있는 경우와 없는 경우를 생각 
 				
+				/*
+				admin 권한이 추가되면 문제점
+				user 일 때 기존 작업이 있는 경우와 없는 경우를 save_prc 테이블의 데이터 유무로 판다
+				-> save_prc에 데이터가 있으면 공정 작업 등록 버튼 자체를 막음
+				-> admin 권한이 추가되면서 save_prc에 데이터가 있는데 공정 작업 등록 버튼이 활성화됨
+				-> 최초 작업인데 save_prc에 데이터가 있으므로 기존 save_prc에 데이터가 있는 경우의 presentBtnRow을 사용하게 됨
+				-> save_prc의 wo_code로 rownum을 계산 <-> 관리자가 선택한 wo_code로 rownum을 계산
+				: 작업 현황 버튼을 눌렀다는 것은 새로운 작업을 한다는 전제 조건이 생김 
+				=> save_prc 테이블을 삭제하고 새로운 wo_code를 전달, 새로운 작업의 presentBtnRow를 할당
+				*/
+				
 				let urlCheck = "";
 				
-				if(!savePRC){ //최초 작업을 하는 경우만 getRnRowNumMax에서 MAX값을 받아온다, 기존 작업이 있는 경우는 최초 설정한 presentBtnRow를 그대로 사용
+				//최초 작업을 하는 경우만 getRnRowNumMax에서 MAX값을 받아온다, 기존 작업이 있는 경우는 최초 설정한 presentBtnRow를 그대로 사용
+				if(!savePRC || username === '991114'){ //관리자 계정 991114 추가
 					$.ajax({
 						url: '/production/getRnRowNumMax',
 						data: {woCode: woCode},
@@ -642,7 +692,90 @@
 				}, 5000);
 				
 			});//$("#finishJobBtn").on('click',function(){
+				
+			//======================================= Admin권한 - 현재 설정 초기화 ================================================
+		
+			$("#adminInitBtn").on('click', function(){
+					
+				Swal.fire({
+					title: " 현재 작업 설정이 초기화 됩니다.",
+				   	html: `<strong><span style="color:red;">주의!!</span>기록된 작업 순서</strong>와 <strong>현재 작업 목록</strong>이 사라집니다.`,
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				if (result.isConfirmed) {
+					
+				    $.ajax({
+						url: '/production/deleteSavePrc',
+						type: 'GET',
+						success : function(response){
+							console.log("수량 전송 버튼 클릭시:" + response);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({
+					
+						
+				}//if
+				});//then((result) => {
+				
+			});//$("#adminInitBtn").on('click', function(){
+				
+			//======================================= Admin권한 - 수량 데이터 전송 ================================================
+		
+			$("#adminSendQtyDataBtn").on('click', function(){
+				
+				Swal.fire({
+					title: "생산된 수량 데이터를 품질부로 전송",
+				   	text: "전송을 하시겠습니까?",
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				if (result.isConfirmed) {
+					/*
+				    $.ajax({
+						url: '/production/deleteSavePrc',
+						type: 'GET',
+						success : function(response){
+							console.log("수량 전송 버튼 클릭시:" + response);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({ */
+						
+				}//if 
+				});//then((result) => {
+			});//$("#adminInitBtn").on('click', function(){
+				
+			//======================================= Admin권한 - 공정 작업 버튼 활성화 ================================================
+			$("#adminWoModal").on('click', function(){
+				/*
+				모달을 이런식으로 다시 띄울 수 없다. show로 직접 띄워야 한다.
+				let woModalBtn = document.getElementById('woModalBtn');
+				
+				woModalBtn.setAttribute('data-bs-toggle', 'modal');
+				woModalBtn.setAttribute('data-bs-target', '#woModal');
+				*/
+				
+				let woModal = new bootstrap.Modal(document.getElementById('woModal'));
+				woModal.show();
 			
+			});
+					
 				
 		});//$(document).ready(function(){
 			
