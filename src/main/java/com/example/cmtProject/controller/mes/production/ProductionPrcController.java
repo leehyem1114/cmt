@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -89,13 +91,18 @@ public class ProductionPrcController {
 	 * 수량 전송을 하면 SAVE_PRC 테이블을 DELETE
 	 * 
 	 * 		CREATE TABLE SAVE_PRC(
-			    -- 두번째 하단 그리드를 그르기 위한 데이터
-			    WO_CODE VARCHAR(20),
-			    -- 상단 그리드를 그리기 위한 데이터
-			    PDT_CODE VARCHAR(100),
-			    -- 첫번째 하단 왼쪽 트리 상태를 나타내기 위한 데이터
-			    PARENT_LOT_COCE VARCHAR(200)
-			)
+	 *		    -- 두번째 하단 그리드를 그르기 위한 데이터
+	 *		    WO_CODE VARCHAR(20),
+	 *		    -- 상단 그리드를 그리기 위한 데이터
+	 *		    PDT_CODE VARCHAR(100),
+	 *		    -- 첫번째 하단 왼쪽 트리 상태를 나타내기 위한 데이터
+	 * 		    PARENT_LOT_COCE VARCHAR(200)
+	 *		)
+	 *		
+	 *		
+	 * - 권한 : 도중에 불량이 났거나 잘못 생산 되었다고 가정 -
+	 * 기존 생산품은 품질로 보내고, 작업지시서는 없어지고, lot테이블은 그대로 유지
+	 * save_prc테이블 delete, admin 권한의 수량 데이터 전송 버튼 활성화, 공정 작업 등록 버튼 활성화 
 	 * */
 
 	@Autowired
@@ -107,6 +114,13 @@ public class ProductionPrcController {
 	//공정 현황 메인 페이지
 	@GetMapping("/productionPrc")
 	public String getMethodName(Model model) {
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName(); // 로그인한 아이디 (admin, user 등)
+		log.info(username);
+		//username:971114 - user
+		//username:981114 - manager
+		//username:991114 - admin
 		
 		//작업상태가 StandBy인 것만 가져온다(모달 셀렉트 박스에서 workOrderSBList 사용)
 		List<WorkOrderDTO> workOrderSBList = productionPrcService.selectWoStandByList();
@@ -165,8 +179,10 @@ public class ProductionPrcController {
 			savePRC.put("rnRowNum", rnRowNum); // LOT테이블에서 RN 중 가장 큰 rownum
 			
 			model.addAttribute("savePRC", savePRC);
-			model.addAttribute("parentPdtCodeList", parentPdtCodeList); //하단 왼쪽 트리 밑 줄그을 데이터			
+			model.addAttribute("parentPdtCodeList", parentPdtCodeList); //하단 왼쪽 트리 밑 줄그을 데이터	
 		}
+
+		model.addAttribute("username", username);
 		
 		return "mes/production/productionPrc";
 	}
@@ -425,9 +441,6 @@ public class ProductionPrcController {
 		
 		return selectLotOrigin;
 	}
-	
-	//두번째 그리드에서 작업 완료 버큰 클릭 시 업데이트
-	
 	
 	//두번째 하단 그리드 안에 버튼 클릭시
 	@PostMapping("/jobCmpl")
