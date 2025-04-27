@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
+import com.example.cmtProject.dto.mes.production.SavePRCDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 import com.example.cmtProject.mapper.mes.production.LotMapper;
 
@@ -52,8 +53,36 @@ public class LotService {
 	public void updateWOtoCP(String woCode) {
 		lotMapper.updateWOtoCP(woCode);
 	}
-	
 
+	public int selectCheckSavePRC() {
+		return lotMapper.selectCheckSavePRC();
+	}
+
+	public String selectCheckQI(String woCode) {
+		return lotMapper.selectCheckQI(woCode);
+	}
+
+	public String selectRNRowNum(String nowWoCode) {
+		return lotMapper.selectRNRowNum(nowWoCode);
+	}
+
+	public List<SavePRCDTO> selectSavePRC() {
+		return lotMapper.selectSavePRC();
+	}
+
+	public Integer selectRnRowNumMax(String woCode) {
+		return lotMapper.selectRnRowNumMax(woCode);
+	}
+
+	public void insertSavePrc(SavePRCDTO savePrcDto) {
+		lotMapper.insertSavePrc(savePrcDto);
+	}
+
+	public void deleteSavePrc() {
+		lotMapper.deleteSavePrc();
+	}
+
+	
 
 	
 }

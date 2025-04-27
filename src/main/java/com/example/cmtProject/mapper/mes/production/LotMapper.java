@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
+import com.example.cmtProject.dto.mes.production.SavePRCDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 
 @Mapper
@@ -34,10 +35,33 @@ public interface LotMapper {
 	//두번째 그리드에서 현재 공정 업데이트
 	void updateLotPresentPRC(LotOriginDTO lotOrigin);
 
+	//작업 완료 버튼 클릭시 이후 공정 startTime 입력
 	void updateLotNextPRC(@Param("nextLotNo") Long nextLotNo, @Param("startTime") String startTime);
 
+	//완제품 작업 완료시 작업 지시서 CP로 업데이트
 	void updateWOtoCP(String woCode);
-	
+
+	//save_prc테이블에 데이터가 있는지 없는지 확인
+	int selectCheckSavePRC();
+
+	//QI가 있는지 없는지 확인
+	String selectCheckQI(String woCode);
+
+	//rnRowNum 값으로 현재 작업 중인 rn상태의 max rownum
+	String selectRNRowNum(@Param("nowWoCode") String nowWoCode);
+
+	//save_prc테이블에서 데이터 가져오기 
+	List<SavePRCDTO> selectSavePRC();
+
+	//rnRowNum 값으로 전체데이터의 max rownum값
+	Integer selectRnRowNumMax(String woCode);
+
+	//save_prc테이블에 데이터 넣기
+	void insertSavePrc(SavePRCDTO savePrcDto);
+
+	//save_prc테이블에 데이터 삭제
+	void deleteSavePrc();
+
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 
 }
