@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper">
+	
+	
+  <!-- 입고 검사 업데이트 쿼리 -->
+  <update id="updateReceiptStatus" parameterType="String">
+    UPDATE MATERIAL_RECEIPT mr
+    SET mr.RECEIPT_STATUS = 
+        CASE 
+            WHEN EXISTS (
+                SELECT 1 
+                FROM IQC i 
+                WHERE i.RECEIPT_CODE = mr.RECEIPT_CODE 
+                AND i.IQC_INSPECTION_STATUS = '검사완료'
+                AND i.IQC_INSPECTION_RESULT = '합격'
+            ) THEN '검사합격'
+            WHEN EXISTS (
+                SELECT 1 
+                FROM IQC i 
+                WHERE i.RECEIPT_CODE = mr.RECEIPT_CODE 
+                AND i.IQC_INSPECTION_STATUS = '검사완료'
+                AND i.IQC_INSPECTION_RESULT = '불합격'
+            ) THEN '검사불합격'
+            ELSE mr.RECEIPT_STATUS
+        END
+
+    WHERE mr.RECEIPT_CODE = #{receiptCode}  <!-- no - > code 변경 -->
+
+    AND EXISTS (
+        SELECT 1 
+        FROM IQC i 
+        WHERE i.RECEIPT_CODE = mr.RECEIPT_CODE 
+        AND i.IQC_INSPECTION_STATUS = '검사완료'
+    )
+  </update>
+  
+  <!-- 생산계획 업데이트 쿼리 -->
+  <update id="">
+  
+  
+  </update>
+    
+</mapper>

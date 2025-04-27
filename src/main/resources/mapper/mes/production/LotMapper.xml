@@ -43,7 +43,7 @@
 	        #{lotNo},
 	        #{parentLotCode},
 	        #{childLotCode},
-	        #{parentdPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
+	        #{parentPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
 	        #{childPdtCode},
 	        #{createDate},
 	        #{prcType},
@@ -79,9 +79,10 @@
 	</select>
 	
 	<!-- LOT 테이블 origin 가져오기 -->
-	<select id="selectLotOrigin" resultType="com.example.cmtProject.dto.mes.production.LotStructurePathDTO">
+	<select id="selectLotOrigin" resultType="com.example.cmtProject.dto.mes.production.LotOriginDTO">
 		SELECT 
-			LOT_NO
+			ROWNUM AS NUM
+			,LOT_NO
 			,CHILD_LOT_CODE
 			,PARENT_LOT_CODE
 			,CHILD_PDT_CODE
@@ -132,5 +133,62 @@
 			WO_STATUS_CODE = 'CP' 
 		WHERE WO_CODE = #{woCode} 
 	</update>
+	
+	<!-- SAVE_PRC에 데이터가 있는지 없는지 확인 -->
+	<select id="selectCheckSavePRC" resultType="Integer">
+		SELECT COUNT(WO_CODE) FROM SAVE_PRC
+	</select>
+	
+	<!-- SAVE_PRC에서 데이터 가져오기 -->
+	<select id="selectSavePRC" resultType="com.example.cmtProject.dto.mes.production.SavePRCDTO">
+		SELECT 
+			WO_CODE,
+			PDT_CODE,
+			PARENT_PDT_CODE
+		FROM SAVE_PRC
+	</select>
+	
+	<!-- QI가 있는지 없는지 확인 -->
+	<!-- <select id="selectCheckQI" resultType="String">
+		SELECT COUNT(WO_STATUS_NO) FROM LOT WHERE WO_STATUS_NO = 'QI' AND WO_CODE = 'MSC005' 
+	</select> -->
+	
+	<!-- 현재 작업 중인 ROWNUM -->
+	<select id="selectRNRowNum" resultType="String">
+		SELECT 
+	MAX(ROWNUM) AS NUM
+	      FROM (SELECT 
+	    	    ROWNUM 
+	       FROM LOT 
+		  WHERE WO_STATUS_NO = 'RN' 
+		    AND WO_CODE = #{nowWoCode})
+	</select>
+	
+	<!-- 작업 중이 아닐 때 전체 데이터 ROWNUM의 MAX 값 -->
+	<select id="selectRnRowNumMax" resultType="Integer">
+		SELECT MAX(RNUM) AS NUM
+		  FROM (SELECT 
+				ROWNUM AS RNUM
+		  FROM LOT 
+		 WHERE WO_CODE = #{woCode})
+	</select>
+	
+	<!-- save_prc테이블에 데이터 넣기 -->
+	<insert id="insertSavePrc" parameterType="com.example.cmtProject.dto.mes.production.SavePRCDTO">
+		INSERT INTO SAVE_PRC(
+		    WO_CODE
+		    ,PDT_CODE
+		    ,PARENT_PDT_CODE)
+		VALUES(
+		    #{woCode}
+		    ,#{pdtCode}
+		    ,#{parentPdtCode}
+		)
+	</insert>
+	
+	<!-- save_prc테이블에 데이터 삭제 -->
+	<delete id="deleteSavePrc">
+		DELETE SAVE_PRC
+	</delete>
 	
 </mapper>

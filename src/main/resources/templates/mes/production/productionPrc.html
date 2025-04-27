@@ -8,34 +8,60 @@
 
 	<style>
 		.bom-tree li {
-		  margin-left: 20px;
-		  list-style-type: circle;
+		  	margin-left: 20px;
+		 	list-style-type: circle;
 		}
 
 		.timeline .step {
-		  margin: 10px 0;
-		  padding: 10px;
-		  border-left: 3px solid #007bff;
-		  padding-left: 15px;
+		  	margin: 10px 0;
+		  	padding: 10px;
+		  	border-left: 3px solid #007bff;
+		  	padding-left: 15px;
 		}
 		
+		#loadingOverlay {
+			position: fixed;
+		    top: 0;
+		    left: 0;
+		   	width: 100%;
+		    height: 100%;
+		    background: rgba(0, 0, 0, 0.4); 
+		    color: white;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    font-size: 2em;
+		    z-index: 1000;
+		    flex-direction: column;
+		}
+		
+		.swal2-container {
+		    z-index: 2000; 
+		}
+		</style>
 	</style>
 </head>
 <body>
 	<div layout:fragment="content">
 
 	<!-- ------------------- 상단 작업 시지 현황 시작 ---------------------------- -->
-	<h3>공정 현황</h3>
+	<div style="display: flex;justify-content: space-between">
+		<h3>공정 현황</h3>
+		<div>
+			<button sec:authorize="hasRole('ADMIN')" class="btn btn-danger btn-m" data-bs-toggle="modal" data-bs-target="#adminModal">관리자 권한 버튼</button>
+			<button type="button" sec:authorize="hasRole('ADMIN')" class="btn btn-danger btn-m" id="adminWoModal">관리자 공정 작업 등록</button>
+		</div>
+	</div>
 	<div class="container mt-5">
 	    <div class="row mb-4 d-flex justify-content-between">
 	        <div class="col-md-3">
-				<button class="form-control btn btn-primary btn-m" data-bs-toggle="modal" data-bs-target="#woModal">
+				<button class="form-control btn btn-primary btn-m" id="woModalBtn" data-bs-toggle="modal" data-bs-target="#woModal">
 				<i class="fa-solid fa-magnifying-glass"></i>공정 작업 등록</button>
 				<br>
 				<br>
 				<div style="display: flex;width: 400px;">
 					<label for="woCodeTxt">현재 작업 코드  : &nbsp;</label>
-					<input type="text" id="woCodeTxt" value="" readonly="true">
+					<input type="text" id="woCodeTxt" readonly="true">
 				</div>
 	        </div>
 			<div class="col-md-3">
@@ -67,10 +93,13 @@
 			</div>
 	    </div><!-- <div class="row mb-3"> -->
 	</div><!-- <div class="container mt-5"> -->
+		
+	<!-- 레이 아웃 -->
+	<div id="loadingOverlay" style="display: none;"></div>
 	
+	<!-- 상단 그리드 -->
 	<div id="woGrid"></div>
 
-	
 	<!-- ------------------- 하단 첫번째 시작 ---------------------------- -->
 	<br>
 	<div class="container-fluid">
@@ -89,11 +118,14 @@
 	</div>
 	
 	<!-- -------------------  하단 두번째 시작 ---------------------------- -->
-	<button type="button" id="prcBoard" class="btn btn-primary btn-m">작업 현황</button>
+	
+	<div style="display: flex; justify-content: space-between;">
+		<button type="button" id="prcBoardBtn" class="btn btn-primary btn-m">작업 현황</button>
+		<button type="button" id="finishJobBtn" class="btn btn-secondary" style="display: none;">수량 데이터 전송</button>
+	</div>
 	<li class="panel"><div id="prcGrid"></div></li>
 	
-	
-	<!--  모달 창 시작 -->
+	<!-- 공정 작업 모달 창 시작 -->
 	<div class="modal fade" id="woModal" tabindex="-1">
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">
@@ -156,6 +188,33 @@
 	    </div><!-- modal-dialog modal-lg -->
 	</div><!-- modal -->
 	<!-- 모달 끝 -->
+	
+	<!-- admin 모달 창 시작 -->
+	<div class="modal fade" id="adminModal" tabindex="-1">
+	    <div class="modal-dialog modal-sm">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title">관리자 권한 메뉴</h5>
+	            </div>
+	            <form>
+	                <div class="modal-body">
+						
+						<div class="form-group" >
+							<button type="button" class="btn btn-primary" id="adminInitBtn">작업 설정 초기화</button>
+						</div>
+						
+						<div class="form-group" >
+							<button type="button" class="btn btn-primary" id="adminSendQtyDataBtn">수량 데이터 전송</button>
+						</div>
+												
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+	                </div>
+	            </form>
+	        </div> <!-- modal-content -->
+	    </div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
 
 	<script th:inline="javascript">
 		let woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
@@ -164,9 +223,215 @@
 		let prcGridData; //하단 그리드에 입력될 데이터를 전역으로 설정
 		let bomList = {}; //모달안의 시작 버튼을 누르면 하단 왼쪽 트리를 구성할 배열 선언
 		let woQty; //컨트롤러에서 개수를 넘기기 위해서 전역으로 설정 후 셀렉트박스에서 값이 선택되면 저장하게 함
+		let username = [[${username}]];
 		
+		//--------------------------- 현재 공정 저장 ---------------------------
+		/*
+		- 두번째 하단 그리드 버튼 process -
+		최초 로딩시 여기서 presentBtnRow 선언 
+		-> 공정 작업 등록 모달의 '시작버튼'클릭시 num값을 받아서 num-1을 저장
+		-> 버튼 클릭 시 gridElement.addEventListener 에서 그리드를 그려주기 전 다시 설정
+		-> 그리드를 그리고 나서 num이 끝이 아니면 다음 presentBtnRow를 대입
+		:현재 작업해야하는 버튼 : grid의 rowKey일치 시켜야 한다 => 0부터 시작
+		*/
+		
+		let savePRC = /*[[${savePRC}]]*/ [];
+		console.log("밑에 savePRC");
+		console.log(savePRC);
+		/*
+		SAVE_PRC테이블을 delete하면 savePRC가 넘어오지 않는다  
+		if(savePRC === "") (x)
+		if(savePRC === null) 또는 if(savePRC) 또는 if(!savePRC) 로 판별
+		*/
+		
+		// - 기존 데이터 저장을 위한 전역 변수 선언 -
+		//let nowWoCode; //SAVE_PRC테이블에 저장된 현재 작업 중인 작업지시서 : woCode로 대체
+		//let nowPdtCode;	//SAVE_PRC테이블에 저장된 현재 작업 중인 제품 코드 : pdtCode로 대체
+		let rnRowNum; //현재 작업중인 num값 => rnRowNum
+		let parentPdtCodeList; //하단 그리드 왼쪽 트리에 줄 그을 목록
+		
+		/*
+		presentBtnRow는 tui.gird의 formatter 함수에서 사용하기 위해 ready안에 실행되기 전에 변수를 설정해야 랜더링 순서에 맞게 인식 가능
+		presentBtnRow사용 하는 Grid인 prcGrid를 resetData(response) 하는 모든 경우(최초 로딩시, 작업 현황 버튼 클릭, 그리드 안에 버튼 클릭시 총 3번)에 presentBtnRow를 사용 하기 때문에
+		presentBtnRow은 작업 데이터가 있던 없던 최초 전역으로 값이 설정되어 있어야한다
+		"모달의 시작 버튼을 누를 때" 컨트롤러에서 rnRowNum 값으로 model로 전송
+		*/
+		let presentBtnRow = 0; //0의 값은 어차피 없어진다, 최초 로딩시 바로 밑에서 초기화, 작업 현황 버튼 클릭시 초기화 됨 
+		
+		if(savePRC){
+		
+			if(username !== '991114'){
+				Swal.fire({
+		        	icon: 'warning',
+		          	title: '진행 중이 작업이 있습니다.',
+		          	text: '작업을 완료 하십시오.',
+		      	});
+			}
+	       
+			presentBtnRow =  savePRC.rnRowNum - 1;
+			rnRowNum = savePRC.rnRowNum; //완제품이 나오면 null 반환
+		}
 		
 		$(document).ready(function(){
+			
+			//====================================== 저장된 상태값 불러오기 - 화면에 보여주기만 함 =====================================================
+			
+			//공정 작업 등록 모달의 '시작버튼'(modalStartBtn)을 눌렀을 때 db에 데이터가 최초 등록 - 시작
+			//두번째 그리드 위에 '수량 데이터 전송'(finishJobBtn) 버튼을 눌렀을 때 db에 데이터가 삭제 - 종료
+			//데이터가 있으면 공정 작업 등록 버튼 막고, 그리드에 데이터 출력, 트리에 문자 줄 긋기
+			//데이터가 없으면 공정 작업 등록 버튼 풀기
+			//admin인 경우 공정 작업 등록 버튼 풀기, 그리드에 데이터 출력
+			//*두번째 하단 그리드 버튼은 데이터가 있든 없든 db에서 받아오기 때문에 상관x
+			
+			//====================================== admin 권한 처리 =====================================================
+			//현재 작업 설정 초기화 - save_prc테이블 삭제
+			//수량 데이터 전송 - 현재 작업지시서에 해당하는 CP 찾아서 알림과 함께 데이터 전송
+			
+			if(savePRC){ //SAVE_PRC 테이블에 저장된 작업지시서가 있는 경우
+				
+				// - 모달 속성 삭제 -
+				let woModalBtn = document.getElementById('woModalBtn');
+				if (woModalBtn) {
+				    woModalBtn.removeAttribute('data-bs-toggle');
+				    woModalBtn.removeAttribute('data-bs-target');
+				}
+				
+				document.getElementById('woModalBtn').addEventListener('click', function(e) {
+					Swal.fire({
+			        	icon: 'error',
+			          	title: '현재 진행 중인 공정 작업이 있습니다.',
+			          	text: '진행 중인 공정을 완료해 주십시오.',
+			        });
+				});
+				
+				// - 전역 변수에 값 입력 -
+				rnRowNum = savePRC.rnRowNum; 
+				//버튼 rowKey 설정값
+				//presentBtnRow = rnRowNum - 1;
+				//전역 변수 설정
+				woCode = savePRC.nowWoCode;
+				pdtCode = savePRC.nowPdtCode;
+				parentPdtCodeList = /*[[${parentPdtCodeList}]]*/ [];
+				//console.log("parentPdtCodeList:"+ parentPdtCodeList);
+				
+				//---------------------------------- 상단 텍스트 박스에 작업 지시 코드 넣기 ----------------------------------
+				$("#woCodeTxt").val(woCode);
+				
+				//---------------------------------- 상단 그리드 출력 ---------------------------------------------------
+				
+				//원래는 이렇게 하면 바로 보이지만 CAMEL <-> SNAKE 강제 연동 때문에 비동기로 다시 호출 해야 됨 - 환경 설정을 건드리면 이런 일이 발생함
+				//현재 그리드는 ajax로 전부 CAMEL로 맞춰놓은 상태, 하지만 지금은 DTO로 바로 컨트롤러에서 불러왔기 때문에 SNAKE로 받아옴
+				//woGridData = /*[[${selectPdtCodeList}]]*/ []
+				//woGrid.resetData(woGridData);
+				
+				//상단 그리드 비동기 
+				$.ajax({
+			    	url: '/production/savePRCwoGrid',
+			      	type: 'POST',
+					data: {pdtCode : pdtCode}, 
+			      	success: function(response) {
+						woGridData = response;
+						woGrid.resetData(response);
+						
+						//PARENT_PDT_CODE와 CHILD_ITEM_CODE로 배열 생성
+						bomList = response.map(item => ({
+				            parent: item.PARENT_PDT_CODE,
+				            child: item.CHILD_ITEM_CODE
+				        }));
+						
+						//bomList로 배열을 만들고 하단 왼쪽 트리를 만드는 함수 호출
+						//bomList는 전역으로 선언해서 makeTree에서 바로 사용
+						makeTree();
+					},
+					error: function(error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				      	});
+			      	}// error: function(error) {
+				});//$.ajax
+				
+				
+				//---------------------------------- 하단 그리드 출력 ---------------------------------------------------
+				
+				//원래는 이렇게 하면 바로 보이지만 CAMEL <-> SNAKE 강제 연동 때문에 비동기로 다시 호출 해야 됨 - 환경 설정을 건드리면 이런 일이 발생함
+				//현재 그리드는 ajax로 전부 CAMEL로 맞춰놓은 상태, 하지만 지금은 DTO로 바로 컨트롤러에서 불러왔기 때문에 SNAKE로 받아옴
+				//prcGridData = /*[[${selectLotOrigin}]]*/ []
+				//prcGrid.resetData(prcGridData);
+				
+				//하단 두번째 그리드 비동기
+				$.ajax({
+			    	url: '/production/savePRCprcGrid',
+			      	type: 'POST',
+			      	data: {woCode: woCode},  
+			      	success: function(response) {
+						prcGrid.resetData(response);
+						
+						//위에 makeTree()가 실행되고 DOM을 생성 후 실행하기 위한 딜레이
+						setTimeout(function(){
+							console.log("============= 트리 목록 삭제를 위한 setTimeout =============")
+							
+							//--------------- 트리 작업 목록 줄 긋기 - 배열 ------------------
+							let inputList = parentPdtCodeList.map(item => item.trim());  // 배열 모든 항목 공백 제거
+							//console.log("inputList:"+ inputList);
+							let liList = document.querySelectorAll('#bom-tree li');
+
+							liList.forEach(li => {
+							  li.childNodes.forEach(node => {
+							    if (node.nodeType === Node.TEXT_NODE) {
+							      let nodeValue = node.nodeValue.replace(/\s/g, ''); // 기존 공백 제거
+
+							      inputList.forEach(input => {  // 🔥 배열을 반복해서 각각 체크
+							        if (nodeValue.includes(input)) {
+							          const before = node.nodeValue.split(input)[0];
+							          const after = node.nodeValue.split(input)[1];
+
+							          const span = document.createElement('span');
+							          span.style.textDecoration = 'line-through';
+							          span.textContent = input;
+
+							          const beforeText = document.createTextNode(before);
+							          const afterText = document.createTextNode(after);
+
+							          li.insertBefore(beforeText, node);
+							          li.insertBefore(span, node);
+							          li.insertBefore(afterText, node);
+							          li.removeChild(node);
+							        }
+							      });
+							    }
+							  });// li.childNodes.forEach(node => {
+							});//liList.forEach(li => {
+							//-----------------------------------------
+						}, 1000);
+						
+					},
+					error: function(error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				      	});
+			      	}// error: function(error) {
+				});//$.ajax
+			
+				
+				//--------------- 완제품이 나오면 수량 전송 버튼이 보임 ------------------
+				if(rnRowNum === null){
+					document.getElementById('finishJobBtn').style.display = 'inline-block';
+				}
+				
+
+			}else{ //if(savePRC){ //SAVE_PRC 테이블에 저장된 작업지시서가 있는 경우
+				
+				//설렉트 박스가 선택 될 때 pdtCode와 woCode가 결정 되므로 패이지가 로딩 될 때는 당연히 값이 없다 
+				//pdtCode = "";
+				//woCode = "";
+				
+				
+			}//else{
+			
 			
 			//======================================= 모달 안에 셀렉트 박스 이벤트 ================================================
 			$("#woCodeSelected").on('change', function(){
@@ -189,9 +454,13 @@
 						$("#txtEmpName").val(response[0].EMP_NAME);
 						$("#txtWoStartDate").val(response[0].WO_START_DATE);
 					},
-					error : function(error){
-						console.log("error:" + error)
-					}
+					error: function(error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				      	});
+			      	}// error: function(error) {
 				});//$.ajax
 			});//$("#woCodeSelected").on('change', function(){
 				
@@ -221,7 +490,8 @@
 					//셀렉트 박스가 선택되었다면 pdtCode에 값이 있을 수밖에 없다.
 					//셀렉트 박스가 선택될 때 작업시지 코드를 받아와서 같이 넘겨준다
 					//pdtCode로 BOM 재귀 호출
-									
+					
+					//-------------------- 상단 그리드 출력을 위한 비동기 --------------------		
 					$.ajax({
 						url: '/production/pdtCodeSelected',
 						type: 'GET',
@@ -244,10 +514,38 @@
 							//bomList는 전역으로 선언해서 makeTree에서 바로 사용
 							makeTree();
 						},
-						error : function(error){
-							console.log("error:" + error)
-						}
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
 					});//$.ajax
+					
+					//-------------------- presentBtnRow 값을 설정하기 위한 비동기 --------------------
+					
+					//총 데이터 ROWNUM 중 가장 큰 값을 가져온다
+					
+					//!! 바로 위에서 LOT테이블에 데이터를 입력 후 여기 바로 getRnRowNumMax을 가져오면 null발생
+					//작업 현황 버튼을 눌렀을 때 불러와서 presentBtnRow에 값 대입 
+					/*
+					$.ajax({
+						url: '/production/getRnRowNumMax',
+						data: {woCode: woCode},
+						success : function(response){
+							console.log("getRnRowNumMax:" + response);
+							presentBtnRow = response - 1;
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({
+					*/
 					
 					$("#woCodeTxt").val(woCode);
 					
@@ -268,38 +566,217 @@
 					url: '/production/pdtInfo',
 					type: 'POST',
 					data: {
-						'pdtCode' : selectedPdtCode
+						pdtCode : selectedPdtCode
 						},
 					success : function(response){
 							productGrid.resetData(response);
 							
 					},
-					error : function(error){
-						console.log("error:" + error)
-					}
+					error: function(error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				      	});
+			      	}// error: function(error) {
 				});//$.ajax
 			
 			});//$("#treeName").on("click", function(){
 			
 			//======================================= 두번째 하단의 작업 현황 버튼 클릭 ================================================
-			$("#prcBoard").on("click", function(){
+			$("#prcBoardBtn").on("click", function(){
+				//console.log("prcBoardBtn클릭시 woCode:" + woCode + " ,pdtCode:" + pdtCode);
+				
+				
+				//-------------------- presentBtnRow 값을 설정하기 위한 비동기 --------------------
+															
+				//총 데이터 ROWNUM 중 가장 큰 값을 가져온다
+				
+				//!! 바로 위에서 LOT테이블에 데이터를 입력 후 여기 바로 getRnRowNumMax을 가져오면 null발생
+				//작업 현황 버튼을 눌렀을 때 불러와서 presentBtnRow에 값 대입 
+				//이런 경우 기존 작업이 있는 경우와 없는 경우를 생각 
+				
+				/*
+				admin 권한이 추가되면 문제점
+				user 일 때 기존 작업이 있는 경우와 없는 경우를 save_prc 테이블의 데이터 유무로 판다
+				-> save_prc에 데이터가 있으면 공정 작업 등록 버튼 자체를 막음
+				-> admin 권한이 추가되면서 save_prc에 데이터가 있는데 공정 작업 등록 버튼이 활성화됨
+				-> 최초 작업인데 save_prc에 데이터가 있으므로 기존 save_prc에 데이터가 있는 경우의 presentBtnRow을 사용하게 됨
+				-> save_prc의 wo_code로 rownum을 계산 <-> 관리자가 선택한 wo_code로 rownum을 계산
+				: 작업 현황 버튼을 눌렀다는 것은 새로운 작업을 한다는 전제 조건이 생김 
+				=> save_prc 테이블을 삭제하고 새로운 wo_code를 전달, 새로운 작업의 presentBtnRow를 할당
+				*/
+				
+				let urlCheck = "";
+				
+				//최초 작업을 하는 경우만 getRnRowNumMax에서 MAX값을 받아온다, 기존 작업이 있는 경우는 최초 설정한 presentBtnRow를 그대로 사용
+				if(!savePRC || username === '991114'){ //관리자 계정 991114 추가
+					$.ajax({
+						url: '/production/getRnRowNumMax',
+						data: {woCode: woCode},
+						success : function(response){
+							presentBtnRow = response - 1;
+							console.log("위에 presentBtnRow:" + presentBtnRow);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({
+				}
+					
+				//-------------------- 두번째 하단 그리드에 값을 출력하기 위한 비동기 --------------------
 				
 				$.ajax({
 					url: '/production/prcBoard',
 					type: 'POST',
-					data: {
-						'pdtCode' : pdtCode,
-						'woCode' : woCode
-						},
+					data: { woCode : woCode },
 					success : function(response){
+							console.log("밑에 presentBtnRow:" + presentBtnRow);
 							prcGrid.resetData(response);
 					},
-					error : function(error){
-						console.log("error:" + error)
-					}
+					error: function(error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				      	});
+			      	}// error: function(error) {
 				});//$.ajax
-			});//$("#prcBoard").on("click", function(){
+				
+				
+			});//$("#prcBoardBtn").on("click", function(){
+				
+			//======================================= 두번째 하단의 수량 데이터 전송 버튼 클릭 ================================================
 			
+			$("#finishJobBtn").on('click',function(){
+				
+				//-------------------- SAVE_PRC 테이블 delete하기 --------------------
+				$.ajax({
+					url: '/production/deleteSavePrc',
+					type: 'GET',
+					success : function(response){
+						console.log("수량 전송 버튼 클릭시:" + response);
+					},
+					error: function(error) {
+				        Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+				        });
+			      	}// error: function(error) {
+				}); //$.ajax({
+				
+				//-------------------- 품질로 데이터 전송 --------------------
+				
+				/*
+				여기 데이터 작성
+				*/
+				
+				//---------------------------------------------
+				
+				Swal.fire({
+		        	icon: 'success',
+		          	title: '품질팀으로 수량 데이터를 전송했습니다.',
+		          	text: '새 작업을 초기화 중 입니다....'
+		        });
+								
+				$("#loadingOverlay").css("display", "block");
+				
+				setTimeout(() => {
+				  document.getElementById('loadingOverlay').style.display = 'none'; // 오버레이 숨기기
+				  location.reload();	
+				}, 5000);
+				
+			});//$("#finishJobBtn").on('click',function(){
+				
+			//======================================= Admin권한 - 현재 설정 초기화 ================================================
+		
+			$("#adminInitBtn").on('click', function(){
+					
+				Swal.fire({
+					title: " 현재 작업 설정이 초기화 됩니다.",
+				   	html: `<strong><span style="color:red;">주의!!</span>기록된 작업 순서</strong>와 <strong>현재 작업 목록</strong>이 사라집니다.`,
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				if (result.isConfirmed) {
+					
+				    $.ajax({
+						url: '/production/deleteSavePrc',
+						type: 'GET',
+						success : function(response){
+							console.log("수량 전송 버튼 클릭시:" + response);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({
+					
+						
+				}//if
+				});//then((result) => {
+				
+			});//$("#adminInitBtn").on('click', function(){
+				
+			//======================================= Admin권한 - 수량 데이터 전송 ================================================
+		
+			$("#adminSendQtyDataBtn").on('click', function(){
+				
+				Swal.fire({
+					title: "생산된 수량 데이터를 품질부로 전송",
+				   	text: "전송을 하시겠습니까?",
+				  	icon: 'warning',
+				  	showCancelButton: true,
+				  	confirmButtonText: '확인',
+				  	cancelButtonText: '취소'
+				}).then((result) => {
+				if (result.isConfirmed) {
+					/*
+				    $.ajax({
+						url: '/production/deleteSavePrc',
+						type: 'GET',
+						success : function(response){
+							console.log("수량 전송 버튼 클릭시:" + response);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({ */
+						
+				}//if 
+				});//then((result) => {
+			});//$("#adminInitBtn").on('click', function(){
+				
+			//======================================= Admin권한 - 공정 작업 버튼 활성화 ================================================
+			$("#adminWoModal").on('click', function(){
+				/*
+				모달을 이런식으로 다시 띄울 수 없다. show로 직접 띄워야 한다.
+				let woModalBtn = document.getElementById('woModalBtn');
+				
+				woModalBtn.setAttribute('data-bs-toggle', 'modal');
+				woModalBtn.setAttribute('data-bs-target', '#woModal');
+				*/
+				
+				let woModal = new bootstrap.Modal(document.getElementById('woModal'));
+				woModal.show();
+			
+			});
+					
+				
 		});//$(document).ready(function(){
 			
 		//======================================= jQuery 끝 ===============================================	
@@ -324,7 +801,7 @@
 				{
 					header: '레벨',
 					name: 'BOM_LEVEL',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -332,7 +809,7 @@
 				{
 	                header: '상위 코드',
 	                name: 'CHILD_ITEM_CODE',
-					width: 120,
+					width: 130,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -340,7 +817,7 @@
 				{
 	                header: '하위 코드',
 	                name: 'PARENT_PDT_CODE',
-					width: 120,
+					width: 130,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -364,7 +841,7 @@
 				{
 	                header: '계획 수량',
 	                name: 'BOM_QTY',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center"
@@ -372,15 +849,15 @@
 				{
 	                header: '생산 단위',
 	                name: 'BOM_UNIT',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center"
 	            },
 				{
-	                header: '압력 널짜',
+	                header: '생성 날짜',
 	                name: 'BOM_DATE',
-					width: 100,
+					width: 130,
 					sortable: true, 
 					filter: 'text',
 					align: "center"
@@ -452,7 +929,7 @@
 				{
 					header: '제품 코드',
 					name: 'PDT_CODE',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -476,7 +953,7 @@
 				{
 	                header: '제품 무게',
 	                name: 'PDT_WEIGHT',
-					width: 200,
+					width: 110,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -492,7 +969,7 @@
 				{
 	                header: '소재',
 	                name: 'MTL_TYPE_SYMBOL',
-					width: 100,
+					width: 200,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -509,8 +986,8 @@
 		let prcGrid = new tui.Grid({
 	        el: document.getElementById('prcGrid'), 
 			//data : /*[[${productList}]]*/ [],
-			data: woGridData,
-	        rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
+			data: prcGridData,
+	        //rowHeaders: ['checkbox'], //수정을 따로 안 만들기 때문에 필요가 없어졌다
 			//selectionUnit: 'row', //행 단위선택
 			scrollX: true,
 	        scrollY: true,
@@ -521,6 +998,55 @@
 			   perPage: 10        // 페이지당 행 수
 			 },
 	        columns: [
+	        	{
+					header: 'num',
+					name: 'NUM',
+					width: 100,
+					sortable: true, 
+					filter: 'text',
+					align: "center",
+					 hidden: true //화면에는 안 보이지만 데이터에는 존재
+	            },
+				{
+					header: '작업 상태',
+					name: 'action',
+					width: 150,
+					align: "center",
+					formatter: function({ row }) {
+						//row은 0부터 시작하고 db의 num은 1부터 시작 : row = num - 1과 같다
+				        const isDisabled = row.rowKey !== presentBtnRow;  
+						console.log("버튼 안에 presentBtnRow:" + presentBtnRow + " ,isDisabled:" + isDisabled);
+						
+						let statusText;
+						let sb = '작업 대기';
+						let rn = '작업 중';
+						let cp = '작업 완료';
+						
+						let styleBtn;
+						let styleBtnSB = 'btn-outline-warning'
+						let styleBtnRN = 'btn-outline-danger'
+						let styleBtnCP = 'btn-outline-success'
+						
+						if(row.rowKey > presentBtnRow){
+							statusText = cp;
+							styleBtn = styleBtnSB;
+						}else if(row.rowKey < presentBtnRow){
+							statusText = sb;
+							styleBtn = styleBtnRN;
+						}else{
+							statusText = rn;
+							styleBtn = styleBtnCP; 
+						}
+	
+				        return `<button 
+				                  class="btn btn-sm ${styleBtn} action-btn" 
+				                  data-row-key="${row.rowKey}" 
+				                  ${isDisabled ? 'disabled' : ''}>
+				                  ${statusText}
+				                </button>`;
+				      	}
+						//return `<button class="btn btn-sm btn-outline-danger action-btn" data-row-key="${row.rowKey}">작업 완료</button>`;
+			    },
 				{
 					header: 'LOT번호',
 					name: 'LOT_NO',
@@ -532,7 +1058,7 @@
 	           {
 	                header: '상위 공정',
 	                name: 'CHILD_LOT_CODE',
-					width: 150,
+					width: 170,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -540,7 +1066,7 @@
 				{
 	                header: '하위 공정',
 	                name: 'PARENT_LOT_CODE',
-					width: 150,
+					width: 170,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -548,7 +1074,7 @@
 				{
 	                header: '상위 제품',
 	                name: 'CHILD_PDT_CODE',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -556,7 +1082,7 @@
 				{
 	                header: '하위 제품',
 	                name: 'PARENT_PDT_CODE',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -564,7 +1090,7 @@
 				{
 	                header: '생산 수량',
 	                name: 'BOM_QTY',
-					width: 60,
+					width: 100,
 					sortable: true, 
 					filter: 'text',
 					align: "center",
@@ -573,7 +1099,7 @@
 				{
 	                header: '수량 단위',
 	                name: 'BOM_UNIT',
-					width: 60,
+					width: 120,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -581,7 +1107,7 @@
 				{
 	                header: '생성 일자',
 	                name: 'CREATE_DATE',
-					width: 100,
+					width: 120,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -589,7 +1115,7 @@
 				{
 	                header: '작업 시작 시간',
 	                name: 'START_TIME',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -597,7 +1123,7 @@
 				{
 	                header: '작업 종료 시간',
 	                name: 'FINISH_TIME',
-					width: 100,
+					width: 150,
 					sortable: true, 
 					filter: 'text',
 					align: "center" 
@@ -610,14 +1136,7 @@
 					filter: 'text',
 					align: "center" 
 	            },
-				{
-					header: '작업 상태',
-					name: 'action',
-					align: "center",
-					formatter: function({row}) {
-						return `<button class="btn btn-sm btn-outline-danger action-btn" data-row-key="${row.rowKey}">작업 완료</button>`;
-					}
-			    },
+				
 				{
 	                header: '작업 지시서',
 	                name: 'WO_CODE',
@@ -639,15 +1158,18 @@
 
 		gridElement.addEventListener('click', function(e) {
 			if (e.target && e.target.classList.contains('action-btn')) {
-			const rowKey = e.target.getAttribute('data-row-key');
+			const rowKey = e.target.getAttribute('data-row-key'); // 0부터 시작 상단:0
 			const rowData = prcGrid.getRow(rowKey);
-			
+			//console.log("rowKey:" + rowKey);
 		    // rowData에서 필요한 값 추출
 			// LotOriginDTO에 있는 변수
 		    let lotNo = rowData.LOT_NO;
 			let bomQty = rowData.BOM_QTY;
 			let childPdtCode = rowData.CHILD_PDT_CODE
 			let parentPdtCode = rowData.PARENT_PDT_CODE;
+			let num = rowData.NUM; //1,2,3,... 1부터 시작 상단:1
+			
+			//console.log("lotNo:" + lotNo + " ,bomQty:" + bomQty + " ,childPdtCode:" + childPdtCode + " ,parentPdtCode:" + parentPdtCode + " ,num:" + num);
 			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
 			
 			// LotOriginDTO에 없기 때문에 따로 넘긴다
@@ -669,7 +1191,8 @@
 					contentType: 'application/json',
 			      	type: 'POST',
 			      	data: JSON.stringify({ 
-						lotNo: lotNo, 
+						num: num,
+			      		lotNo: lotNo, 
 						bomQty: bomQty,
 						childPdtCode: childPdtCode,
 						parentPdtCode: parentPdtCode,
@@ -680,16 +1203,11 @@
 						
 						//e.target.disabled = true; // 버튼 비활성화, 그리드가 재랜더링 되기 때문에 바로 적용x
 						
-						// reset 이후 버튼 비활성화
-				        prcGrid.on('onGridUpdated', () => {
-				          // 새로 렌더링된 버튼에서 rowKey에 해당하는 버튼만 비활성화
-				       		const btn = document.querySelector(`button.action-btn[data-row-key="${rowKey}"]`);
-				          	if (btn) btn.disabled = true;
-				        });
+						presentBtnRow = rowKey-1; //presentBtnRow(버튼)와 rowKey(grid)는 둘다 Grid의 인덱스로 0부터 시작
+						prcGrid.resetData(response); //재렌더링 될 때 presentBtnRow 변수가 버튼 함수 formatter에 적용
 						
-						prcGrid.resetData(response);
+						//--------------- 트리 작업 목록 줄 긋기 - 단일 ------------------
 						
-						//--------------- 트리 작업 목록 줄 긋기 ------------------
 						let input = parentPdtCode;
 						input = input.trim(); // 입력된 문자열 공백 제거
 						
@@ -714,17 +1232,80 @@
 										li.removeChild(node);
 						    		}
 							  });//li.childNodes.forEach(node => {
-						});//liList.forEach(li => {
+						});//liList.forEach(li => {*/
+							
+						//--------------- 현재 상태값을 SAVE_PRC 테이블에 입력 ------------------	
+						
+						$.ajax({
+							url: '/production/insertSavePrc',
+							contentType: 'application/json',
+							type: 'POST',
+							data: JSON.stringify({ 
+									woCode: woCode,
+									pdtCode: pdtCode,
+									parentPdtCode: parentPdtCode
+								}),
+							success: function(response){
+								
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: '에러 발생',
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+							}//error: function(error) {
+						});//$.ajax({
+							
+						//--------------- 완제품이 나오면 수량 전송 버튼이 보임 ------------------
+						if(num === 1){
+							document.getElementById('finishJobBtn').style.display = 'inline-block';
+						}
+						
+						//--------------- reset 이후 버튼 비활성화 - 배열 ---------------
+						//=> 버튼은 이제 formatter에서 관리
+						/*
+						let rowKeyArr = [4, 3,2]; // 비활성화하고 싶은 rowKey 배열
+
+						prcGrid.on('onGridUpdated', () => {
+							
+						    rowKeyArr.forEach(rowKey => {
+								
+						        const btn = document.querySelector(`button.action-btn[data-row-key="${rowKey}"]`);
+						        if (btn) {
+						            btn.disabled = true;
+						        }
+						    });//rowKeyArr.forEach(rowKey => {
+						});//prcGrid.on('onGridUpdated', () => {
+						
+						
+						prcGrid.resetData(response);
+						//--------------- reset 이후 버튼 비활성화 - 단일 ---------------
+						
+				        prcGrid.on('onGridUpdated', () => {
+				          	// 새로 렌더링된 버튼에서 rowKey에 해당하는 버튼만 비활성화
+						  	requestAnimationFrame(() => {
+						          const gridBtn = document.querySelector(`button.action-btn[data-row-key="2"]`);
+						          console.log(gridBtn);
+							          if (gridBtn) {
+							            gridBtn.disabled = true;
+							          } else {
+							            console.warn('버튼을 찾지 못했습니다:', rowKey);
+							          }
+							});//requestAnimationFrame(() => {
+				        });//prcGrid.on('onGridUpdated', () => {
+						
+						*/
+						//------------------------------------------------------
 						
 					},//success: function(response) {
-					error: function(xhr, status, error) {
+					error: function(error) {
 				        Swal.fire({
 				        	icon: 'error',
-				          	title: '에러 발생',
+				          	title: error,
 				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
-				        });
-			        console.error('에러:', error);
-			      }// error: function(xhr, status, error) {
+				      	});
+			      }// error: function(error) {
 			    });//$.ajax({
 				
 			}//if (result.isConfirmed) {

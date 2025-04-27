@@ -16,13 +16,13 @@ public class MfgSchedulePlanDTO {
 	private String pdtName;		   // 제품명
 	//private String prcCode; 	   // 공정 코드
 	//private String prcName;		   // 공정명
-	//private String empId; 		   // 등록 직원 사번
-	//private String empName; 	   // 등록 직원명
-	private String staffId;		   // 담당 직원 사번
+	private String empId; 		   // 등록 직원 사번
+	private String empName; 	   // 등록 직원명
+	//private String staffId;		   // 담당 직원 사번
 	//private String staffName;      // 담당 직원명
  	private String allocatedQty;   // 계획 수량
 	private String msPriority;     // 우선순위
-	private LocalDate msStartDate; // 제조 시작 예정일
-    private LocalDate msEndDate;   // 제조 종료 예정일
+	//private LocalDate msStartDate; // 제조 시작 예정일
+    //private LocalDate msEndDate;   // 제조 종료 예정일
     
 }

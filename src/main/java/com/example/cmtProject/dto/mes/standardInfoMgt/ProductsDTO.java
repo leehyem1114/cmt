@@ -1,20 +1,16 @@
 package com.example.cmtProject.dto.mes.standardInfoMgt;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductsDTO {
 	
 	private Long pdtNo;
@@ -29,4 +25,21 @@ public class ProductsDTO {
     private String pdtSize;
     private String ltTypeCode;
     private String pdtType;
+    
+    public Products toEntity() {
+        return Products.builder()
+            .pdtNo(this.pdtNo)
+            .pdtCode(this.pdtCode)
+            .pdtName(this.pdtName)
+            .pdtShippingPrice(this.pdtShippingPrice)
+            .pdtComments(this.pdtComments)
+            .pdtUseyn(this.pdtUseyn)
+            .mtlTypeCode(this.mtlTypeCode)
+            .pdtWeight(this.pdtWeight)
+            .wtTypeCode(this.wtTypeCode)
+            .pdtSize(this.pdtSize)
+            .ltTypeCode(this.ltTypeCode)
+            .pdtType(this.pdtType)
+            .build();
+    }
 }

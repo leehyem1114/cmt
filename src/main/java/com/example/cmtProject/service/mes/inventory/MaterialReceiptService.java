@@ -15,6 +15,7 @@ import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
+import com.example.cmtProject.service.mes.qualityControl.IqcService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +38,9 @@ public class MaterialReceiptService {
 	
 	@Autowired
 	private MaterialReceiptStockMapper mRsmapper;
+	
+	@Autowired
+	private IqcService iqcService;
 	
 	/**
 	 * 입고 목록 조회
@@ -176,6 +180,7 @@ public class MaterialReceiptService {
 	        resultMap.put("historyList", historyList != null ? historyList : new ArrayList<>());
 	        
 	        // 검수 정보 조회 (있는 경우)
+
 //	        Map<String, Object> inspectionData = mRmapper.getInspectionInfo(receiptNo);
 //	        resultMap.put("hasInspection", inspectionData != null);
 //	        if (inspectionData != null) {
@@ -422,8 +427,10 @@ public class MaterialReceiptService {
             updateMap.put("receiptDate", todayStr); // 검수 요청일을 입고일로 설정
             updateMap.put("updatedBy", params.get("updatedBy"));
             updateMap.put("updatedDate", todayStr);
+            updateMap.put("receiptCode", params.get("receiptCode"));
             
             int result = mRmapper.updateReceiptStatusAndDate(updateMap);
+            iqcService.insertIqcInspection(updateMap);
             
             if (result > 0) {
                 // 이력 기록

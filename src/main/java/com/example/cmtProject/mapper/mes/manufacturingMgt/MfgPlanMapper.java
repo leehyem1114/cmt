@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO;
@@ -33,10 +34,20 @@ public interface MfgPlanMapper {
 	List<Map<String, Object>> getMaterialInventory();
 	
 	// 수주에 따른 BOM 조회
-	List<Map<String, Object>> getMfgPlanBomList();
-
+	List<Map<String, Object>> getMfgPlanBomList(String soCode);
+	
+	
+	// 재고 조회
+	//List<Map<String, Object>> selectAvailableQty(@Param("soCode") String soCode, @Param("soQty") Long soQty);
+	String selectAvailableQty(@Param("soCode") String soCode, @Param("soQty") Long soQty);
+	
 	// 엑셀 데이터 저장
 	void saveExcelData(MfgPlanDTO dto);
+
+	void insertMfgPlan(MfgPlanDTO dto);
+
+
+	
 
 
 

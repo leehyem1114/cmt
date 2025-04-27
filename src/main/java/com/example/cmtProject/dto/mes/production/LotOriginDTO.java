@@ -14,11 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class LotOriginDTO {
+	
+	private Long num;
 	private Long lotNo;
 	private String childLotCode;
     private String parentLotCode;
     private String childPdtCode;
-    private String parentdPdtCode;
+    private String parentPdtCode;
     private LocalDate createDate;
     private String prcType;
     private String bomQty;

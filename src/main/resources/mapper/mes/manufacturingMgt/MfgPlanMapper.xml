@@ -69,32 +69,63 @@
 	
 	<!-- 원자재 재고 조회 -->
 	<select id="getMaterialInventory" resultType="Map">
-		SELECT MTL_CODE, SUM(CURRENT_QTY)
+		SELECT MTL_CODE, TO_NUMBER(AVAILABLE_QTY) AS AVAILABLE_QTY 
 		FROM MATERIAL_INVENTORY
-		GROUP BY MTL_CODE
+		
 	</select>
 	
 	<!-- 수주에 따른 BOM 조회 -->
 	<select id="getMfgPlanBomList" resultType="Map">
-		SELECT 
-			BOM_NO,
-			PARENT_PDT_CODE,
-			CHILD_ITEM_CODE,
-			ITEM_TYPE,
-			BOM_QTY,
-			BOM_UNIT,
-			BOM_PRC_TYPE,
-			PRIOR BOM_QTY * BOM_QTY AS TOTAL_QTY
-		FROM BOM
-		START WITH PARENT_PDT_CODE IN (
-			SELECT SO.PDT_CODE
-			FROM MFG_PLANS MP
-			JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
-			JOIN COMMONCODE_DETAIL CD ON MP.MP_STATUS = CD.CMN_DETAIL_CODE
-			WHERE CMN_CODE = 'MP_STATUS'
-				AND CD.CMN_DETAIL_CODE IN ('MPS002', 'MPS003') 
+		SELECT
+		    B.PARENT_PDT_CODE,
+		    B.CHILD_ITEM_CODE,
+		    TO_NUMBER(B.BOM_QTY) AS BOM_QTY,
+		    B.USE_YN
+		FROM BOM B
+		WHERE B.USE_YN = 'Y'
+		START WITH B.CHILD_ITEM_CODE = (
+		    SELECT PDT_CODE
+		    FROM SALES_ORDER
+		    WHERE SO_CODE = 'SO-20250301-002'
 		)
-		CONNECT BY PRIOR CHILD_ITEM_CODE = PARENT_PDT_CODE
+		CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
+		ORDER SIBLINGS BY B.PARENT_PDT_CODE
+	</select>
+	
+	<!-- 원자재 재고 조회 -->
+	<select id="selectAvailableQty" resultType="string" parameterType="map">
+		WITH ALL_INVENTORY AS (
+		  SELECT MTL_CODE AS CODE, ALLOCATED_QTY FROM MATERIAL_INVENTORY
+		  UNION ALL
+		  SELECT PDT_CODE AS CODE, ALLOCATED_QTY FROM PRODUCTS_INVENTORY
+		),
+        BOM_WITH_STOCK AS (
+        	SELECT  B.CHILD_ITEM_CODE,
+                    B.PARENT_PDT_CODE,
+                    B.BOM_QTY,
+                    B.USE_YN,
+                    NVL(INVEN.ALLOCATED_QTY, 0) AS ALLOCATED_QTY
+                    FROM (
+                    	SELECT B.CHILD_ITEM_CODE,
+        					   B.PARENT_PDT_CODE,
+        					   B.BOM_QTY,
+        					   B.USE_YN
+      					FROM BOM B
+      					WHERE B.USE_YN = 'Y'
+                    	START WITH B.CHILD_ITEM_CODE = (
+                    		SELECT PDT_CODE
+                        	FROM SALES_ORDER
+                        	WHERE SO_CODE = #{soCode}
+                    	)
+                    	CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
+                    	ORDER SIBLINGS BY B.PARENT_PDT_CODE ) B
+                    	LEFT JOIN ALL_INVENTORY INVEN 
+    						ON B.PARENT_PDT_CODE = INVEN.CODE
+    	)
+        SELECT CASE WHEN COUNT(*) = 0 THEN '등록 가능'
+                                      ELSE '재고 부족' END AS MSG
+        FROM BOM_WITH_STOCK                                          	
+		WHERE ALLOCATED_QTY &lt;= 0           
 	</select>
 	
 	<!-- 생산 계획 등록 -->
@@ -122,6 +153,32 @@
     		, #{mpStartDate, jdbcType=DATE}
     		, #{mpEndDate, jdbcType=DATE}
     	)	
+	</insert>
+	
+	<insert id="insertMfgPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
+		INSERT INTO MFG_PLANS (
+			      MP_NO
+			    , MP_CODE
+				, SO_CODE
+				, EMP_ID
+	<!-- 			, MP_STATUS -->
+				, MP_PRIORITY
+				, MP_CREATED_AT
+				, MP_UPDATED_AT
+				, MP_START_DATE
+			    , MP_END_DATE
+			) SELECT
+			    MFG_PLANS_SEQ.NEXTVAL
+	    		, 'MP-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || LPAD(ROWNUM, 3, '0')
+	    		, #{soCode, jdbcType=VARCHAR}
+	    		, #{empId, jdbcType=VARCHAR}
+	<!--     		, #{mpStatus, jdbcType=VARCHAR} -->
+	    		, #{mpPriority, jdbcType=VARCHAR}
+	    		, SYSDATE
+	    		, NULL
+	    		, #{mpStartDate, jdbcType=DATE}
+	    		, #{mpEndDate, jdbcType=DATE}
+	    	FROM DUAL	
 	</insert>
 	
 	<!-- 생산 계획 수정 -->

@@ -1,6 +1,7 @@
 package com.example.cmtProject.controller.mes.production;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,7 +34,22 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		//제조계획 리스트
 		List<MfgScheduleDTO> planList = orderService.getPlanList();
 		model.addAttribute("planList",planList);
+		
+		List<WorkOrderDTO> stats = orderService.getCompleteStatsLast7Days();
 
+
+		List<String> workDateList = stats.stream()
+		    .map(WorkOrderDTO::getWorkDate)
+		    .collect(Collectors.toList());
+	
+		List<Integer> completeCountList = stats.stream()
+		    .map(WorkOrderDTO::getCompleteCount)
+		    .collect(Collectors.toList());
+
+
+	    model.addAttribute("workDateList", workDateList);
+	    model.addAttribute("completeCountList", completeCountList);
+	    
 		return"mes/production/work_order";
 	}
 	
@@ -70,5 +86,7 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		orderService.startWork(workOrderDTO.getWoNo());
 		return "날짜 업데이트";
 	}
+	
+
 	
 }

@@ -7,7 +7,7 @@
     <insert id="insertStock" parameterType="java.util.Map">
         INSERT INTO MATERIAL_RECEIPT_STOCK (
             RECEIPT_STOCK_NO, 
-            RECEIPT_NO, 
+            RECEIPT_NO,     <!-- RECEIPT_CODE를 RECEIPT_NO로 변경 -->
             MTL_CODE, 
             REMAINING_QTY, 
             RECEIPT_DATE, 
@@ -15,7 +15,7 @@
             CREATED_DATE
         ) VALUES (
             SEQ_MATERIAL_RECEIPT_STOCK.NEXTVAL, 
-            #{receiptNo}, 
+            #{receiptNo},   <!-- receiptCode를 receiptNo로 변경 -->
             #{mtlCode}, 
             #{remainingQty}, 
             SYSDATE, 
@@ -28,7 +28,7 @@
     <select id="getStocksByMtlCodeOrderByDate" parameterType="java.lang.String" resultType="java.util.Map">
         SELECT 
             RECEIPT_STOCK_NO,
-            RECEIPT_NO,
+            RECEIPT_NO,    <!-- RECEIPT_CODE를 RECEIPT_NO로 변경 -->
             MTL_CODE,
             REMAINING_QTY,
             RECEIPT_DATE
@@ -38,7 +38,7 @@
             MTL_CODE = #{mtlCode}
             AND TO_NUMBER(REMAINING_QTY) > 0
         ORDER BY 
-            RECEIPT_DATE ASC, RECEIPT_NO ASC
+            RECEIPT_DATE ASC, RECEIPT_NO ASC  <!-- RECEIPT_CODE를 RECEIPT_NO로 변경 -->
     </select>
     
     <!-- 입고별 재고 차감 -->

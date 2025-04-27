@@ -3,6 +3,7 @@ package com.example.cmtProject.mapper.mes.production;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
 import com.example.cmtProject.dto.mes.production.LotDTO;
@@ -34,6 +35,9 @@ public interface WorkOrderMapper {
 	//====================================
 	List<LotDTO> selectAllLotTree();
 	List<LotDTO> selectLotProcessListByLotNo(String childLotCode);
-
+	
+	//그래프
+	List<WorkOrderDTO> selectCompleteStatsLast7Days();
+	
 
 }

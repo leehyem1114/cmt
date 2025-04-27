@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class LotDTO {
-
+	
+	private Long num;
 	private Long lotNo;
 	private String childLotCode;
     private String parentLotCode;
@@ -29,6 +30,8 @@ public class LotDTO {
     private String startTime;
     private String finishTime;
     private String woStatusNo;
+    private String woStatusName;
+    private String woStatusCode;
     private String bomQty;
 	private String bomUnit;
 	private String path;

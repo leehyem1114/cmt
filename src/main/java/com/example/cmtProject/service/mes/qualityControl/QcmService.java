@@ -2,6 +2,7 @@ package com.example.cmtProject.service.mes.qualityControl;
 
 import java.lang.module.ModuleDescriptor.Builder;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,21 +32,22 @@ public class QcmService {
 	@Transactional
 	public void qcmInsert(QcmDTO qcmDTO) {
 		qcmMapper.qcmInsert(qcmDTO);
-		
 	}
 	
 	public String existsByQcmCode(Long qcmNo) {
 		return qcmMapper.existsByQcmCode(qcmNo);
 	}
 
-	@Transactional
 	public List<CommonCodeDetailDTO> getUnitLengthList() {
 		return qcmMapper.getUnitLengthList();
 	}
 
-	@Transactional
 	public List<CommonCodeDetailDTO> getUnitWeightList() {
 		return qcmMapper.getUnitWeightList();
+	}
+	
+	public List<Map<String, Object>> getQcmNamesByMtlName(String mltName){
+		return qcmMapper.getQcmNamesByMtlName(mltName);
 	}
 
 	@Transactional

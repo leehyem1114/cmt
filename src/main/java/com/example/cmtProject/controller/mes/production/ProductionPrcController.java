@@ -1,7 +1,6 @@
 package com.example.cmtProject.controller.mes.production;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -9,8 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,8 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
-import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.LotUpdateDTO;
+import com.example.cmtProject.dto.mes.production.SavePRCDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
@@ -38,6 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductionPrcController {
 	
 	/*
+	 * - 공정 상황 설명 -
+	 * 
 	 * 대기(SB) -> 공정 작업 대기(PS) -> 진행중(공정 작업 중)(RN) -> 완료(CP)
 	 * 
 		작업 등록을 클릭하면 모달창이 뜨고 작업 지시 등록을 누르면 SB
@@ -45,7 +49,6 @@ public class ProductionPrcController {
 		공정 현황에서 공정 작업 등록 버튼을 누르면 셀렉트 박스가 나타나고 시작을 클릭하면 RN으로 상태 변환
 		=> RN으로 돼 버리면 이후 셀렉트 박스 목록에는 나타나지 않는다
 		두 번째 하단 그리드에서 작업 완료 버튼을 클릭하면 해당 작업만 CP로 변환
-		
 		
 		*작업 지시서에는 완제품만 있고 LOT 테이블에는 반제품과 완제품이 있어서 상태를 따로 둔다        
 		
@@ -56,8 +59,51 @@ public class ProductionPrcController {
 		-- 공정 현황에서 셀렉트 박스를 선택한 작업만 상태가 RN으로 변경 된다. 
 		SELECT * FROM LOT;
 		UPDATE LOT SET WO_STATUS_NO = 'PS' -- 넘어온 데이터 작업을 위해 PS로 변경
+		
+		DELETE SAVE_PRC -- 현재 공정 테이블 내용 삭제
 	*/
 	
+	/*
+	 * - 권한과 공정에 따른 버튼 활성화/비활성화 -
+	 * 
+	 * 공정 작업 중 테이블 생성 -> 테이블에 데이터가 있으면 '공정 작업 등록' 버튼 막고, 해당 데이터를 불러오고 
+	 * 					->	없으면 '공정 작업 등록 버튼' 클릭 가능 
+	 * 
+	 * 데이터가 있는 경우 처리 
+	 * server:
+	 * 	- 상단 그리드 : 작업 코드에 해당하는 데이터 불러오기 
+	 * 	- 두번째 하단 그리드 : db에서 상태를 가져온다
+	 * 
+	 * client:
+	 * 	- parentPdtCodeList(첫번째 하단 왼쪽 트리 값들) : db에서 lot의 cp인 parentPdtCode
+	 * 	- presentBtnRow(두번째 하단 그리드 버튼) : 최초 로딩시 / 클릭시 db에서 불러온다
+	 * 		=> grid의 rowKey일치 시켜야 한다. rowKey는 0부터 시작
+	 * 		=> 현재 상태가 RN 중 가장 ROWNUM이 큰 것
+	 * 
+	 * 공정 상황을 저장하기 위해 SAVE_PRC 테이블 생성
+	 * 저장할 데이터 : woCode(상단 그리드), pdtCode, parentPdtCode
+	 * 
+	 * 두번째 하단 그리드에 버튼을 클릭했을 때 저장 값들 
+	 * : FINISH_TIME, WO_STATUS_NO, BOM_QTY, START_TIME은 LOT 테이블에 업데이트
+	 * : WO_CODE, PDT_CODE, PARENT_LOT_CODE을 SAVE_PRC 테이블에 저장
+	 * : WO_STATUS_NO 상태 값을 RN -> CP로 변경, 기존값이 있는 재로딩시 RN 기준으로 불러오기 때문에 다음 값을 제대로 가져올 수 있다
+	 * 	 * 
+	 * 수량 전송을 하면 SAVE_PRC 테이블을 DELETE
+	 * 
+	 * 		CREATE TABLE SAVE_PRC(
+	 *		    -- 두번째 하단 그리드를 그르기 위한 데이터
+	 *		    WO_CODE VARCHAR(20),
+	 *		    -- 상단 그리드를 그리기 위한 데이터
+	 *		    PDT_CODE VARCHAR(100),
+	 *		    -- 첫번째 하단 왼쪽 트리 상태를 나타내기 위한 데이터
+	 * 		    PARENT_LOT_COCE VARCHAR(200)
+	 *		)
+	 *		
+	 *		
+	 * - 권한 : 도중에 불량이 났거나 잘못 생산 되었다고 가정 -
+	 * 기존 생산품은 품질로 보내고, 작업지시서는 없어지고, lot테이블은 그대로 유지
+	 * save_prc테이블 delete, admin 권한의 수량 데이터 전송 버튼 활성화, 공정 작업 등록 버튼 활성화 
+	 * */
 
 	@Autowired
 	private ProductionPrcService productionPrcService;
@@ -69,11 +115,74 @@ public class ProductionPrcController {
 	@GetMapping("/productionPrc")
 	public String getMethodName(Model model) {
 		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String username = authentication.getName(); // 로그인한 아이디 (admin, user 등)
+		log.info(username);
+		//username:971114 - user
+		//username:981114 - manager
+		//username:991114 - admin
+		
 		//작업상태가 StandBy인 것만 가져온다(모달 셀렉트 박스에서 workOrderSBList 사용)
 		List<WorkOrderDTO> workOrderSBList = productionPrcService.selectWoStandByList();
 		//log.info("workOrderList:"+workOrderSBList);
 		
 		model.addAttribute("workOrderSBList", workOrderSBList);
+		
+		//위에 데이터는 다 넘겨주고 클라이언트에서 저장 유무 판단
+		//SAVE_PRC테이블에 데이터가 있다는 것만으로 현재 작업 중 임을 알 수 있다
+		
+		int checkSavePRC = lotService.selectCheckSavePRC();
+		
+		String nowWoCode = "";  
+		String nowPdtCode = ""; 
+		
+		/*
+		 * rnRowNum은 클라이언트의 버튼 formatter의 변수 presentBtnRow에서 사용하기 위해서 항상 넘겨줘야 하는데
+		 * if(checkSavePRC > 0)로 현재 작업 중 이면 WO_STATUS_NO가 RN중 가장 큰 ROWNUM의 값을
+		 * 만약 작업중이 아니라 최초 작업 시작이라면 "모달의 시작 버튼을 누를 때" 총 데이터 ROWNUM 중 가장 큰 값을 넘겨준다 
+		 * => 모달 시작 버튼을 누를 때 LOT테이블이 바로 만들어진 직후라 값을 못 받아온다
+		 * 그래서, 하단 "작업 현황 버튼"을 눌렀을 때 ROWNUM을 받아온다
+		 * 
+		 * :rnRowNum은 완제품이 나오고 나면 null반환
+		 */
+		String rnRowNum = ""; //LOT 테이블의 WO_STATUS_NO에 RN상태 ROWNUM 가져오기 
+		
+		/*
+		 * nowWoCode에 데이터가 없으면 상태가 전부 CP이기 때문에 rnRowNum은 = 0 이 된다.
+		 * nowWoCode에 데이터가 있으면 rnRowNum은 > 0 이 된다.
+		 * 
+		 * 모달의 시작 버튼과 두번째 하단의 수량 전송에서 한꺼번에 업데이트 진행.
+		 * */
+		
+		if(checkSavePRC > 0) { //현재 작업 중 이면
+			List<SavePRCDTO> nowSavePrc = lotService.selectSavePRC();
+			/*	woCode	 pdtCode  parentPdtCode
+			 * 'MSC005','WIP009', 'WIP005'
+			 * 'MSC005','WIP009', 'WIP004'
+			 * 'MSC005','WIP009', 'MTL002'
+			 * */
+			
+			nowWoCode = nowSavePrc.get(0).getWoCode();
+			nowPdtCode = nowSavePrc.get(0).getPdtCode();
+			//작업 중이면 RN중 가장 큰 rownum
+			rnRowNum = lotService.selectRNRowNum(nowWoCode);
+			
+			//nowSavePrc에서 parentPdtCode만 빼서 list로 만들기
+			List<String> parentPdtCodeList = nowSavePrc.stream()
+				    .map(SavePRCDTO::getParentPdtCode)
+				    .distinct()
+				    .collect(Collectors.toList());
+			
+			Map<String, String> savePRC = new HashMap<>();
+			savePRC.put("nowWoCode", nowWoCode); //작업 중인 woCode
+			savePRC.put("nowPdtCode", nowPdtCode); //작업 중이 pdtCode
+			savePRC.put("rnRowNum", rnRowNum); // LOT테이블에서 RN 중 가장 큰 rownum
+			
+			model.addAttribute("savePRC", savePRC);
+			model.addAttribute("parentPdtCodeList", parentPdtCodeList); //하단 왼쪽 트리 밑 줄그을 데이터	
+		}
+
+		model.addAttribute("username", username);
 		
 		return "mes/production/productionPrc";
 	}
@@ -100,7 +209,6 @@ public class ProductionPrcController {
 		//CHILD_ITEM_CODE => 현재 제품/최종 제품
 		
 		/*
-		
 		- BOM테이블에서 path를 가져와서 해당 정보를 바탕으로 Lot을 생성 후 Lot테이블에 입력하고
 		상단 그리드에는 BOM테이블에서 가져온 정보를 출력한다 -
 		  
@@ -135,20 +243,6 @@ public class ProductionPrcController {
 		MTL-006
 		
 		위에서 가져온 pdtCode에서 일률적으로 LOT번호를 생성 후 해당 데이터에 LOT번호를 삽입 
-		
-		SELECT 
-		    DISTINCT PARENT_PDT_CODE
-		FROM BOM
-		WHERE USE_YN = 'Y'
-		START WITH CHILD_ITEM_CODE = 'FP001'
-		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
-		
-		SELECT 
-		    DISTINCT CHILD_ITEM_CODE
-		FROM BOM
-		WHERE USE_YN = 'Y'
-		START WITH CHILD_ITEM_CODE = 'FP001'
-		CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
 		
 		CHILD_ITEM_CODE와 PARENT_PDT_CODE 각각 중복 제거 후 set으로 합치기
 		*/
@@ -196,7 +290,6 @@ public class ProductionPrcController {
 		- lot새로 생성 -
 		
 		setCodeArray를 돌면서 MTL, FP, PR, WE, PA, AS 인지 검색
-		
 		int 값을 각각 1번씩만 증가 후 입력
 		*/
 		
@@ -276,7 +369,7 @@ public class ProductionPrcController {
 			lod.setChildLotCode(childLot);
 			lod.setParentLotCode(parentLot);
 			lod.setChildPdtCode(childPdtCode);
-			lod.setParentdPdtCode(parentPdtCode);
+			lod.setParentPdtCode(parentPdtCode);
 			lod.setCreateDate(today);
 			lod.setPrcType(prcType);
 			lod.setBomQty(bomQty);
@@ -341,36 +434,24 @@ public class ProductionPrcController {
 	//두번째 하단 작업 현황 버튼 클릭시 비동기
 	@PostMapping("/prcBoard")
 	@ResponseBody
-	public List<LotOriginDTO> prcBoard(@RequestParam("pdtCode") String pdtCode, @RequestParam("woCode") String woCode) {
-		
-		//pdtCode로 BOM 테이블에서 PATH가져오기
-		//List<LotStructurePathDTO> lspd = lotService.selectStructurePath(pdtCode);
-		
-		//LOT테이블에서 전체 PATH가져오기, woCode(작업지시코드)는 가져간다
-		//List<LotStructurePathDTO> lspd = lotService.selectStructurePathAll(woCode, pdtCode);
+	public List<LotOriginDTO> prcBoard(@RequestParam("woCode") String woCode) {
 		
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(woCode);
+		log.info("/prcBoard의 selectLotOrigin:" + selectLotOrigin);
 		
-		log.info("LotStructurePathDTO:" + selectLotOrigin);
 		return selectLotOrigin;
 	}
 	
-	//두번째 그리드에서 작업 완료 버큰 클릭 시 업데이트
-	
-	//LOT_NO - 1 에 START_TIME 등록
-	
+	//두번째 하단 그리드 안에 버튼 클릭시
 	@PostMapping("/jobCmpl")
 	@ResponseBody
 	public List<LotOriginDTO> jobCmpl(@RequestBody LotUpdateDTO lotUpdateDTO) {
 		
-		//parentPdtCode가 소모되어 childPdtCode가 되므로 parentPdtCode가 소모품, 소모량
-		
-		//log.info(lotUpdateDTO.toString());
-		//LotUpdateDTO(lotNo=163, bomQty=1, childPdtCode=WIP002, parentPdtCode=MTL-002, woCode=MSC001, pdtCode=FP001)
 		/*
-		
+		parentPdtCode가 소모되어 childPdtCode가 되므로 parentPdtCode가 소모품, 소모량
+		log.info(lotUpdateDTO.toString()); //LotUpdateDTO(lotNo=163, bomQty=1, childPdtCode=WIP002, parentPdtCode=MTL-002, woCode=MSC001, pdtCode=FP001)
+
 		//FINISH_TIME, WO_STATUS_NO, BOM_QTY 업데이트
-		
 		if(childPdtCode가 PDT_CODE와 일치하지 않는 경우){
 			lotNo - 1 => START_TIME 업데이트
 		}
@@ -378,12 +459,13 @@ public class ProductionPrcController {
 		if(childPdtCode가 PDT_CODE와 일치하는 경우){
 			작업지시서의 WO_CODE와 일치하는 PDT_CODE이면 WORK_ORDER의 WO_STATUS_CODE도 CP로 업데이트 
 		} 
-		
 		*/
 		
 		Long lotNo = Long.valueOf(lotUpdateDTO.getLotNo()); 
 	
 		LotOriginDTO lotOrigin = new LotOriginDTO();
+		
+		//log.info(lotUpdateDTO.)
 		
 		//LOT_NO
 		lotOrigin.setLotNo(lotNo);
@@ -394,7 +476,7 @@ public class ProductionPrcController {
 		lotOrigin.setFinishTime(finishTime);
 		
 		//WO_STATUS_NO
-		lotOrigin.setWoStatusNo("CP"); //CP : 완료
+		lotOrigin.setWoStatusNo("CP"); //CP : 완료  ------------------------------------------ LOT 그리드 버튼 클릭시 변경 - 작업중일 땐 사용x
 		
 		//BOM_QTY
 		lotOrigin.setBomQty(lotUpdateDTO.getBomQty());
@@ -403,21 +485,86 @@ public class ProductionPrcController {
 		lotOrigin.setWoCode(lotUpdateDTO.getWoCode());
 		
 		lotService.updateLotPresentPRC(lotOrigin);
-		
-		if(!lotUpdateDTO.getChildPdtCode().equals(lotUpdateDTO.getPdtCode())) {
-			Long nextLotNo = lotNo - 1;
+		/*
+		log.info("num:" + lotUpdateDTO.getNum());
+		log.info("lotNo:"+ lotNo.toString());
+		log.info("ChildPdtCode():"+lotUpdateDTO.getChildPdtCode());
+		log.info("PdtCode():"+lotUpdateDTO.getPdtCode());
+		*/
+		if(!lotUpdateDTO.getNum().equals("1")) {
 			
+			//LOT_NO - 1 에 START_TIME 등록
 			//LOT테이블의 다음 작업에 startTime 업데이트 => 전 공정의 finishTime이 이후 공정의 startTime
+			Long nextLotNo = lotNo - 1;
 			lotService.updateLotNextPRC(nextLotNo, finishTime);
+			
 		}else {
 			//WORK_ORDER 테이블의 WO_STATUS_CODE도 CP로 업데이트 
 			lotService.updateWOtoCP(lotUpdateDTO.getWoCode());
 		}
 		
+		//grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(lotUpdateDTO.getWoCode());
-	
+		//log.info("/jobCmpl의 selectLotOrigin:" + selectLotOrigin);
+		
 		return selectLotOrigin;
-			
+	}
+	
+	//SAVE_PRC테이블에 데이터가 있는 경우 최초 로딩시 상단 그리드에 출력
+	@PostMapping("/savePRCwoGrid")
+	@ResponseBody
+	public List<BomInfoDTO> savePRCwoGrid(@RequestParam("pdtCode") String pdtCode, Model model) {
+		
+		List<BomInfoDTO> selectPdtCodeList = productionPrcService.selectPdtCodeList(pdtCode);
+		
+		model.addAttribute("selectPdtCodeList", selectPdtCodeList); 
+		
+		return selectPdtCodeList;
+	}
+	
+	//SAVE_PRC테이블에 데이터가 있는 경우 최초 로딩시 두번째 하단 그리드에 출력
+	@PostMapping("/savePRCprcGrid")
+	@ResponseBody
+	public List<LotOriginDTO> savePRCprcGrid(@RequestParam("woCode") String woCode, Model model) {
+		
+		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(woCode);
+		
+		model.addAttribute("selectLotOrigin", selectLotOrigin); 
+
+		return selectLotOrigin;
+	}
+	
+	//작업 현황 버튼을 눌렀을 때 받아올 rnRowNum의 max값
+	@GetMapping("/getRnRowNumMax")
+	@ResponseBody
+	public Integer getRnRowNumMax(@RequestParam("woCode") String woCode, Model model) {
+		
+		Integer rnRowNumMax = lotService.selectRnRowNumMax(woCode);
+		
+		log.info("/getRnRowNumMax의 rnRowNumMax:" + rnRowNumMax);
+		
+		return rnRowNumMax;
+	}
+	
+	//그리드 안에 버튼 클릭시 데이터 입력
+	@PostMapping("/insertSavePrc")
+	@ResponseBody
+	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
+		
+		lotService.insertSavePrc(savePrcDto);
+		
+		return "success";
+	}
+	
+	//수량 전송 후 SAVE_PRC 데이터 삭제
+	@GetMapping("/deleteSavePrc")
+	@ResponseBody
+	public String deleteSavePrc() {
+		
+		//saveprc의 모든 데이터 삭제
+		lotService.deleteSavePrc();
+		
+		return "success";
 	}
 }
 

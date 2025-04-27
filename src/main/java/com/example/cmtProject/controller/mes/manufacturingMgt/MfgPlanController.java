@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO;
+import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgHistoryMapper;
+import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper;
 import com.example.cmtProject.repository.mes.manufacturingMgt.MfgPlanRepository;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
@@ -52,6 +54,9 @@ public class MfgPlanController {
 	
 	@Autowired
 	private MfgPlanRepository mfgPlanRepository;
+	
+	@Autowired
+	private MfgPlanMapper mfgPlanMapper;
 	
 	// 생산 계획 조회
 	@GetMapping("/mfg-plan")
@@ -97,33 +102,72 @@ public class MfgPlanController {
 	    return "mes/manufacturingMgt/mfgPlan";
 	}
 	
-	// 원자재 재고 조회
-	@GetMapping("/selectCurrentQty")
+	// 재고 조회
+	@GetMapping("/selectAvailableQty")
 	@ResponseBody
-	public boolean selectCurrentQty(@RequestParam("pdtCode") String pdtCode,@RequestParam("soQty") Long soQty) {
-		boolean isAvailable = mfgPlanService.isCurrentQtyEnough(pdtCode, soQty);
-		return isAvailable;
+	public String selectAvailableQty(@RequestParam("soCode") String soCode,@RequestParam("soQty") Long soQty) {
+		
+	    return mfgPlanMapper.selectAvailableQty(soCode, soQty);
 	}
 	
 	// 생산 계획 등록
+	/*
+	 * @PostMapping("/mfgPlanRegi")
+	 * 
+	 * @ResponseBody public String mfgPlanRegi(@RequestBody MfgPlanDTO mfgPlanDTO) {
+	 * // // 현재 로그인한 사용자 정보 가져오기 // Authentication auth =
+	 * SecurityContextHolder.getContext().getAuthentication(); // String
+	 * currentUserId = auth.getName(); // // // ADMIN 권한 여부 확인 // boolean isAdmin =
+	 * auth.getAuthorities().stream() // .anyMatch(role ->
+	 * role.getAuthority().equals("ROLE_ADMIN")); // // // empId: 사원은 본인 ID, 관리자는
+	 * null (전체 조회) // String empIdForQuery = isAdmin ? null : currentUserId;
+	 * 
+	 * // 재고 부족 시 등록 안 함 String soCode = mfgPlanDTO.getSoCode(); Long soQty =
+	 * mfgPlanDTO.getSoQty();
+	 * 
+	 * String result = mfgPlanMapper.selectAvailableQty(soCode, soQty);
+	 * System.out.println("DSAFASDFASDFADSFDASF" + result);
+	 * 
+	 * 
+	 * if (!"등록 가능".equals(result)) { return "fail"; }
+	 * 
+	 * // 재고 충분하면 등록 진행 mfgPlanService.registMpPlan(mfgPlanDTO);
+	 * 
+	 * return "success"; }
+	 */
+	
 	@PostMapping("/mfgPlanRegi")
 	@ResponseBody
-	public String mfgPlanRegi(@RequestBody MfgPlanDTO mfgPlanDTO) {
-	    // 현재 로그인한 사용자 정보 가져오기
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    String currentUserId = auth.getName();
-
-	    // ADMIN 권한 여부 확인
-	    boolean isAdmin = auth.getAuthorities().stream()
-	            .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
-
-	    // empId: 사원은 본인 ID, 관리자는 null (전체 조회)
-	    String empIdForQuery = isAdmin ? null : currentUserId;
-	
-	    mfgPlanService.registMpPlan(mfgPlanDTO);
+	public String mfgPlanRegi(@RequestBody List<MfgPlanDTO> mfgPlanList) {
 		
-		return "success";
+		System.out.println("!@#!@#");
+		System.out.println(mfgPlanList);
+		
+		int resultFailCount = 0;
+	    for (MfgPlanDTO dto : mfgPlanList) {
+	        String soCode = dto.getSoCode();
+	        Long soQty = dto.getSoQty();
+
+	        String result = mfgPlanMapper.selectAvailableQty(soCode, soQty);
+	        System.out.println("재고확인: " + soCode + " => " + result);
+
+	        if (!"등록 가능".equals(result)) {
+	            resultFailCount +=1;  // 또는 어느 항목이 실패했는지 구체적으로 리턴해도 됨
+	        } else {
+	        	//등록 가능한거 바로 입력하자!
+	        	mfgPlanService.registMpPlanBatch(dto); //dto
+	        }
+	    }
+	    System.out.println(mfgPlanList);
+	    System.out.println("입력받은 리스트 갯수 : " + mfgPlanList.size());
+	    System.out.println("등록불가 건수 : " + resultFailCount);
+	    // 악의 근원
+//	    for (MfgPlanDTO mpDto : mfgPlanList) {
+//	    	mfgPlanService.registMpPlanBatch(mfgPlanList);
+//	    }
+	    return "success";
 	}
+	
 	
 	// 생산계획번호 생성
 	@ResponseBody

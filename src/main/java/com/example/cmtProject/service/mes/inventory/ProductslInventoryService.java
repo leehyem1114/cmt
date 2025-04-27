@@ -30,7 +30,7 @@ public class ProductslInventoryService {
 	 * @param map 검색 조건
 	 * @return 재고 목록
 	 */
-	public List<Map<String,Object>> inventoryList(Map<String, Object>map){
+	public List<Map<String,Object>> pInventoryList(Map<String, Object>map){
 		return pImapper.pInventoryList(map);
 	}
 	

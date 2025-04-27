@@ -2,6 +2,7 @@ package com.example.cmtProject.controller.mes.standardInfoMgt;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ProcessHandle.Info;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,10 +12,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,7 +26,9 @@ import com.example.cmtProject.controller.mes.standardInfoMgt.commModels.BomInfoM
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomEditDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoTotalDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
+import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductsEditDTO;
+import com.example.cmtProject.entity.erp.salesMgt.SalesOrder;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Materials;
 import com.example.cmtProject.entity.mes.standardInfoMgt.ProcessInfo;
 import com.example.cmtProject.entity.mes.standardInfoMgt.Products;
@@ -83,6 +88,9 @@ public class BomInfoController {
 		//단위 데이터 models
 		bomInfoModels.commonBomInfoModels(model);
 		
+		//th:object에서 사용할 객체 생성
+	 	model.addAttribute("ProductsDTO", new ProductsDTO());
+	 	
 		return "mes/standardInfoMgt/bomInfo";
 	}
 	
@@ -181,7 +189,7 @@ public class BomInfoController {
 		
 		List<BomInfoTotalDTO> bomtotal = bomInfoService.getBomInfoTotalList(pdtCode);
 		
-		log.info("bomtotal"+bomtotal);
+		//log.info("bomtotal"+bomtotal);
 		
 		
 		List<Map<String, Object>> bomData = bomtotal.stream()
@@ -224,10 +232,10 @@ public class BomInfoController {
 	    String filePath = "/excel/" + fileName;
 
 	    // /static/ 디렉토리 기준으로 파일을 읽어옴
-	    log.info("filePath:"+filePath);
+	    //log.info("filePath:"+filePath);
 	    InputStream inputStream = new ClassPathResource(filePath).getInputStream();
 
-	    log.info("inputStream:"+inputStream);
+	    //log.info("inputStream:"+inputStream);
 	    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	    response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
@@ -241,7 +249,7 @@ public class BomInfoController {
 	@GetMapping("/pdteditexe")
 	public int pdteditexep(@ModelAttribute ProductsEditDTO pdtEditDto) throws JsonMappingException, JsonProcessingException {
 		
-		log.info(pdtEditDto.toString());
+		//log.info(pdtEditDto.toString());
 		
 		int resultEdit = productsService.pdtMainUpdate(pdtEditDto); 
 		
@@ -253,11 +261,28 @@ public class BomInfoController {
 	@GetMapping("/bomeditexe")
 	public int bomeditexep(@ModelAttribute BomEditDTO bomEditDto) throws JsonMappingException, JsonProcessingException {
 		
-		log.info(bomEditDto.toString());
+		//log.info(bomEditDto.toString());
 		
 		int resultEdit = bomInfoService.bomMainUpdate(bomEditDto); 
 		
 		//return resultEdit;
 		return 1;
+	}
+	
+	//BOM페이지에서 상품 등록 
+	@PostMapping("/pdtRegister")
+	public String pdtRegister(@ModelAttribute ProductsDTO productsDTO) {
+		
+		productsDTO.setPdtNo(null);
+		productsDTO.setPdtUseyn("Y");
+		ProductsDTO dto = productsDTO;
+		
+		//DTO를 builder를 이용해서 entity로 변환
+		Products entity = dto.toEntity();
+		
+		productsRepository.save(entity);
+		log.info(entity.toString());
+		
+		return "redirect:bom-info";
 	}
 }

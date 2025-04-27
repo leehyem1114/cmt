@@ -67,6 +67,23 @@
 		FROM MFG_SCHEDULES_DETAIL
 	</select>
 	
+	<!-- 제조 계획 등록 시 생산 계획 목록 조회 -->
+	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
+		SELECT
+			MP.MP_CODE
+			, P.PDT_CODE
+			, P.PDT_NAME
+			, MP.EMP_ID
+			, E.EMP_NAME
+			, SO.SO_QTY
+			, MP.MP_START_DATE
+			, MP.MP_END_DATE
+		FROM MFG_PLANS MP
+		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
+		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE	
+	</select>
+	
 	<!-- 제조 계획 등록 -->
 	<insert id="registMsPlan" parameterType="java.util.List">
 		INSERT INTO MFG_SCHEDULES (

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LotUpdateDTO {
 	
+	private String num;
 	private String lotNo; 
 	private String bomQty;
 	private String childPdtCode;

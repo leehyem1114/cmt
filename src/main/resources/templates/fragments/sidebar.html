@@ -48,6 +48,46 @@
 				  });
 				</script>
 	        </div>
+	        <!-- ✅ 사이드바 시간 표시 영역 -->
+			<div id="sidebar-time" style=" font-weight: bold; font-size: 30px; color: #333;">
+			  <span id="current-time">--:--:--</span>
+			</div>
+			
+			<script>
+			// ✅ 두 자리 숫자 보장하는 패딩 함수
+			function pad(n) {
+			  return n < 10 ? '0' + n : n;
+			}
+			
+			// ✅ 시간 포맷 함수 (00:00:00)
+			function formatTimeWithSeconds(date) {
+			  const hours = pad(date.getHours());
+			  const minutes = pad(date.getMinutes());
+			  const seconds = pad(date.getSeconds());
+			  return `${hours}:${minutes}:${seconds}`;
+			}
+			
+			// ✅ 시간 업데이트 함수
+			function updateTime() {
+			  const now = new Date();
+			  const timeString = formatTime(now);
+			  const timeEl = document.getElementById('current-time');
+			  if (timeEl) timeEl.textContent = timeString;
+			}
+			
+			// ✅ 1초마다 갱신
+			setInterval(updateTime, 1000);
+			updateTime(); // 초기 한 번 실행
+			
+			function updateTime() {
+			  const now = new Date();
+			  const timeString = formatTimeWithSeconds(now);
+			  const timeEl = document.getElementById('current-time');
+			  if (timeEl) timeEl.textContent = timeString;
+			}
+			
+			</script>
+			&nbsp;&nbsp;&nbsp;
 	        <div>
 		        <th:block th:if="${#authorization.expression('isAuthenticated()')}">
 			        <div class="btn-group-custom" style="text-align: left;">
@@ -381,7 +421,7 @@
 						            <a href="/equipment-info">설비 정보</a>
 						        </li>
 						        <li class="submenu-item ">
-						            <a href="/client-info">거래처 정보</a>
+						            <a href="/clientInfo">거래처 정보</a>
 						        </li>
 						        <li class="submenu-item ">
 						            <a href="/qcm/quality-info">품질 정보</a>
@@ -428,14 +468,8 @@
 						        <li class="submenu-item ">
 						            <a href="/workOrder">작업 지시</a>
 						        </li>
-						        <li class="submenu-item ">
-						            <a href="/process">공정 현황</a>
-						        </li>
 								<li class="submenu-item ">
-						            <a href="/production/productionPrc">공정 현황2</a>
-						        </li>
-						        <li class="submenu-item ">
-						            <a href="/ex">ex</a>
+						            <a href="/production/productionPrc">공정 현황</a>
 						        </li>
 						        <li class="submenu-item ">
 						            <a href="/production/lotTracking">Lot 추적</a>

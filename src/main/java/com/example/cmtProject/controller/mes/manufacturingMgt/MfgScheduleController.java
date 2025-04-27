@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO;
+import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
 import com.example.cmtProject.service.mes.manufacturingMgt.MfgScheduleService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,6 +40,9 @@ public class MfgScheduleController {
 		// 제조 계획
 		List<MfgScheduleDTO> msList = mfgScheduleService.getMfgScheduleTotalList();
 		model.addAttribute("msList", msList);
+		
+		List<MfgSchedulePlanDTO> mpList = mfgScheduleService.getMpList();
+		model.addAttribute("mpList", mpList);
 		
 		// 제조 계획 상세
 		//List<MfgScheduleDetailDTO> msdList = mfgService.getMsdList();
