@@ -117,7 +117,6 @@ public class ProductionPrcController {
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String username = authentication.getName(); // 로그인한 아이디 (admin, user 등)
-		log.info(username);
 		//username:971114 - user
 		//username:981114 - manager
 		//username:991114 - admin
@@ -437,7 +436,7 @@ public class ProductionPrcController {
 	public List<LotOriginDTO> prcBoard(@RequestParam("woCode") String woCode) {
 		
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(woCode);
-		log.info("/prcBoard의 selectLotOrigin:" + selectLotOrigin);
+		//log.info("/prcBoard의 selectLotOrigin:" + selectLotOrigin);
 		
 		return selectLotOrigin;
 	}
@@ -541,7 +540,7 @@ public class ProductionPrcController {
 		
 		Integer rnRowNumMax = lotService.selectRnRowNumMax(woCode);
 		
-		log.info("/getRnRowNumMax의 rnRowNumMax:" + rnRowNumMax);
+		//log.info("/getRnRowNumMax의 rnRowNumMax:" + rnRowNumMax);
 		
 		return rnRowNumMax;
 	}
