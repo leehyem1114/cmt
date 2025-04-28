@@ -516,7 +516,6 @@
 	     });
 
 	   } else if (status === '검사중') {
-		 debugger;
 	     Swal.fire({
 	       title: `'검사완료' 상태로 변경하시겠습니까?`,
 	       icon: 'warning',
@@ -641,7 +640,7 @@
 	   fetch('/fqc/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ qcCode, status: newStatus, woCode })
+	     body: JSON.stringify({ fqcCode, status: newStatus, woCode })
 	   })
 	     .then(res => res.json())
 	     .then(data => {

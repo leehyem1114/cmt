@@ -69,8 +69,8 @@ public class FqcController {
 	
 	@GetMapping("/names-by-pdt")
 	@ResponseBody
-	public List<Map<String, Object>> getQcmNamesByMtl(@RequestParam("pdtName") String pdtName) {
-	    return qcmService.getQcmNamesByMtlName(pdtName);
+	public List<Map<String, Object>> getQcmNamesByPdt(@RequestParam("pdtName") String pdtName) {
+	    return qcmService.getQcmNamesByPdtName(pdtName);
 	}
 	
 	
@@ -109,7 +109,7 @@ public class FqcController {
     	
     	fqcDTO.setFqcCode(payload.get("fqcCode"));
         String status = payload.get("status");
-        fqcDTO.setWoCode(payload.get("issueCode"));
+        fqcDTO.setWoCode(payload.get("woCode"));
 
         // TODO: 상태에 따라 분기 처리
         if ("검사중".equals(status)) {
