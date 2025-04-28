@@ -188,13 +188,13 @@ const MaterialInventoryManager = (function() {
                 columns: [
                     {
                         header: '제품코드',
-                        name: 'PTD_CODE',
+                        name: 'PDT_CODE',
                         editor: false,
                         sortable: true
                     },
                     {
                         header: '자재명',
-                        name: 'PTD_NAME',
+                        name: 'PDT_NAME',
                         editor: false,
                         sortable: true
                     },
