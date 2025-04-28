@@ -14,4 +14,9 @@ public interface InventoryUpdateMapper {
 	 */
 	public int updateReceiptStatus(Map<String, Object> params);
 	
+	/**
+	 * 생산계획 대비 계획재고 업데이트
+	 */
+	public int updateAllocatedQtyWithMerge(Map<String, Object> params);
+	
 }
