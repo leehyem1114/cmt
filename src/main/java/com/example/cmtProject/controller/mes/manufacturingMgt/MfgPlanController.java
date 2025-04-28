@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanSalesOrderDTO;
+import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
 import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgHistoryMapper;
 import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper;
 import com.example.cmtProject.repository.mes.manufacturingMgt.MfgPlanRepository;
@@ -57,6 +59,9 @@ public class MfgPlanController {
 	
 	@Autowired
 	private MfgPlanMapper mfgPlanMapper;
+	
+	@Autowired
+	private InventoryUpdateMapper ium;
 	
 	// 생산 계획 조회
 	@GetMapping("/mfg-plan")
@@ -156,6 +161,13 @@ public class MfgPlanController {
 	        } else {
 	        	//등록 가능한거 바로 입력하자!
 	        	mfgPlanService.registMpPlanBatch(dto); //dto
+	        	
+	            Map<String, Object> params = new HashMap<>();
+	            params.put("soCode", soCode);
+	            params.put("soQty", soQty);
+	            params.put("updatedBy", "admin"); //수정자  추후 로그인으로 수정
+//	            ium.updateAllocatedQtyWithMerge(params);
+	        			
 	        }
 	    }
 	    System.out.println(mfgPlanList);
