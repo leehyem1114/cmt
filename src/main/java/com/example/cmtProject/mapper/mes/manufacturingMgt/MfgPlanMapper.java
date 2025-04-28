@@ -27,14 +27,14 @@ public interface MfgPlanMapper {
 	// 생산 계획 삭제 (숨김 처리)
 	void isVisiableToFalse(List<Long> mpNos);
 
-	// BOM 조회
-	List<Map<String, Object>> getBomList(String pdtCode);
-	
-	// 원자재 재고 조회
-	List<Map<String, Object>> getMaterialInventory();
-	
-	// 수주에 따른 BOM 조회
-	List<Map<String, Object>> getMfgPlanBomList(String soCode);
+//	// BOM 조회
+//	List<Map<String, Object>> getBomList(String pdtCode);
+//	
+//	// 원자재 재고 조회
+//	List<Map<String, Object>> getMaterialInventory();
+//	
+//	// 수주에 따른 BOM 조회
+//	List<Map<String, Object>> getMfgPlanBomList(String soCode);
 	
 	
 	// 재고 조회

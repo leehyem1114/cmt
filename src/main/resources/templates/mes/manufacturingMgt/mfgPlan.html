@@ -134,10 +134,6 @@
 	            					<input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
                                     
                                     <!-- 엑셀 파일 입력 및 버튼 -->
-                                    <input type="file" class="form-control file-input" id="wareHouseFileInput" accept=".xlsx,.xls">
-                                    <button type="button" id="ExcelUpBtn" class="btn btn-excel">
-                                        <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
-                                    </button>
                                     <button type="button" id="ExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
@@ -222,19 +218,42 @@
 				filter: 'text',
 				align: "center" 
             },
-			{
-                header: '등록 직원명',
-                name: 'empName',
-				width: 200,
-				fontSize: '40',
+            {
+                header: '제품코드',
+                name: 'pdtCode',
+				width: 150,
 				sortable: true, 
 				filter: 'text',
-				align: 'center'
+				align: "center" 
             },
             {
-				header: '상태',
+                header: '제품명',
+                name: 'pdtName',
+				width: 150,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+            {
+                header: '주문수량',
+                name: 'soQty',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+            {
+                header: '주문단위',
+                name: 'qtyUnitName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+            {
+				header: '생산계획상태',
                 name: 'mpStatus',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -243,7 +262,7 @@
             {
 				header: '우선순위',
                 name: 'mpPriority',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -259,9 +278,9 @@
 				}
             },
 			{
-                header: '생산 시작 예정일',
+                header: '생산시작예정일',
                 name: 'mpStartDate', 
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -273,9 +292,9 @@
 				}
             },
 			{
-                header: '생산 완료 예정일',
+                header: '생산완료예정일',
                 name: 'mpEndDate',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -285,24 +304,42 @@
 						format: 'yyyy-MM-dd'
 					}
 				}
+            },
+			{
+                header: '등록사원번호',
+                name: 'empId',
+				width: 100,
+				fontSize: '40',
+				sortable: true, 
+				filter: 'text',
+				align: 'center'
+            },
+			{
+                header: '등록사원명',
+                name: 'empName',
+				width: 100,
+				fontSize: '40',
+				sortable: true, 
+				filter: 'text',
+				align: 'center'
             },
 			{
                 header: '등록일자',
                 name: 'mpCreatedAt',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: null
+				editor: false
             },
 			{
                 header: '수정일자',
                 name: 'mpUpdatedAt',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: null
+				editor: false
             }
         ], 
 		autoEdit: true,
@@ -368,12 +405,12 @@
 						sortable: true,
 						align: "center"
 					},
-					{
+/* 					{
 						header: '소요시간',
 						name: 'leadTime', 
 						sortable: true,
 						align: "center"
-					},
+					}, */
 					{
 						header: '우선순위',
 						name: 'mpPriority', 
@@ -452,18 +489,6 @@
 		    });
 		}); */
 		
-		// 행 아무곳이나 클릭하면 체크박스 활성화
-	    grid2.on('click', ev => {
-	    	  const { rowKey, columnName } = ev;
-
-	    	  if (columnName === '_checked') return;
-	    	  const isChecked = grid2.getCheckedRowKeys().includes(rowKey);
-	    	  if (!isChecked) {
-	    	    grid2.check(rowKey);
-	    	  } else {
-	    	    grid2.uncheck(rowKey);
-	    	  }
-	    });
 		
 		
 		grid2.on('click', (ev) => {
@@ -532,7 +557,7 @@
 
 		const dataList = checkedRows.map((row, index) => ({
 	        ...row,
-	        empId: empId,
+	        empId: empId
 // 	        mpCode: mpCodes[index] // 각 수주별 개별 mpCode
 	    }));
 	

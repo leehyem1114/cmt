@@ -15,12 +15,12 @@ public class MfgScheduleDetailDTO {
 
 	private Long msdNo;
 	private String msCode;
-	private String bomLevel;
 	private String parentPdtCode;
-	private String childItemCode;
+	private String pdtName;
 	private String itemType;
-	private String bomPrcType;
+	private String pdtTypeName;
 	private String msQty;
+	private String qtyUnitName;
 	private String comments;
 	
 }
