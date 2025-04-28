@@ -24,6 +24,7 @@ public interface QcmMapper {
 	List<CommonCodeDetailDTO> getUnitWeightList();
 
 	List<Map<String, Object>> getQcmNamesByMtlName(String mltName);
+	List<Map<String, Object>> getQcmNamesByPdtName(String pdtName);
 
 	void saveExcelData(QcmDTO dto);
 
