@@ -6,6 +6,8 @@
 	<head>
 		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+	    <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+		<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,7 +48,7 @@
 	
 	
 
-	
+	<div id="chart-area"></div>
 	
 	
 	
@@ -94,6 +96,10 @@
 </div>
 
 <br>
+
+
+	
+	
 	
 	<div id="gridTop"></div>
 	
@@ -113,6 +119,65 @@
 
 
 	    <script th:inline="javascript">
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    const el = document.getElementById('chart-area');
+	      const data = {
+	        series: [
+	          {
+	            name: 'Speed',
+	            data: [80],
+	          },
+	        ],
+	      };
+	      const options = {
+	        chart: { title: 'Speedometer', width: 550, height: 500 },
+	        series: {
+	          solid: true,
+	          dataLabels: { visible: true, offsetY: -30, formatter: (value) => `${value}%` },
+	        },
+	        theme: {
+	          circularAxis: {
+	            lineWidth: 0,
+	            strokeStyle: 'rgba(0, 0, 0, 0)',
+	            tick: {
+	              lineWidth: 0,
+	              strokeStyle: 'rgba(0, 0, 0, 0)',
+	            },
+	            label: {
+	              color: 'rgba(0, 0, 0, 0)',
+	            },
+	          },
+	          series: {
+	            dataLabels: {
+	              fontSize: 40,
+	              fontFamily: 'Impact',
+	              fontWeight: 600,
+	              color: '#00a9ff',
+	              textBubble: {
+	                visible: false,
+	              },
+	            },
+	          },
+	        },
+	      };
+
+	      const chart = toastui.Chart.gaugeChart({ el, data, options });
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
 	    
 		const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
 	    
@@ -392,7 +457,6 @@
 
 	   const iqcCode = e.target.dataset.code;
 	   const status = e.target.dataset.status;
-	   const receiptCode = e.target.dataset.receiptCode;
 
 	   // 버튼이 있는 행 찾기
 	   const rowKey = grid.getData().findIndex(row => row.iqcCode === iqcCode);
@@ -415,7 +479,7 @@
 
 	 // [2] 상태 전환 핸들러
 	 async function handleStatusClick(iqcCode, status, row, rowKey, receiptCode) {
-	   if (status === '검사전') {
+	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
 	       icon: 'warning',
@@ -429,6 +493,7 @@
 	     });
 
 	   } else if (status === '검사중') {
+		 debugger;
 	     Swal.fire({
 	       title: `'검사완료' 상태로 변경하시겠습니까?`,
 	       icon: 'warning',
@@ -466,6 +531,17 @@
 
 	   const row = grid.getRow(ev.rowKey);
 	   const mtlName = row.mtlName;
+	   const status = row.iqcInspectionStatus;
+
+	   // 검사중 또는 검사완료 상태일 경우 수정 차단
+	   if (status === '검사중' || status === '검사완료') {
+	     Swal.fire({
+	       icon: 'warning',
+	       title: '검사 항목 수정 불가',
+	       text: `${status} 상태에서는 검사 항목을 변경할 수 없습니다.`
+	     });
+	     return;
+	   }
 
 	   if (!mtlName) {
 	     alert("원자재 이름이 없습니다.");
@@ -590,26 +666,27 @@
 	    	  const status = rowData.iqcInspectionStatus;
 	    	  const result = rowData.iqcInspectionResult;
 
-	    	  let color = '#6c757d'; // 기본 회색 (검사전)
+	    	  let statusColor = '#6c757d'; // 기본 회색 (검사시작)
+	    	  let resultColor = '#6c757d'; // 기본 회색 (예정)
+
 	    	  if (status === '검사중') {
-	    	    color = '#0d6efd'; // 파랑
-	    	  } 
-	    	  if (status === '검사완료') {
-	    	    color = '#198754'; // 초록
+	    	    statusColor = '#0d6efd'; // 파랑
+	    	  } else if (status === '검사완료') {
+	    	    statusColor = '#198754'; // 초록
 	    	  }
-	    	  if (result === 'P') {
-		    	    color = '#198754'; // 초록
-		      }
-	    	  if (result === 'F') {
-		    	    color = '#dc3545'; // 빨강
-		      }
+
+	    	  if (result === '합격') {
+	    	    resultColor = '#198754'; // 초록
+	    	  } else if (result === '불합격') {
+	    	    resultColor = '#dc3545'; // 빨강
+	    	  }
 
 	    	  const resultLabel = result === '합격' ? '합격'
-	                		    : result === '불합격' ? '불합격'
-	                  			: '예정';
+	    	                  : result === '불합격' ? '불합격'
+	    	                  : '예정';
 
-			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
-			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
+			  const statusHtml = `<span style="font-weight: 600; color: ${statusColor};"><b>${status}</b></span>`;
+			  const resultHtml = `<span style="font-weight: 600; color: ${resultColor};"><b>${resultLabel}</b></span>`;
 			  
 			  function safe(value) {
 				  return (value === null || value === undefined) ? ' ' : value;
@@ -665,31 +742,35 @@
 	    	
 	    	//수정
 			grid.on('afterChange', (ev) => {
-				
-				let evValue = ev.changes[0];
+			    let evValue = ev.changes[0];
 			    let rk = evValue.rowKey;
-			    let rowData = grid.getRow(rk);
-				
-			    let sendData = {
-		            iqcNo: rowData.iqcNo,
-		            iqcRemarks: rowData.iqcRemarks,
-		            qcmName: rowData.qcmName,
-		            qcmUnitWeight: rowData.qcmUnitWeight,
-		            qcmUnitLength: rowData.qcmUnitLength
-		        };
-			    
-				$.ajax({
-					url: "/iqc/edit",
-					type: "POST",
-					data: sendData,
-					success: function(result) {
-						console.log(result);
-					},
-					error: function(errorResult) {
-						grid.restore(); // 이전 상태로 롤백
-					}
-				});
-		    });
+			
+			    setTimeout(() => { // ✅ afterChange 다음에 한 프레임 쉬고 실행
+			        const updatedRow = grid.getRow(rk);
+			
+			        let sendData = {
+			            iqcNo: updatedRow.iqcNo,
+			            iqcRemarks: updatedRow.iqcRemarks,
+			            qcmName: updatedRow.qcmName,
+			            qcmUnitWeight: updatedRow.qcmUnitWeight,
+			            qcmUnitLength: updatedRow.qcmUnitLength
+			        };
+			
+			        $.ajax({
+			            url: "/iqc/edit",
+			            type: "POST",
+			            data: sendData,
+			            success: function(result) {
+			                console.log(result);
+			            },
+			            error: function(errorResult) {
+			                grid.restore();
+			            }
+			        });
+			
+			    }, 0); // ✅ 아주 살짝 쉬었다가 실행 (렌더링 끝난 후)
+			});
+
 
 	    
 

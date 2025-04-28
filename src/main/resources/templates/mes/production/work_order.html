@@ -54,6 +54,9 @@
 			<div class="card-header">
 		        <h5 class="card-title"><i class="fa-solid fa-bars"></i> 작업지시 목록</h5>
 		    </div>
+		    
+		    SELECT * FROM PRODUCTS; // PRC_TYPE_CODE랑 조인해서 불러오기 ~
+		    
 		    <div id="grid" style="height: 400px;"></div>
 		    
 		    <script th:inline="javascript">
@@ -109,9 +112,15 @@
 			<div id="myChart6"></div>
 			
 			<script type="text/javascript" th:inline="javascript">
-				processNameList = /*[[${processNameList}]]*/ [];
-				incompleteCountList = /*[[${incompleteCountList}]]*/ [];
+				let processNameList = /*[[${processNameList}]]*/ [];
+				if (!processNameList) {
+				  processNameList = [];
+				}
 	
+				let incompleteCountList = /*[[${incompleteCountList}]]*/ [];
+				if (!incompleteCountList) {
+				  incompleteCountList = [];
+				}
 				const data6 = {
 				  categories: processNameList,
 				  series: [
@@ -122,27 +131,26 @@
 				  ]
 				};
 	
-				const options6 = {
-				  chart: { width: 600, height: 400 },
-				  series: {
-				    stack: false,
-				    showDot: false,
-				    zoomable: false,
-				    barWidth: 30,
-				  },
-				  yAxis: {
-				    title: '공정명'
-				  },
-				  xAxis: {
-				    title: '미완료 건수'
-				  }
-				};
+				if (processNameList.length == 0) {
+					  // 미완료 공정이 없을 때
+					  document.getElementById('myChart6').innerHTML = '<span> - 현재 미완료 공정이 없습니다 <i class="fa-regular fa-face-smile-beam"></i></span>';
+					} else {
+					  const data6 = {
+					    categories: processNameList,
+					    series: [
+					      {
+					        name: '미완료 건수',
+					        data: incompleteCountList
+					      }
+					    ]
+					  };
 	
 				toastui.Chart.barChart({
 				  el: document.getElementById('myChart6'),
 				  data: data6,
 				  options: options6
 				});
+			}
 
 				</script>
 				

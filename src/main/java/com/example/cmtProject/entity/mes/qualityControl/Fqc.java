@@ -33,8 +33,8 @@ public class Fqc {
     @Column(name = "FQC_CODE", nullable = false)
     private String fqcCode;
     
-    @Column(name = "ISSUE_CODE")
-    private String issueCode;
+    @Column(name = "WO_CODE")
+    private String woCode;
 
     @Column(name = "EMP_ID", nullable = false)
     private String empId;
@@ -60,8 +60,8 @@ public class Fqc {
     @Column(name = "FQC_END_TIME")
     private LocalDateTime fqcEndTime;
     
-    @Column(name = "ISSUED_QTY")
-    private String issuedQty;
+    @Column(name = "WO_QTY")
+    private String woQty;
 
     @Column(name = "UNIT_QTY")
     private String unitQty;
@@ -90,8 +90,8 @@ public class Fqc {
     @Column(name = "WHS_NAME")
     private String whsName;
 
-    @Column(name = "LOT_NO", nullable = false)
-    private String lotNo;
+    @Column(name = "CHILD_LOT_CODE")
+    private String childLotCode;
     
     @Column(name = "FQC_REMARKS")
     private String fqcRemarks;
