@@ -35,4 +35,5 @@ public interface InventoryUpdateMapper {
      * @return 업데이트된 행 수
      */
     public int updateProductAllocatedQty(Map<String, Object> params);
+    
 }

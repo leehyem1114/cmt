@@ -153,6 +153,7 @@ public class MfgPlanController {
 	    for (MfgPlanDTO dto : mfgPlanList) {
 	        String soCode = dto.getSoCode();
 	        Long soQty = dto.getSoQty();
+	        log.info("처리중: 주문코드={}, 수량={}", soCode, soQty);
 
 	        String result = mfgPlanMapper.selectAvailableQty(soCode, soQty);
 	        System.out.println("재고확인: " + soCode + " => " + result);
