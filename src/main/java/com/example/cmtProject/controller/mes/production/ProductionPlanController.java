@@ -68,16 +68,12 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		Long woNo = orderService.getWoNoMax();
 		String woCodeLast = orderService.getWoCodeLast();
 		String woCode = changeWoCode(woCodeLast);
-
-		System.out.println("woNo" + woNo);
-		System.out.println("woCodeLast" + woCodeLast);
-		System.out.println("woCode" + woCode);
 		
 		workOrderDTO.setWoNo(woNo+1);
+		workOrderDTO.setWorkOrderNo(woNo+1);
 		workOrderDTO.setWoCode(woCode);
 		
 		orderService.registMsPlan(workOrderDTO);
-		
 		//제조계획상태 업데이트 &제조 계획리스트에서 삭제
 		orderService.updateMfgStatus(workOrderDTO.getMsNo());
 		
