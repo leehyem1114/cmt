@@ -31,6 +31,7 @@ import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper;
 import com.example.cmtProject.repository.mes.manufacturingMgt.MfgPlanRepository;
 import com.example.cmtProject.service.erp.employees.EmployeesService;
 import com.example.cmtProject.service.erp.saleMgt.SalesOrderService;
+import com.example.cmtProject.service.mes.inventory.InventoryUpdateService;
 import com.example.cmtProject.service.mes.manufacturingMgt.MfgPlanService;
 import com.example.cmtProject.service.mes.standardInfoMgt.ProductService;
 
@@ -61,7 +62,7 @@ public class MfgPlanController {
 	private MfgPlanMapper mfgPlanMapper;
 	
 	@Autowired
-	private InventoryUpdateMapper ium;
+	private InventoryUpdateService ius;
 	
 	// 생산 계획 조회
 	@GetMapping("/mfg-plan")
@@ -165,8 +166,10 @@ public class MfgPlanController {
 	            Map<String, Object> params = new HashMap<>();
 	            params.put("soCode", soCode);
 	            params.put("soQty", soQty);
-	            params.put("updatedBy", "admin"); //수정자  추후 로그인으로 수정
-//	            ium.updateAllocatedQtyWithMerge(params);
+	            params.put("updatedBy", "admin"); // 수정자 추후 로그인으로 수정
+	            
+	            // 서비스 메서드 호출
+	            ius.updateAllocatedQuantities(params);
 	        			
 	        }
 	    }
