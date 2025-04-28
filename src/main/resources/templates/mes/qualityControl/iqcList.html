@@ -48,7 +48,7 @@
 	
 	
 
-	
+	<div id="chart-area"></div>
 	
 	
 	
@@ -98,7 +98,7 @@
 <br>
 
 
-	<div id="chart-area"></div>
+	
 	
 	
 	<div id="gridTop"></div>
@@ -288,21 +288,7 @@
               	  sortable: true, 
               	  filter: 'text', 
               	  width: 200,
-              	  align: "center",
-	              	editor: {
-	                    type: InstantSelectEditor,
-	                    options: {
-	                      listItems: workTypeListItems, 
-	                      useCommand: true
-	                    }
-	                  },
-	                  onAfterChange: function(ev) {
-	                	  grid.finishEditing(); // ✅ 선택하고 나면 자동 포커스 아웃
-	               	  },
-	                  formatter: function({ value }) {
-	                      const found = workTypeListItems.find(item => item.value === value);
-	                      return found ? found.text : value;
-	                    }
+              	  align: "center"
               	},
               	{ 
                   header: '검수자', 

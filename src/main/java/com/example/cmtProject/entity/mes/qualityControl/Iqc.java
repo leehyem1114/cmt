@@ -90,7 +90,7 @@ public class Iqc {
     @Column(name = "WHS_NAME")
     private String whsName;
 
-    @Column(name = "LOT_NO", nullable = false)
+    @Column(name = "LOT_NO")
     private String lotNo;
     
     @Column(name = "IQC_REMARKS")

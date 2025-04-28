@@ -60,7 +60,7 @@
 
 
 
-
+		<div id="chart-area"></div>
 
 
 
@@ -113,7 +113,7 @@
 		<br>
 
 
-		<div id="chart-area"></div>
+		
 
 
 		<div id="gridTop"></div>
@@ -239,6 +239,13 @@
             	  align: "center",
             	  hidden: true
             	},
+            	{ 
+                  header: 'LOT', 
+              	  name: 'chileLotCode', 
+              	  sortable: true, 
+              	  filter: 'text', 
+              	  align: "center"
+              	},
             	{
            		  header: '작업 상태',
            		  name: 'fqcInspectionStatus',
@@ -291,7 +298,7 @@
             	},       	
             	{ 
                   header: '출고 코드', 
-            	  name: 'receiptCode', 
+            	  name: 'woCode', 
             	  sortable: true, 
             	  filter: 'text', 
             	  width: 100,
@@ -304,22 +311,8 @@
               	  sortable: true, 
               	  filter: 'text', 
               	  width: 200,
-              	  align: "center",
-	              	editor: {
-	                    type: InstantSelectEditor,
-	                    options: {
-	                      listItems: workTypeListItems, 
-	                      useCommand: true
-	                    }
-	                  },
-	                  onAfterChange: function(ev) {
-	                	  grid.finishEditing(); // ✅ 선택하고 나면 자동 포커스 아웃
-	               	  },
-	                  formatter: function({ value }) {
-	                      const found = workTypeListItems.find(item => item.value === value);
-	                      return found ? found.text : value;
-	                    }
-              	},
+              	  align: "center"
+            	},
               	{ 
                   header: '검수자', 
                	  name: 'empName', 
@@ -338,7 +331,7 @@
             	  hidden: true 
                	},       
             	{ 
-               	  header: '원자재', 
+               	  header: '완제품', 
                	  name: 'pdtName', 
                	  sortable: true, 
                	  filter: 'text',
@@ -491,7 +484,7 @@
 	   // 버튼이 있는 행 찾기
 	   const rowKey = grid.getData().findIndex(row => row.fqcCode === fqcCode);
 	   const row = grid.getRow(rowKey);
-	   const receiptCode = row.receiptCode; // 또는 e.target.dataset.receiptCode;
+	   const woCode = row.woCode; // 또는 e.target.dataset.woCode;
 
 	   // 검사 항목(qcmName) 없는 경우 차단
 	   if (!row.qcmName || row.qcmName.trim() === '') {
@@ -503,12 +496,12 @@
 	     return;
 	   }
 
-	   handleStatusClick(fqcCode, status, row, rowKey, receiptCode); // ✅ 전달
+	   handleStatusClick(fqcCode, status, row, rowKey, woCode); // ✅ 전달
 
 	 }
 
 	 // [2] 상태 전환 핸들러
-	 async function handleStatusClick(fqcCode, status, row, rowKey, receiptCode) {
+	 async function handleStatusClick(fqcCode, status, row, rowKey, woCode) {
 	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
@@ -518,7 +511,7 @@
 	       cancelButtonText: '취소'
 	     }).then(result => {
 	       if (result.isConfirmed) {
-	         updateStatus(fqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', receiptCode);
+	         updateStatus(fqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode);
 	       }
 	     });
 
@@ -543,7 +536,7 @@
 	       }
 
 	       // ✅ 자동검사 성공했으면 상태 변경
-	       updateStatus(fqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', receiptCode);
+	       updateStatus(fqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
 	     });
 
 	   } else if (status === '검사완료') {
@@ -574,13 +567,13 @@
 	   }
 
 	   if (!pdtName) {
-	     alert("원자재 이름이 없습니다.");
+	     alert("완제품 이름이 없습니다.");
 	     return;
 	   }
 
 	   const qcmNames = await fetchQcmNamesByPdtName(pdtName);
 	   if (qcmNames.length === 0) {
-	     Swal.fire("해당 원자재에 검사 항목이 <br>없습니다.");
+	     Swal.fire("해당 완제품에 검사 항목이 <br>없습니다.");
 	     return;
 	   }
 
@@ -644,11 +637,11 @@
 	 }
 
 	 // 상태 변경 서버 요청
-	 function updateStatus(fqcCode, newStatus, successMsg, receiptCode) {
+	 function updateStatus(fqcCode, newStatus, successMsg, woCode) {
 	   fetch('/fqc/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ qcCode, status: newStatus, receiptCode })
+	     body: JSON.stringify({ qcCode, status: newStatus, woCode })
 	   })
 	     .then(res => res.json())
 	     .then(data => {
@@ -664,7 +657,7 @@
 	     });
 	 }
 
-	 // 서버에서 원자재별 검사항목 가져오기
+	 // 서버에서 완제품별 검사항목 가져오기
 	 async function fetchQcmNamesByPdtName(pdtName) {
 	   try {
 	     const res = await fetch(`/fqc/names-by-pdt?pdtName=${encodeURIComponent(pdtName)}`);
@@ -725,14 +718,15 @@
 	    	  const detailHtml = `
 	    		<div style="border: 1px solid #ccc; border-radius: 8px; padding: 16px; background-color: #fdfdfd;">
 	    		  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+	    		    ${makeDetailItem('LOT', rowData.childLotCode)}
 	    		    ${makeDetailItem('작업 상태', statusHtml)}
 	    		    ${makeDetailItem('작업 상태', resultHtml)}
-	    		    ${makeDetailItem('출고 코드', rowData.receiptCode)}
+	    		    ${makeDetailItem('출고 코드', rowData.woCode)}
 	    	        ${makeDetailItem('출고 검사 코드', rowData.fqcCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
 	    	        ${makeDetailItem('출고 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', `${safe(rowData.empName)} ${safe(rowData.empId)}`)}
-	    	        ${makeDetailItem('원자재', rowData.pdtName)}
+	    	        ${makeDetailItem('완제품', rowData.pdtName)}
 	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.fqcMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
 	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.fqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
 	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.fqcStartTime))}
@@ -960,23 +954,24 @@
     			console.log(worksheet);
     			
     			worksheet["A1"] = { t: "s", v: "fqcNo", r:"<t>fqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcNo', w: 'fqcNo' };
-    			worksheet["B1"] = { t: "s", v: "fqcInspectionStatus", r:"<t>fqcInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionStatus', w: 'fqcInspectionStatus' };
-    			worksheet["C1"] = { t: "s", v: "fqcInspectionResult", r:"<t>fqcInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionResult', w: 'fqcInspectionResult' };
-       			worksheet["D1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
-    			worksheet["E1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["F1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["G1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
-    			worksheet["H1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
-    			worksheet["I1"] = { t: "s", v: "issuedQty", r:"<t>issuedQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'issuedQty', w: 'issuedQty' };
-    			worksheet["J1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
-    			worksheet["K1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
-    			worksheet["L1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["M1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
-    			worksheet["N1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["O1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
-    			worksheet["P1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["Q1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["R1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
+    			worksheet["B1"] = { t: "s", v: "childLotCode", r:"<t>childLotCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'childLotCode', w: 'childLotCode' };
+    			worksheet["C1"] = { t: "s", v: "fqcInspectionStatus", r:"<t>fqcInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionStatus', w: 'fqcInspectionStatus' };
+    			worksheet["D1"] = { t: "s", v: "fqcInspectionResult", r:"<t>fqcInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionResult', w: 'fqcInspectionResult' };
+       			worksheet["E1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
+    			worksheet["F1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["G1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["H1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
+    			worksheet["I1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+    			worksheet["J1"] = { t: "s", v: "woQty", r:"<t>woQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woQty', w: 'woQty' };
+    			worksheet["K1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
+    			worksheet["L1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
+    			worksheet["M1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["N1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
+    			worksheet["O1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["P1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
+    			worksheet["Q1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
+    			worksheet["R1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
+    			worksheet["S1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
     			
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });

@@ -136,7 +136,7 @@
 	)
 	</insert>
 	
-	<!-- 검사전에서 검사중으로 업데이트 -->
+	<!-- 검사시작에서 검사중으로 업데이트 -->
 	<update id="updateIqcInspectionStatusProcessing" parameterType="map">
 		UPDATE IQC
 		SET 
