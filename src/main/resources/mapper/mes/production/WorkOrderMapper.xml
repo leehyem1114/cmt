@@ -12,7 +12,7 @@
 			  W.WO_NO
 			, W.WO_CODE
 			, W.PDT_CODE
-		--	, W.PRC_CODE
+			, W.PRC_CODE
 			, W.ORDER_DATE
 			, W.WO_QTY
 			, S.WO_STATUS_CODE
@@ -35,23 +35,23 @@
 	<!-- 제조계획 리스트 - 모달 -->
 	<select id="selectPlanList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
 		SELECT 
-		   S.MS_NO
-      , S.MS_CODE
-      , S.PDT_CODE
-      , P.PDT_NAME
-      , P.PRC_TYPE_CODE
-      , P.PDT_TYPE
-      , S.SO_QTY
-     -- , S.MS_START_TIME -- 없음
-     -- , S.MS_END_TIME -- 없음
-      , S.EMP_ID
-      , S.MS_PRIORITY
-      , S.MS_STATUS
-      , S.MS_UPDATED_AT
-      --, S.PRC_CODE --  없음
-      , S.MP_CODE
-      -- , S.SO_QTY
-      --  , S.PDT_PRC_TYPE_CODE
+		    S.MS_NO
+		    , S.MS_CODE
+		    , S.PDT_CODE
+		    , P.PDT_NAME
+		    , P.PRC_TYPE_CODE
+		    , P.PDT_TYPE
+		    , S.SO_QTY
+		   -- , S.MS_START_TIME 
+		   -- , S.MS_END_TIME 
+		    , S.EMP_ID
+		    , S.MS_PRIORITY
+		    , S.MS_STATUS
+		    , S.MS_UPDATED_AT
+		    --, S.PRC_CODE
+		    , S.MP_CODE
+		    -- , S.SO_QTY
+		    --  , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
 		WHERE  MS_STATUS != '대기'
 		ORDER BY S.MS_NO DESC
@@ -70,21 +70,20 @@
 			 , WORK_START_DATE
 			 , WORK_END_DATE
 			 , MS_CODE
-			 -- , WO_STATUS_CODE -- 공정상태
+			 , WORK_ORDER_NO
 		) VALUES (
-			#{woNo, jdbcType=VARCHAR}
+			#{woNo}
 			, #{woCode, jdbcType=VARCHAR}
 			, #{pdtCode, jdbcType=VARCHAR}
 			, #{pdtName, jdbcType=VARCHAR}
 			, #{allocatedQty, jdbcType=VARCHAR}
-			, #{empId, jdbcType=VARCHAR}
+			, #{empId}
 			, #{lineCode, jdbcType=VARCHAR}
 			, #{prcCode, jdbcType=VARCHAR}
 			, #{msStartDate, jdbcType=DATE}
-<!-- 			, #{msEndDate, jdbcType=DATE} -->
 			, NULL
-<!-- 			,#{msStatus, jdbcType=VARCHAR} -->
 			, #{msCode, jdbcType=VARCHAR}
+			, #{workOrderNo, jdbcType=NUMERIC}
 		)
 	</insert>
 	<update id="updateMfgStatus">
@@ -184,12 +183,9 @@
 		  L.PRC_TYPE,
 		  L.START_TIME,
 		  L.FINISH_TIME,
-
 		  W.EMP_NAME,
 		  W.WO_STATUS_CODE,
 		  S.WO_STATUS_NAME,
-
-
 		  L.WO_QTY,
 		  P.PRC_TYPE_NAME,
 		  E.EMP_NAME
@@ -236,7 +232,7 @@
 		FETCH FIRST 5 ROWS ONLY
   </select>
   
-  <select id="getWoNoMax" resultType="String">
+  <select id="getWoNoMax" resultType="Long">
   		SELECT MAX(WO_NO) 
   		  FROM WORK_ORDER
   </select>
