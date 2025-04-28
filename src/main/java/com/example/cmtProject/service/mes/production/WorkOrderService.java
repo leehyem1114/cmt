@@ -77,4 +77,14 @@ public class WorkOrderService {
 		return orderMapper.selectTodayProcessTop5();
 	}
 	
+	//WO_NO 컬럼 값을 적접 입력하기 위해 이전 WO_NO 중 최대값
+	public Long getWoNoMax() {
+		return orderMapper.getWoNoMax();
+	}
+	
+	//가장 큰 WO_NO에 해당하는 WO_CODE
+	public String getWoCodeLast() {
+		return orderMapper.getWoCodeLast();
+	}
+	
 }

@@ -63,13 +63,46 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 	@PostMapping("/workOrder/regist")
 	@ResponseBody
 	public String regiWorkOrderLsit(@RequestBody WorkOrderDTO workOrderDTO) {
+
 		//작업지시 등록
+		Long woNo = orderService.getWoNoMax();
+		String woCodeLast = orderService.getWoCodeLast();
+		String woCode = changeWoCode(woCodeLast);
+
+		System.out.println("woNo" + woNo);
+		System.out.println("woCodeLast" + woCodeLast);
+		System.out.println("woCode" + woCode);
+		
+		workOrderDTO.setWoNo(woNo+1);
+		workOrderDTO.setWoCode(woCode);
+		
 		orderService.registMsPlan(workOrderDTO);
+		
 		//제조계획상태 업데이트 &제조 계획리스트에서 삭제
 		orderService.updateMfgStatus(workOrderDTO.getMsNo());
 		
 		log.info("받은 데이터" + workOrderDTO);
 		return "작업지시 추가 완료";
+	}
+	
+	public String changeWoCode(String code) {
+		
+		String numberPart = code.substring(3);
+        int number = Integer.parseInt(numberPart) + 1;
+        
+        String chCode = "MSC";
+        
+        if(number >= 100) {
+        	chCode += Integer.toString(number); 
+        }else if(number >= 10) {
+        	chCode += "0" + Integer.toString(number);
+        }else if(number >= 0) {
+        	chCode += "00" + Integer.toString(number);
+        }else {
+        	chCode = "error";
+        }
+		
+		return chCode;
 	}
 	
 	//공정현황**********************************
