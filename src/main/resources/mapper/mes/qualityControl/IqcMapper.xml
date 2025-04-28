@@ -121,7 +121,7 @@
 	  IQC_VISIABLE
 	)
 	SELECT
-	  '검사전',
+	  '검사시작',
 	  '예정',
 	  #{iqcCode},
 	  #{receiptCode}, 

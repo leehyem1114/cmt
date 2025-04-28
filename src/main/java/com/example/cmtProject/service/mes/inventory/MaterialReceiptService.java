@@ -430,6 +430,7 @@ public class MaterialReceiptService {
             updateMap.put("receiptCode", params.get("receiptCode"));
             
             int result = mRmapper.updateReceiptStatusAndDate(updateMap);
+            
             iqcService.insertIqcInspection(updateMap);
             
             if (result > 0) {
