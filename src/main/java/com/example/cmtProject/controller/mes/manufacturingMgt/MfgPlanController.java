@@ -91,7 +91,7 @@ public class MfgPlanController {
 		return "mes/manufacturingMgt/mfgPlan";
 	}
 	
-	// 생산 계획 등록 조회
+	// 생산 계획 등록 조회 (수주 데이터)
 	@GetMapping("/mfgPlanRegiList")
 	public String mfgPlanRegiList(Model model) {
 		List<MfgPlanSalesOrderDTO> soList = mfgPlanService.getSoList();
@@ -136,12 +136,10 @@ public class MfgPlanController {
 	 * return "success"; }
 	 */
 	
+	// 생산 계획 등록
 	@PostMapping("/mfgPlanRegi")
 	@ResponseBody
 	public String mfgPlanRegi(@RequestBody List<MfgPlanDTO> mfgPlanList) {
-		
-		System.out.println("!@#!@#");
-		System.out.println(mfgPlanList);
 		
 		int resultFailCount = 0;
 	    for (MfgPlanDTO dto : mfgPlanList) {
@@ -149,7 +147,6 @@ public class MfgPlanController {
 	        Long soQty = dto.getSoQty();
 
 	        String result = mfgPlanMapper.selectAvailableQty(soCode, soQty);
-	        System.out.println("재고확인: " + soCode + " => " + result);
 
 	        if (!"등록 가능".equals(result)) {
 	            resultFailCount +=1;  // 또는 어느 항목이 실패했는지 구체적으로 리턴해도 됨
@@ -158,9 +155,6 @@ public class MfgPlanController {
 	        	mfgPlanService.registMpPlanBatch(dto); //dto
 	        }
 	    }
-	    System.out.println(mfgPlanList);
-	    System.out.println("입력받은 리스트 갯수 : " + mfgPlanList.size());
-	    System.out.println("등록불가 건수 : " + resultFailCount);
 	    // 악의 근원
 //	    for (MfgPlanDTO mpDto : mfgPlanList) {
 //	    	mfgPlanService.registMpPlanBatch(mfgPlanList);
@@ -170,37 +164,29 @@ public class MfgPlanController {
 	
 	
 	// 생산계획번호 생성
-	@ResponseBody
-	@GetMapping("/makeMpCode")
-	public String makeMpCode(@RequestParam("data") String data) {
-
-	    // 날짜 형태 yyyyMMdd 형태로 변환
-		LocalDate today = LocalDate.now();        
-	    DateTimeFormatter todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
-	    String mpToday = today.format(todayFormat);
-
-	    // 해당 날짜의 MP_CODE 등록 수 조회
-	    int count = mfgPlanRepository.getNextMpCode(data);
-
-	    String mpCode = "";
-	    data = data.replace("-", "");
-	    
-	    // 생성되어야 할 갯수
-	    count++;
-
-	    // 숫자 형식 포맷 처리
-	    if (count > 100) {
-	        mpCode = "MP-" + data + "-" + count;
-	    } else if (count > 10) {
-	        mpCode = "MP-" + data + "-" + "0" + count;
-	    } else if (count >= 0) {
-	        mpCode = "MP-" + data + "-" + "00" + count;
-	    } else {
-	        mpCode = "minus";
-	    }
-
-	    return mpCode;
-	}
+	/*
+	 * @ResponseBody
+	 * 
+	 * @GetMapping("/makeMpCode") public String makeMpCode(@RequestParam("data")
+	 * String data) {
+	 * 
+	 * // 날짜 형태 yyyyMMdd 형태로 변환 LocalDate today = LocalDate.now(); DateTimeFormatter
+	 * todayFormat = DateTimeFormatter.ofPattern("yyyyMMdd"); String mpToday =
+	 * today.format(todayFormat);
+	 * 
+	 * // 해당 날짜의 MP_CODE 등록 수 조회 int count = mfgPlanRepository.getNextMpCode(data);
+	 * 
+	 * String mpCode = ""; data = data.replace("-", "");
+	 * 
+	 * // 생성되어야 할 갯수 count++;
+	 * 
+	 * // 숫자 형식 포맷 처리 if (count > 100) { mpCode = "MP-" + data + "-" + count; } else
+	 * if (count > 10) { mpCode = "MP-" + data + "-" + "0" + count; } else if (count
+	 * >= 0) { mpCode = "MP-" + data + "-" + "00" + count; } else { mpCode =
+	 * "minus"; }
+	 * 
+	 * return mpCode; }
+	 */
 	
 	// 생산 계획 수정
 	@PostMapping("/mfgPlanUpdate")
@@ -247,7 +233,7 @@ public class MfgPlanController {
 	}
 
 	// 엑셀 파일 적용
-	@PostMapping("/SaveExcelData")
+	@PostMapping("/saveExcelData")
 	@ResponseBody
 	public ResponseEntity<?> saveExcelData(@RequestBody List<MfgPlanDTO> list) {
 

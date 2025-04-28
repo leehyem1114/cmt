@@ -11,6 +11,10 @@
 			MP.MP_NO,
 			MP.MP_CODE,
 		    MP.SO_CODE,
+		    SO.PDT_CODE,
+		    P.PDT_NAME,
+		    SO.SO_QTY,
+		    CD.CMN_DETAIL_NAME AS qtyUnitName,
 		    MP.EMP_ID,
 		    MP.MP_STATUS,
 		    MP.MP_PRIORITY,
@@ -21,6 +25,8 @@
 		    E.EMP_NAME AS empName
 		FROM MFG_PLANS MP
 		LEFT JOIN SALES_ORDER SO ON MP.SO_CODE = SO.SO_CODE
+		LEFT JOIN PRODUCTS P ON SO.PDT_CODE = P.PDT_CODE
+		LEFT JOIN COMMONCODE_DETAIL CD ON SO.QTY_UNIT = CD.CMN_DETAIL_CODE
 		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
 		WHERE MP.MP_VISIBLE = 'Y'
 		ORDER BY MP.MP_NO DESC
@@ -95,28 +101,31 @@
 	<!-- 원자재 재고 조회 -->
 	<select id="selectAvailableQty" resultType="string" parameterType="map">
 		WITH ALL_INVENTORY AS (
-		  SELECT MTL_CODE AS CODE, ALLOCATED_QTY FROM MATERIAL_INVENTORY
-		  UNION ALL
-		  SELECT PDT_CODE AS CODE, ALLOCATED_QTY FROM PRODUCTS_INVENTORY
+			SELECT MTL_CODE AS CODE, ALLOCATED_QTY FROM MATERIAL_INVENTORY
+			UNION ALL
+			SELECT PDT_CODE AS CODE, ALLOCATED_QTY FROM PRODUCTS_INVENTORY
+		),
+		ORDER_INFO AS (
+	    	SELECT SO_CODE, PDT_CODE, SO_QTY
+	    	FROM SALES_ORDER
+	    	WHERE SO_CODE = #{soCode}
 		),
         BOM_WITH_STOCK AS (
         	SELECT  B.CHILD_ITEM_CODE,
                     B.PARENT_PDT_CODE,
                     B.BOM_QTY,
                     B.USE_YN,
-                    NVL(INVEN.ALLOCATED_QTY, 0) AS ALLOCATED_QTY
+                    NVL(INVEN.ALLOCATED_QTY, 0) AS ALLOCATED_QTY,
+                    (SELECT SO_QTY FROM ORDER_INFO) AS SO_QTY
                     FROM (
                     	SELECT B.CHILD_ITEM_CODE,
         					   B.PARENT_PDT_CODE,
         					   B.BOM_QTY,
         					   B.USE_YN
       					FROM BOM B
+      					JOIN ORDER_INFO OI ON B.CHILD_ITEM_CODE = OI.PDT_CODE
       					WHERE B.USE_YN = 'Y'
-                    	START WITH B.CHILD_ITEM_CODE = (
-                    		SELECT PDT_CODE
-                        	FROM SALES_ORDER
-                        	WHERE SO_CODE = #{soCode}
-                    	)
+                    	START WITH B.CHILD_ITEM_CODE = OI.PDT_CODE
                     	CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
                     	ORDER SIBLINGS BY B.PARENT_PDT_CODE ) B
                     	LEFT JOIN ALL_INVENTORY INVEN 
@@ -125,7 +134,7 @@
         SELECT CASE WHEN COUNT(*) = 0 THEN '등록 가능'
                                       ELSE '재고 부족' END AS MSG
         FROM BOM_WITH_STOCK                                          	
-		WHERE ALLOCATED_QTY &lt;= 0           
+		WHERE ALLOCATED_QTY &lt; BOM_QTY * SO_QTY          
 	</select>
 	
 	<!-- 생산 계획 등록 -->
@@ -169,7 +178,7 @@
 			    , MP_END_DATE
 			) SELECT
 			    MFG_PLANS_SEQ.NEXTVAL
-	    		, 'MP-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || LPAD(ROWNUM, 3, '0')
+	    		, 'MP-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || LPAD(MFG_PLANS_SEQ.CURRVAL, 3, '0')
 	    		, #{soCode, jdbcType=VARCHAR}
 	    		, #{empId, jdbcType=VARCHAR}
 	<!--     		, #{mpStatus, jdbcType=VARCHAR} -->

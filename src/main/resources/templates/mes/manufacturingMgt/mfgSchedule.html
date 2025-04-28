@@ -214,7 +214,7 @@
 			{
 				header: '제조계획코드',
 				name: 'msCode',
-				width: 100,
+				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
@@ -227,60 +227,78 @@
 				filter: 'text',
 				align: "center" 
             },
-			{
-                header: '등록 사원번호',
-                name: 'empId',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center",
-				editor: "text"
-            },
             {
-				header: '상태',
+				header: '제조계획상태',
                 name: 'msStatus',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false
             },
 			{
                 header: '우선순위',
-                name: 'msPriority',
-				width: 200,
+                name: 'mpPriority',
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: {
-					type: "select",
-					options: {
-						listItems: [
-							{ text: '높음', value: '높음' },
-							{ text: '일반', value: '일반' },
-							{ text: '낮음', value: '낮음' }
-						]	
-					}
-				}
+				editor: false
             },
 			{
                 header: '제품코드',
                 name: 'pdtCode',
-				width: 200,
+				width: 150,
 				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false
             },
-            {
-				header: '수주 수량',
-                name: 'soQty',
-				width: 200,
+			{
+                header: '제품명',
+                name: 'pdtName',
+				width: 150,
+				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false
+            },
+            {
+				header: '주문수량',
+                name: 'soQty',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: false
+            },
+            {
+                header: '주문단위',
+                name: 'qtyUnitName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+			{
+                header: '등록사원번호',
+                name: 'empId',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center",
+				editor: false
+            },
+			{
+                header: '등록사원명',
+                name: 'empName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center",
+				editor: false
             },
 			{
                 header: '등록일자',
@@ -333,25 +351,33 @@
 		let rk = evValue.rowKey;
 		let rowData = grid.getRow(rk);
 		let msCode = rowData.msCode;
-		console.log(msCode)
+		console.log("선택한 제조계획번호(msCode): ", msCode);
 		// 제조 계획 그리드에서 선택된 제품에 해당하는 제조 계획 상세 데이터 불러오기
 		$.ajax({
-		url: '/ms/ms-selected', 
+		url: `/ms/detail`, 
         type: 'GET',
         data: { msCode: msCode },
-        success: function (msData) {
-        	msDetailGrid.resetData(msData);
-        },
-        error: function (err) {
-        	console.error("제조 계획 상세 데이터 로딩 실패", err);
-        	}
+        success: function (response) {
+        	console.log("서버 응답 전체:", response);
+			if (response.success) {
+				const msData = response.data;
+				 console.log("msData만 따로:", msData);
+				msDetailGrid.resetData(msData);
+			} else {
+				alert("상세정보를 불러오지 못했습니다.");
+			}
+		},
+		error: function (err) {
+			console.error("제조 계획 상세 데이터 로딩 실패", err);
+		}
 		});
 	});
     	
 	//================================== 그리드 하단 bom 부분 =================================
 	
 	let msdList = /*[[${msdList}]]*/ [];
-
+	console.log("디테일확인염", msdList);
+	
 		let msDetailGrid = new tui.Grid({
         el: document.getElementById('msDetailGrid'), 
 		data: msdList,
@@ -364,17 +390,17 @@
 		 },
         columns: [
 			{
-				header: '제조계획코드',
-				name: 'MS_CODE',
+				header: '제조상세번호',
+				name: 'MSD_NO',
 				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
             },
-            {
-                header: 'BOM 레벨',
-                name: 'BOM_LEVEL',
-				width: 200,
+			{
+				header: '제조계획코드',
+				name: 'MS_CODE',
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
@@ -387,9 +413,9 @@
 				filter: 'text',
 				align: "center" 
             },
-			{
-                header: '원자재 코드',
-                name: 'CHILD_ITEM_CODE',
+            {
+                header: '제품명',
+                name: 'PDT_NAME',
 				width: 200,
 				sortable: true, 
 				filter: 'text',
@@ -403,6 +429,16 @@
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
+				formatter: function({ value }) {
+			        if (value === 'SEMI_FINISHED') {
+			            return '반제품';
+			        } else if (value === 'RAW_MATERIAL') {
+			            return '완제품';
+			        } else {
+			            return value; // 혹시 다른 값이 들어오면 원래 값 표시
+			        }
+			    }
+				
             },
 			{
                 header: '계획수량',
@@ -412,20 +448,12 @@
 				filter: 'text',
 				align: "center",
 				editor: "text"
-            },/* 
+            },
             {
 				header: '투입단위',
-                name: 'BOM_UNIT',
+                name: 'QTYUNITNAME',
 				width: 200,
 				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            }, */
-            {
-				header: '비고',
-                name: 'COMMENTS',
-				width: 200,
 				filter: 'text',
 				align: 'center',
 				editor: "text"
@@ -550,6 +578,135 @@
 			});
 		}	
 	});
+	
+	//제조 계획 등록 시작 -------------------------------------------
+	$('#mfgScheduleRegiBtn').on('click', async function () {
+		// 로그인한 유저 정보
+		const empId = document.getElementById('currentUserId')?.value;
+	
+		const checkedRows = grid2.getCheckedRows(); // 선택된 행 가져오기
+	
+		const dataList = checkedRows.map((row, index) => ({
+	        ...row,
+	        empId: empId
+	    }));
+		
+		$.ajax({
+			url: "/ms/mfgScheduleRegi",
+			method : "POST",
+			contentType: "application/json",
+			data: JSON.stringify(dataList), // JSON 문자열로 전송
+			success : function (response){
+				alert(response);
+				location.reload();
+			},
+			error : function (error){
+				console.log(error);
+			}
+		})
+	});
+	// 제조 계획 등록 끝---------------------------------------------------------	
+	
+    //그리드 -> 엑셀 파일로 다운로드
+	document.getElementById('ExcelDownBtn').addEventListener('click', function () {
+	    
+		//현재 그리드 데이터 가져오기
+		const gridData = msDetailGrid.getData();
+		
+		//현재 그리드의 컬럼 값 가져오기
+	    const columns = msDetailGrid.getColumns();
+
+		//컬럼을 header와 name으로 분리
+	    const header = columns.map(col => col.header);
+	    const keys = columns.map(col => col.name);
+
+		//header만큼 배열 생성
+	    const exportData = [header];
+
+		//row값을 데이터에 저장
+	    gridData.forEach(row => {
+	        const rowData = keys.map(key => row[key]);
+	        exportData.push(rowData);
+	    });
+
+		//CDN 이용
+	    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+	    const workbook = XLSX.utils.book_new();
+
+	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+	    XLSX.writeFile(workbook, 'MFG-PLAN-grid-data.xlsx');
+	});
+	
+	let file;
+	let reader;
+
+	//버튼 클릭 시 선택된 엑셀 파일을 그리드에 출력
+	document.getElementById('ExcelUpBtn').addEventListener('click', function (e) {
+		
+		if (!file) {
+			document.getElementById('fileInput').click();
+	        return;
+	    }
+		
+		reader.onload = function (event) {
+			const data = new Uint8Array(event.target.result);
+		    const workbook = XLSX.read(data, { type: 'array' });
+
+			const firstSheetName = workbook.SheetNames[0];
+		    const worksheet = workbook.Sheets[firstSheetName];
+
+			console.log(worksheet);
+			
+			worksheet["A1"] = { t: "s", v: "msdNo", r:"<t>mpNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'msdNo', w: 'msdNo' };
+			worksheet["B1"] = { t: "s", v: "msCode", r:"<t>mpCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'msCode', w: 'msCode' };  			
+			worksheet["D1"] = { t: "s", v: "parentPdtCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'parentPdtCode', w: 'parentPdtCode' };
+			worksheet["E1"] = { t: "s", v: "pdtName", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+			worksheet["F1"] = { t: "s", v: "itemType", r:"<t>mpStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'itemType', w: 'itemType' };
+			worksheet["G1"] = { t: "s", v: "msQty", r:"<t>mpPriority</t><phoneticPr fontId='1' type='noConversion'/>", h: 'msQty', w: 'msQty' };
+			worksheet["H1"] = { t: "s", v: "qtyUnitName", r:"<t>mpCreatedAt</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qtyUnitName', w: 'qtyUnitName' };
+			
+			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+			// TUI Grid에 반영
+			msDetailGrid.resetData(jsonData);
+	   
+	   	
+			// 바로 서버에 저장 요청
+			fetch('/ms/saveExcelData', {
+			    method: 'POST',
+			    headers: {
+			        'Content-Type': 'application/json'
+			    },
+			    body: JSON.stringify(jsonData)
+			})
+			.then(res => {
+			    if (!res.ok) throw new Error("저장 실패");
+			    return res.text();
+			})
+			.then(data => {
+			    Swal.fire({
+			        icon: 'success',
+			        title: '업로드 완료',
+			        text: '엑셀 업로드 및 저장이 완료되었습니다.',
+			        confirmButtonText: '확인'
+			    });
+			})
+			.catch(err => {
+			    console.error(err);
+			    Swal.fire({
+			        icon: 'error',
+			        title: '저장 오류',
+			        text: '엑셀 저장 중 오류가 발생했습니다.',
+			        confirmButtonText: '닫기'
+			    });
+			});
+			
+			};
+
+		reader.readAsArrayBuffer(file);
+		
+	});		
+	
 	
 	
 	
