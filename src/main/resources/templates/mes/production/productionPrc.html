@@ -630,22 +630,30 @@
 					
 				//-------------------- 두번째 하단 그리드에 값을 출력하기 위한 비동기 --------------------
 				
-				$.ajax({
-					url: '/production/prcBoard',
-					type: 'POST',
-					data: { woCode : woCode },
-					success : function(response){
-							console.log("밑에 presentBtnRow:" + presentBtnRow);
-							prcGrid.resetData(response);
-					},
-					error: function(error) {
-				        Swal.fire({
-				        	icon: 'error',
-				          	title: error,
-				          	text: '작업 완료 처리 중 오류가 발생했습니다.',
-				      	});
-			      	}// error: function(error) {
-				});//$.ajax
+				setTimeout(() => {
+				  
+					$.ajax({
+						url: '/production/prcBoard',
+						type: 'POST',
+						data: { woCode : woCode },
+						success : function(response){
+								console.log("밑에 presentBtnRow:" + presentBtnRow);
+								prcGrid.resetData(response);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					      	});
+				      	}// error: function(error) {
+					});//$.ajax
+					
+					
+					
+				}, 1000);
+				
+				
 				
 				
 			});//$("#prcBoardBtn").on("click", function(){
@@ -711,7 +719,12 @@
 						url: '/production/deleteSavePrc',
 						type: 'GET',
 						success : function(response){
-							console.log("수량 전송 버튼 클릭시:" + response);
+							console.log(response);
+							
+							let adminModal = new bootstrap.Modal(document.getElementById('adminModal'));
+							adminModal.hide();
+							
+							location.reload();
 						},
 						error: function(error) {
 					        Swal.fire({
