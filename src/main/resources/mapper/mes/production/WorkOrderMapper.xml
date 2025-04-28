@@ -12,7 +12,7 @@
 			  W.WO_NO
 			, W.WO_CODE
 			, W.PDT_CODE
-			, W.PRC_CODE
+		--	, W.PRC_CODE
 			, W.ORDER_DATE
 			, W.WO_QTY
 			, S.WO_STATUS_CODE
@@ -40,13 +40,13 @@
 		    , S.PDT_CODE
 		    , P.PDT_NAME
 		    , S.SO_QTY
-		    , S.MS_START_TIME
-		    , S.MS_END_TIME
+		 --   , S.MS_START_TIME
+		 --   , S.MS_END_TIME
 		    , S.EMP_ID
 		    , S.MS_PRIORITY
 		    , S.MS_STATUS
 		    , S.MS_UPDATED_AT
-		    , S.PRC_CODE
+		 --   , S.PRC_CODE
 		    , S.MP_CODE
 		    , S.SO_QTY
 		  --  , S.PDT_PRC_TYPE_CODE
