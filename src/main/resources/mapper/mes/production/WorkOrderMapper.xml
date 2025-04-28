@@ -42,13 +42,13 @@
       , P.PRC_TYPE_CODE
       , P.PDT_TYPE
       , S.SO_QTY
-     -- , S.MS_START_TIME <-- 없음
-     -- , S.MS_END_TIME <-- 없음
+     -- , S.MS_START_TIME -- 없음
+     -- , S.MS_END_TIME -- 없음
       , S.EMP_ID
       , S.MS_PRIORITY
       , S.MS_STATUS
       , S.MS_UPDATED_AT
-      --, S.PRC_CODE <-- 없음
+      --, S.PRC_CODE --  없음
       , S.MP_CODE
       -- , S.SO_QTY
       --  , S.PDT_PRC_TYPE_CODE
