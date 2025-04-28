@@ -102,11 +102,51 @@
 				<button class="btn btn-warning btn-m" id="defectCheckBtn"><i class="fa-solid fa-spinner"></i> 품질검사</button>
 				<button class="btn btn-secondary btn-m" id="workEndBtn"><i class="fa-solid fa-file-circle-check"></i> 작업종료</button>
 			</div>
-		  
-		  <div class="card-header">
-		        <h5 class="card-title">👋 오늘 기준 미완료 공정 TOP 5</h5>
-		    </div>
-		    
+		  	<div class="card-header">
+			  <h5 class="card-title">👋 오늘 기준 미완료 공정 TOP 5</h5>
+			</div>
+			
+			<div id="myChart6"></div>
+			
+			<script type="text/javascript" th:inline="javascript">
+				processNameList = /*[[${processNameList}]]*/ [];
+				incompleteCountList = /*[[${incompleteCountList}]]*/ [];
+	
+				const data6 = {
+				  categories: processNameList,
+				  series: [
+				    {
+				      name: '미완료 건수',
+				      data: incompleteCountList
+				    }
+				  ]
+				};
+	
+				const options6 = {
+				  chart: { width: 600, height: 400 },
+				  series: {
+				    stack: false,
+				    showDot: false,
+				    zoomable: false,
+				    barWidth: 30,
+				  },
+				  yAxis: {
+				    title: '공정명'
+				  },
+				  xAxis: {
+				    title: '미완료 건수'
+				  }
+				};
+	
+				toastui.Chart.barChart({
+				  el: document.getElementById('myChart6'),
+				  data: data6,
+				  options: options6
+				});
+
+				</script>
+				
+		  	
 		    <div class="card-header">
 		        <h5 class="card-title">📈 최근 7일간 공정 완료 추이</h5>
 		    </div>
@@ -125,6 +165,7 @@
 					  series: [{
 					    name: "공정 완료 수",
 					    data: completeCountList
+					    
 					  }],
 					  xaxis: {
 					    type: 'category',

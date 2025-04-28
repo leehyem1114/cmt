@@ -62,6 +62,10 @@ public class LotDTO {
     private String empName;
     private String msStatus;
     private String prcTypeName;
+    
+    //=============================
+    private String processName; // 공정명
+    private int incompleteCount; // 미완료 수
 	 	
 }
 

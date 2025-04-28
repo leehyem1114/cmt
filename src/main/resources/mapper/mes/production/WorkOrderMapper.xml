@@ -169,6 +169,7 @@
 
 	</select>
 	
+	<!--  특정 lot기준으로 그 하위공정 목록만 조회 -->
 	<select id="selectLotProcessListByLotNo" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
 		SELECT
 		  L.LOT_NO,
@@ -207,8 +208,29 @@
       AND WO_STATUS_CODE = 'CP'
     GROUP BY TO_CHAR(WO_END_DATE, 'YYYY-MM-DD')
     ORDER BY workDate
+    
+    <!-- LOT기준으로 그래프 그리기 >>> 값이 하루에만 너무 많아짐 -->
+<!--     SELECT TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') AS workDate, -->
+<!--        COUNT(*) AS completeCount  -->
+<!-- 	FROM LOT -->
+<!-- 	WHERE CREATE_DATE BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE) + 0.99999 -->
+<!-- 	  AND WO_STATUS_NO = 'CP' -->
+<!-- 	GROUP BY TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') -->
+<!-- 	ORDER BY workDate -->
   </select>
   
+  <select id="selectTodayProcessTop5"  resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+	  SELECT 
+		    P.PRC_TYPE_NAME AS processName, 
+		    COUNT(*) AS incompleteCount
+		FROM LOT L
+		LEFT JOIN PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
+		WHERE L.CREATE_DATE BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 0.99999
+		  AND L.WO_STATUS_NO != 'CP' -- 미완료만
+		GROUP BY P.PRC_TYPE_NAME
+		ORDER BY incompleteCount DESC
+		FETCH FIRST 5 ROWS ONLY
+  </select>
   
 </mapper>
 	

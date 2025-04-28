@@ -38,6 +38,7 @@ public interface WorkOrderMapper {
 	
 	//그래프
 	List<WorkOrderDTO> selectCompleteStatsLast7Days();
+	List<LotDTO> selectTodayProcessTop5();
 	
 
 }
