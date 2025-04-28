@@ -47,7 +47,4 @@ public class WorkOrderDTO {
     private String workDate;
     private int completeCount;
 
-    
-    
-
 }

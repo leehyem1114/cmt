@@ -32,6 +32,7 @@ public interface WorkOrderMapper {
 	void updateMfgStatus(String msCode);
 	void deleteMfgList(String msCode);
 	
+	
 	//====================================
 	List<LotDTO> selectAllLotTree();
 	List<LotDTO> selectLotProcessListByLotNo(String childLotCode);
@@ -39,6 +40,14 @@ public interface WorkOrderMapper {
 	//그래프
 	List<WorkOrderDTO> selectCompleteStatsLast7Days();
 	List<LotDTO> selectTodayProcessTop5();
+
+	//WoNo 중 최대값
+	Long getWoNoMax();
+	
+	//가장 마지막 WoCode
+	String getWoCodeLast();
+	
+	
 	
 
 }

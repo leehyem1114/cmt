@@ -39,17 +39,19 @@
 		    , S.MS_CODE
 		    , S.PDT_CODE
 		    , P.PDT_NAME
+		    , P.PRC_TYPE_CODE
+		    , P.PDT_TYPE
 		    , S.SO_QTY
-		    , S.MS_START_TIME
-		    , S.MS_END_TIME
+		   -- , S.MS_START_TIME 
+		   -- , S.MS_END_TIME 
 		    , S.EMP_ID
 		    , S.MS_PRIORITY
 		    , S.MS_STATUS
 		    , S.MS_UPDATED_AT
-		    , S.PRC_CODE
+		    --, S.PRC_CODE
 		    , S.MP_CODE
-		    , S.SO_QTY
-		  --  , S.PDT_PRC_TYPE_CODE
+		    -- , S.SO_QTY
+		    --  , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
 		WHERE  MS_STATUS != '대기'
 		ORDER BY S.MS_NO DESC
@@ -67,10 +69,11 @@
 			 , PRC_CODE
 			 , WORK_START_DATE
 			 , WORK_END_DATE
+			 , MS_CODE
 			 -- , WO_STATUS_CODE -- 공정상태
 		) VALUES (
-				WORK_ORDER_SEQ.NEXTVAL
-			, #{msCode, jdbcType=VARCHAR}
+			#{woNo, jdbcType=VARCHAR}
+			, #{woCode, jdbcType=VARCHAR}
 			, #{pdtCode, jdbcType=VARCHAR}
 			, #{pdtName, jdbcType=VARCHAR}
 			, #{allocatedQty, jdbcType=VARCHAR}
@@ -81,6 +84,7 @@
 <!-- 			, #{msEndDate, jdbcType=DATE} -->
 			, NULL
 <!-- 			,#{msStatus, jdbcType=VARCHAR} -->
+			, #{msCode, jdbcType=VARCHAR}
 		)
 	</insert>
 	<update id="updateMfgStatus">
@@ -232,5 +236,16 @@
 		FETCH FIRST 5 ROWS ONLY
   </select>
   
+  <select id="getWoNoMax" resultType="String">
+  		SELECT MAX(WO_NO) 
+  		  FROM WORK_ORDER
+  </select>
+  
+  <select id="getWoCodeLast" resultType="String">
+  		SELECT WO_CODE 
+  		  FROM WORK_ORDER
+		 WHERE WO_NO = (SELECT MAX(WO_NO) 
+		  FROM WORK_ORDER)
+  </select>
 </mapper>
 	
