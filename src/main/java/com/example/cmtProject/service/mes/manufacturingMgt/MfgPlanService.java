@@ -89,6 +89,7 @@ public class MfgPlanService {
 //	        return false;
 //	    }
 		mfgPlanMapper.registMpPlan(mfgPlanDTO);
+		System.out.println("#############################################"+mfgPlanDTO);
 	
 	}
 	
