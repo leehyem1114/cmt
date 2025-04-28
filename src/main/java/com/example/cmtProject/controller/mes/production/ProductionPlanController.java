@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.annotation.RequestScope;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
-import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.service.mes.production.WorkOrderService;
 
@@ -26,7 +25,7 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 	
 	//작업지시 리스트
 	@GetMapping("/workOrder")
-	public String workOrderList(WorkOrderDTO workOrderDTO,Model model,LotDTO lotDTO) {
+	public String workOrderList(WorkOrderDTO workOrderDTO,Model model) {
 		//작업지시
 		List<WorkOrderDTO> orderList = orderService.getOrderList();
 		model.addAttribute("orderList",orderList);
@@ -36,7 +35,6 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		List<MfgScheduleDTO> planList = orderService.getPlanList();
 		model.addAttribute("planList",planList);
 		
-		// 최근 7일간 공정 완료 추이 그래프
 		List<WorkOrderDTO> stats = orderService.getCompleteStatsLast7Days();
 
 
@@ -51,18 +49,6 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 
 	    model.addAttribute("workDateList", workDateList);
 	    model.addAttribute("completeCountList", completeCountList);
-	    
-	    //오늘 기준 미완료 공정 TOP 5
-	    List<LotDTO> incompleteTop5 = orderService.getIncompleteTop5Today();
-	    List<String> processNameList = incompleteTop5.stream()
-	        .map(LotDTO::getProcessName)
-	        .collect(Collectors.toList());
-	    List<Integer> incompleteCountList = incompleteTop5.stream()
-	        .map(LotDTO::getIncompleteCount)
-	        .collect(Collectors.toList());
-
-	    model.addAttribute("processNameList", processNameList);
-	    model.addAttribute("incompleteCountList", incompleteCountList);
 	    
 		return"mes/production/work_order";
 	}
