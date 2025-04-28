@@ -62,15 +62,19 @@ public class WorkOrderService {
 	public List<LotDTO> getAllLotTree() {
 		return orderMapper.selectAllLotTree();
 	}
+	//특정 lot기준으로 그 하위공정 목록만 조회
 	public List<LotDTO> getLotProcessHistoryList(String childLotCode) {
-		System.out.println("넘어온 lotCode : "+childLotCode);
+//		System.out.println("넘어온 lotCode : "+childLotCode);
 		return orderMapper.selectLotProcessListByLotNo(childLotCode);
 	}
 	
 	//그래프
-
 	public List<WorkOrderDTO> getCompleteStatsLast7Days() {
 	    return orderMapper.selectCompleteStatsLast7Days();
+	}
+	//오늘 기준 미완료 공정 Top 5
+	public List<LotDTO> getIncompleteTop5Today() {
+		return orderMapper.selectTodayProcessTop5();
 	}
 	
 }
