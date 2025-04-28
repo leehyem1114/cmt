@@ -12,14 +12,14 @@
                 WHERE i.RECEIPT_CODE = mr.RECEIPT_CODE 
                 AND i.IQC_INSPECTION_STATUS = '검사완료'
                 AND i.IQC_INSPECTION_RESULT = '합격'
-            ) THEN '검사합격'
+            ) THEN '검사 합격'
             WHEN EXISTS (
                 SELECT 1 
                 FROM IQC i 
                 WHERE i.RECEIPT_CODE = mr.RECEIPT_CODE 
                 AND i.IQC_INSPECTION_STATUS = '검사완료'
                 AND i.IQC_INSPECTION_RESULT = '불합격'
-            ) THEN '검사불합격'
+            ) THEN '검사 불합격'
             ELSE mr.RECEIPT_STATUS
         END
 
