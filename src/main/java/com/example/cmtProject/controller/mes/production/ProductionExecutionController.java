@@ -44,4 +44,14 @@ public class ProductionExecutionController {//	생산 중 실적 등록, 자재 
 	public List<LotDTO> lotProcessHistory(@RequestParam("childLotCode") String childLotCode, Model model) {
 		return orderService.getLotProcessHistoryList(childLotCode);
 	}
+	
+	//lotN로 품질이력 조회
+	@GetMapping("/qualityHistory")
+	@ResponseBody
+	public LotDTO qualityHistory(@RequestParam("lotNo") Long lotNo) {
+		LotDTO qualityHistory = orderService.getQualityHistory(lotNo);
+		System.out.println("품질정보 : " + qualityHistory);
+		
+		return qualityHistory;
+	}
 }

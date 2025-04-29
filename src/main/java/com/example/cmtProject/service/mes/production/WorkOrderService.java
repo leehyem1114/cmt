@@ -86,5 +86,9 @@ public class WorkOrderService {
 	public String getWoCodeLast() {
 		return orderMapper.getWoCodeLast();
 	}
+	//로트에 해당하는 qualityHistory
+	public LotDTO getQualityHistory(Long lotNo) {
+		return orderMapper.selectQualityHistory(lotNo);
+	}
 	
 }

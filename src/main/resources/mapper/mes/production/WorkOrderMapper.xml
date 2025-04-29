@@ -50,10 +50,13 @@
 		    , S.MS_UPDATED_AT
 		    --, S.PRC_CODE
 		    , S.MP_CODE
+		    , E.EMP_NAME
 		    -- , S.SO_QTY
 		    --  , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
-		WHERE  MS_STATUS != '대기'
+							JOIN EMPLOYEES E ON S.EMP_ID = E.EMP_ID
+	--	WHERE  MS_STATUS != '대기'
+		WHERE  MS_STATUS = '등록'
 		ORDER BY S.MS_NO DESC
 	</select>
 	<!-- 제조계획리스트 -> workOrder 테이블에 insert -->
@@ -201,22 +204,38 @@
 	</select>
 	
   <select id="selectCompleteStatsLast7Days"  resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
-    SELECT TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') AS workDate,
-           COUNT(*) AS completeCount 
-    FROM WORK_ORDER
-    WHERE WO_END_DATE BETWEEN SYSDATE - 6 AND SYSDATE
-      AND WO_STATUS_CODE = 'CP'
-    GROUP BY TO_CHAR(WO_END_DATE, 'YYYY-MM-DD')
-    ORDER BY workDate
+<!--     SELECT TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') AS workDate, -->
+<!--            COUNT(*) AS completeCount  -->
+<!--     FROM WORK_ORDER -->
+<!--     WHERE WO_END_DATE BETWEEN SYSDATE - 6 AND SYSDATE -->
+<!--       AND WO_STATUS_CODE = 'CP' -->
+<!--     GROUP BY TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') -->
+<!--     ORDER BY workDate -->
     
     <!-- LOT기준으로 그래프 그리기 >>> 값이 하루에만 너무 많아짐 -->
-<!--     SELECT TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') AS workDate, -->
-<!--        COUNT(*) AS completeCount  -->
-<!-- 	FROM LOT -->
-<!-- 	WHERE CREATE_DATE BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE) + 0.99999 -->
-<!-- 	  AND WO_STATUS_NO = 'CP' -->
-<!-- 	GROUP BY TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') -->
-<!-- 	ORDER BY workDate -->
+    SELECT TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') AS workDate,
+       COUNT(*) AS completeCount 
+	FROM LOT
+	WHERE CREATE_DATE BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE) + 0.99999
+	  AND WO_STATUS_NO = 'CP'
+	GROUP BY TO_CHAR(CREATE_DATE, 'YYYY-MM-DD')
+	ORDER BY workDate
+  </select>
+  
+  <!-- lotNo로 품질이력 들고오기 -->
+  <select id="selectQualityHistory" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+  	SELECT 
+	  	IPI_START_TIME
+	  	,IPI_END_TIME 
+	  	,IPI_MEASURED_LENGTH_VALUE
+	  	,IPI_MEASURED_WEIGHT_VALUE
+	  	,IPI_INSPECTION_RESULT
+	  	,CHILD_LOT_CODE
+	  	,QCM_NAME
+	  	,LOT_NO
+	  	,EMP_NAME
+  	  FROM IPI 
+  	 WHERE LOT_NO = #{lotNo}
   </select>
   
   <select id="selectTodayProcessTop5"  resultType="com.example.cmtProject.dto.mes.production.LotDTO">

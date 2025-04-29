@@ -26,7 +26,8 @@ public interface WorkOrderMapper {
 	List<LotDTO> selectLotDetail();
 	//lotNo로 상품 상세정보 들고오기
 	LotDTO selectLotNoDetail(Long lotNo);
-
+	//lotNo로 품질이력 들고오기
+	LotDTO selectQualityHistory(Long lotNo);
 	
 	//제조계획상태 변경 & 제조계획 delete
 	void updateMfgStatus(String msCode);

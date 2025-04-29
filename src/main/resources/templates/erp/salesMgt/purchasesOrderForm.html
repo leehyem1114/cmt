@@ -188,12 +188,12 @@
 		let materialListSelected = materialList.map(item => ({text: item.mtlName, label: item.mtlName, value: item.mtlCode}));
 		let poStatusListSelected = poStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
 		
-		console.log(cltList)
-		console.log(empList);
-		console.log(materialList)
-		console.log(poStatusList);
+		console.log('cltList - ',cltList)
+		console.log('empList - ',empList);
+		console.log('materialList - ',materialList)
+		console.log('poStatusList - ',poStatusList);
 		
-	    console.log(/*[[${poMainList}]]*/ []);
+	    console.log('poMainList - ',/*[[${poMainList}]]*/ []);
 		
 		let gridData = /*[[${poMainList}]]*/ [];
 	    
@@ -397,7 +397,7 @@
 				type: "GET",
 				data: sendData,
 				success: function(result) {
-					console.log(result);
+					console.log('수주 리스트 : ',result);
 				},
 				error: function(errorResult) {
 					grid.restore(); // 이전 상태로 롤백
@@ -575,7 +575,7 @@
 						//console.log(/*[[${response}]]*/ [])
 	
 						grid.resetData(response);
-						console.log(response);
+						console.log('서버로 검색할 데이터 전송',response);
 						
 						grid.rowHeaders
 						grid.setColumns([
