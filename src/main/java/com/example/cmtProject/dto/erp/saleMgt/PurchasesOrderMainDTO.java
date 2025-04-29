@@ -53,4 +53,13 @@ public class PurchasesOrderMainDTO {
 	//Status entity
 	private String statusCode;
 	private String statusName;
+	
+	
+	private String poUseYn;
+	private String poVisible;
+	private String qtyUnit;
+	private String poQty;
+	private String mtlRcvQty;
+	private String mtlRcvPrice;
+	private LocalDate mtlRcvDate;
 }

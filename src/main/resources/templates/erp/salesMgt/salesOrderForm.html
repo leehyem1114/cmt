@@ -12,7 +12,7 @@
 	<!-- pagination -->
 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 			
-<!-- 	<!-- toast 부트스트랩 기본 --> -->
+<!-- 	<!-- toast 부트스트랩 기본 --> 
 <!-- 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" /> -->
 <!-- 	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script> -->
 		
@@ -194,12 +194,12 @@
 		let productListSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtCode}));
 		let soStatusListSelected = soStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
 		
-		console.log(cltList)
-		console.log(empList);
-		console.log(productList)
-		console.log(soStatusList);
+		console.log('cltList - ',cltList)
+		console.log('empList - ',empList);
+		console.log('productList - ',productList)
+		console.log('soStatusList - ',soStatusList);
 		
-	    console.log(/*[[${soMainList}]]*/ []);
+	    console.log('soMainList - ',/*[[${soMainList}]]*/ []);
 		
 		let gridData = /*[[${soMainList}]]*/ [];
 	    

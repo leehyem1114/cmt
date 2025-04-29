@@ -222,7 +222,41 @@
 				  </script>
 	            </div><!-- 공정이력 -->
 	            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-	                <p class="mt-2">품질이력 조회해서 그리드 넣기</p>
+	                
+	                <div id="qualityGrid" style="height: 400px;"></div>
+				    <script th:inline="javascript">
+				    window.qualityGrid = new tui.Grid({
+				    	  el: document.getElementById('qualityGrid'),
+				    	  data: [],
+				    	  rowHeaders: ['rowNum'],
+				    	  scrollX: false,
+				    	  scrollY: true,
+				    	  columns: [
+				    	    { header: 'LOT No', name: 'CHILD_LOT_CODE', sortable: true, align: 'center' },
+				    	    { header: '검사 시작시간', name: 'IPI_START_TIME', sortable: true, align: 'center' },
+				    	    { header: '검사항목', name: 'QCM_NAME', sortable: true, align: 'center' },
+				    	    { header: '길이 측정값', name: 'IPI_MEASURED_LENGTH_VALUE', align: 'center' },
+				    	    { header: '무게 측정값', name: 'IPI_MEASURED_WEIGHT_VALUE', align: 'center' },
+				    	    {
+				    	    	  header: '판정', 
+				    	    	  name: 'IPI_INSPECTION_RESULT',
+				    	    	  align: 'center',
+				    	    	  formatter: function({ value }) {
+				    	    	    if (value === '불합격') {
+				    	    	      return '<button class="btn btn-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> 불합격</button>';
+				    	    	    } else if (value === '합격') {
+				    	    	      return '<button class="btn btn-success rounded-pill"><i class="fa-regular fa-circle-check"></i> 합격</button>';
+				    	    	    } else {
+				    	    	      return ''
+				    	    	    }
+				    	    	  }
+				    	    	},
+				    	    { header: '검사자', name: 'EMP_NAME', align: 'center' }
+				    	  ]
+				    	});
+				  </script>
+	                
+	                
 	                
 	                <button class="btn btn-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> 불합격</button>
 	                <button class="btn btn-success rounded-pill"><i class="fa-regular fa-circle-check"></i> 합격</button>
@@ -306,6 +340,9 @@
 			  $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
 				  grid.refreshLayout();
 				});
+			  $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+				  qualityGrid.refreshLayout();
+				});
 			  
 			  const childLotCode = clickedLot.childLotCode;
 			  // 1. 공정 이력 AJAX
@@ -317,7 +354,7 @@
 			      const withRowNum = list.map((item, idx) => ({ ...item, rowNum: idx + 1 }));
 			      grid.resetData(withRowNum);
 			      
-			      console.log(list);
+			      console.log('공정이력',list);
 			    }
 			  });
 
@@ -327,7 +364,7 @@
 			    method: 'GET',
 			    data: { lotNo: selectedLotNo },
 			    success: function (response) {
-			    	console.log('디테일???',response);
+			    	console.log('lot 상세???',response);
 			    	
 			      $('#lotNotice').hide();
 			      $('#lotDetailForm').show();
@@ -358,8 +395,27 @@
 			      alert('서버 오류: ' + error.responseText);
 			    }
 			  });
+			  
+// 				// 3. 품질 이력 AJAX (여기서 바로 호출)
+			  $.ajax({
+				  url: '/production/qualityHistory',
+				  method: 'GET',
+				  data: { lotNo: selectedLotNo },
+				  success: function (list) {
+				    const realList = Array.isArray(list) ? list : [list];  // 여기 추가
+
+				    const withRowNum = realList.map((item, idx) => ({ ...item, rowNum: idx + 1 }));
+				    qualityGrid.resetData(withRowNum);
+
+				    console.log('품질검사 이력', realList);
+				  },
+				  error: function (error) {
+				    console.error('서버 오류:', error);
+				    alert('서버 오류: ' + error.responseText);
+				  }
+				});
 			});
-		  });
+		});
 
 	</script>
 </th:block>

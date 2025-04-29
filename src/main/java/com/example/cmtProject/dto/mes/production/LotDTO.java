@@ -1,6 +1,8 @@
 package com.example.cmtProject.dto.mes.production;
 
+import java.security.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -66,6 +68,16 @@ public class LotDTO {
     //=============================
     private String processName; // 공정명
     private int incompleteCount; // 미완료 수
+    
+    //=================================
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime  ipiStartTime; //검사 시작 시간
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime ipiEndTime; // 검사 종료시간
+    private Double ipiMeasuredLengthValue;
+    private Double ipiMeasuredWeightValue;
+    private String ipiInspectionResult;
+    private String qcmName;
 	 	
 }
 
