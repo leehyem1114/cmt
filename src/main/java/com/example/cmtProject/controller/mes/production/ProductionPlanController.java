@@ -63,7 +63,7 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 	@PostMapping("/workOrder/regist")
 	@ResponseBody
 	public String regiWorkOrderLsit(@RequestBody WorkOrderDTO workOrderDTO) {
-
+		
 		//작업지시 등록
 		Long woNo = orderService.getWoNoMax();
 		String woCodeLast = orderService.getWoCodeLast();
