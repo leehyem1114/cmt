@@ -14,26 +14,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.cmtProject.comm.response.ApiResponse;
 import com.example.cmtProject.constants.PathConstants;
-import com.example.cmtProject.service.mes.inventory.MaterialInventoryService;
+import com.example.cmtProject.service.mes.inventory.ProductsInventoryService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping(PathConstants.API_MATERIALINVENTORY_BASE)
+@RequestMapping(PathConstants.API_PRODUCTSINVENTORY_BASE)
 @Slf4j
 public class ProductsInventoryRestController {
     
     @Autowired
-    private MaterialInventoryService mis;
+    private ProductsInventoryService pis;
     
     /**
-     * 원자재 재고 목록 조회 API
+     * 제품 재고 목록 조회 API
      * 
      * @param keyword 검색 키워드 (선택사항)
      * @return 재고 목록 데이터
      */
     @GetMapping("/list")
-    public ApiResponse<List<Map<String, Object>>> getMaterialInventory(
+    public ApiResponse<List<Map<String, Object>>> getProductsInventory(
             @RequestParam(name = "keyword", required = false) String keyword) {
         
         Map<String, Object> findMap = new HashMap<>();
@@ -43,30 +43,30 @@ public class ProductsInventoryRestController {
             findMap.put("keyword", keyword);
         }
         log.info("재고 목록 조회 요청. 검색어: {}", keyword);
-        List<Map<String, Object>> mInventory = mis.inventoryList(findMap);
-        log.info("재고 목록 조회 결과: {}건", mInventory.size());
+        List<Map<String, Object>> pInventory = pis.pInventoryList(findMap);
+        log.info("재고 목록 조회 결과: {}건", pInventory.size());
         
-        return ApiResponse.success(mInventory);
+        return ApiResponse.success(pInventory);
     }
     
     /**
-     * 원자재 재고 차감 API (FIFO 적용)
-     * 공정에서 사용된 자재의 재고를 FIFO 방식으로 차감합니다.
+     * 제품 재고 차감 API (FIFO 적용)
+     * 출고에서 사용된 제품의 재고를 FIFO 방식으로 차감합니다.
      * 
-     * @param params 차감 정보 (mtlCode: 자재코드, consumptionQty: 소비량, updatedBy: 처리자)
+     * @param params 차감 정보 (pdtCode: 제품코드, consumptionQty: 소비량, updatedBy: 처리자)
      * @return 처리 결과
      */
     @PostMapping("/consume")
-    public ApiResponse<Map<String, Object>> consumeMaterial(@RequestBody Map<String, Object> params) {
-        log.info("자재 재고 차감 요청: {}", params);
+    public ApiResponse<Map<String, Object>> consumeProduct(@RequestBody Map<String, Object> params) {
+        log.info("제품 재고 차감 요청: {}", params);
         
-        Map<String, Object> result = mis.consumeMaterialFIFO(params);
+        Map<String, Object> result = pis.consumeProductFIFO(params);
         
         if ((Boolean) result.get("success")) {
-            log.info("자재 재고 차감 성공: {}", result.get("message"));
+            log.info("제품 재고 차감 성공: {}", result.get("message"));
             return ApiResponse.success(result);
         } else {
-            log.warn("자재 재고 차감 실패: {}", result.get("message"));
+            log.warn("제품 재고 차감 실패: {}", result.get("message"));
             return ApiResponse.error(result.get("message").toString(), result);
         }
     }
@@ -82,7 +82,7 @@ public class ProductsInventoryRestController {
     public ApiResponse<Map<String, Object>> saveInventory(@RequestBody List<Map<String, Object>> inventoryList) {
         log.info("재고 정보 저장 요청: {}건", inventoryList.size());
         
-        Map<String, Object> result = mis.saveInventory(inventoryList);
+        Map<String, Object> result = pis.saveInventory(inventoryList);
         
         if ((Boolean) result.get("success")) {
             log.info("재고 정보 저장 성공: {}", result.get("message"));

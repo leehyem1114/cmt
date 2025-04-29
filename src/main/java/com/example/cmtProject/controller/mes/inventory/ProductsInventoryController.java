@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
-import com.example.cmtProject.service.mes.inventory.ProductslInventoryService;
+import com.example.cmtProject.service.mes.inventory.ProductsInventoryService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductsInventoryController {
 	
 	@Autowired
-	private ProductslInventoryService pis;
+	private ProductsInventoryService pis;
 	
 	/**
 	 * 
