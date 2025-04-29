@@ -770,47 +770,52 @@ const ProductsIssueManager = (function() {
      * 
      * @param {string} soCode - 수주 코드
      */
-    async function loadSalesOrderDetail(soCode) {
-        try {
-            if (!soCode) {
-                // 선택된 수주가 없으면 그리드 초기화
-                if (soDetailGrid) {
-                    soDetailGrid.resetData([]);
-                }
-                return false;
-            }
-            
-            console.log('수주 상세 정보 로드:', soCode);
-            await UIUtil.toggleLoading(true, '수주 상세 정보를 불러오는 중...');
-            
-            // API 호출 - 수주 상세 정보 조회 (URL 수정)
-            const response = await ApiUtil.get(`${API_URLS.SALES_ORDER}/${soCode}`);
-            
-            await UIUtil.toggleLoading(false);
-            
-            if (!response.success) {
-                throw new Error('수주 상세 정보를 가져오는데 실패했습니다: ' + response.message);
-            }
-            
-            const detailData = response.data || {};
-            
-            // 데이터를 배열로 변환 (단일 항목이라도 배열로 처리)
-            const gridData = Array.isArray(detailData) ? detailData : [detailData];
-            
-            // 그리드 업데이트
-            if (soDetailGrid) {
-                soDetailGrid.resetData(gridData);
-            }
-            
-            console.log('수주 상세 정보 로드 완료');
-            return true;
-        } catch (error) {
-            console.error('수주 상세 정보 로드 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('조회 오류', '수주 상세 정보를 불러오는데 실패했습니다.');
-            return false;
-        }
-    }
+	async function loadSalesOrderDetail(soCode) {
+	    try {
+	        if (!soCode) {
+	            // 선택된 수주가 없으면 그리드 초기화
+	            if (soDetailGrid) {
+	                soDetailGrid.resetData([]);
+	            }
+	            return false;
+	        }
+	        
+	        console.log('수주 상세 정보 로드:', soCode);
+	        await UIUtil.toggleLoading(true, '수주 상세 정보를 불러오는 중...');
+	        
+	        // 수정된 부분: soCode를 검색 파라미터로 사용
+	        const response = await ApiUtil.get(API_URLS.SALES_ORDER, {
+	            keyword: soCode,
+	            status: 'SO_CONFIRMED,SO_PLANNED,SO_COMPLETED' // 출고 가능한 상태
+	        });
+	        
+	        await UIUtil.toggleLoading(false);
+	        
+	        if (!response.success) {
+	            throw new Error('수주 상세 정보를 가져오는데 실패했습니다: ' + response.message);
+	        }
+	        
+	        // 응답에서 해당 수주 코드와 일치하는 항목만 필터링
+	        const salesOrders = response.data || [];
+	        const detailData = salesOrders.find(so => so.SO_CODE === soCode) || {};
+	        
+	        // 데이터를 배열로 변환 (단일 항목이라도 배열로 처리)
+	        const gridData = [detailData];
+	        
+	        // 그리드 업데이트
+	        if (soDetailGrid) {
+	            soDetailGrid.resetData(gridData);
+	        }
+	        
+	        console.log('수주 상세 정보 로드 완료');
+	        return true;
+	    } catch (error) {
+	        console.error('수주 상세 정보 로드 중 오류:', error);
+	        await UIUtil.toggleLoading(false);
+	        await AlertUtil.showError('조회 오류', '수주 상세 정보를 불러오는데 실패했습니다.');
+	        return false;
+	    }
+	}
     
     /**
      * 선택된 수주 정보 표시 함수
