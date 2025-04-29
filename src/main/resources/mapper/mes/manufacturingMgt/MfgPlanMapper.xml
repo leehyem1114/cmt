@@ -38,6 +38,7 @@
 			SO.SO_CODE AS soCode,
 			SO.SO_QTY AS soQty,
 			CD.CMN_DETAIL_NAME AS qtyUnitName,
+			SO.SO_DATE AS soDate,
 			SO.SO_DUE_DATE AS soDueDate,
 			SO.PDT_CODE AS pdtCode,
 			P.PDT_NAME AS pdtName,

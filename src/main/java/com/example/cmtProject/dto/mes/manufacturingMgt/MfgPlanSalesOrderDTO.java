@@ -18,6 +18,7 @@ public class MfgPlanSalesOrderDTO { // 생산 계획 등록 시 수주 목록 DT
 	private String qtyUnitName; // 주문단위명
 	private Long leadTime;  // 소요시간
 	private String cltName; // 거래처명
+	private LocalDate soDate; // 수주일자
 	private LocalDate soDueDate; // 납품기한
 	private LocalDate mpStartDate; // 생산 시작 예정일
 	private LocalDate mpEndDate; // 생산 종료 예정일

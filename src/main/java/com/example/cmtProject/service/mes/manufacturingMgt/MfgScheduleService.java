@@ -1,6 +1,5 @@
 package com.example.cmtProject.service.mes.manufacturingMgt;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +25,6 @@ public class MfgScheduleService {
 	public List<MfgScheduleDTO> getMfgScheduleTotalList() {
 		return mfgScheduleMapper.getMfgScheduleTotalList();
 	}
-	
-	// 제조 계획 상세 정보 조회
-//	public List<MfgScheduleDetailDTO> getMsdList() {
-//		return mfgMapper.getMsdList();
-//	}
-	
 
 	// 제조 계획 등록 시 생산 계획 내역 조회
 	public List<MfgSchedulePlanDTO> getMpList() {
