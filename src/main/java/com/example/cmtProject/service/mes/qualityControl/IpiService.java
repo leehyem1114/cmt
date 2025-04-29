@@ -19,7 +19,7 @@ import com.example.cmtProject.mapper.mes.qualityControl.FqcMapper;
 import jakarta.transaction.Transactional;
 
 @Service
-public class InProcessInspectionService {
+public class IpiService {
 	
 	@Autowired
 	private FqcMapper fqcMapper;

@@ -11,7 +11,7 @@ import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
-public interface InProcessInspectionMapper {
+public interface IpiMapper {
 
 	List<FqcDTO> getAllFqc();
 
