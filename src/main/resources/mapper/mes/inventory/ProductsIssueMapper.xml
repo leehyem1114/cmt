@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.inventory.ProductsIssueMapper">
+	
+	<!--제품 출고정보 INSERT-->
+	<insert id="insertProductsIssue">
+        INSERT INTO PRODUCTS_ISSUE (
+            ISSUE_NO, <!-- 출고 번호 -->
+            ISSUE_CODE, <!-- 출고 코드 -->
+            PDT_CODE, <!-- 제품코드 -->
+            REQUEST_QTY, <!-- 요청수량 -->
+            ISSUED_QTY, <!-- 출고수량 -->
+            LOT_NO, <!-- LOT 번호 -->
+            REQUEST_DATE, <!-- 요청일 -->
+            ISSUE_DATE, <!-- 출고일 -->
+            ISSUE_STATUS, <!-- 출고상태 -->
+            WAREHOUSE_CODE, <!-- 창고 코드 -->
+            ISSUER, <!-- 출고 담당자 -->
+            CREATED_BY, <!-- 생성자 -->
+            UPDATED_BY, <!-- 수정자 -->
+            CREATED_DATE, <!-- 생성일자 -->
+            UPDATED_DATE <!-- 수정일자 -->
+        ) VALUES (
+            SEQ_PRODUCTS_ISSUE.NEXTVAL,
+            #{issueCode},
+            #{pdtCode},
+            #{requestQty}, 
+            #{issuedQty},
+            #{lotNo},
+            #{requestDate, jdbcType=DATE},
+            #{issueDate, jdbcType=DATE},
+            #{issueStatus},
+            #{warehouseCode}, 
+            #{issuer},
+            #{createdBy},
+            #{updatedBy}, 
+            #{createdDate},
+            #{updatedDate}
+        )
+	</insert>
+	
+	<!--출고 정보 SELECT-->
+	<select id="pIssueList" resultType="map" parameterType="map">
+        SELECT
+        	PI.ISSUE_NO, <!-- 출고 번호 -->
+            PI.ISSUE_CODE, <!-- 출고 코드 -->
+            PI.PDT_CODE, <!-- 제품코드 -->
+            P.PDT_NAME, <!-- 제품명  -->
+            PI.REQUEST_QTY, <!-- 요청수량 -->
+            PI.ISSUED_QTY, <!-- 출고수량 -->
+            PI.LOT_NO, <!-- LOT 번호 -->
+            PI.REQUEST_DATE, <!-- 요청일 -->
+            PI.ISSUE_DATE, <!-- 출고일 -->
+            PI.ISSUE_STATUS, <!-- 출고상태 -->
+            PI.WAREHOUSE_CODE, <!-- 창고 코드 -->
+            PI.ISSUER, <!-- 출고 담당자 -->
+            PI.CREATED_BY, <!-- 생성자 -->
+            PI.UPDATED_BY, <!-- 수정자 -->
+            PI.CREATED_DATE, <!-- 생성일자 -->
+            PI.UPDATED_DATE <!-- 수정일자 -->
+        FROM  
+        	PRODUCTS_ISSUE PI
+        LEFT JOIN
+        	PRODUCTS P
+        ON
+        	PI.PDT_CODE = P.PDT_CODE
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (
+                    PI.ISSUE_CODE LIKE '%' || #{keyword} || '%' OR
+                    PI.PDT_CODE LIKE '%' || #{keyword} || '%' OR
+                    P.PDT_NAME LIKE '%' || #{keyword} || '%' OR
+                    PI.LOT_NO LIKE '%' || #{keyword} || '%'
+                )
+            </if>
+        </where>
+        ORDER BY PI.ISSUE_NO DESC
+	</select>
+	
+	<!-- 출고 상세 정보 조회 -->
+    <select id="getIssueDetail" resultType="map" parameterType="long">
+        SELECT
+            PI.ISSUE_NO, 
+            PI.ISSUE_CODE, 
+            PI.PDT_CODE,
+            P.PDT_NAME,
+            PI.REQUEST_QTY,
+            PI.ISSUED_QTY,
+            PI.LOT_NO,
+            PI.REQUEST_DATE,
+            PI.ISSUE_DATE,
+            PI.ISSUE_STATUS,
+            PI.WAREHOUSE_CODE,
+            PI.ISSUER,
+            PI.CREATED_BY,
+            PI.UPDATED_BY,
+            PI.CREATED_DATE,
+            PI.UPDATED_DATE
+        FROM  
+            PRODUCTS_ISSUE PI
+        LEFT JOIN
+            PRODUCTS P ON PI.PDT_CODE = P.PDT_CODE
+        WHERE 
+            PI.ISSUE_NO = #{issueNo}
+    </select>
+    
+    <!-- 마지막 저장된 출고 번호 조회 -->
+    <select id="getLastIssueNo" resultType="java.lang.Long">
+        SELECT MAX(ISSUE_NO) 
+        FROM PRODUCTS_ISSUE
+    </select>
+    
+    <!-- 위치 정보 조회 -->
+    <select id="getLocationInfo" resultType="map" parameterType="long">
+        SELECT
+            W.WAREHOUSE_CODE,
+            W.WHS_NAME AS WAREHOUSE_NAME,
+            L.LOCATION_CODE,
+            L.LOCATION_NAME,
+            L.STOCK_QTY
+        FROM
+            PRODUCTS_STOCK_LOCATION L
+        JOIN
+            WAREHOUSE W ON L.WAREHOUSE_CODE = W.WAREHOUSE_CODE
+        WHERE
+            L.ISSUE_NO = #{issueNo}
+    </select>
+    
+    <!-- 이력 정보 조회 -->
+    <select id="getHistoryInfo" resultType="map" parameterType="long">
+        SELECT
+            H.HISTORY_NO,
+            H.ISSUE_NO,
+            H.ACTION_TYPE,
+            H.ACTION_DESCRIPTION,
+            H.ACTION_USER,
+            H.ACTION_DATE
+        FROM
+            PRODUCTS_ISSUE_HISTORY H
+        WHERE
+            H.ISSUE_NO = #{issueNo}
+        ORDER BY
+            H.ACTION_DATE DESC
+    </select>
+    
+    <!-- 출고 상태 업데이트 -->
+    <update id="updateIssueStatus" parameterType="map">
+        UPDATE 
+            PRODUCTS_ISSUE
+        SET 
+            ISSUE_STATUS = #{issueStatus},
+            UPDATED_BY = #{updatedBy},
+            UPDATED_DATE = SYSDATE
+        WHERE 
+            ISSUE_NO = #{issueNo}
+    </update>
+    
+    <!-- 출고 상태 및 출고일 업데이트 -->
+    <update id="updateIssueStatusAndDate" parameterType="map">
+        UPDATE 
+            PRODUCTS_ISSUE
+        SET 
+            ISSUE_STATUS = #{issueStatus},
+            ISSUED_QTY = #{issuedQty, jdbcType=VARCHAR},
+            ISSUE_DATE = TO_DATE(#{issueDate}, 'YYYY-MM-DD'),
+            UPDATED_BY = #{updatedBy},
+            UPDATED_DATE = SYSDATE
+        WHERE 
+            ISSUE_NO = #{issueNo}
+    </update>
+</mapper>
