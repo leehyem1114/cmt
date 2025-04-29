@@ -48,9 +48,6 @@ public class MfgScheduleController {
 		List<MfgSchedulePlanDTO> mpList = mfgScheduleService.getMpList();
 		model.addAttribute("mpList", mpList);
 		
-		// 제조 계획 상세
-		//List<MfgScheduleDetailDTO> msdList = mfgService.getMsdList();
-		
 		return "mes/manufacturingMgt/mfgSchedule";
 	}
 	
@@ -72,7 +69,6 @@ public class MfgScheduleController {
 			mfgScheduleService.registMsPlan(dto);
 			// 제조 계획 등록 시 생산 계획 상태 업데이트
 			mfgScheduleService.updateMpStatus(dto.getMpCode());
-			// 디테일을 위한 msCode
 		}
 		return "success";
 	}
