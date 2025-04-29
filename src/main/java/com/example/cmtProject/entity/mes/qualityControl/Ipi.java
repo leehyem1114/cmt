@@ -47,9 +47,12 @@ public class Ipi {
     
     @Column(name = "QCM_NAME")
     private String qcmName;
-
+    
     @Column(name = "PDT_CODE")
     private String pdtCode;
+
+    @Column(name = "PDT_TYPE")
+    private String pdtType;
 
     @Column(name = "PDT_NAME")
     private String pdtName;

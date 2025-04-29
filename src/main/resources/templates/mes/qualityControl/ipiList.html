@@ -21,7 +21,7 @@
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<title>출고 검사</title>
+<title>공정 검사</title>
 
 <style>
 .tui-datepicker {
@@ -40,6 +40,19 @@
 	background-color: #28a745;
 	color: white;
 }
+	.chart-wrapper {
+	  display: flex;
+	  gap: 20px; /* ✅ 두 chart 사이에 20px 간격 */
+	}
+	
+	#chart-area, #chart-area2 {
+	  flex: 1; /* ✅ 너비 균등 분할 (원하면 빼도 됨) */
+	}
+	.chart-wrapper {
+	  display: flex;
+	  justify-content: center;
+	  gap: 20px;
+	}
 </style>
 
 
@@ -55,12 +68,15 @@
 		<!--			<div th:text="${soModel}"></div>-->
 		<!--		</th:block>-->
 		<!-- 그리드 top 시작 -->
-		<h3>출고 검사 목록</h3>
+		<h3>공정 검사 목록</h3>
 
 
 
 
-		<div id="chart-area"></div>
+		<div class="chart-wrapper">
+		  <div id="chart-area"></div>
+		  <div id="chart-area2"></div>
+		</div>
 
 
 
@@ -123,7 +139,7 @@
 		<div id="fqcDetailWrapper"
 			style="margin-top: 20px; border: 1px solid #ddd; padding: 15px;">
 			<h3>상세 정보</h3>
-			<div id="fqcDetailContent">출고 검사항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
+			<div id="fqcDetailContent">공정 검사항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
 		</div>
 
 
@@ -143,48 +159,141 @@
 	    
 	    
 	    
-	    const el = document.getElementById('chart-area');
+		const el = document.getElementById('chart-area2');
+
+		 // ✅ 오늘 기준 7일 날짜+요일 가져오기
+		 const categories = getLast7DaysWithWeekday();
+	
+		 // ✅ 7일치 데이터를 서버에서 가져와서 차트 그리기
+		 async function fetchSevenDaysInspectionData() {
+		   try {
+		
+		     // 서버로 요청 (7일치 데이터)
+		     const response = await fetch('/fqc/inspection-summary-last-7-days');
+		     const result = await response.json(); // 예: [{passCount, inProgressCount, failCount}, {}, {}, ... 총 7개]
+	
+		     // ✅ series용 데이터 배열 만들기
+		     const passRates = [];
+		     const inProgressRates = [];
+		     const failRates = [];
+	
+		     result.forEach(dayData => {
+		       const totalCount = dayData.PASS_COUNT + dayData.IN_PROGRESS_COUNT + dayData.FAIL_COUNT;
+		       passRates.push(safeDivide(dayData.PASS_COUNT, totalCount));
+		       inProgressRates.push(safeDivide(dayData.IN_PROGRESS_COUNT, totalCount));
+		       failRates.push(safeDivide(dayData.FAIL_COUNT, totalCount));
+		     });
+	
+		     // ✅ 최종 차트 데이터 만들기
+		     const data = {
+		       categories: categories, // 7일 날짜
+		       series: [
+		         { name: '합격', data: passRates },
+		         { name: '검사중', data: inProgressRates },
+		         { name: '불합격', data: failRates }
+		       ]
+		     };
+	
+		     const options = {
+		       chart: { 
+		         title: '최근 7일 불량율', 
+		         height: 400 
+		       },
+		       series: { 
+		         stack: { type: 'percent' }, 
+		         dataLabels: { 
+		           visible: true,
+		           formatter: (value) => `${value.toFixed(1)}%`
+		         }
+		       }
+		     };
+	
+		     toastui.Chart.columnChart({ el, data, options });
+		     
+		   } catch (error) {
+		     console.error('7일 데이터 불러오기 실패:', error);
+		   }
+		 }
+	
+		 // ✅ 7일 날짜 + 요일 생성 함수
+		 function getLast7DaysWithWeekday() {
+		   const today = new Date();
+		   const dates = [];
+		   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+	
+		   for (let i = 6; i >= 0; i--) {
+		     const d = new Date();
+		     d.setDate(today.getDate() - i);
+		     const month = d.getMonth() + 1;
+		     const day = d.getDate();
+		     const weekDay = weekDays[d.getDay()];
+		     dates.push(`${month}/${day} (${weekDay})`);
+		   }
+		   return dates;
+		 }
+	
+		 // ✅ 실행
+		 fetchSevenDaysInspectionData();
+	    
+	    
+	    
+	    
+	    
+	 	// ✅ 안전한 나누기 함수
+	    const safeDivide = (num, total) => total === 0 ? 0 : (num / total) * 100;
+
+	    // ✅ 차트 생성 함수
+	    function drawChart(passCount, inProgressCount, failCount, totalCount) {
+	      const el = document.getElementById('chart-area');
+
+	      const passRate = safeDivide(passCount, totalCount);
+	      const inProgressRate = safeDivide(inProgressCount, totalCount);
+	      const failRate = safeDivide(failCount, totalCount);
+
 	      const data = {
+	        categories: ['불량율'],
 	        series: [
-	          {
-	            name: 'Speed',
-	            data: [80],
-	          },
-	        ],
-	      };
-	      const options = {
-	        chart: { title: 'Speedometer', width: 550, height: 500 },
-	        series: {
-	          solid: true,
-	          dataLabels: { visible: true, offsetY: -30, formatter: (value) => `${value}%` },
-	        },
-	        theme: {
-	          circularAxis: {
-	            lineWidth: 0,
-	            strokeStyle: 'rgba(0, 0, 0, 0)',
-	            tick: {
-	              lineWidth: 0,
-	              strokeStyle: 'rgba(0, 0, 0, 0)',
-	            },
-	            label: {
-	              color: 'rgba(0, 0, 0, 0)',
-	            },
-	          },
-	          series: {
-	            dataLabels: {
-	              fontSize: 40,
-	              fontFamily: 'Impact',
-	              fontWeight: 600,
-	              color: '#00a9ff',
-	              textBubble: {
-	                visible: false,
-	              },
-	            },
-	          },
-	        },
+	          { name: '합격', data: passRate },
+	          { name: '검사중', data: inProgressRate },
+	          { name: '불합격', data: failRate }
+	        ]
 	      };
 
-	      const chart = toastui.Chart.gaugeChart({ el, data, options });
+	      const options = {
+	        chart: { 
+	          title: '최근 7일 불량율', 
+	          height: 400 
+	        },
+	        series: {
+	          dataLabels: { 
+	            visible: true, 
+	            formatter: (value) => `${value.toFixed(1)}%`
+	          }
+	        }
+	      };
+
+	      toastui.Chart.pieChart({ el, data, options });
+	    }
+
+	    // ✅ 서버에서 데이터 가져오기
+	    async function fetchInspectionData() {
+	      try {
+	        // 예시: GET 방식으로 데이터 요청
+	        const response = await fetch('/fqc/inspection-summary');
+	        const result = await response.json(); // JSON 파싱
+
+	        // 받아온 데이터 예시
+	        const { PASS_COUNT, IN_PROGRESS_COUNT, FAIL_COUNT } = result;
+	        const totalCount = PASS_COUNT + IN_PROGRESS_COUNT + FAIL_COUNT;
+
+	        drawChart(PASS_COUNT, IN_PROGRESS_COUNT, FAIL_COUNT, totalCount);
+	      } catch (error) {
+	        console.error('데이터 불러오기 실패:', error);
+	      }
+	    }
+
+	    // ✅ 실행
+	    fetchInspectionData();
 	    
 	    
 	    
@@ -288,7 +397,7 @@
            		  }
            		},
             	{ 
-                  header: '출고 검사 코드', 
+                  header: '공정 검사 코드', 
             	  name: 'fqcCode', 
             	  sortable: true, 
             	  filter: 'text', 
@@ -297,7 +406,7 @@
             	  hidden: true 
             	},       	
             	{ 
-                  header: '출고 코드', 
+                  header: '공정 코드', 
             	  name: 'woCode', 
             	  sortable: true, 
             	  filter: 'text', 
@@ -339,7 +448,7 @@
                	  align: "center",
             	},
             	{ 
-              	  header: '출고 검사 수량', 
+              	  header: '공정 검사 수량', 
               	  name: 'receivedQty', 
               	  sortable: true, 
               	  filter: 'text',
@@ -429,15 +538,6 @@
 	           		    
 	           		    return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
 	           		}
-              	},
-	    		{ 
-           	      header: '출고 창고', 
-           		  name: 'whsName', 
-           		  sortable: true, 
-           		  filter: 'text',
-           		  width: 100,
-           		  align: "center",
-            	  hidden: true
               	},
 	    		{ 
            	      header: '비고', 
@@ -720,17 +820,16 @@
 	    		    ${makeDetailItem('LOT', rowData.childLotCode)}
 	    		    ${makeDetailItem('작업 상태', statusHtml)}
 	    		    ${makeDetailItem('작업 상태', resultHtml)}
-	    		    ${makeDetailItem('출고 코드', rowData.woCode)}
-	    	        ${makeDetailItem('출고 검사 코드', rowData.fqcCode)}
+	    		    ${makeDetailItem('공정 코드', rowData.woCode)}
+	    	        ${makeDetailItem('공정 검사 코드', rowData.fqcCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
-	    	        ${makeDetailItem('출고 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
+	    	        ${makeDetailItem('공정 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', `${safe(rowData.empName)} ${safe(rowData.empId)}`)}
 	    	        ${makeDetailItem('완제품', rowData.pdtName)}
 	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.fqcMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
 	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.fqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
 	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.fqcStartTime))}
 	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.fqcEndTime))}
-	    	        ${makeDetailItem('출고 창고', rowData.whsName)}
 	    	        ${makeDetailItem('비고', rowData.fqcRemarks)}
 	    	      </div>
 	    	    </div>
@@ -969,8 +1068,7 @@
     			worksheet["O1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
     			worksheet["P1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
     			worksheet["Q1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["R1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["S1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
+    			worksheet["R1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
     			
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });

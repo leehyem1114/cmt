@@ -540,15 +540,6 @@
 	           		}
               	},
 	    		{ 
-           	      header: '출고 창고', 
-           		  name: 'whsName', 
-           		  sortable: true, 
-           		  filter: 'text',
-           		  width: 100,
-           		  align: "center",
-            	  hidden: true
-              	},
-	    		{ 
            	      header: '비고', 
            		  name: 'fqcRemarks', 
            		  sortable: true, 
@@ -839,7 +830,6 @@
 	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.fqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
 	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.fqcStartTime))}
 	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.fqcEndTime))}
-	    	        ${makeDetailItem('출고 창고', rowData.whsName)}
 	    	        ${makeDetailItem('비고', rowData.fqcRemarks)}
 	    	      </div>
 	    	    </div>
@@ -1078,8 +1068,7 @@
     			worksheet["O1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
     			worksheet["P1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
     			worksheet["Q1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["R1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["S1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
+    			worksheet["R1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
     			
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });

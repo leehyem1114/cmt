@@ -27,7 +27,7 @@ public class IpiService {
 	@Autowired
 	private InventoryUpdateMapper ium;
 
-	// 모든 입고 검사 목록
+	// 모든 공정 검사 목록
 	public List<FqcDTO> getAllFqc() {
 		return fqcMapper.getAllFqc();
 	}
@@ -59,7 +59,7 @@ public class IpiService {
 		return "FQC-" + datePart + "-" + seqStr;
 	}
 
-	// 물건 입고시 입고 검사 검사전과 필요한 데이터 가져와서 인서트 하기
+	// 물건 검사시 공정 검사 검사전과 필요한 데이터 가져와서 인서트 하기
 	@Transactional
 	public void insertFqcInspection(Map<String, Object> updateMap) {
 		List<Map<String, Object>> result = fqcMapper.getLot(updateMap);
