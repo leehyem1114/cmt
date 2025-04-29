@@ -3,6 +3,7 @@ package com.example.cmtProject.controller.mes.qualityControl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
@@ -122,7 +124,7 @@ public class IqcController {
         return ResponseEntity.ok(Collections.singletonMap("result", "success"));
     }
     
-    
+    // 자동 검사
     @PostMapping("/auto-inspect")
     @ResponseBody
     public ResponseEntity<?> autoInspect(@RequestBody Map<String, String> request) {
@@ -135,6 +137,29 @@ public class IqcController {
                                  .body(Map.of("message", e.getMessage()));
         }
     }
+    
+    // 차트 값 넘겨주기
+    @GetMapping("/inspection-summary")
+    @ResponseBody
+    public Map<String, Integer> getInspectionSummary() {
+
+         Map<String, Integer> result = new HashMap<>();
+         InspectionSummaryDTO summary = iqcService.getSummary();
+         result.put("passCount", summary.getPassCount());
+         result.put("inProgressCount", summary.getInProgressCount());
+         result.put("failCount", summary.getFailCount());
+
+         return result;
+    }
+    
+    // ✅ 최근 7일 검사 요약 조회
+    @ResponseBody
+    @GetMapping("/inspection-summary-last-7-days")
+    public List<InspectionSummaryDTO> getLast7DaysInspectionSummary() {
+        return iqcService.getLast7DaysSummary();
+    }
+
+    
     
 	
 	

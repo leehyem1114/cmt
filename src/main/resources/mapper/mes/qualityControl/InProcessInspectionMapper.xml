@@ -4,7 +4,7 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
     
 
-<mapper namespace="com.example.cmtProject.mapper.mes.qualityControl.FqcMapper">
+<mapper namespace="com.example.cmtProject.mapper.mes.qualityControl.InProcessInspectionMapper">
 
 	<select id="getAllFqc" resultType="com.example.cmtProject.dto.mes.qualityControl.FqcDTO">
 	SELECT DISTINCT
@@ -180,33 +180,6 @@
 	        FQC_INSPECTION_RESULT = #{result}
 	    WHERE FQC_CODE = #{fqcCode}
 	</update>
-	
-	<!-- 도넛 차트 값 넘겨주는 쿼리 -->
-	<select id="getSummary" resultType="com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO">
-	SELECT 
-        SUM(CASE WHEN FQC_INSPECTION_RESULT = '합격' THEN 1 ELSE 0 END) AS passCount,
-        SUM(CASE WHEN FQC_INSPECTION_STATUS = '검사중' THEN 1 ELSE 0 END) AS inProgressCount,
-        SUM(CASE WHEN FQC_INSPECTION_RESULT = '불합격' THEN 1 ELSE 0 END) AS failCount
-    FROM FQC
-        WHERE FQC_START_TIME &gt;= TRUNC(SYSDATE) - 6
-          AND FQC_START_TIME &lt;= TRUNC(SYSDATE) + 1
-        GROUP BY TO_CHAR(FQC_START_TIME, 'YYYYMMDD')
-        ORDER BY TO_CHAR(FQC_START_TIME, 'YYYYMMDD')
-	</select>
-	
-	<!-- 최근 7일 PASS, IN_PROGRESS, FAIL 개수 조회 -->
-    <select id="getLast7DaysSummary" resultType="com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO">
-        SELECT
-        	TO_CHAR(FQC_START_TIME, 'YYYYMMDD') AS fqcDate,
-            SUM(CASE WHEN FQC_INSPECTION_RESULT = '합격' THEN 1 ELSE 0 END) AS passCount,
-            SUM(CASE WHEN FQC_INSPECTION_STATUS = '검사중' THEN 1 ELSE 0 END) AS inProgressCount,
-            SUM(CASE WHEN FQC_INSPECTION_RESULT = '불합격' THEN 1 ELSE 0 END) AS failCount
-        FROM FQC
-        WHERE FQC_START_TIME &gt;= TRUNC(SYSDATE) - 6
-          AND FQC_START_TIME &lt;= TRUNC(SYSDATE) + 1
-        GROUP BY TO_CHAR(FQC_START_TIME, 'YYYYMMDD')
-        ORDER BY TO_CHAR(FQC_START_TIME, 'YYYYMMDD')
-    </select>
 	
 
 

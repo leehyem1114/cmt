@@ -7,12 +7,11 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
-import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
-public interface FqcMapper {
+public interface InProcessInspectionMapper {
 
 	List<FqcDTO> getAllFqc();
 
@@ -38,10 +37,6 @@ public interface FqcMapper {
 		    				  @Param("weightValue") Double weightValue,
 		    				  @Param("lengthValue") Double lengthValue,
 		    				  @Param("result") String result);
-	
-	InspectionSummaryDTO getSummary();
-	
-	List<InspectionSummaryDTO> getLast7DaysSummary();
 
 //	void updateMeasuredValues(Map<String, Object> param);
 

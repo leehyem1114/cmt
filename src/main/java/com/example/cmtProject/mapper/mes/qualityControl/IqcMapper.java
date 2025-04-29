@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
@@ -37,6 +38,10 @@ public interface IqcMapper {
 		    				  @Param("weightValue") Double weightValue,
 		    				  @Param("lengthValue") Double lengthValue,
 		    				  @Param("result") String result);
+
+	InspectionSummaryDTO getSummary();
+	
+	List<InspectionSummaryDTO> getLast7DaysSummary();
 
 //	void updateMeasuredValues(Map<String, Object> param);
 
