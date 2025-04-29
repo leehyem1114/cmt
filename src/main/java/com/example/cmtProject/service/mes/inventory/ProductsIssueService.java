@@ -54,6 +54,17 @@ public class ProductsIssueService {
 	}
 	
 	/**
+	 * 출고 가능한 수주 목록 조회
+	 * 
+	 * @param map 검색 조건
+	 * @return 수주 목록
+	 */
+	public List<Map<String, Object>> getSalesOrderList(Map<String, Object> map) {
+	    log.info("출고 가능한 수주 목록 조회 요청");
+	    return pImapper.salesOrderList(map);
+	}
+	
+	/**
 	 * 수주 정보를 바탕으로 출고 요청 생성
 	 * 
 	 * @param soData 수주 데이터
@@ -70,7 +81,7 @@ public class ProductsIssueService {
 	        if (soData == null || !soData.containsKey("SO_CODE") || !soData.containsKey("PDT_CODE") 
 	                || !soData.containsKey("SO_QTY")) {
 	            resultMap.put("success", false);
-	            resultMap.put("message", "필수 파라미터가 누락되었습니다.");
+	            resultMap.put("message", "필수 파라미터가 누락되었습니다. (수주코드, 제품코드, 수량)");
 	            return resultMap;
 	        }
 	        
@@ -366,6 +377,25 @@ public class ProductsIssueService {
 	        
 	        pIhmapper.insertHistory(historyMap);
 	        
+	        // 5. 수주 상태 업데이트 - 출고완료로 변경
+	        // 수주코드를 알고 있다면 수주 상태 업데이트 처리
+	        if (params.containsKey("soCode") && params.get("soCode") != null) {
+	            try {
+	                // 수주상태 업데이트 처리
+	                Map<String, Object> soParams = new HashMap<>();
+	                soParams.put("soCode", params.get("soCode"));
+	                soParams.put("soStatus", "SO_SHIPPED"); // 출고완료 상태코드
+	                soParams.put("updatedBy", params.get("updatedBy"));
+	                
+	                pImapper.updateSalesOrderStatus(soParams);
+	                
+	                log.info("수주 상태 업데이트: 코드={}, 상태=SO_SHIPPED", params.get("soCode"));
+	            } catch (Exception e) {
+	                log.warn("수주 상태 업데이트 중 오류 발생: {}", e.getMessage());
+	                // 수주 상태 업데이트 실패해도 출고 자체는 완료 처리
+	            }
+	        }
+	        
 	        resultMap.put("success", true);
 	        resultMap.put("message", "출고 처리가 완료되었습니다.");
 	        resultMap.put("issuedQty", issuedQty);
@@ -382,7 +412,7 @@ public class ProductsIssueService {
 	    
 	    return resultMap;
 	}
-	
+
 	/**
 	 * 다건 출고 처리
 	 * 여러 출고 항목을 한 번에 처리합니다.
@@ -458,7 +488,7 @@ public class ProductsIssueService {
 	    
 	    return resultMap;
 	}
-	
+
 	/**
 	 * 출고 취소 처리
 	 * 
@@ -544,7 +574,7 @@ public class ProductsIssueService {
 	    
 	    return resultMap;
 	}
-	
+
 	/**
 	 * 수주 상태별 출고 요청 생성
 	 * 특정 상태의 수주 정보를 바탕으로 출고 요청을 생성합니다.
@@ -568,24 +598,35 @@ public class ProductsIssueService {
 	        }
 	        
 	        // 허용된 상태 확인 (수주확정, 출하계획 등만 처리 가능)
-	        List<String> allowedStatus = List.of("SO_CONFIRMED", "SO_PLANNED");
-	        if (!allowedStatus.contains(status)) {
+	        List<String> allowedStatus = List.of("SO_CONFIRMED", "SO_PLANNED", "SO_COMPLETED");
+	        boolean validStatus = false;
+	        
+	        for (String allowedState : allowedStatus) {
+	            if (status.contains(allowedState)) {
+	                validStatus = true;
+	                break;
+	            }
+	        }
+	        
+	        if (!validStatus) {
 	            resultMap.put("success", false);
-	            resultMap.put("message", "지원되지 않는 수주 상태입니다: " + status);
+	            resultMap.put("message", "지원되지 않는 수주 상태입니다. 확정, 계획, 완료 상태만 출고 요청이 가능합니다.");
 	            return resultMap;
 	        }
 	        
-	        // TODO: 상태별 수주 정보 조회 (실제 구현 필요)
-	        // 이 예제에서는 가상의 데이터를 사용
-	        List<Map<String, Object>> salesOrders = new ArrayList<>();
-	        // 실제 구현에서는 여기서 수주 데이터를 조회해야 함
+	        // 수주 정보 조회
+	        Map<String, Object> queryParams = new HashMap<>();
+	        queryParams.put("status", status);
+	        List<Map<String, Object>> salesOrders = pImapper.salesOrdersByStatus(queryParams);
+	        
+	        if (salesOrders.isEmpty()) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "해당 상태의 수주 정보가 없습니다: " + status);
+	            return resultMap;
+	        }
 	        
 	        // 출고 요청 일괄 생성
-	        Map<String, Object> result = createIssueRequestsBatch(salesOrders);
-	        
-	        // 결과 반환
-	        resultMap.putAll(result);
-	        
+	        return createIssueRequestsBatch(salesOrders);
 	    } catch (Exception e) {
 	        log.error("수주 상태별 출고 요청 생성 중 오류 발생: {}", e.getMessage(), e);
 	        resultMap.put("success", false);
