@@ -78,18 +78,26 @@ public interface ProductsIssueMapper {
 	public int updateIssueStatusAndDate(Map<String, Object> params);
 	
 	/**
-	 * 출고 이력 정보 삽입
+	 * 출고 가능한 수주 목록 조회
 	 * 
-	 * @param params 이력 정보
-	 * @return 처리 건수
+	 * @param map 검색 조건
+	 * @return 수주 목록
 	 */
-	public int insertIssueHistory(Map<String, Object> params);
+	public List<Map<String, Object>> salesOrderList(Map<String, Object> map);
 	
 	/**
-	 * 재고 정보 업데이트
+	 * 수주 상태별 목록 조회
 	 * 
-	 * @param params 재고 정보
+	 * @param map 검색 조건 (status: 수주 상태)
+	 * @return 수주 목록
+	 */
+	public List<Map<String, Object>> salesOrdersByStatus(Map<String, Object> map);
+	
+	/**
+	 * 수주 상태 업데이트
+	 * 
+	 * @param params 업데이트 정보
 	 * @return 처리 건수
 	 */
-	public int updateProductsInventory(Map<String, Object> params);
+	public int updateSalesOrderStatus(Map<String, Object> params);
 }
