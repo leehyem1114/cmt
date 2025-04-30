@@ -77,6 +77,7 @@
 		  <div id="chart-area"></div>
 		  <div id="chart-area2"></div>
 		</div>
+		<br>
 
 
 
@@ -624,15 +625,6 @@
 	       cancelButtonText: '취소'
 	     }).then(async result => {
 	       if (!result.isConfirmed) return;
-
-	       // ✅ 검사완료 가기 전에 자동검사 먼저
-	       const autoSuccess = await autoInspect(row, rowKey);
-	       
-	       
-	       if (!autoSuccess) {
-	         Swal.fire('자동 검사 실패', '자동 검사에 실패했습니다.', 'error');
-	         return;
-	       }
 
 	       // ✅ 자동검사 성공했으면 상태 변경
 	       updateStatus(fqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);

@@ -32,8 +32,7 @@
     FROM FQC F
     LEFT JOIN COMMONCODE_DETAIL C_UNIT_LENGTH ON C_UNIT_LENGTH.CMN_DETAIL_NAME = F.QCM_UNIT_LENGTH
 	LEFT JOIN COMMONCODE_DETAIL C_UNIT_WEIGHT ON C_UNIT_WEIGHT.CMN_DETAIL_NAME = F.QCM_UNIT_WEIGHT	
-	JOIN EMPLOYEES E ON E.EMP_ID = F.EMP_ID
-	JOIN WORK_ORDER WO ON WO.PDT_CODE = F.PDT_CODE
+	LEFT JOIN EMPLOYEES E ON E.EMP_ID = F.EMP_ID
 	JOIN PRODUCTS P ON P.PDT_CODE = F.PDT_CODE
 	WHERE F.FQC_VISIABLE = 'Y'
     ORDER BY FQC_NO DESC
@@ -91,13 +90,12 @@
 	<!-- 물건 출고시 출고 검사 검사전과 필요한 데이터 가져오기 -->
 	<select id="getLot" resultType="map">
 		SELECT 
-			WO_CODE,
-			CHILE_PDT_CODE,
-			WO_QTY,
-			WAREHOUSE_CODE
+			ISSUE_CODE,
+			PDT_CODE,
+			ISSUED_QTY
 		FROM
-			LOT
-		WHERE WO_CODE = #{woCode}
+			PRODUCTS_ISSUE
+		WHERE ISSUE_CODE = #{woCode}
 	</select>
 	
 	<!-- FQC CODE 생성 및 최대값 가져오는 코드 -->
@@ -116,11 +114,10 @@
 	  FQC_INSPECTION_STATUS,
 	  FQC_INSPECTION_RESULT,
 	  FQC_CODE, 
-	  RECEIPT_CODE,
-	  CHILD_PDT_CODE, 
+	  WO_CODE,
+	  PDT_CODE, 
 	  WO_QTY, 
 	  UNIT_QTY,
-	  WHS_CODE,
 	  FQC_VISIABLE
 	)
 	SELECT
@@ -128,14 +125,13 @@
 	  '예정',
 	  #{fqcCode},
 	  #{woCode}, 
-	  #{childCode}, 
+	  #{pdtCode}, 
 	  #{woQty},
 	  '개',
-	  #{whsCode},
 	  'Y'
 	FROM DUAL
 	WHERE NOT EXISTS (
-	  SELECT 1 FROM FQC WHERE WO_CODE = #{woCode}
+	  SELECT 1 FROM FQC WHERE ISSUE_CODE = #{woCode}
 	)
 	</insert>
 	
