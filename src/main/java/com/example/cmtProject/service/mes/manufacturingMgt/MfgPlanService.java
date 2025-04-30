@@ -12,7 +12,7 @@ import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgPlanMapper;
 import jakarta.transaction.Transactional;
 
 @Service
-public class MfgPlanService {
+public class MfgPlanService { // 생산 계획 Service
 
 	@Autowired
 	private MfgPlanMapper mfgPlanMapper;
@@ -29,8 +29,8 @@ public class MfgPlanService {
 	}
 
 	// 생산 계획 등록
-	public void registMpPlan(MfgPlanDTO mfgPlanDTO) {
-		mfgPlanMapper.registMpPlan(mfgPlanDTO);
+	public void insertMfgPlan(MfgPlanDTO dto) {
+		mfgPlanMapper.insertMfgPlan(dto);
 	}
 	
 	// 생산 계획 수정
@@ -44,22 +44,5 @@ public class MfgPlanService {
 	public void isVisiableToFalse(List<Long> mpNos) {
 		mfgPlanMapper.isVisiableToFalse(mpNos);
 	}	
-
-
-	// 엑셀 데이터 저장
-	@Transactional
-	public void saveExcelData(MfgPlanDTO dto) {
-		mfgPlanMapper.saveExcelData(dto);
-	}
-
-	// 다건 저장
-	public void registMpPlanBatch(MfgPlanDTO dto) {
-		mfgPlanMapper.insertMfgPlan(dto);
-	}
-
-
-
-
-
 
 }

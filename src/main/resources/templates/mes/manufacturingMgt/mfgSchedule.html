@@ -5,6 +5,8 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 <head>
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png"
+	type="image/x-icon">
     <!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -147,7 +149,7 @@
 								<!-- 오른쪽: CRUD 버튼 -->
 								<div class="button-group">
 									<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgScheduleModal">제조 계획 등록</button>
-									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger">삭제</button>
+									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger" onclick="deleteMs()">삭제</button>
 								</div>
 							</div>
 						</div>
@@ -383,17 +385,15 @@
 		let rk = evValue.rowKey;
 		let rowData = grid.getRow(rk);
 		let msCode = rowData.msCode;
-		console.log("선택한 제조계획번호(msCode): ", msCode);
+		
 		// 제조 계획 그리드에서 선택된 제품에 해당하는 제조 계획 상세 데이터 불러오기
 		$.ajax({
 		url: `/ms/detail`, 
         type: 'GET',
         data: { msCode: msCode },
         success: function (response) {
-        	console.log("서버 응답 전체:", response);
 			if (response.success) {
 				const msData = response.data;
-				 console.log("msData만 따로:", msData);
 				msDetailGrid.resetData(msData);
 			} else {
 				alert("상세정보를 불러오지 못했습니다.");
@@ -408,7 +408,6 @@
 	//================================== 그리드 하단 bom 부분 =================================
 	
 	let msdList = /*[[${msdList}]]*/ [];
-	console.log("디테일확인염", msdList);
 	
 	let msDetailGrid = new tui.Grid({
 	    el: document.getElementById('msDetailGrid'), 
@@ -508,17 +507,9 @@
 			msDetailGrid.addRowClassName(selectedEv2.rowKey, 'selectedRowClass');
 		})
 	
-		
-	/*
-	grid.on('onGridUpdated', (ev) => {
-		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
-	    grid.refreshLayout();
-	});*/
-	
 	
 	// 제조 계획 등록 시 생산 계획 그리드
 	let mpList = /*[[${mpList}]]*/ [];
-	console.log("-----------------확인", mpList);
 	let grid2 = null;	
 		
 	document.getElementById('mfgScheduleModal').addEventListener('shown.bs.modal', () => {
@@ -633,7 +624,7 @@
 		        cancelButtonText: '취소'
 		    });
 		
-		 if (confirmResult.isConfirmed) {
+		if (confirmResult.isConfirmed) {
 		const dataList = checkedRows.map((row, index) => ({
 	        ...row,
 	        empId: empId
@@ -664,6 +655,114 @@
 		 }
 	});
 	// 제조 계획 등록 끝---------------------------------------------------------	
+	
+	// 행 아무곳이나 클릭하면 체크박스 활성화
+    grid.on('click', ev => {
+    	  const { rowKey, columnName } = ev;
+
+    	  if (columnName === '_checked') return;
+    	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
+    	  if (!isChecked) {
+    	    grid.check(rowKey);
+    	  } else {
+    	    grid.uncheck(rowKey);
+    	  }
+    });
+	
+
+	// 상품 계획 삭제
+    async function deleteMs() {
+  		const checkedRows = grid.getCheckedRows();
+  		const msNos = checkedRows.map(row => row.msNo);
+
+  		if (msNos.length === 0) {
+  			await Swal.fire({
+  		      icon: "warning",
+  		      title: "삭제할 데이터를 선택해주세요."
+  		    });
+  		    return;
+  		}
+  		
+  		// '등록' 상태 아닌 항목만 필터링
+  		const invalidRows = checkedRows.filter(row => row.msStatus !== '등록');
+  		
+  	    if (invalidRows.length > 0) {
+  	        const statusMap = new Map();
+
+  	        // 상태별로 mpCode를 모읍니다
+  	        invalidRows.forEach(row => {
+  	            if (!statusMap.has(row.msStatus)) {
+  	                statusMap.set(row.msStatus, []);
+  	            }
+  	            statusMap.get(row.msStatus).push(row.msCode);
+  	        });
+
+  	        // 메시지 생성
+  	        let message = '';
+	  	    for (const status of statusMap.keys()) {
+	  	    	message += `${status}인 항목은 삭제할 수 없습니다.<br>`;
+	  	    }
+
+  	        await Swal.fire({
+  	            icon: "warning",
+  	            title: "삭제 불가",
+  	            html: message
+  	        });
+  	        return;
+  	    }
+
+  		const result = await Swal.fire({
+  		    title: "정말 삭제하시겠습니까?",
+  		    text: `총 ${msNos.length}건의 데이터를 삭제합니다.`,
+  		    icon: "warning",
+  		    showDenyButton: true,
+  		    confirmButtonText: "삭제",
+  		    denyButtonText: "취소",
+  		});
+
+  		if (result.isDenied) {
+  		    await Swal.fire({
+  		      icon: "error",
+  		      title: "삭제가 취소되었습니다.",
+  		    });
+  		    return;
+  		}
+  		  
+
+  		// 삭제 API 요청
+  		try {
+  			const response = await fetch('/ms/mfgScheduleDelete', {
+  		      method: 'POST',
+  		      headers: {
+  		        'Content-Type': 'application/json'
+  		      },
+  		      body: JSON.stringify({ msNos: msNos }) // 필요 시 선택한 ID 전달
+  		    });
+
+  		    if (!response.ok) {
+  		      await Swal.fire({
+  		        icon: "error",
+  		        title: "삭제 처리 중 오류가 발생했습니다",
+  		      });
+  		      throw new Error("삭제 처리 중 오류");
+  		    }
+
+  		    await Swal.fire({
+  		      title: "삭제가 완료되었습니다",
+  		      icon: "success",
+  		    });
+  		    
+  		      location.reload();
+
+  		} catch (error) {
+  		    console.error('Error:', error);
+  		    await Swal.fire({
+  		      icon: "error",
+  		      title: "삭제 처리 중 오류가 발생했습니다",
+  		    });
+  		  }
+  		}
+	
 	
     //그리드 -> 엑셀 파일로 다운로드
 	document.getElementById('ExcelDownBtn').addEventListener('click', function () {
@@ -714,11 +813,9 @@
   	  grid.resetData(filtered);
   	});
 
-
   		document.getElementById('msSearchBtn').addEventListener('click', applyFilter);
 		document.getElementById('searchInput').addEventListener('input', applyFilter);
 
-	
 	</script>
 	
 	</div>
