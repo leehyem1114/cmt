@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
-<html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-	layout:decorate="~{layouts/layout}">
+	<!-- Thymeleaf 및 레이아웃 선언 - 레이아웃 구조를 사용하기 위한 필수 선언 -->
+	<html xmlns:th="http://www.thymeleaf.org"
+	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+		  layout:decorate="~{layouts/layout}">
 <head>
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<!-- 그리드 -->
-	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
+<!-- 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" /> -->
 	
 	<!-- SweetAlert2 CDN -->
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
 	
 	<!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>CMT</title>
-	
-	<style>
+<style>
 	.container {
 		display: grid;
 		grid-template-columns:  120px 180px 120px 180px 120px 180px 50px 180px 150px 1fr;
@@ -57,17 +56,13 @@
 	.print { background: purple; color: white; }
 	.transfer { background: green; color: white; }
 	.delete { background: red; color: white; } */
-	</style>
+</style>
 </head>
-
-
 <body>
 	<div layout:fragment="content">
-
 		<div class="button-container">
-			<div>
-				<h2>급여 조회</h2>
-			</div>
+			<h2>급여 조회</h2>
+			
 			<div>
 				<button type="button" class="btn btn-primary transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal" sec:authorize="hasRole('ROLE_ADMIN')">급여 이체</button>
 				<button type="button" class="btn btn-primary print" onclick="payPrint()" sec:authorize="hasRole('ROLE_ADMIN')">명세서 출력</button>
@@ -95,17 +90,18 @@
 		
 		<!-- 그리드 top 시작 -->
 		<div id="gridTop"></div>
-		
-	<!-- 급여 이체 모달 -->
-	<div class="modal fade" id="payTransferModal" tabindex="-1">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="payCalcModal">급여 이체</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<!--<div class="input-group mb-2">
+
+		<!-- 급여 이체 모달 -->
+		<div class="modal fade" id="payTransferModal" tabindex="-1">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="payCalcModal">급여 이체</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<!--<div class="input-group mb-2">
 						<input type="date" id="payDate" class="form-control">
 					</div>
 					<div class="input-group mb-2">
@@ -114,199 +110,202 @@
 								th:text="${dept.cmnDetailName}"></option>
 						</select>-->
 						<div class="input-group mb-2">
-<!--							<select class="form-select" id="position" name="position">-->
-<!--								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"-->
-<!--									th:text="${code.cmnDetailName}"></option>-->
-<!--							</select>-->
-						<!-- <select> 대신 숨겨서 넘기기 -->
-						<input type="hidden" id="position" name="position"
-						       th:value="${commonCodeMap['POSITION'][0].cmnDetailCode}" />
+							<!--							<select class="form-select" id="position" name="position">-->
+							<!--								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"-->
+							<!--									th:text="${code.cmnDetailName}"></option>-->
+							<!--							</select>-->
+							<!-- <select> 대신 숨겨서 넘기기 -->
+							<input type="hidden" id="position" name="position"
+								th:value="${commonCodeMap['POSITION'][0].cmnDetailCode}" />
 
 						</div>
-<!--						<button type="submit" class="btn btn-secondary ms-2">조회</button>-->
+						<!--						<button type="submit" class="btn btn-secondary ms-2">조회</button>-->
 						<!-- 그리드 top 시작 -->
 						<div id="gridTop2" style="width: 100%"></div>
 						<!-- 그리드 끝 -->
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-							<button type="button" id="payTransferBtn" class="btn btn-primary" data-bs-dismiss="modal">이체</button>
+							<button type="button" class="btn btn-secondary"
+								data-bs-dismiss="modal">닫기</button>
+							<button type="button" id="payTransferBtn" class="btn btn-primary"
+								data-bs-dismiss="modal">이체</button>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div><!-- 급여 이체 모달 -->
-	
-	<script src="/js/jquery-3.7.1.js"></script>
+		</div>
+		<!-- 급여 이체 모달 -->
+
+	<!-- <script src="/js/jquery-3.7.1.js"></script> -->
 	<script th:inline="javascript">
-		//그리드 gridTop 시작 --------------------------------------
-		console.log(/*[[${payList}]]*/ []);
+	//그리드 gridTop 시작 --------------------------------------
+	console.log(/*[[${payList}]]*/ []);
 		
-		const columns = [
-			{
-		    	header: '지급번호', 
-		    	name: 'payNo',
-		    	hidden: true 
-		  	},
-			{
-				header: '지급일',
-			    name: 'payDate',
-				sortable: true,
-				width: 100,
-				align: "center"
-			},
-			{
-				header: '사원번호',
-			    name: 'empId',
-				sortable: true,
-				width: 100,
-				align: "center"
-			},
-			{
-			 	header: '사원명',
-			   	name: 'empName',
-				sortable: true,
-				width: 100,
-				align: "center"
-			},
-			{
-				header: '부서',
-			  	name: 'deptName',
-				sortable: true,
-				width: 100,
-				align: "center"
-			},
-			{
-			    header: '직급',
-			    name: 'position',
-			    sortable: true,
-				width: 100,
-				align: "center"
-			 },
-			 {
-			    header: '고용유형',
-			    name: 'empType',
-				sortable: true,
-				width: 100,
-				align: "center"
-			 },
-			 {
-			    header: '기본급',
-			    name: 'payBasic',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '야근수당',
-			    name: 'payBonusOvertime',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '명절수당',
-			    name: 'PAY_BONUS_HOIDAY',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '총수당금액',
-			    name: 'payBonusTotal',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '국민연금',
-			    name: 'payTaxPension',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '건강보험',
-			    name: 'payTaxHealth',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '장기요양보험',
-			    name: 'payTaxCare',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '고용보험',
-			    name: 'payTaxEmployment',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '소득세',
-			    name: 'payTaxIncome',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '주민세',
-			    name: 'payTaxResidence',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '총공제금액',
-			    name: 'payTaxTotal',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			    header: '실수령액',
-			    name: 'payTotal',
-				width: 100,
-				align: "right"
-			 },
-			 {
-			 	header: '은행명',
-			 	name: 'salBankName',
-				sortable: true,
-			 	width: 100,
-			 	align: "center"
-			 },
-			 {
-			 	header: '계좌번호',
-			 	name: 'salBankAccount',
-			 	width: 100,
-			 	align: "center"
-			 }
-		];
+	const columns = [
+		{
+		 	header: '지급번호', 
+		    name: 'payNo',
+		    hidden: true 
+		},
+		{
+			header: '지급일',
+			name: 'payDate',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '사원번호',
+			name: 'empId',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '사원명',
+			name: 'empName',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '부서',
+			name: 'deptName',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '직급',
+			name: 'position',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '고용유형',
+			name: 'empType',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '기본급',
+			name: 'payBasic',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '야근수당',
+			name: 'payBonusOvertime',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '명절수당',
+			name: 'PAY_BONUS_HOIDAY',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '총수당금액',
+			name: 'payBonusTotal',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '국민연금',
+			name: 'payTaxPension',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '건강보험',
+			name: 'payTaxHealth',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '장기요양보험',
+			name: 'payTaxCare',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '고용보험',
+			name: 'payTaxEmployment',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '소득세',
+			name: 'payTaxIncome',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '주민세',
+			name: 'payTaxResidence',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '총공제금액',
+			name: 'payTaxTotal',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '실수령액',
+			name: 'payTotal',
+			width: 100,
+			align: "right"
+		},
+		{
+			header: '은행명',
+			name: 'salBankName',
+			sortable: true,
+			width: 100,
+			align: "center"
+		},
+		{
+			header: '계좌번호',
+			name: 'salBankAccount',
+			width: 100,
+			align: "center"
+		}
+	];
 		
-		const moneyColumns = [
-		  'payBasic', 'payBonusOvertime', 'payBonusHoliday', 'payBonusTotal',
-		  'payTaxPension', 'payTaxHealth', 'payTaxCare', 'payTaxEmployment',
-		  'payTaxIncome', 'payTaxResidence', 'payTaxTotal', 'payTotal'
-		];
+	const moneyColumns = [
+		'payBasic', 'payBonusOvertime', 'payBonusHoliday', 'payBonusTotal',
+		'payTaxPension', 'payTaxHealth', 'payTaxCare', 'payTaxEmployment',
+		'payTaxIncome', 'payTaxResidence', 'payTaxTotal', 'payTotal'
+	];
 		
-		// 금액 컬럼에 자동으로 천 단위 콤마 구분
-		columns.forEach(column => {
-		    if (moneyColumns.includes(column.name)) {
-		        column.formatter = (value) => {
-		            //if (!value.value && value.value !== 0) return '';
-					let val = value.value;
-					            if (val === null || val === undefined || val === '') {
-					                val = 0;
-					            }
+	// 금액 컬럼에 자동으로 천 단위 콤마 구분
+	columns.forEach(column => {
+		if (moneyColumns.includes(column.name)) {
+			column.formatter = (value) => {
+		    	//if (!value.value && value.value !== 0) return '';
+				let val = value.value;
+				if (val === null || val === undefined || val === '') {
+					val = 0;
+				}
 					
-		            return value.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-		        };
-		    }
-		});
+		        return value.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+		    };
+		}
+	});
 		
-		const grid = new tui.Grid({
-	        el: document.getElementById('gridTop'), 
-			data : /*[[${payList}]]*/ [],
-	        rowHeaders: ['checkbox'],
-			pageOptions: {
-				useClient: true,
-				perPage: 5
-			},
-	        columns: columns
-	    });
+	const grid = new tui.Grid({
+		el: document.getElementById('gridTop'), 
+		data : /*[[${payList}]]*/ [],
+	    rowHeaders: ['checkbox'],
+		pageOptions: {
+			useClient: true,
+			perPage: 5
+		},
+	    columns: columns
+	});
 	    
 		/*
 		grid.on('click', function(ev) {
@@ -351,14 +350,12 @@
 		//그리드 gridTop2 시작 --------------------------------------
 		let grid2 = null;
 			
-		
 		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
 			
+		console.log("===============================================")
+		console.log(/*[[${empList}]]*/ []);
 			
-			console.log("===============================================")
-			console.log(/*[[${empList}]]*/ []);
-			
-      	  // 모달 완전히 열린 후에 grid 생성
+      	 // 모달 완전히 열린 후에 grid 생성
 		// $('#payTransferModal').on('shown.bs.modal', function () {
 		if (!grid2) {
 			grid2 = new tui.Grid({
@@ -394,7 +391,6 @@
 					}	
 				] // 열 설정
 			});
-			
 			
 			console.log("empList:", /*[[${empList}]]*/ []);
     
@@ -460,8 +456,7 @@
 					});
 					
 					location.reload(); // or 특정 그리드/뷰 갱신
-				}
-        		
+				}	
     		},
     		error: function () {
 				Swal.fire({
@@ -472,85 +467,75 @@
 		});
 	});
 	//급여 이체 끝---------------------------------------------------------	
-	
+
+	function payPrint(){
+    	const checkedRows = grid.getCheckedRows();
+        const empId = checkedRows[0].empId;
+      		
+        console.log("payPrint()!! 클릭된 아이디>>" + empId);
+      		
+      	$.ajax({
+      		url : '/salaries/payPrint/' + empId ,
+      		method : 'get',
+       		data : {empId : empId},
+      		success : function(response){
+				Swal.fire({
+					icon: "success",
+					title: "PDF 저장 성공!",
+				});
+      			window.open('/pdfs/payslip.pdf', '_blank', 'width=800,height=1000');
+      		},
+			error : function(error){
+      			console.log("오류발생");
+			}
+      	});
+		      	  
+	}
+
+	// 삭제 버튼 클릭 시 삭제 진행
+	$(document).on('click', '.delete', function () {
+		const checkedRows = grid.getCheckedRows();
+		if (checkedRows.length === 0) {
+			Swal.fire({ icon: "warning", title: "선택된 행이 없습니다." });
+			return;
+		}
+		
+		const payNos = checkedRows.map(row => row.payNo);
+						
+		Swal.fire({
+			icon: "warning",
+			title: "내역을 삭제하시겠습니까?",
+			showCancelButton: true,
+			confirmButtonText: "확인",
+			cancelButtonText: "취소"
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$.ajax({
+					url: "/salaries/delete",
+					type: "POST",
+					contentType: 'application/json',
+					data: JSON.stringify(payNos),
+					success: function(response) {
+						Swal.fire({
+							icon: "success",
+							title: "내역 삭제 성공!"
+						}).then(() => {
+							location.reload();
+						});
+					},
+					error: function () {
+						Swal.fire({
+							icon: "error",
+							title: "내역 삭제 실패!",
+						});
+					}							
+				});
+			}
+		});
+	});
 	</script>
 		
-	<script>
-      	  function payPrint(){
-      		const checkedRows = grid.getCheckedRows();
-      		const empId = checkedRows[0].empId;
-      		
-      		console.log("payPrint()!! 클릭된 아이디>>" + empId);
-      		
-      		$.ajax({
-      			url : '/salaries/payPrint/' + empId ,
-      			method : 'get',
-       			data : {empId : empId},
-      			success : function(response){
-      				//alert("PDF저장성공!");
-					Swal.fire({
-					  icon: "success",
-					  title: "PDF 저장 성공!",
-					});
-      				window.open('/pdfs/payslip.pdf', '_blank', 'width=800,height=1000');
-      			},
-				error : function(error){
-      				console.log("오류발생");
-				}
-      			
-      			});
-		      	  
-      	  }
-		</script>
-		
-		<script>
-			$(document).on('click', '.delete', function () {
-					const checkedRows = grid.getCheckedRows();
-					if (checkedRows.length === 0) {
-						Swal.fire({ icon: "warning", title: "선택된 행이 없습니다." });
-						return;
-					}
-		
-					const payNos = checkedRows.map(row => row.payNo);
-						
-						Swal.fire({
-						  icon: "warning",
-						  title: "내역을 삭제하시겠습니까?",
-						  showCancelButton: true,
-						  confirmButtonText: "확인",
-						  cancelButtonText: "취소"
-					}).then((result) => {
-					   if (result.isConfirmed) {
-						   $.ajax({
-							   url: "/salaries/delete",
-							   type: "POST",
-							   contentType: 'application/json',
-							   data: JSON.stringify(payNos),
-							   success: function(response) {
-								  Swal.fire({
-								    icon: "success",
-								    title: "내역 삭제 성공!"
-								  }).then(() => {
-								    location.reload(); // ✅ 이렇게 따로 처리
-								  });
-							   },
-							   error: function () {
-							      Swal.fire({
-								    icon: "error",
-								    title: "내역 삭제 실패!",
-							      });
-						       }							
-						    });
-						}
-					});
-				});
-		</script>
 	</div>	
 
-
-
-
-	<th:block layout:fragment="script">
-	</th:block>
 </body>
 </html>

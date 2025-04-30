@@ -543,5 +543,26 @@
 		WHERE TO_CHAR(PAY_DATE, 'YYYY-MM') = #{payMonth}
 	</select>
 	
+	<!-- 연간 급여대장 -->
+	<select id="selectYearlyPayrollList" resultType="map">
+		SELECT 
+	        TO_CHAR(PAY_DATE, 'YYYY-MM') AS payMonth,
+	        SUM(PAY_BASIC) AS payBasic,
+	        SUM(PAY_BONUS_OVERTIME) AS payBonusOvertime,
+	        SUM(PAY_BONUS_HOLIDAY) AS payBonusHoliday,
+	        SUM(PAY_BONUS_TOTAL) AS totalBonusAmount,
+	        SUM(PAY_TAX_PENSION) AS payTaxPension,
+	        SUM(PAY_TAX_HEALTH) AS payTaxHealth,
+	        SUM(PAY_TAX_CARE) AS payTaxCare,
+	        SUM(PAY_TAX_EMPLOYMENT) AS payTaxEmployment,
+	        SUM(PAY_TAX_INCOME) AS payTaxIncome,
+	        SUM(PAY_TAX_RESIDENCE) AS payTaxResidence,
+	        SUM(PAY_TAX_TOTAL) AS totalTaxAmount,
+	        SUM(PAY_TOTAL) AS totalPayAmount
+	    FROM PAYMENTS
+	    WHERE TO_CHAR(PAY_DATE, 'YYYY') = #{payYear}
+	    GROUP BY TO_CHAR(PAY_DATE, 'YYYY-MM')
+	    ORDER BY payMonth
+	</select>
 	
 </mapper>

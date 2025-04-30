@@ -60,10 +60,13 @@ public interface SalariesMapper {
 	// 월별 급여 대장 상세 조회 
 	List<PaymentDTO> getMonthlyPayrollDetailList(@Param("payMonth") String payMonth);
 
-	// 월별 급여 대장 - 부서별 급여 현황
+	// 월별 급여 대장 - 급여 현황
 	List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth);
 
 	// 월별 급여 대장 - 전 직원 급여 합계
 	Map<String, Object> getMonthlyPayrollTotalList(String payMonth);
+
+	// 연간 급여 대장
+	List<Map<String, Object>> selectYearlyPayrollList(String payYear);
 	
 }
