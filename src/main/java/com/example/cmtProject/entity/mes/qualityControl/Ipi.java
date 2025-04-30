@@ -30,13 +30,13 @@ public class Ipi {
     @Column(name = "IPI_NO")
     private Long ipiNo;
 
-    @Column(name = "IPI_CODE", nullable = false)
+    @Column(name = "IPI_CODE")
     private String ipiCode;
     
     @Column(name = "WO_CODE")
     private String woCode;
 
-    @Column(name = "EMP_ID", nullable = false)
+    @Column(name = "EMP_ID")
     private String empId;
  
     @Column(name = "EMP_NAME")

@@ -28,6 +28,7 @@ import com.example.cmtProject.dto.mes.production.LotUpdateDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
 import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.service.mes.production.LotService;
@@ -472,6 +473,8 @@ public class ProductionPrcController {
 	@ResponseBody
 	public List<LotOriginDTO> jobCmpl(@RequestBody LotUpdateDTO lotUpdateDTO) {
 		
+		System.out.println("=========================================lotUpdateDTO:" + lotUpdateDTO);
+		
 		/*
 		parentPdtCode가 소모되어 childPdtCode가 되므로 parentPdtCode가 소모품, 소모량
 		log.info(lotUpdateDTO.toString()); //LotUpdateDTO(lotNo=163, bomQty=1, childPdtCode=WIP002, parentPdtCode=MTL-002, woCode=MSC001, pdtCode=FP001)
@@ -527,15 +530,50 @@ public class ProductionPrcController {
 			lotService.updateWOtoCP(lotUpdateDTO.getWoCode());
 		}
 		
-		
 		// ----------- IPI 테이블에 insert -----------
-		//IPI_NO 가져오기
+		//품질로 데이터 전송
+		//IPI_INSPECTION_RESLT : 예정
+		//IPI_INSPECTION_STATUS : 검사시작
+		//PDT_CODE, PDT_NAME, UNIT_QTY = '개' , WO_CODE, WO_QTY, LOT_NO = NULL, PDT_TYPE(반제품, 완제품)
+
+		IpiDTO ipidto = new IpiDTO();
+		// UNIT_QTY, WO_CODE, WO_QTY, PDT_TYPE)
+		//IPI_NO 입력
 		Long ipiNo = lotService.getIpiNo();
+		ipidto.setIpiNo(ipiNo + 1);
 		
-		//pdt_code, pdt_type, lot_no, wo_code, wo_qty
+		//childLotCode
+		ipidto.setChildLotCode(lotUpdateDTO.getChildLotCode());
 		
+		//InspectionResult
+		//ipidto.setIpiInspectionResult("예정");
 		
-		//grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다
+		//IpiInspectionStatus
+		//ipidto.setIpiInspectionStatus("검사시작");
+		
+		//pdtCode
+		ipidto.setPdtCode(lotUpdateDTO.getChildPdtCode());
+		
+		//pdtName 가져오기 위한 코드
+		List<ProductTotalDTO> pdtTotalDto = productionPrcService.selectProductInfo(lotUpdateDTO.getPdtCode());
+		ipidto.setPdtName(pdtTotalDto.get(0).getPdtName());
+		
+		//pdtType
+		ipidto.setPdtType(pdtTotalDto.get(0).getPdtType());
+		
+		//UNIT_QTY
+		ipidto.setUnitQty("개");
+		
+		//wo_code
+		ipidto.setWoCode(lotUpdateDTO.getWoCode());
+		
+		//wo_qty
+		ipidto.setWoQty(lotUpdateDTO.getBomQty());
+		
+		//UPDATE
+		lotService.insertIpi(ipidto);
+		
+		// ----------- grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다 -----------
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(lotUpdateDTO.getWoCode());
 		//log.info("/jobCmpl의 selectLotOrigin:" + selectLotOrigin);
 		
@@ -583,11 +621,10 @@ public class ProductionPrcController {
 	@ResponseBody
 	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
 		
+		//현재 상태 SAVE_PRC 테이블 입력
 		lotService.insertSavePrc(savePrcDto);
 		
-		log.info("savePrcDto:"+savePrcDto);
-		//품질로 데이터 전송
-		
+		log.info("savePrcDto:"+savePrcDto);	
 		
 		return "success";
 	}
