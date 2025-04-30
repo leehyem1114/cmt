@@ -615,7 +615,13 @@
 						url: '/production/getRnRowNumMax',
 						data: {woCode: woCode},
 						success : function(response){
-							presentBtnRow = response - 1;
+							
+							if(response > 0){
+								presentBtnRow = response - 1;	
+							}else{
+								alert("presentBtnRow 음수");
+							}
+							
 							console.log("위에 presentBtnRow:" + presentBtnRow);
 						},
 						error: function(error) {
@@ -665,7 +671,8 @@
 				//-------------------- SAVE_PRC 테이블 delete하기 --------------------
 				$.ajax({
 					url: '/production/deleteSavePrc',
-					type: 'GET',
+					type: 'POST',
+					data: {woCode: woCode},
 					success : function(response){
 						console.log("수량 전송 버튼 클릭시:" + response);
 					},
@@ -754,6 +761,8 @@
 				  	cancelButtonText: '취소'
 				}).then((result) => {
 				if (result.isConfirmed) {
+					
+					$("#finishJobBtn").click();
 					/*
 				    $.ajax({
 						url: '/production/deleteSavePrc',
@@ -1134,6 +1143,14 @@
 					align: "center" 
 	            },
 				{
+	                header: '종료 일자',
+	                name: 'END_DATE',
+					width: 120,
+					sortable: true, 
+					filter: 'text',
+					align: "center" 
+	            },
+				{
 	                header: '작업 종료 시간',
 	                name: 'FINISH_TIME',
 					width: 150,
@@ -1181,7 +1198,7 @@
 			let childPdtCode = rowData.CHILD_PDT_CODE
 			let parentPdtCode = rowData.PARENT_PDT_CODE;
 			let num = rowData.NUM; //1,2,3,... 1부터 시작 상단:1
-			
+			console.log("---------------num:" + num);
 			//console.log("lotNo:" + lotNo + " ,bomQty:" + bomQty + " ,childPdtCode:" + childPdtCode + " ,parentPdtCode:" + parentPdtCode + " ,num:" + num);
 			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
 			

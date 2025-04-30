@@ -28,6 +28,7 @@
 			,PARENT_PDT_CODE
 			,CHILD_PDT_CODE
 			,CREATE_DATE
+			,END_DATE
 			,PRC_TYPE
 			,BOM_QTY
 			,BOM_UNIT
@@ -45,14 +46,15 @@
 	        #{childLotCode},
 	        #{parentPdtCode},  <!-- 주의: 여기가 PDT_CODE -->
 	        #{childPdtCode},
-	        #{createDate},
+	        #{createDate, jdbcType=DATE},
+	        #{endDate, jdbcType=DATE},
 	        #{prcType},
-	        #{bomQty},
+	        #{bomQty, jdbcType=VARCHAR},
 	        #{bomUnit},
 	        #{lineCode},
 	        #{eqpCode},
 	        #{woCode},
-	        #{woQty},
+	        #{woQty, jdbcType=VARCHAR},
 	        #{startTime},
 	        #{finishTime},
 	        #{woStatusNo},
@@ -88,6 +90,7 @@
 			,CHILD_PDT_CODE
 			,PARENT_PDT_CODE
 			,CREATE_DATE
+			,END_DATE
 			,PRC_TYPE
 			,BOM_QTY
 			,BOM_UNIT
@@ -110,6 +113,7 @@
 		UPDATE 
 			LOT
 		SET 
+			END_DATE = #{endDate, jdbcType=DATE},
 			FINISH_TIME = #{finishTime},
 		    WO_STATUS_NO = #{woStatusNo},
 		    BOM_QTY = #{bomQty}
@@ -176,13 +180,13 @@
 	<!-- save_prc테이블에 데이터 넣기 -->
 	<insert id="insertSavePrc" parameterType="com.example.cmtProject.dto.mes.production.SavePRCDTO">
 		INSERT INTO SAVE_PRC(
-		    WO_CODE
-		    ,PDT_CODE
-		    ,PARENT_PDT_CODE)
+		       WO_CODE
+		       ,PDT_CODE
+		       ,PARENT_PDT_CODE)
 		VALUES(
-		    #{woCode}
-		    ,#{pdtCode}
-		    ,#{parentPdtCode}
+		       #{woCode}
+		       ,#{pdtCode}
+		       ,#{parentPdtCode}
 		)
 	</insert>
 	
@@ -190,5 +194,31 @@
 	<delete id="deleteSavePrc">
 		DELETE SAVE_PRC
 	</delete>
+	
+	<!-- 반제품 수량 받기 -->
+	<select id="getBomQty" resultType="com.example.cmtProject.dto.mes.production.SemiFinalBomQty">
+		SELECT MS_CODE
+				,PARENT_PDT_CODE
+				,MS_QTY
+		  FROM MFG_SCHEDULES_DETAIL 
+		 WHERE MS_CODE IN (
+		SELECT MS_CODE 
+		  FROM WORK_ORDER 
+		 WHERE WO_CODE = #{woCode})
+	</select>
+	
+	<!--  -->
+	<select id="getIpiNo">
+		SELECT MAX(IPI_NO) FROM IPI
+	</select>
+	
+	<!-- 작업지시서 종료일 -->
+	<update id="updateWoEndDate">
+		UPDATE WORK_ORDER 
+		   SET WO_END_DATE = #{today, jdbcType=DATE}
+		 WHERE WO_CODE = #{woCode}
+	</update>
+	
+	
 	
 </mapper>

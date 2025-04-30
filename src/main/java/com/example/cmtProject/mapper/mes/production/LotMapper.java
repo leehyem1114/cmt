@@ -9,6 +9,7 @@ import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
+import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 
 @Mapper
@@ -62,6 +63,18 @@ public interface LotMapper {
 	//save_prc테이블에 데이터 삭제
 	void deleteSavePrc();
 
+	//반제품 수량 넘겨 받기
+	List<SemiFinalBomQty> getBomQty(String woCode);
+
+	//반제품 수량을 입력 할 parentPdtCode
+	List<String> selectParentPdtCode(String pdtCode);
+
+	//IPI 테이블에서 IPI_NO 받아오기
+	Long getIpiNo();
+
+	//작업지시서 종료 날짜 업데이트
+	void updateWoEndDate(@Param("woCode") String woCode, @Param("today") String today);
+	
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 
 }

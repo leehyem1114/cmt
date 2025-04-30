@@ -141,4 +141,14 @@
 	   WHERE P.PDT_USEYN = 'Y' AND P.PDT_CODE = #{pdtCode}
 	</select>
 	
+	<select id="selectParentPdtCode" resultType="String">
+	   SELECT
+			  PARENT_PDT_CODE
+		 FROM BOM
+		WHERE USE_YN = 'Y'
+		START WITH CHILD_ITEM_CODE = #{pdtCode}
+	  CONNECT BY PRIOR PARENT_PDT_CODE = CHILD_ITEM_CODE
+		ORDER SIBLINGS BY CHILD_ITEM_CODE
+	</select>
+	
 </mapper>
