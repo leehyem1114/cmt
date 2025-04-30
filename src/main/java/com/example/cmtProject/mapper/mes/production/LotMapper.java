@@ -10,6 +10,7 @@ import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
 import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 
 @Mapper
@@ -74,6 +75,9 @@ public interface LotMapper {
 
 	//작업지시서 종료 날짜 업데이트
 	void updateWoEndDate(@Param("woCode") String woCode, @Param("today") String today);
+
+	//IPI 테이블에 입력
+	void insertIpi(IpiDTO ipidto);
 	
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 

@@ -207,7 +207,7 @@
 		 WHERE WO_CODE = #{woCode})
 	</select>
 	
-	<!--  -->
+	<!-- IPI테이블에서 IPI_NO 가져오기 -->
 	<select id="getIpiNo">
 		SELECT MAX(IPI_NO) FROM IPI
 	</select>
@@ -219,6 +219,30 @@
 		 WHERE WO_CODE = #{woCode}
 	</update>
 	
-	
+	<!-- IPI테이블에 입력 -->
+	<insert id="insertIpi">
+		INSERT INTO IPI (
+		    EMP_ID
+		    ,CHILD_LOT_CODE
+		    ,IPI_INSPECTION_RESULT
+		    ,IPI_INSPECTION_STATUS
+		   	,PDT_CODE
+		    ,PDT_NAME
+		    ,WO_CODE
+		    ,WO_QTY
+		    ,PDT_TYPE
+		)
+		SELECT
+			'991114'
+		    ,#{childLotCode}
+		    ,'예정'
+		    ,'검사시작'
+		    ,#{pdtCode}
+		    ,#{pdtName}
+		    ,#{woCode}
+		    ,#{woQty}
+		    ,#{pdtType}
+		FROM DUAL
+	</insert>
 	
 </mapper>

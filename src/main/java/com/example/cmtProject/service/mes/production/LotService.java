@@ -10,6 +10,7 @@ import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
 import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 import com.example.cmtProject.mapper.mes.production.LotMapper;
 
@@ -99,9 +100,7 @@ public class LotService {
 		lotMapper.updateWoEndDate(woCode, today);
 	}
 
-
-
-
-
-	
+	public void insertIpi(IpiDTO ipidto) {
+		lotMapper.insertIpi(ipidto);
+	}
 }
