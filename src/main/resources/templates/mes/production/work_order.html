@@ -20,7 +20,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 	
 
-
 </head>
 <body>
 <div layout:fragment="content">
@@ -33,16 +32,11 @@
 		        <h5 class="card-title"></h5>
 		    </div>
 			<div class="row mb-3"> <!-- 검색박스 -->
-		        <div class="col-md-3">
-		            <input type="month" class="form-control" placeholder="등록월">
-		        </div>
 		        <div class="col-md-4">
-		            <div class="input-group">
-		                <input type="text" class="form-control" placeholder="상품명을 입력해주세요.">
-		                <button class="btn btn-outline-secondary" type="button">
-		                    <i class="bi bi-search"></i>
-		                </button>
-		            </div>
+			        <div id="searchForm" class="d-flex align-items-center gap-2">
+				        <input type="text" id="searchInput" class="form-control" placeholder="검색어를 입력하세요" />
+						<button id="dateSearchBtn" class="btn btn-primary btn-m"><i class="fa-solid fa-magnifying-glass"></i></button>
+			        </div>
 		        </div>
 	   			<div class="text-end" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')"> <!-- 작업등록 버튼 -->
 				    <button class="btn btn-primary btn-m" id="regeWork" data-bs-toggle="modal" data-bs-target="#workModal"><i class="fa-solid fa-magnifying-glass"></i> 작업등록</button>
@@ -55,7 +49,6 @@
 		        <h5 class="card-title"><i class="fa-solid fa-bars"></i> 작업지시 목록</h5>
 		    </div>
 		    
-		    SELECT * FROM PRODUCTS; // PRC_TYPE_CODE랑 조인해서 불러오기 ~
 		    
 		    <div id="grid" style="height: 400px;"></div>
 		    
@@ -75,11 +68,11 @@
 			        { header: '계획코드', name: 'woCode',sortable: true,align: 'center' },
 			        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
 			        { header: '품목', name: 'pdtName' ,align: 'center'},
-			        { header: '수량', name: 'woQty' ,align: 'center'},
+			        { header: '수량', name: 'soQty' ,align: 'center'},
 			        { header: '단위', name: 'unit' ,align: 'center' ,formatter: () => 'EA'},
 			        { header: '작업담당자', name: 'empName' ,align: 'center'},
 // 			        { header: '라인', name: 'lineCode' ,align: 'center'},
-			        { header: '공정', name: 'prcCode' ,align: 'center'},
+			        { header: '공정', name: 'prcTypeCode' ,align: 'center'},
 			        { header: '공정 상태', name: 'woStatusName' ,align: 'center'},
 			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
 			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'}
@@ -350,6 +343,27 @@
 			});
 		}
 	
+		document.addEventListener("DOMContentLoaded", function () {
+		    const originalData = [...gridData];
+
+		    function applyFilter() {
+		      const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+		      let filtered = originalData;
+
+		      if (keyword) {
+		        filtered = filtered.filter(row =>
+		          Object.values(row).some(val =>
+		            val != null && String(val).toLowerCase().includes(keyword)
+		          )
+		        );
+		      }
+
+		      grid.resetData(filtered);
+		    }
+
+		    document.getElementById('searchInput').addEventListener('input', applyFilter);
+		  });
 	</script>
 </th:block>
 </body>

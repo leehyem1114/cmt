@@ -50,8 +50,16 @@ public class ProductionExecutionController {//	생산 중 실적 등록, 자재 
 	@ResponseBody
 	public LotDTO qualityHistory(@RequestParam("lotNo") Long lotNo) {
 		LotDTO qualityHistory = orderService.getQualityHistory(lotNo);
-		System.out.println("품질정보 : " + qualityHistory);
+//		System.out.println("품질정보 : " + qualityHistory);
 		
 		return qualityHistory;
+	}
+	
+	@GetMapping("/searchLotTree")
+	@ResponseBody
+	public List<LotDTO> searchLotTree(@RequestParam("keyword") String keyword) {
+		System.out.println("keyword = " + keyword);
+		 return orderService.searchLotsByKeyword(keyword);
+		
 	}
 }

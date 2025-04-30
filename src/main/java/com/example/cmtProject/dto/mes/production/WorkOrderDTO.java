@@ -33,6 +33,7 @@ public class WorkOrderDTO {
     private String msNo;
     private String msCode;
     private String prcCode;
+    private String prcTypeCode;
     private String lineCode;
     private String allocatedQty;
     @JsonFormat(pattern = "yyyy-MM-dd")
