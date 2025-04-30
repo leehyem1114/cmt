@@ -585,6 +585,8 @@ public class ProductionPrcController {
 		
 		lotService.insertSavePrc(savePrcDto);
 		
+		log.info("savePrcDto:"+savePrcDto);
+		//품질로 데이터 전송
 		
 		
 		return "success";
