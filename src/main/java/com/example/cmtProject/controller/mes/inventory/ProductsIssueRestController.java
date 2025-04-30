@@ -168,6 +168,46 @@ public class ProductsIssueRestController {
     }
     
     /**
+     * 검수 등록 API - 출고 상태를 검수중으로 변경
+     * 
+     * @param params 검수 등록 정보
+     * @return 처리 결과
+     */
+    @PostMapping("/inspection")
+    public ApiResponse<Map<String, Object>> registerInspection(@RequestBody Map<String, Object> params) {
+        log.info("검수 등록 요청: {}", params);
+        
+        Map<String, Object> result = pIssueService.requestInspection(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("검수 등록 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result.get("message").toString(), result);
+        } else {
+            log.warn("검수 등록 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
+    /**
+     * 다건 검수 등록 API
+     * 
+     * @param params 검수 등록 정보 (여러 건)
+     * @return 처리 결과
+     */
+    @PostMapping("/inspection-batch")
+    public ApiResponse<Map<String, Object>> registerInspectionMultiple(@RequestBody Map<String, Object> params) {
+        log.info("다건 검수 등록 요청");
+        
+        Map<String, Object> result = pIssueService.registerInspectionMultiple(params);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), result);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
+    /**
      * 출고 처리 API - 출고 확정 및 재고 차감
      * 
      * @param params 출고 처리 정보

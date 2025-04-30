@@ -42,6 +42,14 @@ public class ProductsIssueService {
 	@Autowired
 	private FqcService fqcService;
 	
+	// 출고 상태 상수 정의
+	private static final String STATUS_WAITING = "출고대기";
+	private static final String STATUS_INSPECTING = "검수중";
+	private static final String STATUS_COMPLETED = "출고완료";
+	private static final String STATUS_CANCELED = "취소";
+	private static final String STATUS_INSPECT_PASSED = "검사합격";
+	private static final String STATUS_INSPECT_FAILED = "검사불합격";
+	
 	/**
 	 * 출고 목록 조회
 	 * 
@@ -100,7 +108,7 @@ public class ProductsIssueService {
 	        issueMap.put("lotNo", "LOT-" + nowStr.replace("-", "") + "-" + soData.get("SO_CODE"));
 	        issueMap.put("requestDate", nowStr);
 	        issueMap.put("issueDate", null); // 출고일은 아직 미정
-	        issueMap.put("issueStatus", "출고대기");
+	        issueMap.put("issueStatus", STATUS_WAITING);
 	        issueMap.put("warehouseCode", soData.get("WHS_CODE"));
 	        issueMap.put("issuer", "SYSTEM"); // 기본 담당자
 	        issueMap.put("createdBy", "SYSTEM");
@@ -271,6 +279,175 @@ public class ProductsIssueService {
 	}
 	
 	/**
+	 * 검수 요청 처리 - 출고 상태를 검수중으로 변경
+	 * 
+	 * @param params 검수 요청 정보
+	 * @return 처리 결과
+	 */
+	@Transactional
+	public Map<String, Object> requestInspection(Map<String, Object> params) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    
+	    try {
+	        log.info("검수 등록 처리 시작: {}", params);
+	        
+	        Long issueNo = null;
+	        if (params.get("issueNo") instanceof Long) {
+	            issueNo = (Long) params.get("issueNo");
+	        } else if (params.get("issueNo") instanceof String) {
+	            issueNo = Long.parseLong((String) params.get("issueNo"));
+	        } else if (params.get("issueNo") instanceof Integer) {
+	            issueNo = ((Integer) params.get("issueNo")).longValue();
+	        }
+	        
+	        if (issueNo == null) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "출고 번호가 유효하지 않습니다.");
+	            return resultMap;
+	        }
+	        
+	        // 출고 정보 조회 - 검수 처리 가능 상태 확인
+	        Map<String, Object> issueDetail = pImapper.getIssueDetail(issueNo);
+	        if (issueDetail == null) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "해당 출고 정보를 찾을 수 없습니다.");
+	            return resultMap;
+	        }
+	        
+	        // 상태 확인 - 출고대기 상태만 검수 처리 가능
+	        String currentStatus = (String) issueDetail.get("ISSUE_STATUS");
+	        if (!STATUS_WAITING.equals(currentStatus)) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "출고대기 상태인 항목만 검수 처리가 가능합니다. 현재 상태: " + currentStatus);
+	            return resultMap;
+	        }
+	        
+	        // 현재 날짜
+	        LocalDate today = LocalDate.now();
+	        String todayStr = today.toString();
+	        
+	        // 출고 상태 업데이트
+	        Map<String, Object> updateMap = new HashMap<>();
+	        updateMap.put("issueNo", issueNo);
+	        updateMap.put("issueStatus", STATUS_INSPECTING);
+	        updateMap.put("updatedBy", params.get("updatedBy"));
+	        updateMap.put("woCode", params.get("issueCode"));
+	        updateMap.put("pdtCode", params.get("pdtCode"));
+	        
+	        
+	        int result = pImapper.updateIssueStatus(updateMap);
+	        
+	        if (result > 0) {
+	            // 이력 기록
+	            Map<String, Object> historyMap = new HashMap<>();
+	            historyMap.put("issueNo", issueNo);
+	            historyMap.put("actionType", "검수시작");
+	            historyMap.put("actionDescription", "검수 등록됨");
+	            historyMap.put("actionUser", params.get("updatedBy"));
+	            historyMap.put("createdBy", params.get("updatedBy"));
+	            
+	            pIhmapper.insertHistory(historyMap);
+	            log.info("444444444444444444444444444444"+updateMap);
+	            // FQC 검수 등록 호출 - 나중에 구현
+	            // TODO: FQC 서비스를 통한 검수 등록 처리
+	             fqcService.insertFqcInspection(updateMap);
+	            
+	            log.info("검수 등록 처리 완료: 출고번호={}", issueNo);
+	            
+	            resultMap.put("success", true);
+	            resultMap.put("message", "검수 등록이 완료되었습니다.");
+	        } else {
+	            log.warn("검수 등록 처리 실패: 출고번호={}", issueNo);
+	            resultMap.put("success", false);
+	            resultMap.put("message", "검수 등록 처리가 실패했습니다.");
+	        }
+	    } catch (Exception e) {
+	        log.error("검수 등록 처리 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
+	
+	/**
+	 * 다건 검수 등록 처리 
+	 * 다수의 출고 항목에 대해 검수 등록을 처리합니다.
+	 * 
+	 * @param params 검수 요청 정보 (items: 검수 등록할 항목 목록)
+	 * @return 처리 결과
+	 */
+	@Transactional
+	public Map<String, Object> registerInspectionMultiple(Map<String, Object> params) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    int successCount = 0;
+	    List<String> failedItems = new ArrayList<>();
+	    
+	    try {
+	        log.info("다건 검수 등록 처리 시작: {}", params);
+	        
+	        // 다건 처리 지원
+	        @SuppressWarnings("unchecked")
+	        List<Map<String, Object>> items = (List<Map<String, Object>>) params.get("items");
+	        
+	        if (items == null || items.isEmpty()) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "검수 등록 처리할 항목이 없습니다.");
+	            return resultMap;
+	        }
+	        
+	        // 각 항목에 대해 처리
+	        for (Map<String, Object> item : items) {
+	            try {
+	                // 개별 항목 처리
+	                Map<String, Object> itemResult = requestInspection(item);
+	                
+	                if ((Boolean) itemResult.get("success")) {
+	                    successCount++;
+	                } else {
+	                    failedItems.add(String.valueOf(item.get("issueCode")));
+	                }
+	            } catch (Exception e) {
+	                log.error("개별 검수 등록 처리 중 오류: {}", e.getMessage(), e);
+	                failedItems.add(String.valueOf(item.get("issueCode")));
+	            }
+	        }
+	        
+	        // 결과 집계
+	        resultMap.put("totalCount", items.size());
+	        resultMap.put("successCount", successCount);
+	        resultMap.put("failedCount", failedItems.size());
+	        resultMap.put("failedItems", failedItems);
+	        
+	        if (successCount > 0) {
+	            String message = String.format("%d개 항목의 검수 등록이 완료되었습니다.", successCount);
+	            if (!failedItems.isEmpty()) {
+	                message += String.format(" (%d개 항목 실패)", failedItems.size());
+	            }
+	            
+	            resultMap.put("success", true);
+	            resultMap.put("message", message);
+	            
+	            log.info("다건 검수 등록 처리 완료: {}", message);
+	        } else {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "검수 등록 처리에 실패했습니다.");
+	            
+	            log.warn("다건 검수 등록 처리 실패: 모든 항목 처리 실패");
+	        }
+	        
+	    } catch (Exception e) {
+	        log.error("다건 검수 등록 처리 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
+	
+	/**
 	 * 출고 처리 - 재고에서 출고 처리하고 이력 기록
 	 * 
 	 * @param params 출고 처리 정보
@@ -310,9 +487,16 @@ public class ProductsIssueService {
 	        
 	        // 출고 상태 확인
 	        String issueStatus = (String) issueDetail.get("ISSUE_STATUS");
-	        if ("출고완료".equals(issueStatus) || "취소".equals(issueStatus)) {
+	        if (STATUS_COMPLETED.equals(issueStatus) || STATUS_CANCELED.equals(issueStatus)) {
 	            resultMap.put("success", false);
 	            resultMap.put("message", "이미 처리된 출고입니다: " + issueStatus);
+	            return resultMap;
+	        }
+	        
+	        // 검수완료(합격) 상태인지 확인 - 검수 합격만 출고 처리 가능
+	        if (!STATUS_INSPECT_PASSED.equals(issueStatus) && !STATUS_WAITING.equals(issueStatus)) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "검수 완료된 항목(합격)만 출고 처리할 수 있습니다. 현재 상태: " + issueStatus);
 	            return resultMap;
 	        }
 	        
@@ -326,7 +510,7 @@ public class ProductsIssueService {
 	        // 1. 출고 상태 및 출고일 업데이트
 	        Map<String, Object> updateMap = new HashMap<>();
 	        updateMap.put("issueNo", issueNo);
-	        updateMap.put("issueStatus", "출고완료");
+	        updateMap.put("issueStatus", STATUS_COMPLETED);
 	        updateMap.put("issuedQty", issuedQty); // 출고 수량 설정
 	        updateMap.put("issueDate", nowStr);
 	        updateMap.put("updatedBy", params.get("updatedBy"));
@@ -529,7 +713,7 @@ public class ProductsIssueService {
 	        
 	        // 출고 상태 확인 - 출고대기 상태만 취소 가능
 	        String issueStatus = (String) issueDetail.get("ISSUE_STATUS");
-	        if (!"출고대기".equals(issueStatus)) {
+	        if (!STATUS_WAITING.equals(issueStatus)) {
 	            resultMap.put("success", false);
 	            resultMap.put("message", "출고대기 상태의 항목만 취소할 수 있습니다. 현재 상태: " + issueStatus);
 	            return resultMap;
@@ -538,7 +722,7 @@ public class ProductsIssueService {
 	        // 출고 상태 업데이트
 	        Map<String, Object> updateMap = new HashMap<>();
 	        updateMap.put("issueNo", issueNo);
-	        updateMap.put("issueStatus", "취소");
+	        updateMap.put("issueStatus", STATUS_CANCELED);
 	        updateMap.put("updatedBy", params.get("updatedBy"));
 	        
 	        int result = pImapper.updateIssueStatus(updateMap);
