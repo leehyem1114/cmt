@@ -421,47 +421,34 @@
 		    });
 		  });
 		 function rebuildTree(filteredList) {
-			  const lotMap = new Map();
-			  filteredList.forEach(order => {
-			    lotMap.set(order.childLotCode, {
-			      text: `<span class="lot-node" data-lot-no="${order.lotNo}">
-			               ${order.childLotCode} (${order.childPdtCode} / ${order.pdtName ?? '이름없음'})
-			             </span>`,
-			      lotNo: order.lotNo,
-			      lotCode: order.childLotCode,
-			      pdtCode: order.childPdtCode,
-			      parentLotCode: order.parentLotCode,
-			      children: []
-			    });
-			  });
+			  console.log('[rebuildTree 호출됨]');
+			  console.log('받은 filteredList:', filteredList);
 
-			  // 부모-자식 관계 연결
-			  lotMap.forEach(node => {
-				  if (node.parentLotCode && node.parentLotCode !== node.lotCode) {
-				    const parent = lotMap.get(node.parentLotCode);
-				    if (parent && parent !== node) {
-				      parent.children.push(node);
-				    }
-				  }
-				});
+			  if (!filteredList || filteredList.length === 0) {
+			    document.getElementById('tree').innerHTML = '<p>검색 결과가 없습니다.</p>';
+			    return;
+			  }
 
-			  // 루트 노드 추출
-			  const treeData = Array.from(lotMap.values());
-			  lotMap.forEach(node => {
-			    const isRoot = ![...lotMap.values()].some(n => n.children.includes(node));
-			    if (isRoot) treeData.push(node);
-			  });
-			  
-			  console.log('최종 treeData:', treeData);
+			  // 여러 건 처리: 각 LOT을 루트 노드로 보여줌
+			  const treeData = filteredList.map(order => ({
+			    text: `<span class="lot-node" data-lot-no="${order.LOT_NO}">
+			             ${order.CHILD_LOT_CODE} (${order.CHILD_PDT_CODE} / ${order.PDT_NAME ?? '이름없음'})
+			           </span>`,
+			    lotNo: order.LOT_NO,
+			    lotCode: order.CHILD_LOT_CODE,
+			    pdtCode: order.CHILD_PDT_CODE,
+			    parentLotCode: order.PARENT_LOT_CODE,
+			    children: []  
+			  }));
 
-			  // 트리 다시 그리기
-			  document.getElementById('tree').innerHTML = '';  // 트리 비우기
+			  document.getElementById('tree').innerHTML = '';
 			  tree = new tui.Tree('#tree', {
 			    data: treeData,
 			    nodeDefaultState: 'opened',
 			    nodeTextTemplate: node => node.text
 			  });
 			}
+
 
 		
 
