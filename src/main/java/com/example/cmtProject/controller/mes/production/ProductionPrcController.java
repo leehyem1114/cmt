@@ -393,7 +393,7 @@ public class ProductionPrcController {
 			lod.setWoQty(woQty);  // -- 완제품 수량
 			
 			for(SemiFinalBomQty sfb : bomQtyList) {
-				
+				log.info("work_order_detail ParentPdtCode()"+sfb.getParentPdtCode() + " : lot테이블 ParentPdtCode:"+ b.getParentPdtCode());
 				if(sfb.getParentPdtCode().equals(b.getParentPdtCode())) {
 					lod.setBomQty(sfb.getMsQty()); // -- 반제픔 수량
 				}
@@ -584,6 +584,8 @@ public class ProductionPrcController {
 	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
 		
 		lotService.insertSavePrc(savePrcDto);
+		
+		
 		
 		return "success";
 	}
