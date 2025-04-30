@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.inventory.ItemMasterMapper">
+
+	<!-- 원자재 기준정보 목록 조회-->
+	<select id="selectMaterials" resultType="map" parameterType="map">
+		SELECT                         
+			MTL_NO,                    
+			MTL_CODE,                  
+			MTL_NAME,                  
+			MTL_STANDARD,              
+			MTL_UNIT,                  
+			MTL_BASE_PRICE,           
+			MTL_PRC_TYPE,           
+			MTL_CLT_CODE,           
+			MTL_TYPE_CODE,           
+			MTL_USE_YN,           
+			MTL_COMMENTS,           
+			MTL_SUPP_CODE           
+		FROM                           
+			MATERIALS
+		WHERE
+			USE_YN = 'Y'
+		ORDER BY
+			MTL_NO DESC
+	</select>
+	
+	<!-- 원자재 기준정보 목록 단건 조회 -->
+	<select id="selectSingleMaterials" resultType="map" parameterType="map">
+		SELECT                         
+			MTL_NO,                    
+			MTL_CODE,                  
+			MTL_NAME,                  
+			MTL_STANDARD,              
+			MTL_UNIT,                  
+			MTL_BASE_PRICE,           
+			MTL_PRC_TYPE,           
+			MTL_CLT_CODE,           
+			MTL_TYPE_CODE,           
+			MTL_USE_YN,           
+			MTL_COMMENTS,           
+			MTL_SUPP_CODE           
+		FROM                           
+			MATERIALS
+		WHERE
+			MTL_CODE = #{mtlCode}
+		ORDER BY
+			MTL_NO DESC
+		
+	
+	
+	</select>
+	
+	<!-- 원자재 기준정보 등록(INSERT) -->
+	<insert id="insertMaterials" parameterType="map">
+		INSERT INTO MATERIALS(
+			MTL_NO,                    
+			MTL_CODE,                  
+			MTL_NAME,                  
+			MTL_STANDARD,              
+			MTL_UNIT,                  
+			MTL_BASE_PRICE,           
+			MTL_PRC_TYPE,           
+			MTL_CLT_CODE,           
+			MTL_TYPE_CODE,           
+			MTL_USE_YN,           
+			MTL_COMMENTS,           
+			MTL_SUPP_CODE
+		) VALUES (
+			#{mtlNo},
+			#{mtlCode},
+			#{mtlName},
+			#{mtlStandard},
+			#{mtlUnit},
+			#{mtlBasePrice},
+			#{mtlPrcType},
+			#{mtlCltCode},
+			#{mtlTypeCode},
+			#{mtlUseYn},
+			#{mtlComments}
+		)
+	</insert>		
+
+	<!-- 원자재 기준정보 수정(UPDATE) -->
+	<update id="updateMaterials" parameterType="map">
+		UPDATE MATERIALS
+		SET
+			MTL_NO =         #{mtlNo},             
+			MTL_CODE =       #{mtlCode},             
+			MTL_NAME =       #{mtlName},           
+			MTL_STANDARD =   #{mtlStandard},           
+			MTL_UNIT =       #{mtlUnit},           
+			MTL_BASE_PRICE = #{mtlBasePrice},          
+			MTL_PRC_TYPE =   #{mtlPrcType},        
+			MTL_CLT_CODE =   #{mtlCltCode},        
+			MTL_TYPE_CODE =  #{mtlTypeCode},         
+			MTL_USE_YN =     #{mtlUseYn},      
+			MTL_COMMENTS =   #{mtlComments}        
+		WHERE
+			MTL_CODE = #{mtlCode}
+	</update>
+	
+	<!-- 원자재 기준정보 삭제(DELETE) -->	
+	<delete id="deleteMaterials" parameterType="map">
+		DELETE 
+		FROM 
+			MATERIALS
+		WHERE
+			MTL_CODE = #{mtlCode}
+	</delete>
+    
+</mapper>

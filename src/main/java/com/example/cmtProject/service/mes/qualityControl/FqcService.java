@@ -89,6 +89,7 @@ public class FqcService {
 		fqcDTO.setFqcEndTime(LocalDateTime.now());
 		fqcMapper.updateFqcInspectionStatusComplete(fqcDTO);
 		
+		// InventoryUpdateMapper 에서 업데이트 하기위해서 
         String code = fqcDTO.getWoCode();
         Map<String, Object> params = new HashMap<>();
         params.put("issueCode", code);

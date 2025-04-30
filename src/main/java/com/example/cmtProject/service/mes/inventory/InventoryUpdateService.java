@@ -19,10 +19,6 @@ public class InventoryUpdateService {
 	private InventoryUpdateMapper Ium;
 	
 	/**
-	 * 검수 완료 여부 업데이트
-	 */
-	
-	/**
 	 * 생산계획 대비 자재/제품 할당 수량 업데이트
 	 * @param params soCode - 판매주문 코드, soQty - 주문 수량, updatedBy - 수정자
 	 */
