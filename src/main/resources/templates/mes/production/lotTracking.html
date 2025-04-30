@@ -429,20 +429,17 @@
 			    return;
 			  }
 
-			  const order = filteredList[0];  // 단일 결과
-
-			  const treeData = [
-				    {
-				      text: `<span class="lot-node" data-lot-no="${order.LOT_NO}">
-				               ${order.CHILD_LOT_CODE} (${order.CHILD_PDT_CODE} / ${order.PDT_NAME ?? '이름없음'})
-				             </span>`,
-				      lotNo: order.LOT_NO,
-				      lotCode: order.CHILD_LOT_CODE,
-				      pdtCode: order.CHILD_PDT_CODE,
-				      parentLotCode: order.PARENT_LOT_CODE,
-				      children: []
-				    }
-				  ]; 
+			  // 여러 건 처리: 각 LOT을 루트 노드로 보여줌
+			  const treeData = filteredList.map(order => ({
+			    text: `<span class="lot-node" data-lot-no="${order.LOT_NO}">
+			             ${order.CHILD_LOT_CODE} (${order.CHILD_PDT_CODE} / ${order.PDT_NAME ?? '이름없음'})
+			           </span>`,
+			    lotNo: order.LOT_NO,
+			    lotCode: order.CHILD_LOT_CODE,
+			    pdtCode: order.CHILD_PDT_CODE,
+			    parentLotCode: order.PARENT_LOT_CODE,
+			    children: [] 
+			  }));
 
 			  document.getElementById('tree').innerHTML = '';
 			  tree = new tui.Tree('#tree', {
@@ -451,6 +448,7 @@
 			    nodeTextTemplate: node => node.text
 			  });
 			}
+
 
 		
 
