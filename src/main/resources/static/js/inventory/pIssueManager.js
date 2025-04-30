@@ -3,8 +3,8 @@
  * 
  * 제품 출고정보의 조회, 요청, 확정, 취소 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 2.0.0
- * @since 2025-04-29
+ * @version 2.1.0
+ * @since 2025-04-30
  */
 const ProductsIssueManager = (function() {
     // =============================
@@ -25,10 +25,12 @@ const ProductsIssueManager = (function() {
         HISTORY: (issueNo) => `/api/productsIssue/history/${issueNo}`,  // 이력 정보 조회
         REQUEST: '/api/productsIssue/request',         // 출고 요청
         REQUEST_BATCH: '/api/productsIssue/request-batch', // 다건 출고 요청
+        INSPECTION: '/api/productsIssue/inspection',   // 검수 등록 API
+        INSPECTION_BATCH: '/api/productsIssue/inspection-batch', // 다건 검수 등록 API
         PROCESS: '/api/productsIssue/process',         // 출고 처리
         PROCESS_BATCH: '/api/productsIssue/process-batch', // 다건 출고 처리
         CANCEL: '/api/productsIssue/cancel',           // 출고 취소
-        SALES_ORDER: '/api/productsIssue/sales-orders',  // 수주 목록 조회 API - 경로 수정
+        SALES_ORDER: '/api/productsIssue/sales-orders',  // 수주 목록 조회 API
         EXCEL: {
             DOWNLOAD: '/api/productsIssue/excel/download'  // 엑셀 다운로드 API URL
         }
@@ -37,7 +39,9 @@ const ProductsIssueManager = (function() {
     // 출고 상태 정의
     const ISSUE_STATUS = {
         WAITING: '출고대기',
-        PROCESSING: '출고중',
+        INSPECTING: '검수중',
+        INSPECT_PASSED: '검사합격',
+        INSPECT_FAILED: '검사불합격',
         COMPLETED: '출고완료',
         CANCELED: '취소'
     };
@@ -85,6 +89,7 @@ const ProductsIssueManager = (function() {
             // UIUtil을 사용하여 이벤트 리스너 등록 - 버튼 이벤트
             await UIUtil.registerEventListeners({
                 'pIssueRequestBtn': openIssueRequestModal,   // 출고 요청 모달 열기
+                'pIssueInspectionBtn': registerInspection,   // 검수 등록 버튼 - 추가됨
                 'pIssueConfirmBtn': confirmIssue,           // 출고 확정 버튼
                 'pIssueCancelBtn': cancelIssue,             // 출고 취소 버튼
                 'pIssueSearchBtn': searchData,              // 데이터 검색 버튼
@@ -197,6 +202,14 @@ const ProductsIssueManager = (function() {
                         soDetailGrid.resetData([]);
                     }
                 });
+                
+                // 모달이 완전히 보여진 후에 그리드를 초기화하도록 이벤트 추가
+                issueRequestModal.addEventListener('shown.bs.modal', function() {
+                    // 그리드가 제대로 보이지 않는 문제 해결을 위한 그리드 갱신
+                    if (soDetailGrid) {
+                        soDetailGrid.refreshLayout();
+                    }
+                });
             }
             
             // 수주 상세 그리드 초기화
@@ -290,8 +303,12 @@ const ProductsIssueManager = (function() {
                             const status = obj.value || ISSUE_STATUS.WAITING;
                             let badgeClass = 'badge-waiting';
                             
-                            if (status === ISSUE_STATUS.PROCESSING) {
-                                badgeClass = 'badge-processing';
+                            if (status === ISSUE_STATUS.INSPECTING) {
+                                badgeClass = 'badge-inspecting';
+                            } else if (status === ISSUE_STATUS.INSPECT_PASSED) {
+                                badgeClass = 'badge-inspectPass';
+                            } else if (status === ISSUE_STATUS.INSPECT_FAILED) {
+                                badgeClass = 'badge-inspectFail';
                             } else if (status === ISSUE_STATUS.COMPLETED) {
                                 badgeClass = 'badge-completed';
                             } else if (status === ISSUE_STATUS.CANCELED) {
@@ -506,7 +523,7 @@ const ProductsIssueManager = (function() {
      * 
      * @param {Object} detailData - 출고 상세 정보 데이터
      */
-    function displayDetailInfo(detailData) {
+function displayDetailInfo(detailData) {
         // 기본 정보 탭 데이터 설정
         document.getElementById('issueNo').textContent = detailData.ISSUE_NO || '';
         document.getElementById('issueCode').textContent = detailData.ISSUE_CODE || '';
@@ -522,8 +539,12 @@ const ProductsIssueManager = (function() {
         const status = detailData.ISSUE_STATUS || ISSUE_STATUS.WAITING;
         let badgeClass = 'badge-waiting';
         
-        if (status === ISSUE_STATUS.PROCESSING) {
-            badgeClass = 'badge-processing';
+        if (status === ISSUE_STATUS.INSPECTING) {
+            badgeClass = 'badge-inspecting';
+        } else if (status === ISSUE_STATUS.INSPECT_PASSED) {
+            badgeClass = 'badge-inspectPass';
+        } else if (status === ISSUE_STATUS.INSPECT_FAILED) {
+            badgeClass = 'badge-inspectFail';
         } else if (status === ISSUE_STATUS.COMPLETED) {
             badgeClass = 'badge-completed';
         } else if (status === ISSUE_STATUS.CANCELED) {
@@ -770,75 +791,48 @@ const ProductsIssueManager = (function() {
      * 
      * @param {string} soCode - 수주 코드
      */
-	async function loadSalesOrderDetail(soCode) {
-	    try {
-	        if (!soCode) {
-	            // 선택된 수주가 없으면 그리드 초기화
-	            if (soDetailGrid) {
-	                soDetailGrid.resetData([]);
-	            }
-	            return false;
-	        }
-	        
-	        console.log('수주 상세 정보 로드:', soCode);
-	        await UIUtil.toggleLoading(true, '수주 상세 정보를 불러오는 중...');
-	        
-	        // 수정된 부분: soCode를 검색 파라미터로 사용
-	        const response = await ApiUtil.get(API_URLS.SALES_ORDER, {
-	            keyword: soCode,
-	            status: 'SO_CONFIRMED,SO_PLANNED,SO_COMPLETED' // 출고 가능한 상태
-	        });
-	        
-	        await UIUtil.toggleLoading(false);
-	        
-	        if (!response.success) {
-	            throw new Error('수주 상세 정보를 가져오는데 실패했습니다: ' + response.message);
-	        }
-	        
-	        // 응답에서 해당 수주 코드와 일치하는 항목만 필터링
-	        const salesOrders = response.data || [];
-	        const detailData = salesOrders.find(so => so.SO_CODE === soCode) || {};
-	        
-	        // 데이터를 배열로 변환 (단일 항목이라도 배열로 처리)
-	        const gridData = [detailData];
-	        
-	        // 그리드 업데이트
-	        if (soDetailGrid) {
-	            soDetailGrid.resetData(gridData);
-	        }
-	        
-	        console.log('수주 상세 정보 로드 완료');
-	        return true;
-	    } catch (error) {
-	        console.error('수주 상세 정보 로드 중 오류:', error);
-	        await UIUtil.toggleLoading(false);
-	        await AlertUtil.showError('조회 오류', '수주 상세 정보를 불러오는데 실패했습니다.');
-	        return false;
-	    }
-	}
-    
-    /**
-     * 선택된 수주 정보 표시 함수
-     * 
-     * @param {Object} soData - 수주 데이터
-     */
-    function showSelectedSalesOrder(soData) {
+    async function loadSalesOrderDetail(soCode) {
         try {
-            if (!soData) {
+            if (!soCode) {
+                // 선택된 수주가 없으면 그리드 초기화
+                if (soDetailGrid) {
+                    soDetailGrid.resetData([]);
+                }
                 return false;
             }
             
-            // 데이터를 배열로 변환 (단일 항목이라도 배열로 처리)
-            const gridData = Array.isArray(soData) ? soData : [soData];
+            console.log('수주 상세 정보 로드:', soCode);
+            await UIUtil.toggleLoading(true, '수주 상세 정보를 불러오는 중...');
+            
+            // API 호출 - 수주 상세 정보 조회 (여기서는 예시로 목록 API 재활용)
+            const response = await ApiUtil.get(API_URLS.SALES_ORDER, {
+                keyword: soCode
+            });
+            
+            await UIUtil.toggleLoading(false);
+            
+            if (!response.success) {
+                throw new Error('수주 상세 정보를 가져오는데 실패했습니다: ' + response.message);
+            }
+            
+            const detailData = response.data || [];
             
             // 그리드 업데이트
             if (soDetailGrid) {
-                soDetailGrid.resetData(gridData);
+                soDetailGrid.resetData(detailData);
+                
+                // 그리드가 제대로 표시되지 않는 문제 해결을 위한 딜레이 후 레이아웃 갱신
+                setTimeout(() => {
+                    soDetailGrid.refreshLayout();
+                }, 100);
             }
             
+            console.log('수주 상세 정보 로드 완료');
             return true;
         } catch (error) {
-            console.error('선택된 수주 정보 표시 중 오류:', error);
+            console.error('수주 상세 정보 로드 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            await AlertUtil.showError('조회 오류', '수주 상세 정보를 불러오는데 실패했습니다.');
             return false;
         }
     }
@@ -888,10 +882,10 @@ const ProductsIssueManager = (function() {
             
             let response;
             if (requestItems.length === 1) {
-                // 단일 항목 처리 (API 경로 수정)
+                // 단일 항목 처리
                 response = await ApiUtil.post(API_URLS.REQUEST, requestItems[0]);
             } else {
-                // 다건 처리 (API 경로 수정)
+                // 다건 처리
                 response = await ApiUtil.post(API_URLS.REQUEST_BATCH, { items: requestItems });
             }
             
@@ -918,6 +912,120 @@ const ProductsIssueManager = (function() {
             console.error('출고 요청 생성 중 오류:', error);
             await UIUtil.toggleLoading(false);
             await AlertUtil.showError('처리 오류', '출고 요청 처리 중 오류가 발생했습니다: ' + error.message);
+            return false;
+        }
+    }
+    
+    /**
+     * 검수 등록 함수
+     * 선택한 출고 항목의 검수 등록을 처리합니다.
+     */
+    async function registerInspection() {
+        try {
+            console.log('검수 등록 처리');
+            
+            // 그리드에서 선택된 행 확인
+            const grid = GridUtil.getGrid('pIssueGrid');
+            if (!grid) {
+                await AlertUtil.showWarning('알림', '그리드가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            const selectedRowKeys = grid.getCheckedRowKeys();
+            
+            if (selectedRowKeys.length === 0) {
+                await AlertUtil.showWarning('알림', '검수 등록할 항목을 선택해주세요.');
+                return false;
+            }
+            
+            // 선택된 항목이 처리 가능한지 확인
+            const validItems = [];
+            const invalidItems = [];
+            
+            for (const rowKey of selectedRowKeys) {
+                const row = grid.getRow(rowKey);
+                
+                // 출고대기 상태만 검수 처리 가능
+                if (row.ISSUE_STATUS !== ISSUE_STATUS.WAITING) {
+                    invalidItems.push({
+                        code: row.ISSUE_CODE,
+                        status: row.ISSUE_STATUS
+                    });
+                    continue;
+                }
+                
+                // 유효한 항목 추가
+                validItems.push({
+                    issueNo: row.ISSUE_NO,
+                    issueCode: row.ISSUE_CODE,
+                    updatedBy: 'SYSTEM' // 실제 구현에서는 로그인 사용자 ID로 변경
+                });
+            }
+            
+            if (validItems.length === 0) {
+                let message = '선택한 항목 중 검수 등록할 수 있는 항목이 없습니다.\n';
+                message += '출고대기 상태인 항목만 검수 등록할 수 있습니다.\n\n';
+                
+                message += '처리할 수 없는 항목:\n';
+                invalidItems.forEach(item => {
+                    message += `- ${item.code}: ${item.status}\n`;
+                });
+                
+                await AlertUtil.showWarning('알림', message);
+                return false;
+            }
+            
+            // 확인 메시지
+            let confirmMsg = `선택한 ${validItems.length}건의 항목을 검수 등록하시겠습니까?`;
+            if (invalidItems.length > 0) {
+                confirmMsg += `\n(${invalidItems.length}건은 처리할 수 없는 상태입니다.)`;
+            }
+            
+            const confirmed = await AlertUtil.showConfirm({
+                title: '검수 등록',
+                text: confirmMsg,
+                icon: 'question'
+            });
+            
+            if (!confirmed) {
+                return false;
+            }
+            
+            // API 호출
+            await UIUtil.toggleLoading(true, '검수 등록 처리 중...');
+            
+            let response;
+            if (validItems.length === 1) {
+                // 단일 항목 처리
+                response = await ApiUtil.post(API_URLS.INSPECTION, validItems[0]);
+            } else {
+                // 다건 처리
+                response = await ApiUtil.post(API_URLS.INSPECTION_BATCH, { items: validItems });
+            }
+            
+            await UIUtil.toggleLoading(false);
+            
+            if (!response.success) {
+                throw new Error('검수 등록에 실패했습니다: ' + response.message);
+            }
+            
+            // 성공 처리
+            await AlertUtil.showSuccess(
+                '검수 등록 완료', 
+                response.message || `${validItems.length}건의 검수 등록이 완료되었습니다. 검수 담당자가 검사를 진행합니다.`
+            );
+            
+            // 목록 갱신
+            await searchData();
+            
+            // 상세 정보 영역 숨기기
+            hideDetailSection();
+            
+            return true;
+        } catch (error) {
+            console.error('검수 등록 처리 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            await AlertUtil.showError('처리 오류', '검수 등록 처리 중 오류가 발생했습니다: ' + error.message);
             return false;
         }
     }
@@ -951,8 +1059,8 @@ const ProductsIssueManager = (function() {
             for (const rowKey of selectedRowKeys) {
                 const row = grid.getRow(rowKey);
                 
-                // 출고대기 상태만 처리 가능
-                if (row.ISSUE_STATUS !== ISSUE_STATUS.WAITING) {
+                // 검사합격 또는 출고대기 상태만 처리 가능
+                if (row.ISSUE_STATUS !== ISSUE_STATUS.INSPECT_PASSED && row.ISSUE_STATUS !== ISSUE_STATUS.WAITING) {
                     invalidItems.push({
                         code: row.ISSUE_CODE,
                         status: row.ISSUE_STATUS
@@ -969,7 +1077,7 @@ const ProductsIssueManager = (function() {
             
             if (validItems.length === 0) {
                 let message = '선택한 항목 중 출고 확정할 수 있는 항목이 없습니다.\n';
-                message += '출고대기 상태인 항목만 확정할 수 있습니다.\n\n';
+                message += '검사합격 또는 출고대기 상태인 항목만 확정할 수 있습니다.\n\n';
                 
                 message += '처리할 수 없는 항목:\n';
                 invalidItems.forEach(item => {
@@ -1001,10 +1109,10 @@ const ProductsIssueManager = (function() {
             
             let response;
             if (validItems.length === 1) {
-                // 단일 항목 처리 (API 경로 수정)
+                // 단일 항목 처리
                 response = await ApiUtil.post(API_URLS.PROCESS, validItems[0]);
             } else {
-                // 다건 처리 (API 경로 수정)
+                // 다건 처리
                 response = await ApiUtil.post(API_URLS.PROCESS_BATCH, { items: validItems });
             }
             
@@ -1106,7 +1214,7 @@ const ProductsIssueManager = (function() {
             // API 호출
             await UIUtil.toggleLoading(true, '출고 취소 처리 중...');
             
-            // 취소 처리 (API 경로 수정)
+            // 취소 처리
             // 1건씩 처리
             const results = [];
             for (const item of validItems) {
@@ -1213,6 +1321,7 @@ const ProductsIssueManager = (function() {
         searchData,               // 데이터 검색
         openIssueRequestModal,    // 출고 요청 모달 열기
         createIssueRequest,       // 출고 요청 생성
+        registerInspection,       // 검수 등록 - 추가됨
         confirmIssue,             // 출고 확정
         cancelIssue,              // 출고 취소
         loadHistoryData,          // 이력 정보 로드

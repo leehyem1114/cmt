@@ -140,6 +140,34 @@
         background-color: #dc3545;
         color: white;
     }
+    
+    .badge-inspecting {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .badge-inspectPass {
+        background-color: #FFC107;
+        color: white;
+    }
+    
+    .badge-inspectFail {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    /* 모달 스타일 개선 */
+    .modal-dialog.modal-lg {
+        max-width: 800px;
+    }
+    
+    /* 모달 그리드 스타일 개선 */
+    #soDetailGrid {
+        width: 100%;
+        min-height: 300px;
+        max-height: 400px;
+        overflow: auto;
+    }
 
     /* 반응형: 화면이 좁을 때의 처리 */
     @media (max-width: 768px) {
@@ -195,6 +223,9 @@
                                 <div class="button-group">
                                     <button type="button" id="pIssueRequestBtn" class="btn btn-outline-secondary">
                                         <i class="bi bi-plus-circle"></i> 출고 요청
+                                    </button>
+                                    <button type="button" id="pIssueInspectionBtn" class="btn btn-outline-primary">
+                                        <i class="bi bi-clipboard-check"></i> 검수 등록
                                     </button>
                                     <button type="button" id="pIssueConfirmBtn" class="btn btn-outline-success">
                                         <i class="bi bi-check-circle"></i> 출고 확정
