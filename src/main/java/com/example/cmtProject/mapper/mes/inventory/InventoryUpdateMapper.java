@@ -16,6 +16,11 @@ public interface InventoryUpdateMapper {
 	public int updateReceiptStatus(Map<String, Object> params);
 	
 	/**
+	 *출고 상태 업데이트 
+	 */
+	public int updateIssueStatus(Map<String, Object> params);
+	
+	/**
      * 판매주문에 따른 BOM 항목 목록 조회
      * @param params soCode - 판매주문 코드
      * @return BOM 항목 목록 (PARENT_PDT_CODE, BOM_QTY, ITEM_TYPE)

@@ -14,7 +14,9 @@ public class LotUpdateDTO {
 	private String num;
 	private String lotNo; 
 	private String bomQty;
+	private String childLotCode;
 	private String childPdtCode;
+	private String parentLotCode;
 	private String parentPdtCode;
 	private String woCode;
 	private String pdtCode;

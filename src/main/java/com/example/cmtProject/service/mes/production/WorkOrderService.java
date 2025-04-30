@@ -37,7 +37,7 @@ public class WorkOrderService {
 	@Transactional
 	public void updateMfgStatus(String msCode) {
 		orderMapper.updateMfgStatus(msCode);// 제조계획 상태 변경
-		deleteMfgList(msCode); //제조계획 리스트에서 제거 
+		// deleteMfgList(msCode); //제조계획 리스트에서 제거 
 	}
 	//작업지시 등록시 제거됨
 	private void deleteMfgList(String msCode) {

@@ -625,6 +625,9 @@
 	       cancelButtonText: '취소'
 	     }).then(async result => {
 	       if (!result.isConfirmed) return;
+	       
+	    	// ✅ 검사완료 가기 전에 자동검사 먼저
+	       await autoInspect(row, rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
 	       updateStatus(fqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
@@ -713,15 +716,15 @@
 	     console.error('자동 검사 실패', result.message || '');
 	     return false;
 	   }
+	   
+	   grid.setValue(rowKey, 'fqcMesuredWeightValue', result.FQC_MEASURED_WEIGHT_VALUE ?? '');
+	   grid.setValue(rowKey, 'fqcMeasuredLengthValue', result.FQC_MEASURED_LENGTH_VALUE ?? '');
+	   grid.setValue(rowKey, 'fqcInspectionResult', result.FQC_INSPECTION_RESULT);
 
-	   grid.setValue(rowKey, 'fqcMeasuredWeightValue', result.fqcMeasuredWeightValue ?? '');
-	   grid.setValue(rowKey, 'fqcMeasuredLengthValue', result.fqcMeasuredLengthValue ?? '');
-	   grid.setValue(rowKey, 'fqcInspectionResult', result.fqcInspectionResult);
-
-	   Swal.fire({
-	     icon: result.fqcInspectionResult === '합격' ? 'success' : 'error',
-	     title: `자동 검사 결과: ${result.fqcInspectionResult}`,
-	     text: `측정값 - 무게: ${result.fqcMeasuredWeightValue ?? '-'}, 길이: ${result.fqcMeasuredLengthValue ?? '-'}`
+	   await Swal.fire({
+	     icon: result.FQC_INSPECTION_RESULT === '합격' ? 'success' : 'error',
+	     title: `자동 검사 결과: ${result.FQC_INSPECTION_RESULT}`,
+	     text: `측정값 - 무게: ${result.FQC_MEASURED_WEIGHT_VALUE ?? '-'}, 길이: ${result.FQC_MEASURED_LENGTH_VALUE ?? '-'}`
 	   });
 
 	   return true;
