@@ -173,8 +173,4 @@ public class IpiController {
 	    }
 	    return ResponseEntity.ok("엑셀 저장 완료");
 	}
-	
-	
-
-
 }

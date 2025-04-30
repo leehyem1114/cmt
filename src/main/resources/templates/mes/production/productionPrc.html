@@ -121,7 +121,7 @@
 	
 	<div style="display: flex; justify-content: space-between;">
 		<button type="button" id="prcBoardBtn" class="btn btn-primary btn-m">작업 현황</button>
-		<button type="button" id="finishJobBtn" class="btn btn-secondary" style="display: none;">수량 데이터 전송</button>
+		<button type="button" id="finishJobBtn" class="btn btn-secondary" style="display: none;">작업 완료</button>
 	</div>
 	<li class="panel"><div id="prcGrid"></div></li>
 	
@@ -204,7 +204,7 @@
 						</div>
 						
 						<div class="form-group" >
-							<button type="button" class="btn btn-primary" id="adminSendQtyDataBtn">수량 데이터 전송</button>
+							<button type="button" class="btn btn-primary" id="adminSendQtyDataBtn">작업 완료 버튼</button>
 						</div>
 												
 	                <div class="modal-footer">
@@ -277,7 +277,7 @@
 			//====================================== 저장된 상태값 불러오기 - 화면에 보여주기만 함 =====================================================
 			
 			//공정 작업 등록 모달의 '시작버튼'(modalStartBtn)을 눌렀을 때 db에 데이터가 최초 등록 - 시작
-			//두번째 그리드 위에 '수량 데이터 전송'(finishJobBtn) 버튼을 눌렀을 때 db에 데이터가 삭제 - 종료
+			//두번째 그리드 위에 '작업 완료 버튼'(finishJobBtn) 버튼을 눌렀을 때 db에 데이터가 삭제 - 종료
 			//데이터가 있으면 공정 작업 등록 버튼 막고, 그리드에 데이터 출력, 트리에 문자 줄 긋기
 			//데이터가 없으면 공정 작업 등록 버튼 풀기
 			//admin인 경우 공정 작업 등록 버튼 풀기, 그리드에 데이터 출력
@@ -285,7 +285,7 @@
 			
 			//====================================== admin 권한 처리 =====================================================
 			//현재 작업 설정 초기화 - save_prc테이블 삭제
-			//수량 데이터 전송 - 현재 작업지시서에 해당하는 CP 찾아서 알림과 함께 데이터 전송
+			//작업 완료 버튼 - 작업 초기화
 			
 			if(savePRC){ //SAVE_PRC 테이블에 저장된 작업지시서가 있는 경우
 				
@@ -417,7 +417,7 @@
 				});//$.ajax
 			
 				
-				//--------------- 완제품이 나오면 수량 전송 버튼이 보임 ------------------
+				//--------------- 완제품이 나오면 작업 완료 버튼 버튼이 보임 ------------------
 				if(rnRowNum === null){
 					document.getElementById('finishJobBtn').style.display = 'inline-block';
 				}
@@ -664,7 +664,7 @@
 				
 			});//$("#prcBoardBtn").on("click", function(){
 				
-			//======================================= 두번째 하단의 수량 데이터 전송 버튼 클릭 ================================================
+			//======================================= 두번째 하단의 작업 완료 버튼 클릭 ================================================
 			
 			$("#finishJobBtn").on('click',function(){
 				
@@ -674,7 +674,7 @@
 					type: 'POST',
 					data: {woCode: woCode},
 					success : function(response){
-						console.log("수량 전송 버튼 클릭시:" + response);
+						console.log("작업 완료 버튼 클릭시:" + response);
 					},
 					error: function(error) {
 				        Swal.fire({
@@ -695,7 +695,7 @@
 				
 				Swal.fire({
 		        	icon: 'success',
-		          	title: '품질팀으로 수량 데이터를 전송했습니다.',
+		          	title: '공정 작업을 완료.',
 		          	text: '새 작업을 초기화 중 입니다....'
 		        });
 								
@@ -722,33 +722,47 @@
 				}).then((result) => {
 				if (result.isConfirmed) {
 					
-				    $.ajax({
-						url: '/production/deleteSavePrc',
-						type: 'POST',
-						success : function(response){
-							console.log(response);
-							
-							let adminModal = new bootstrap.Modal(document.getElementById('adminModal'));
-							adminModal.hide();
-							
-							location.reload();
-						},
-						error: function(error) {
-					        Swal.fire({
-					        	icon: 'error',
-					          	title: error,
-					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
-					        });
-				      	}// error: function(error) {
-					}); //$.ajax({
+					if(!woCode){
+						alert("등록된 작업 지시서가 없습니다.");
+						/*Swal.fire({
+				        	icon: 'error',
+				          	title: error,
+				          	text: '저장된 작업 지시서가 없습니다.',
+				        });*/
+					}else{
 					
+					    $.ajax({
+							url: '/production/deleteSavePrc',
+							type: 'POST',
+							data: {woCode: woCode},
+							success : function(response){
+								console.log(response);
+								
+								let adminModal = new bootstrap.Modal(document.getElementById('adminModal'));
+								adminModal.hide();
+								
+								location.reload();
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: error,
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+					      	}// error: function(error) {
+						}); //$.ajax({
+							
+						//화면 초기화 레이아웃 디스플레이 실행
+						ldayoutDisplay();
+						
+					}//else{
 						
 				}//if
 				});//then((result) => {
 				
 			});//$("#adminInitBtn").on('click', function(){
 				
-			//======================================= Admin권한 - 수량 데이터 전송 ================================================
+			//======================================= Admin권한 - 작업 완료 버튼 ================================================
 		
 			$("#adminSendQtyDataBtn").on('click', function(){
 				
@@ -768,7 +782,7 @@
 						url: '/production/deleteSavePrc',
 						type: 'GET',
 						success : function(response){
-							console.log("수량 전송 버튼 클릭시:" + response);
+							console.log("작업 완료 버튼 클릭시:" + response);
 						},
 						error: function(error) {
 					        Swal.fire({
@@ -1020,6 +1034,7 @@
 			   perPage: 10        // 페이지당 행 수
 			 },
 	        columns: [
+			/*
 	        	{
 					header: 'num',
 					name: 'NUM',
@@ -1027,8 +1042,8 @@
 					sortable: true, 
 					filter: 'text',
 					align: "center",
-					 hidden: true //화면에는 안 보이지만 데이터에는 존재
-	            },
+					//hidden: true //화면에는 안 보이지만 데이터에는 존재
+	            },*/
 				{
 					header: '작업 상태',
 					name: 'action',
@@ -1189,6 +1204,7 @@
 		gridElement.addEventListener('click', function(e) {
 			if (e.target && e.target.classList.contains('action-btn')) {
 			const rowKey = e.target.getAttribute('data-row-key'); // 0부터 시작 상단:0
+			//console.log(rowKey)
 			const rowData = prcGrid.getRow(rowKey);
 			//console.log("rowKey:" + rowKey);
 		    // rowData에서 필요한 값 추출
@@ -1199,8 +1215,8 @@
 			let childPdtCode = rowData.CHILD_PDT_CODE
 			let parentLotCode = rowData.PARENT_LOT_CODE;
 			let parentPdtCode = rowData.PARENT_PDT_CODE;
-			let num = rowData.NUM; //1,2,3,... 1부터 시작 상단:1
-			console.log("---------------num:" + num);
+			//let num = rowData.NUM; //1,2,3,... 1부터 시작 상단:1
+			
 			//console.log("lotNo:" + lotNo + " ,bomQty:" + bomQty + " ,childPdtCode:" + childPdtCode + " ,parentPdtCode:" + parentPdtCode + " ,num:" + num);
 			woCode; //셀렉트 박스에서 선택된 woCode 값을 전역으로 설정 
 			
@@ -1218,13 +1234,18 @@
 			}).then((result) => {
 			if (result.isConfirmed) {
 				
+				//--------------- 완제품이 나오면 작업 완료 버튼이 보임 ------------------
+				if(rowKey <= 0){ 
+					document.getElementById('finishJobBtn').style.display = 'inline-block';
+				}
+					
 				//jobCmpl 버튼을 눌렀을 때 Ipi테이블에 데이터 입력
 			    $.ajax({
 			    	url: '/production/jobCmpl',
 					contentType: 'application/json',
 			      	type: 'POST',
 			      	data: JSON.stringify({ 
-						num: num,
+						num: rowKey,
 			      		lotNo: lotNo, 
 						bomQty: bomQty,
 						childLotCode: childLotCode,
@@ -1238,7 +1259,10 @@
 						
 						//e.target.disabled = true; // 버튼 비활성화, 그리드가 재랜더링 되기 때문에 바로 적용x
 						
-						presentBtnRow = rowKey-1; //presentBtnRow(버튼)와 rowKey(grid)는 둘다 Grid의 인덱스로 0부터 시작
+						presentBtnRow = rowKey-1; 
+						//presentBtnRow(버튼)와 rowKey(grid)는 둘다 Grid의 인덱스로 0부터 시작, 다음 버튼이기 때문에 -1
+						//음수가 나와야 마지막 공정이 끝났을 때 버튼이 비활성화 된다
+						
 						prcGrid.resetData(response); //재렌더링 될 때 presentBtnRow 변수가 버튼 함수 formatter에 적용
 						
 						//--------------- 트리 작업 목록 줄 긋기 - 단일 ------------------
@@ -1292,10 +1316,6 @@
 							}//error: function(error) {
 						});//$.ajax({
 							
-						//--------------- 완제품이 나오면 수량 전송 버튼이 보임 ------------------
-						if(num === 1){
-							document.getElementById('finishJobBtn').style.display = 'inline-block';
-						}
 						
 						//--------------- reset 이후 버튼 비활성화 - 배열 ---------------
 						//=> 버튼은 이제 formatter에서 관리
@@ -1349,6 +1369,21 @@
 			}//if (e.target && e.target.classList.contains('action-btn')) {
 		});//gridElement.addEventListener('click', function(e) {
 
+			
+		function ldayoutDisplay(){
+			Swal.fire({
+		    	icon: 'success',
+		      	title: '공정 작업을 완료.',
+		      	text: '새 작업을 초기화 중 입니다....'
+		    });
+							
+			$("#loadingOverlay").css("display", "block");
+			
+			setTimeout(() => {
+			  document.getElementById('loadingOverlay').style.display = 'none'; // 오버레이 숨기기
+			  location.reload();	
+			}, 5000);
+		}
 	</script>
 	</div> <!-- /layout:fragment -->		
 	
