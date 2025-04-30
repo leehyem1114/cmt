@@ -45,7 +45,7 @@
 		   -- , S.MS_START_TIME 
 		   -- , S.MS_END_TIME 
 		    , S.EMP_ID
-		    , S.MS_PRIORITY
+		    , S.MP_PRIORITY
 		    , S.MS_STATUS
 		    , S.MS_UPDATED_AT
 		    --, S.PRC_CODE

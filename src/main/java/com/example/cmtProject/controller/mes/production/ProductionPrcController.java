@@ -26,6 +26,7 @@ import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotUpdateDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
+import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
@@ -323,6 +324,12 @@ public class ProductionPrcController {
 		LotOriginDTO lod = new LotOriginDTO();
 		
 		int checkLast = 0; //startTime 때문에 사용
+		
+		//MFG_SCHEDULES_DETAIL 에서 수량 가져오기
+		List<SemiFinalBomQty> bomQtyList = lotService.getBomQty(woCode);
+		//MFG_SCHEDULES_DETAIL과 수량을 맞추기 위한 PARENT_PDT_CODE
+		//List<String> parentPdtCodeList = lotService.selectParentPdtCode(pdtCode);
+		
 		for(BomInfoDTO b : selectPdtCodeList) {
 			
 			//================ 부모 컬럼 lot생성=========================================================
@@ -346,7 +353,7 @@ public class ProductionPrcController {
 			String childPdtCode = b.getChildItemCode();
 			
 			String createDate = String.valueOf(today);
-			
+		
 			String prcType = b.getBomPrcType();
 			String bomQty = b.getBomQty();
 			String bomUnit = b.getBomUnit();
@@ -370,13 +377,32 @@ public class ProductionPrcController {
 			lod.setChildPdtCode(childPdtCode);
 			lod.setParentPdtCode(parentPdtCode);
 			lod.setCreateDate(today);
+			
+			String input = "00/01/01"; // 00/00/00 형식 입력
+	        // 포맷터 생성
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy/MM/dd");
+	        // 문자열 → LocalDate 변환
+	        LocalDate date = LocalDate.parse(input, formatter);
+			lod.setEndDate(date);
+			
 			lod.setPrcType(prcType);
-			lod.setBomQty(bomQty);
+			
+			// -- 제조계획 수량 일치 --
+			//MFG_SCHEDULES
+			//모달에서 제조계획을 클릭해서 작업지시서가 만들어질 때 woQty가 입력되야한다 
+			lod.setWoQty(woQty);  // -- 완제품 수량
+			
+			for(SemiFinalBomQty sfb : bomQtyList) {
+				
+				if(sfb.getParentPdtCode().equals(b.getParentPdtCode())) {
+					lod.setBomQty(sfb.getMsQty()); // -- 반제픔 수량
+				}
+			}
+			
 			lod.setBomUnit(bomUnit);
 			lod.setLineCode("");
 			lod.setEqpCode("");
 			lod.setWoCode(woCode);
-			lod.setWoQty(woQty);
 			lod.setStartTime(startTime);
 			lod.setFinishTime("00:00:00");
 			lod.setWoStatusNo(woStatusNo);
@@ -469,6 +495,10 @@ public class ProductionPrcController {
 		//LOT_NO
 		lotOrigin.setLotNo(lotNo);
 		
+		//END_DATE
+		LocalDate today = LocalDate.now(); //2025-04-21
+		lotOrigin.setEndDate(today);
+		
 		//FINISH_TIME
 		LocalTime time = LocalTime.now();
 		String finishTime = time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
@@ -484,12 +514,7 @@ public class ProductionPrcController {
 		lotOrigin.setWoCode(lotUpdateDTO.getWoCode());
 		
 		lotService.updateLotPresentPRC(lotOrigin);
-		/*
-		log.info("num:" + lotUpdateDTO.getNum());
-		log.info("lotNo:"+ lotNo.toString());
-		log.info("ChildPdtCode():"+lotUpdateDTO.getChildPdtCode());
-		log.info("PdtCode():"+lotUpdateDTO.getPdtCode());
-		*/
+		
 		if(!lotUpdateDTO.getNum().equals("1")) {
 			
 			//LOT_NO - 1 에 START_TIME 등록
@@ -501,6 +526,14 @@ public class ProductionPrcController {
 			//WORK_ORDER 테이블의 WO_STATUS_CODE도 CP로 업데이트 
 			lotService.updateWOtoCP(lotUpdateDTO.getWoCode());
 		}
+		
+		
+		// ----------- IPI 테이블에 insert -----------
+		//IPI_NO 가져오기
+		Long ipiNo = lotService.getIpiNo();
+		
+		//pdt_code, pdt_type, lot_no, wo_code, wo_qty
+		
 		
 		//grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(lotUpdateDTO.getWoCode());
@@ -556,15 +589,23 @@ public class ProductionPrcController {
 	}
 	
 	//수량 전송 후 SAVE_PRC 데이터 삭제
-	@GetMapping("/deleteSavePrc")
+	@PostMapping("/deleteSavePrc")
 	@ResponseBody
-	public String deleteSavePrc() {
+	public String deleteSavePrc(@RequestParam("woCode") String woCode) {
 		
 		//saveprc의 모든 데이터 삭제
 		lotService.deleteSavePrc();
 		
+		//작업지시서 완료 날짜 업데이트
+		LocalDate today = LocalDate.now(); //2025-04-21
+		lotService.updateWoEndDate(woCode ,String.valueOf(today));
+		
+		//IPI로 완제품 정보 넘기기
+		//pdt_code, pdt_type, lot_no, wo_code, wo_qty
+		
 		return "success";
 	}
+	
 }
 
 
