@@ -473,8 +473,6 @@ public class ProductionPrcController {
 	@ResponseBody
 	public List<LotOriginDTO> jobCmpl(@RequestBody LotUpdateDTO lotUpdateDTO) {
 		
-		System.out.println("=========================================lotUpdateDTO:" + lotUpdateDTO);
-		
 		/*
 		parentPdtCode가 소모되어 childPdtCode가 되므로 parentPdtCode가 소모품, 소모량
 		log.info(lotUpdateDTO.toString()); //LotUpdateDTO(lotNo=163, bomQty=1, childPdtCode=WIP002, parentPdtCode=MTL-002, woCode=MSC001, pdtCode=FP001)
@@ -492,8 +490,6 @@ public class ProductionPrcController {
 		Long lotNo = Long.valueOf(lotUpdateDTO.getLotNo()); 
 	
 		LotOriginDTO lotOrigin = new LotOriginDTO();
-		
-		//log.info(lotUpdateDTO.)
 		
 		//LOT_NO
 		lotOrigin.setLotNo(lotNo);
@@ -518,7 +514,7 @@ public class ProductionPrcController {
 		
 		lotService.updateLotPresentPRC(lotOrigin);
 		
-		if(!lotUpdateDTO.getNum().equals("1")) {
+		if(!lotUpdateDTO.getNum().equals("0")) { //공정의 끝인지 아닌지 파악
 			
 			//LOT_NO - 1 에 START_TIME 등록
 			//LOT테이블의 다음 작업에 startTime 업데이트 => 전 공정의 finishTime이 이후 공정의 startTime
@@ -534,7 +530,7 @@ public class ProductionPrcController {
 		//품질로 데이터 전송
 		//IPI_INSPECTION_RESLT : 예정
 		//IPI_INSPECTION_STATUS : 검사시작
-		//PDT_CODE, PDT_NAME, UNIT_QTY = '개' , WO_CODE, WO_QTY, LOT_NO = NULL, PDT_TYPE(반제품, 완제품)
+		//PDT_CODE, PDT_NAME, WO_CODE, WO_QTY, LOT_NO = NULL, PDT_TYPE(반제품, 완제품)
 
 		IpiDTO ipidto = new IpiDTO();
 		// UNIT_QTY, WO_CODE, WO_QTY, PDT_TYPE)
@@ -561,9 +557,6 @@ public class ProductionPrcController {
 		//pdtType
 		ipidto.setPdtType(pdtTotalDto.get(0).getPdtType());
 		
-		//UNIT_QTY
-		ipidto.setUnitQty("개");
-		
 		//wo_code
 		ipidto.setWoCode(lotUpdateDTO.getWoCode());
 		
@@ -578,6 +571,19 @@ public class ProductionPrcController {
 		//log.info("/jobCmpl의 selectLotOrigin:" + selectLotOrigin);
 		
 		return selectLotOrigin;
+	}
+	
+	//SAVE_PRC테이블에 데이터 입력(위에 jobCmpl 작업 실행 내부에서 연달아 실행)
+	@PostMapping("/insertSavePrc")
+	@ResponseBody
+	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
+		
+		//현재 상태 SAVE_PRC 테이블 입력
+		lotService.insertSavePrc(savePrcDto);
+		
+		log.info("savePrcDto:"+savePrcDto);	
+		
+		return "success";
 	}
 	
 	//SAVE_PRC테이블에 데이터가 있는 경우 최초 로딩시 상단 그리드에 출력
@@ -616,20 +622,9 @@ public class ProductionPrcController {
 		return rnRowNumMax;
 	}
 	
-	//그리드 안에 버튼 클릭시 데이터 입력
-	@PostMapping("/insertSavePrc")
-	@ResponseBody
-	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
-		
-		//현재 상태 SAVE_PRC 테이블 입력
-		lotService.insertSavePrc(savePrcDto);
-		
-		log.info("savePrcDto:"+savePrcDto);	
-		
-		return "success";
-	}
 	
-	//수량 전송 후 SAVE_PRC 데이터 삭제
+	
+	//작업 완료 버튼 클릭
 	@PostMapping("/deleteSavePrc")
 	@ResponseBody
 	public String deleteSavePrc(@RequestParam("woCode") String woCode) {
@@ -641,8 +636,7 @@ public class ProductionPrcController {
 		LocalDate today = LocalDate.now(); //2025-04-21
 		lotService.updateWoEndDate(woCode ,String.valueOf(today));
 		
-		//IPI로 완제품 정보 넘기기
-		//pdt_code, pdt_type, lot_no, wo_code, wo_qty
+		//IPI로 완제품 정보 넘기기 - 현재 작업 한거까지의 데이터는 품질로 바로 전송된 상태, 완제품 정보 넘길 필요x
 		
 		return "success";
 	}
