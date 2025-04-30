@@ -54,57 +54,12 @@
 	  )	
 	</select>  
 	
-	<!-- 제품 BOM 조회 -->
-	<select id="getBomList" resultType="Map">
-		SELECT 
-			B.BOM_NO,
-			B.PARENT_PDT_CODE,
-			B.CHILD_ITEM_CODE,
-			B.ITEM_TYPE,
-			B.BOM_QTY,
-			B.BOM_UNIT,
-			B.BOM_PRC_TYPE,
-			NVL(PRIOR B.BOM_QTY, 1) * B.BOM_QTY AS TOTAL_QTY,
-			<!-- PRIOR B.BOM_QTY * B.BOM_QTY AS totalQty, -->
-			3 AS leadTime
-		FROM BOM B
-		<!-- LEFT JOIN PROCESS_INFO P ON B.BOM_PRC_TYPE = P.PRC_TYPE_CODE -->
-		<!-- WHERE B.USE_YN = 'Y' -->
- 		START WITH B.PARENT_PDT_CODE = 'WIP013'
-		CONNECT BY PRIOR B.CHILD_ITEM_CODE = B.PARENT_PDT_CODE
-	</select>
-	
-	<!-- 원자재 재고 조회 -->
-	<select id="getMaterialInventory" resultType="Map">
-		SELECT MTL_CODE, TO_NUMBER(AVAILABLE_QTY) AS AVAILABLE_QTY 
-		FROM MATERIAL_INVENTORY
-		
-	</select>
-	
-	<!-- 수주에 따른 BOM 조회 -->
-	<select id="getMfgPlanBomList" resultType="Map">
-		SELECT
-		    B.PARENT_PDT_CODE,
-		    B.CHILD_ITEM_CODE,
-		    TO_NUMBER(B.BOM_QTY) AS BOM_QTY,
-		    B.USE_YN
-		FROM BOM B
-		WHERE B.USE_YN = 'Y'
-		START WITH B.CHILD_ITEM_CODE = (
-		    SELECT PDT_CODE
-		    FROM SALES_ORDER
-		    WHERE SO_CODE = 'SO-20250301-002'
-		)
-		CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
-		ORDER SIBLINGS BY B.PARENT_PDT_CODE
-	</select>
-	
-	<!-- 원자재 재고 조회 -->
-	<select id="selectAvailableQty" resultType="string" parameterType="map">
+	<!-- 생산 계획 등로 시 재고 조회 -->
+	<select id="checkStock" resultType="boolean" parameterType="map">
 		WITH ALL_INVENTORY AS (
-			SELECT MTL_CODE AS CODE, ALLOCATED_QTY FROM MATERIAL_INVENTORY
+			SELECT MTL_CODE AS CODE, AVAILABLE_QTY FROM MATERIAL_INVENTORY
 			UNION ALL
-			SELECT PDT_CODE AS CODE, ALLOCATED_QTY FROM PRODUCTS_INVENTORY
+			SELECT PDT_CODE AS CODE, AVAILABLE_QTY FROM PRODUCTS_INVENTORY
 		),
 		ORDER_INFO AS (
 	    	SELECT SO_CODE, PDT_CODE, SO_QTY
@@ -116,7 +71,7 @@
                     B.PARENT_PDT_CODE,
                     B.BOM_QTY,
                     B.USE_YN,
-                    NVL(INVEN.ALLOCATED_QTY, 0) AS ALLOCATED_QTY,
+                    NVL(INVEN.AVAILABLE_QTY, 0) AS AVAILABLE_QTY,
                     (SELECT SO_QTY FROM ORDER_INFO) AS SO_QTY
                     FROM (
                     	SELECT B.CHILD_ITEM_CODE,
@@ -132,39 +87,13 @@
                     	LEFT JOIN ALL_INVENTORY INVEN 
     						ON B.PARENT_PDT_CODE = INVEN.CODE
     	)
-        SELECT CASE WHEN COUNT(*) = 0 THEN '등록 가능'
-                                      ELSE '재고 부족' END AS MSG
+        SELECT CASE WHEN COUNT(*) = 0 THEN 1
+                                      ELSE 0 END AS MSG
         FROM BOM_WITH_STOCK                                          	
-		WHERE ALLOCATED_QTY &lt; BOM_QTY * SO_QTY          
+		WHERE AVAILABLE_QTY &lt; BOM_QTY * SO_QTY          
 	</select>
 	
 	<!-- 생산 계획 등록 -->
-	<insert id="registMpPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
-		INSERT INTO MFG_PLANS (
-		      MP_NO
-		    , MP_CODE
-			, SO_CODE
-			, EMP_ID
-<!-- 			, MP_STATUS -->
-			, MP_PRIORITY
-			, MP_CREATED_AT
-			, MP_UPDATED_AT
-			, MP_START_DATE
-		    , MP_END_DATE
-		) VALUES (
-		    MFG_PLANS_SEQ.NEXTVAL
-    		, #{mpCode, jdbcType=VARCHAR}
-    		, #{soCode, jdbcType=VARCHAR}
-    		, #{empId, jdbcType=VARCHAR}
-<!--     		, #{mpStatus, jdbcType=VARCHAR} -->
-    		, #{mpPriority, jdbcType=VARCHAR}
-    		, SYSDATE
-    		, NULL
-    		, #{mpStartDate, jdbcType=DATE}
-    		, #{mpEndDate, jdbcType=DATE}
-    	)	
-	</insert>
-	
 	<insert id="insertMfgPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
 		INSERT INTO MFG_PLANS (
 			      MP_NO
@@ -215,22 +144,5 @@
 	    </foreach>
 	  )
 	</update>
-	
-	<!-- 엑셀 데이터 업데이트 -->
-	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgPlanDTO">
-		UPDATE MFG_PLANS
-	    SET
-		    MP_CODE 	   			   = #{mpCode, jdbcType=VARCHAR},
-			SO_CODE 	   			   = #{soCode, jdbcType=VARCHAR},
-			EMP_ID 	   			       = #{empId, jdbcType=VARCHAR},
-			<!-- 			, MP_STATUS -->
-			MP_PRIORITY 	   		   = #{mpPriority, jdbcType=VARCHAR},
-			MP_CREATED_AT 	   		   = #{mpCreatedAt, jdbcType=DATE},
-			MP_UPDATED_AT 	   		   = #{mpUpdatedAt, jdbcType=DATE},
-			MP_START_DATE 	   		   = #{mpStartDate, jdbcType=DATE},
-		    MP_END_DATE 	   		   = #{mpEndDate, jdbcType=DATE}
-	    WHERE MP_NO = #{mpNo}
-	</update>	
-
 
 </mapper>

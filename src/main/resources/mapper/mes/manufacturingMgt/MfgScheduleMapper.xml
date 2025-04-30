@@ -5,7 +5,7 @@
 
 <mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgScheduleMapper">
 
-	<!-- 전체 제조 계획 조회 -->
+	<!-- 전체 제조 계획 조회 상단그리드 -->
 	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
 		SELECT
 			MS.MS_NO,
@@ -31,7 +31,7 @@
 		ORDER BY MS.MS_NO DESC	
 	</select>
 	
-	<!-- 제조 계획 등록 시 생산 계획 내역 조회 -->
+	<!-- 제조 계획 등록 시 생산 계획 내역 조회  모달의 그리드 조회-->
 	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
 		SELECT
 			MP.MP_CODE AS mpCode,
@@ -53,48 +53,7 @@
 		ORDER BY MP.MP_NO DESC
 	</select>
 	
-	<!-- 제조 계획 상세 정보 조회 -->
-<!-- 	<select id="getMsdList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO">
-		SELECT
-			MSD.MSD_NO
-			, MSD.MS_CODE
-			, B.BOM_LEVEL
-			, MSD.PARENT_PDT_CODE
-			, MSD.CHILD_ITEM_CODE
-			, MSD.ITEM_TYPE
-			, MSD.BOM_PRC_TYPE
-			, (SO.SO_QTY * B.BOM_QTY) AS msQty
-			, MSD.COMMENTS
-		FROM MFG_SCHEDULES_DETAIL MSD
-		LEFT JOIN MFG_SCHEDULES MS ON MS.MS_CODE = MSD.MS_CODE
-		LEFT JOIN MFG_PLANS MP ON MP.MP_CODE = MS.MP_CODE
-		LEFT JOIN SALES_ORDER SO ON SO.SO_CODE = MP.SO_CODE
-		LEFT JOIN (SELECT 
-                LEVEL AS BOM_LEVEL,
-                B.*
-            FROM BOM B
-            WHERE B.USE_YN = 'Y'
-            START WITH B.CHILD_ITEM_CODE = 'FP001'
-            CONNECT BY PRIOR B.PARENT_PDT_CODE = B.CHILD_ITEM_CODE
-        ) B ON B.CHILD_ITEM_CODE = MSD.CHILD_ITEM_CODE
-	</select> -->
-	
-	<!-- 제조 상세 계획 조회 -->
-	<select id="getMsdDetailList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO">
-		SELECT
-			MSD_NO AS msdNo
-			, MS_CODE AS msCode
-			, BOM_LEVEL AS bomLevel
-			, PARENT_PDT_CODE AS parentPdtCode
-			, CHILD_ITEM_CODE AS childItemCode
-			, ITEM_TYPE AS itemType
-			, BOM_PRC_TYPE AS bomPrcType
-			, MS_QTY AS msQty
-			, COMMENTS AS comments
-		FROM MFG_SCHEDULES_DETAIL
-	</select>
-	
-	<!-- 제조 계획 등록 -->
+	<!-- 제조 계획 등록 모달 등록 시-->
 	<insert id="registMsPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
 	    <selectKey keyProperty="msCode" resultType="String" order="BEFORE">
 	        SELECT 'MS-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || LPAD(MFG_SCHEDULES_SEQ.NEXTVAL, 3, '0') FROM DUAL
@@ -123,28 +82,14 @@
 	    )
 	</insert>
 
-    
+    <!-- 생산 계획 상태변경 -->
     <update id="updateMpStatus">
     	UPDATE MFG_PLANS
-		SET MP_STATUS = '대기중'
+		SET MP_STATUS = '대기'
 		WHERE MP_CODE = #{mpCode}
     </update>
-    
-    <!-- 엑셀 데이터 업데이트 -->
-	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO">
-		UPDATE MFG_SCHEDULES_DETAIL
-	    SET
-		    MS_CODE 	   			   = #{msCode},
-			BOM_LEVEL 	   			   = #{bomLevel},			
-			PARENT_PDT_CODE 	   	   = #{parentPdtCode},
-			CHILD_ITEM_CODE			   = #{childItemCode},
-			ITEM_TYPE	 	   		   = #{itemType},
-			MS_QTY 			   		   = #{msQty},
-			COMMENTS	 	   		   = #{comments}
-	    WHERE MSD_NO = #{msdNo}
-	</update>	
 	
-	
+	<!-- 제조 계획 상세 하단 그리드 -->
 	<select id="selectBomDetailByMsCode1" resultType="map" parameterType="String">
 		SELECT
 		    MSD.MSD_NO,
@@ -176,6 +121,7 @@
 		ORDER BY MSD.MSD_NO DESC
 	</select>
 
+	<!-- MFG_SCHEDULES_DETAIL INSERT 문 -->
 	<insert id="insertBomDetailFromBom" parameterType="map">
 	    INSERT INTO MFG_SCHEDULES_DETAIL (
 	        MSD_NO,
@@ -233,6 +179,16 @@
 	          AND MSD.MS_CODE = tmp.msCode
 	    )
 	</insert>
-
+	
+	<!-- 제조 계획 삭제 (숨김 처리) -->
+	<update id="isVisiableToFalse" parameterType="java.util.List">
+		UPDATE MFG_SCHEDULES
+		SET MS_VISIBLE = 'N'
+		WHERE MS_NO IN (
+	    <foreach item="msNo" collection="list" separator=",">
+	    	#{msNo}
+	    </foreach>
+	  	)
+	</update>
 
 </mapper>

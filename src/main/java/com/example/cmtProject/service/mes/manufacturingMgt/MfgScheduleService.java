@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
-import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
 import com.example.cmtProject.mapper.mes.manufacturingMgt.MfgScheduleMapper;
 
@@ -16,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class MfgScheduleService {
+public class MfgScheduleService { // 제조 계획 Service
 
 	@Autowired
 	private MfgScheduleMapper mfgScheduleMapper;	
@@ -38,8 +37,7 @@ public class MfgScheduleService {
 		updateMpStatus(mfgScheduleDTO.getMpCode()); // 생산 계획 상태 변경
 		
 		log.info("확인: {}", mfgScheduleDTO.getMsCode());
-		mfgScheduleMapper.insertBomDetailFromBom(mfgScheduleDTO.getMsCode());
-		
+		mfgScheduleMapper.insertBomDetailFromBom(mfgScheduleDTO.getMsCode()); // 제조 계획 상세 데이터 등록
 	} 
 	
 	// 제조 계획 등록 시 생산 계획 상태 업데이트
@@ -49,16 +47,6 @@ public class MfgScheduleService {
 	}
 
 	// 제조 계획 상세 조회
-	public List<MfgScheduleDetailDTO> getMsdDetailList(String msCode) {
-		return mfgScheduleMapper.getMsdDetailList(msCode);
-	}
-
-	// 엑셀 데이터 저장
-	@Transactional
-	public void saveExcelData(MfgScheduleDTO dto) {
-		mfgScheduleMapper.saveExcelData(dto);
-	}
-
 	@Transactional
 	public List<Map<String, Object>> getBomDetailByMsCode(String msCode) {
 	    log.info("BOM 상세 삽입 시작: {}", msCode);
@@ -66,14 +54,9 @@ public class MfgScheduleService {
 	    return mfgScheduleMapper.selectBomDetailByMsCode1(msCode);
 	}
 
-
-
-
-		
-
-
-
-
-
+	// 제조 계획 삭제 (숨김 처리)
+	public void isVisiableToFalse(List<Long> msNos) {
+		mfgScheduleMapper.isVisiableToFalse(msNos);
+	}
 
 }

@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/mp")
 @Slf4j
-public class MfgPlanController {
+public class MfgPlanController { // 생산 계획 Controller
 	
 	@Autowired
 	private MfgPlanService mfgPlanService;
@@ -46,11 +46,11 @@ public class MfgPlanController {
 	@GetMapping("/mfg-plan")
 	public String mfgPlan(Model model) {
 
-		// 생산 계획
+		// 생산 계획 목록
 		List<MfgPlanDTO> mpList = mfgPlanService.getMfgPlanTotalList();
 		model.addAttribute("mpList", mpList);
 		
-		// 수주
+		// 수주 목록
 		List<MfgPlanSalesOrderDTO> soList = mfgPlanService.getSoList();
 		model.addAttribute("soList", soList);
 		
@@ -63,17 +63,14 @@ public class MfgPlanController {
 		List<MfgPlanSalesOrderDTO> soList = mfgPlanService.getSoList();
 		model.addAttribute("soList", soList);
 		
-		System.out.println("soList 확인 : " + soList);
-		
 	    return "mes/manufacturingMgt/mfgPlan";
 	}
 	
-	// 재고 조회
-	@GetMapping("/selectAvailableQty")
+	// 생산 계획 등록 시 재고 조회
+	@GetMapping("/checkStock")
 	@ResponseBody
-	public String selectAvailableQty(@RequestParam("soCode") String soCode,@RequestParam("soQty") Long soQty) {
-		
-	    return mfgPlanMapper.selectAvailableQty(soCode, soQty);
+	public boolean checkStock(@RequestParam("soCode") String soCode,@RequestParam("soQty") Long soQty) {
+	    return mfgPlanMapper.checkStock(soCode, soQty);
 	}
 	
 	// 생산 계획 등록
@@ -87,25 +84,24 @@ public class MfgPlanController {
 	        Long soQty = dto.getSoQty();
 	        log.info("처리중: 주문코드={}, 수량={}", soCode, soQty);
 
-	        String result = mfgPlanMapper.selectAvailableQty(soCode, soQty);
+	        boolean isStockEnough = mfgPlanMapper.checkStock(soCode, soQty);
 
-	        if (!"등록 가능".equals(result)) {
+	        if (!isStockEnough) {
 	            resultFailCount +=1;  // 또는 어느 항목이 실패했는지 구체적으로 리턴해도 됨
 	        } else {
 	        	//등록 가능한거 바로 입력하자!
-	        	mfgPlanService.registMpPlanBatch(dto); //dto
+	        	mfgPlanService.insertMfgPlan(dto);
 	        	
+	        	// 생산계획 대비 자재/제품 할당 수량 업데이트
 	            Map<String, Object> params = new HashMap<>();
 	            params.put("soCode", soCode);
 	            params.put("soQty", soQty);
-	            params.put("updatedBy", "admin"); // 수정자 추후 로그인으로 수정
+	            params.put("updatedBy", "admin"); // 수정자 추후 로그인 으로 수정
 	            
 	            // 서비스 메서드 호출
-	            ius.updateAllocatedQuantities(params);
-	        			
+	            ius.updateAllocatedQuantities(params);		
 	        }
 	    }
-
 	    return "success";
 	}
 
@@ -129,11 +125,9 @@ public class MfgPlanController {
 
         return ResponseEntity.ok("success");
     }
-	
-	
+		
 	//----------------------------------------------------------------------------------------------------	
-	
-	
+		
 	// 엑셀 파일 다운로드
 	@GetMapping("/excel-file-down")
 	public void downloadExcel(HttpServletResponse response) throws IOException {
@@ -152,17 +146,5 @@ public class MfgPlanController {
 		StreamUtils.copy(inputStream, response.getOutputStream());
 		response.flushBuffer();
 	}
-
-	// 엑셀 파일 적용
-	@PostMapping("/saveExcelData")
-	@ResponseBody
-	public ResponseEntity<?> saveExcelData(@RequestBody List<MfgPlanDTO> list) {
-
-		for (MfgPlanDTO dto : list) {
-			mfgPlanService.saveExcelData(dto); // insert or update
-		}
-		return ResponseEntity.ok("엑셀 저장 완료");
-	}
 	
-
 }

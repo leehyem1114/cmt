@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MfgScheduleDTO {
+public class MfgScheduleDTO { // 제조 계획 DTO
 
     private Long msNo;             // 제조 계획 번호
     private String msCode;		   // 제조 계획 코드
@@ -24,7 +24,7 @@ public class MfgScheduleDTO {
     private String soQty;   	   // 수주 수량
     private String qtyUnitName;	   // 주문 단위
     private String msStatus;       // 제조 계획 상태
-    private String mpPriority;     // 우선순위
+    private String mpPriority;     // 생산 우선순위
     private LocalDate msCreatedAt; // 등록일자
     private LocalDate msUpdatedAt; // 수정일자
     
