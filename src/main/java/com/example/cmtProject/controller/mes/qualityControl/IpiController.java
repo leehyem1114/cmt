@@ -36,9 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Controller
-@RequestMapping("/Inprocess")
+@RequestMapping("/ipi")
 @Slf4j
-public class InProcessInspectionController {
+public class IpiController {
 	
 	@Autowired
 	private FqcService fqcService;

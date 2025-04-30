@@ -156,47 +156,47 @@ public class FqcService {
 	}
 
 	// 도넛 차트값 불러오는 메서드
-		public InspectionSummaryDTO getSummary() {
-			return fqcMapper.getSummary();
-		}
-		
-		// 막대 차트값 불러오는 메서드
-		public List<InspectionSummaryDTO> getLast7DaysSummary() {
-			List<InspectionSummaryDTO> dbResult = fqcMapper.getLast7DaysSummary();
+	public InspectionSummaryDTO getSummary() {
+		return fqcMapper.getSummary();
+	}
+	
+	// 막대 차트값 불러오는 메서드
+	public List<InspectionSummaryDTO> getLast7DaysSummary() {
+		List<InspectionSummaryDTO> dbResult = fqcMapper.getLast7DaysSummary();
 
-	        // ✅ DB 결과를 날짜별 Map으로 변환
-	        Map<String, InspectionSummaryDTO> resultMap = new HashMap<>();
-	        for (InspectionSummaryDTO dto : dbResult) {
-	            resultMap.put(dto.getIqcDate(), dto);
-	        }
+        // ✅ DB 결과를 날짜별 Map으로 변환
+        Map<String, InspectionSummaryDTO> resultMap = new HashMap<>();
+        for (InspectionSummaryDTO dto : dbResult) {
+            resultMap.put(dto.getFqcDate(), dto);
+        }
 
-	        List<InspectionSummaryDTO> finalResult = new ArrayList<>();
+        List<InspectionSummaryDTO> finalResult = new ArrayList<>();
 
-	        // ✅ 오늘 기준 최근 7일 날짜 리스트 생성
-	        LocalDate today = LocalDate.now();
-	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        // ✅ 오늘 기준 최근 7일 날짜 리스트 생성
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-	        for (int i = 6; i >= 0; i--) {
-	            LocalDate date = today.minusDays(i);
-	            String dateStr = date.format(formatter);
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            String dateStr = date.format(formatter);
 
-	            if (resultMap.containsKey(dateStr)) {
-	                // ✅ DB 결과에 있으면 그대로 추가
-	                finalResult.add(resultMap.get(dateStr));
-	            } else {
-	                // ✅ DB 결과에 없으면 pass/inProgress/fail 전부 0으로 채운 DTO 생성
-	                InspectionSummaryDTO emptyDto = new InspectionSummaryDTO();
-	                emptyDto.setIqcDate(dateStr);
-	                emptyDto.setPassCount(0);
-	                emptyDto.setInProgressCount(0);
-	                emptyDto.setFailCount(0);
-	                finalResult.add(emptyDto);
-	            }
-	        }
+            if (resultMap.containsKey(dateStr)) {
+                // ✅ DB 결과에 있으면 그대로 추가
+                finalResult.add(resultMap.get(dateStr));
+            } else {
+                // ✅ DB 결과에 없으면 pass/inProgress/fail 전부 0으로 채운 DTO 생성
+                InspectionSummaryDTO emptyDto = new InspectionSummaryDTO();
+                emptyDto.setFqcDate(dateStr);
+                emptyDto.setPassCount(0);
+                emptyDto.setInProgressCount(0);
+                emptyDto.setFailCount(0);
+                finalResult.add(emptyDto);
+            }
+        }
 
-	        return finalResult;
-	    
-	    }
+        return finalResult;
+    
+    }
 
 
 	
