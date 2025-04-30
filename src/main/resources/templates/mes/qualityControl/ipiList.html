@@ -625,6 +625,9 @@
 	       cancelButtonText: '취소'
 	     }).then(async result => {
 	       if (!result.isConfirmed) return;
+	       
+	    	// ✅ 검사완료 가기 전에 자동검사 먼저
+	       await autoInspect(row, rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
 	       updateStatus(fqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
@@ -714,14 +717,14 @@
 	     return false;
 	   }
 
-	   grid.setValue(rowKey, 'fqcMeasuredWeightValue', result.fqcMeasuredWeightValue ?? '');
-	   grid.setValue(rowKey, 'fqcMeasuredLengthValue', result.fqcMeasuredLengthValue ?? '');
-	   grid.setValue(rowKey, 'fqcInspectionResult', result.fqcInspectionResult);
+	   grid.setValue(rowKey, 'ipiMeasuredWeightValue', result.IPI_MEASURED_WEIGHT_VALUE ?? '');
+	   grid.setValue(rowKey, 'ipiMeasuredLengthValue', result.IPI_MEASURED_LENGTH_VALUE ?? '');
+	   grid.setValue(rowKey, 'ipiInspectionResult', result.IPI_INSPECTION_RESULT);
 
-	   Swal.fire({
-	     icon: result.fqcInspectionResult === '합격' ? 'success' : 'error',
-	     title: `자동 검사 결과: ${result.fqcInspectionResult}`,
-	     text: `측정값 - 무게: ${result.fqcMeasuredWeightValue ?? '-'}, 길이: ${result.fqcMeasuredLengthValue ?? '-'}`
+	   await Swal.fire({
+	     icon: result.IPI_INSPECTION_RESULT === '합격' ? 'success' : 'error',
+	     title: `자동 검사 결과: ${result.IPI_INSPECTION_RESULT}`,
+	     text: `측정값 - 무게: ${result.IPI_MEASURED_WEIGHT_VALUE ?? '-'}, 길이: ${result.IPI_MEASURED_LENGTH_VALUE ?? '-'}`
 	   });
 
 	   return true;

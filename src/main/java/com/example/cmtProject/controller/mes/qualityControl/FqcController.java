@@ -131,7 +131,6 @@ public class FqcController {
         String fqcCode = request.get("fqcCode");
         try {
             FqcDTO result = fqcService.autoInspect(fqcCode);
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -37,7 +37,7 @@ public class IpiDTO {
     private String ipiInspectionStatus; // 검사 상태 (검사전/검사중/검사완료)
     private String ipiInspectionResult; // 합격 여부 (P/F)
     private String whsName;               // 입고될 창고
-    private String childLotNo;             // LOT 번호
+    private String childLotCode;             // LOT 번호
     private String ipiRemarks;
     private String ipiVisiable;			// 삭제 여부
     
