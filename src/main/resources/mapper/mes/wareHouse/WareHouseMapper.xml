@@ -5,9 +5,20 @@
 <mapper namespace="com.example.cmtProject.mapper.mes.wareHouse.WareHouseMapper">
 	<select id = "warehouseList" resultType="map" parameterType="map">
         SELECT 
-            WHS_NO, WHS_CODE, WHS_NAME, WHS_TYPE, WHS_LOCATION, WHS_MANAGER, 
-            WHS_CAPACITY, WHS_COMMENTS, WHS_USED, USE_YN, 
-            CREATED_BY, UPDATED_BY, CREATED_DATE, UPDATED_DATE
+            WHS_NO,
+            WHS_CODE,
+            WHS_NAME,
+            WHS_TYPE,
+            WHS_LOCATION,
+            WHS_MANAGER,
+            WHS_CAPACITY,
+            WHS_COMMENTS,
+            WHS_USED,
+            USE_YN, 
+            CREATED_BY,
+            UPDATED_BY,
+            CREATED_DATE,
+            UPDATED_DATE
         FROM 
             WAREHOUSES
         WHERE 
