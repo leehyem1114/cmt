@@ -78,6 +78,7 @@ public class LotDTO {
     private Double ipiMeasuredWeightValue;
     private String ipiInspectionResult;
     private String qcmName;
+    private String keyword;
 	 	
 }
 

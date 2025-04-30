@@ -12,9 +12,8 @@
 			  W.WO_NO
 			, W.WO_CODE
 			, W.PDT_CODE
-			, W.PRC_CODE
+			, P.PRC_TYPE_CODE
 			, W.ORDER_DATE
-			, W.WO_QTY
 			, S.WO_STATUS_CODE
 			, S.WO_STATUS_NAME
 			, W.STATUS
@@ -25,11 +24,13 @@
  			, W.WO_END_DATE  
             , P.PDT_NAME 
             , E.EMP_NAME
+			, W.WO_QTY AS SO_QTY
             
 		  FROM WORK_ORDER W 
-		           JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
-		           JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
-		           JOIN WORK_ORDER_STATUS S ON W.WO_STATUS_CODE = S.WO_STATUS_CODE
+		          LEFT JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
+		          LEFT JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
+		          LEFT JOIN WORK_ORDER_STATUS S ON W.WO_STATUS_CODE = S.WO_STATUS_CODE
+		          LEFT JOIN MFG_SCHEDULES M ON W.MS_CODE = M.MS_CODE
 		 ORDER BY WORK_ORDER_NO DESC
 	</select>
 	<!-- 제조계획 리스트 - 모달 -->
@@ -186,7 +187,7 @@
 		  L.PRC_TYPE,
 		  L.START_TIME,
 		  L.FINISH_TIME,
-		  W.EMP_NAME,
+		--  W.EMP_NAME,
 		  W.WO_STATUS_CODE,
 		  S.WO_STATUS_NAME,
 		  L.WO_QTY,
@@ -261,6 +262,17 @@
   		  FROM WORK_ORDER
 		 WHERE WO_NO = (SELECT MAX(WO_NO) 
 		  FROM WORK_ORDER)
+  </select>
+  <!-- LOT검색 -->
+  <select id="findLotsByKeyword" parameterType="String" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+  	SELECT 
+	    L.*, 
+	    W.PDT_NAME
+	  FROM LOT L
+	  LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+	  WHERE LOWER(L.CHILD_LOT_CODE) LIKE LOWER(#{keyword})
+	     OR LOWER(L.WO_CODE) LIKE LOWER(#{keyword})
+	     OR LOWER(W.PDT_NAME) LIKE LOWER(#{keyword})
   </select>
 </mapper>
 	

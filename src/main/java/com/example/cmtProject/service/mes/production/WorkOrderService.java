@@ -90,5 +90,8 @@ public class WorkOrderService {
 	public LotDTO getQualityHistory(Long lotNo) {
 		return orderMapper.selectQualityHistory(lotNo);
 	}
+	public List<LotDTO> searchLotsByKeyword(String keyword) {
+		return orderMapper.findLotsByKeyword("%" + keyword + "%");
+	}
 	
 }

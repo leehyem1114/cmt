@@ -47,6 +47,8 @@ public interface WorkOrderMapper {
 	
 	//가장 마지막 WoCode
 	String getWoCodeLast();
+	//LOT검색
+	List<LotDTO> findLotsByKeyword(String string);
 	
 	
 	

@@ -58,30 +58,13 @@
 		    <div class="card-body"> <!-- 여기에 내용작성 -->
 		    
 			<div class="row mb-3"> <!-- 검색박스 -->
-		        <div class="col-md-3">
-		            <input type="month" class="form-control" placeholder="등록월">
-		        </div>
 		        <div class="col-md-4">
-		            <div class="input-group">
-		                <input type="text" class="form-control" placeholder="LOT 번호 또는 제품명으로 검색">
-<!-- 		                <button class="btn btn-outline-secondary" type="button"> -->
-<!-- 		                    <i class="bi bi-search"></i> -->
-<!-- 		                </button> -->
-		            </div>
-		        </div>
-	            <div class="col-md-2">
-	                <select class="form-select" >
-	                	<option>전체 공정</option>
-	                	<option>PR(프레스)</option>
-						<option>WE(용접)</option>
-						<option>PA(도장)</option>
-						<option>AS(조립)</option>
-	                </select>
+		           <div id="searchForm" class="d-flex align-items-center gap-2">
+				        <input type="text" id="lotSearchInput" class="form-control" placeholder="검색어를 입력하세요" />
+						<button id="searchBtn" class="btn btn-primary btn-m"><i class="fa-solid fa-magnifying-glass"></i></button>
+			        </div>
 	            </div>
-	            <div class="col-md-2">
-	                <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 검색 </button>
-	                <button class="btn btn-outline-secondary"><i class="fa-solid fa-arrows-rotate"></i> 초기화</button>
-	            </div>
+	        </div>
 		    </div><!-- /검색박스 -->
 		    
 		    
@@ -256,13 +239,6 @@
 				    	});
 				  </script>
 	                
-	                
-	                
-	                <button class="btn btn-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> 불합격</button>
-	                <button class="btn btn-success rounded-pill"><i class="fa-regular fa-circle-check"></i> 합격</button>
-	                
-	                
-	                
 	            </div>
 	        </div><!-- /tab-content -->
 	    </div><!-- /card-body -->
@@ -325,6 +301,8 @@
 		    nodeDefaultState: 'opened',
 		    nodeTextTemplate: node => node.text
 		  });
+		  
+		 
 	
 		  // 트리 클릭 시 LOT 번호 저장 및 상세 AJAX 호출
 		  $('#tree').on('click', '.lot-node', function () {
@@ -416,6 +394,76 @@
 				});
 			});
 		});
+	
+		//Lot검색 
+		 document.addEventListener("DOMContentLoaded", function () {
+		    document.getElementById("searchBtn").addEventListener("click", function () {
+		    const keyword = document.getElementById("lotSearchInput").value;
+		    
+		    if (!keyword) {
+		        alert("검색어를 입력하세요.");
+		        return;
+		      }
+		    
+		      $.ajax({
+		        url: '/production/searchLotTree',
+		        method: 'GET',
+		        data: { keyword },
+		        success: function (filteredList) {
+		          rebuildTree(filteredList);
+		          console.log('keyword - ', keyword, 'filteredList - ', filteredList);
+		        },
+		        error: function (err) {
+		          alert('서버 오류 발생');
+		          console.error(err);
+		        }
+		      });
+		    });
+		  });
+		 function rebuildTree(filteredList) {
+			  const lotMap = new Map();
+			  filteredList.forEach(order => {
+			    lotMap.set(order.childLotCode, {
+			      text: `<span class="lot-node" data-lot-no="${order.lotNo}">
+			               ${order.childLotCode} (${order.childPdtCode} / ${order.pdtName ?? '이름없음'})
+			             </span>`,
+			      lotNo: order.lotNo,
+			      lotCode: order.childLotCode,
+			      pdtCode: order.childPdtCode,
+			      parentLotCode: order.parentLotCode,
+			      children: []
+			    });
+			  });
+
+			  // 부모-자식 관계 연결
+			  lotMap.forEach(node => {
+				  if (node.parentLotCode && node.parentLotCode !== node.lotCode) {
+				    const parent = lotMap.get(node.parentLotCode);
+				    if (parent && parent !== node) {
+				      parent.children.push(node);
+				    }
+				  }
+				});
+
+			  // 루트 노드 추출
+			  const treeData = Array.from(lotMap.values());
+			  lotMap.forEach(node => {
+			    const isRoot = ![...lotMap.values()].some(n => n.children.includes(node));
+			    if (isRoot) treeData.push(node);
+			  });
+			  
+			  console.log('최종 treeData:', treeData);
+
+			  // 트리 다시 그리기
+			  document.getElementById('tree').innerHTML = '';  // 트리 비우기
+			  tree = new tui.Tree('#tree', {
+			    data: treeData,
+			    nodeDefaultState: 'opened',
+			    nodeTextTemplate: node => node.text
+			  });
+			}
+
+		
 
 	</script>
 </th:block>
