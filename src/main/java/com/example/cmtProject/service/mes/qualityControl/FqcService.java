@@ -92,7 +92,7 @@ public class FqcService {
         String code = fqcDTO.getWoCode();
         Map<String, Object> params = new HashMap<>();
         params.put("issueCode", code);
-        ium.updateIssueStatus(params);
+   //     ium.updateIssueStatus(params);
 
 	}
 

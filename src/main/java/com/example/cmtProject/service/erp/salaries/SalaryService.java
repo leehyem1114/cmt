@@ -136,6 +136,11 @@ public class SalaryService {
 		salMapper.savePaymentDto(pdto);
 	}
 
+	public List<Map<String, Object>> getYearlyPayrollList(String payYear) {
+		System.out.println();
+		return salMapper.selectYearlyPayrollList(payYear);
+	}
+
 
 
 }
