@@ -3,6 +3,7 @@ package com.example.cmtProject.service.mes.qualityControl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
@@ -27,7 +29,7 @@ public class IpiService {
 	@Autowired
 	private InventoryUpdateMapper ium;
 
-	// 모든 공정 검사 목록
+	// 모든 입고 검사 목록
 	public List<FqcDTO> getAllFqc() {
 		return fqcMapper.getAllFqc();
 	}
@@ -59,7 +61,7 @@ public class IpiService {
 		return "FQC-" + datePart + "-" + seqStr;
 	}
 
-	// 물건 검사시 공정 검사 검사전과 필요한 데이터 가져와서 인서트 하기
+	// 물건 입고시 입고 검사 검사전과 필요한 데이터 가져와서 인서트 하기
 	@Transactional
 	public void insertFqcInspection(Map<String, Object> updateMap) {
 		List<Map<String, Object>> result = fqcMapper.getLot(updateMap);
@@ -152,6 +154,50 @@ public class IpiService {
 	private boolean isPass(double value, double min, double max) {
 	    return value >= min && value <= max;
 	}
+
+	// 도넛 차트값 불러오는 메서드
+	public InspectionSummaryDTO getSummary() {
+		return fqcMapper.getSummary();
+	}
+	
+	// 막대 차트값 불러오는 메서드
+	public List<InspectionSummaryDTO> getLast7DaysSummary() {
+		List<InspectionSummaryDTO> dbResult = fqcMapper.getLast7DaysSummary();
+
+        // ✅ DB 결과를 날짜별 Map으로 변환
+        Map<String, InspectionSummaryDTO> resultMap = new HashMap<>();
+        for (InspectionSummaryDTO dto : dbResult) {
+            resultMap.put(dto.getFqcDate(), dto);
+        }
+
+        List<InspectionSummaryDTO> finalResult = new ArrayList<>();
+
+        // ✅ 오늘 기준 최근 7일 날짜 리스트 생성
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            String dateStr = date.format(formatter);
+
+            if (resultMap.containsKey(dateStr)) {
+                // ✅ DB 결과에 있으면 그대로 추가
+                finalResult.add(resultMap.get(dateStr));
+            } else {
+                // ✅ DB 결과에 없으면 pass/inProgress/fail 전부 0으로 채운 DTO 생성
+                InspectionSummaryDTO emptyDto = new InspectionSummaryDTO();
+                emptyDto.setFqcDate(dateStr);
+                emptyDto.setPassCount(0);
+                emptyDto.setInProgressCount(0);
+                emptyDto.setFailCount(0);
+                finalResult.add(emptyDto);
+            }
+        }
+
+        return finalResult;
+    
+    }
+
 
 	
 	

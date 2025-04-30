@@ -167,7 +167,7 @@
 		 // ✅ 7일치 데이터를 서버에서 가져와서 차트 그리기
 		 async function fetchSevenDaysInspectionData() {
 		   try {
-		
+			   
 		     // 서버로 요청 (7일치 데이터)
 		     const response = await fetch('/fqc/inspection-summary-last-7-days');
 		     const result = await response.json(); // 예: [{passCount, inProgressCount, failCount}, {}, {}, ... 총 7개]

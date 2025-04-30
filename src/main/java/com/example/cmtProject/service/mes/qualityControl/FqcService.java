@@ -167,7 +167,7 @@ public class FqcService {
         // ✅ DB 결과를 날짜별 Map으로 변환
         Map<String, InspectionSummaryDTO> resultMap = new HashMap<>();
         for (InspectionSummaryDTO dto : dbResult) {
-            resultMap.put(dto.getIqcDate(), dto);
+            resultMap.put(dto.getFqcDate(), dto);
         }
 
         List<InspectionSummaryDTO> finalResult = new ArrayList<>();
@@ -186,7 +186,7 @@ public class FqcService {
             } else {
                 // ✅ DB 결과에 없으면 pass/inProgress/fail 전부 0으로 채운 DTO 생성
                 InspectionSummaryDTO emptyDto = new InspectionSummaryDTO();
-                emptyDto.setIqcDate(dateStr);
+                emptyDto.setFqcDate(dateStr);
                 emptyDto.setPassCount(0);
                 emptyDto.setInProgressCount(0);
                 emptyDto.setFailCount(0);
