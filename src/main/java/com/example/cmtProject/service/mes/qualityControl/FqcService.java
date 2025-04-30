@@ -67,10 +67,9 @@ public class FqcService {
 		List<Map<String, Object>> result = fqcMapper.getLot(updateMap);
 		
 		for (Map<String, Object> row : result) {
-		    row.put("receiptCode", row.get("RECEIPT_CODE"));
-		    row.put("mtlCode", row.get("MTL_CODE"));
-		    row.put("receivedQty", row.get("RECEIVED_QTY"));
-		    row.put("whsCode", row.get("WAREHOUSE_CODE"));
+		    row.put("woCode", row.get("ISSUE_CODE"));
+		    row.put("pdtCode", row.get("PDT_CODE"));
+		    row.put("woQty", row.get("ISSUED_QTY"));
 		    row.put("fqcCode", generateFqcCode());
 
 			fqcMapper.insertFqcInspectionList(row);
@@ -92,8 +91,8 @@ public class FqcService {
 		
         String code = fqcDTO.getWoCode();
         Map<String, Object> params = new HashMap<>();
-        params.put("receiptCode", code);
-        ium.updateReceiptStatus(params);
+        params.put("issueCode", code);
+        ium.updateIssueStatus(params);
 
 	}
 
