@@ -145,9 +145,9 @@ public class IqcController {
 
          Map<String, Integer> result = new HashMap<>();
          InspectionSummaryDTO summary = iqcService.getSummary();
-         result.put("passCount", summary.getPassCount());
-         result.put("inProgressCount", summary.getInProgressCount());
-         result.put("failCount", summary.getFailCount());
+         result.put("passCount", summary.getPassCount() != null ? summary.getPassCount() : 0);
+         result.put("inProgressCount", summary.getInProgressCount() != null ? summary.getInProgressCount() : 0);
+         result.put("failCount", summary.getFailCount() != null ? summary.getFailCount() : 0);
 
          return result;
     }
