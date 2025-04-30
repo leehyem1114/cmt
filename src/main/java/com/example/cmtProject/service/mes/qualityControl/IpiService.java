@@ -11,13 +11,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
 import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
-import com.example.cmtProject.mapper.mes.qualityControl.FqcMapper;
 import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
 
 import jakarta.transaction.Transactional;
@@ -27,9 +25,6 @@ public class IpiService {
 	
 	@Autowired
 	private IpiMapper ipiMapper;
-
-	@Autowired
-	private InventoryUpdateMapper ium;
 
 	// 모든 입고 검사 목록
 	public List<IpiDTO> getAllIpi() {
@@ -50,60 +45,59 @@ public class IpiService {
 
 	// 엑셀 데이터 저장
 	@Transactional
-	public void saveExcelData(FqcDTO dto) {
-		fqcMapper.saveExcelData(dto);
+	public void saveExcelData(IpiDTO dto) {
+		ipiMapper.saveExcelData(dto);
 	}
 	
-	// FQC 코드 생성
-	private String generateFqcCode() {
+	// IPI 코드 생성
+	private String generateIpiCode() {
 		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		int maxSeq = fqcMapper.getMaxFqcCodeSeq(datePart);
+		int maxSeq = ipiMapper.getMaxIpiCodeSeq(datePart);
 		int nextSeq = maxSeq + 1;
 		String seqStr = String.format("%03d", nextSeq);
-		return "FQC-" + datePart + "-" + seqStr;
+		return "IPI-" + datePart + "-" + seqStr;
 	}
 
 	// 물건 입고시 입고 검사 검사전과 필요한 데이터 가져와서 인서트 하기
 	@Transactional
-	public void insertFqcInspection(Map<String, Object> updateMap) {
-		List<Map<String, Object>> result = fqcMapper.getLot(updateMap);
+	public void insertIpiInspection(Map<String, Object> updateMap) {
+		List<Map<String, Object>> result = ipiMapper.getLot(updateMap);
 		
 		for (Map<String, Object> row : result) {
-		    row.put("receiptCode", row.get("RECEIPT_CODE"));
-		    row.put("mtlCode", row.get("MTL_CODE"));
-		    row.put("receivedQty", row.get("RECEIVED_QTY"));
-		    row.put("whsCode", row.get("WAREHOUSE_CODE"));
-		    row.put("fqcCode", generateFqcCode());
+		    row.put("woCode", row.get("WO_CODE"));
+		    row.put("childPdtCode", row.get("CHILD_PDT_CODE"));
+		    row.put("woQty", row.get("WO_QTY"));
+		    row.put("ipiCode", generateIpiCode());
 
-			fqcMapper.insertFqcInspectionList(row);
+			ipiMapper.insertIpiInspectionList(row);
 		}
 	}
 
 	// 검사전에서 검사중으로 업데이트
 	@Transactional
-	public void updateFqcInspectionStatusProcessing(Employees loginUser, FqcDTO fqcDTO) {
-		fqcDTO.setFqcStartTime(LocalDateTime.now());
-		fqcMapper.updateFqcInspectionStatusProcessing(loginUser, fqcDTO);
+	public void updateIpiInspectionStatusProcessing(Employees loginUser, IpiDTO ipiDTO) {
+		ipiDTO.setIpiStartTime(LocalDateTime.now());
+		ipiMapper.updateIpiInspectionStatusProcessing(loginUser, ipiDTO);
 	}
 
 	@Transactional
 	// 검사중에서 검사완료로 업데이트
-	public void updateFqcInspectionStatusComplete(FqcDTO fqcDTO) {
-		fqcDTO.setFqcEndTime(LocalDateTime.now());
-		fqcMapper.updateFqcInspectionStatusComplete(fqcDTO);
+	public void updateIpiInspectionStatusComplete(IpiDTO ipiDTO) {
+		ipiDTO.setIpiEndTime(LocalDateTime.now());
+		ipiMapper.updateIpiInspectionStatusComplete(ipiDTO);
 		
-        String code = fqcDTO.getWoCode();
+        String code = ipiDTO.getWoCode();
         Map<String, Object> params = new HashMap<>();
-        params.put("receiptCode", code);
-        ium.updateReceiptStatus(params);
+        params.put("woCode", code);
+//        ium.updateWoStatus(params);
 
 	}
 
 	
 	// 검사완료로 넘어갈때 측정값 저장
 	@Transactional
-	public FqcDTO autoInspect(String fqcCode) {
-	    QcmDTO qcm = fqcMapper.selectQcmInfoByFqcCode(fqcCode);
+	public IpiDTO autoInspect(String ipiCode) {
+	    QcmDTO qcm = ipiMapper.selectQcmInfoByIpiCode(ipiCode);
 
 	    if (qcm == null || qcm.getQcmMinValue() == null || qcm.getQcmMaxValue() == null) {
 	        throw new IllegalArgumentException("검사 기준 정보가 없습니다.");
@@ -132,16 +126,16 @@ public class IpiService {
 
 
 //	    Map<String, Object> map = new HashMap<String, Object>();
-//	    map.put("fqcCode", fqcCode);
+//	    map.put("ipiCode", ipiCode);
 //	    map.put("weightValue", weightValue);
 //	    map.put("lengthValue", lengthValue);
 //	    map.put("result", result);
 	    
 	    // 저장
-	    fqcMapper.updateMeasuredValues(fqcCode, weightValue, lengthValue, result);
-//	    fqcMapper.updateMeasuredValues(map);
+	    ipiMapper.updateMeasuredValues(ipiCode, weightValue, lengthValue, result);
+//	    ipiMapper.updateMeasuredValues(map);
 
-	    return new FqcDTO(weightValue, lengthValue, result);
+	    return new IpiDTO(weightValue, lengthValue, result);
 	}
 
 	// 랜덤값 생성 (소수점 1자리)
@@ -159,17 +153,17 @@ public class IpiService {
 
 	// 도넛 차트값 불러오는 메서드
 	public InspectionSummaryDTO getSummary() {
-		return fqcMapper.getSummary();
+		return ipiMapper.getSummary();
 	}
 	
 	// 막대 차트값 불러오는 메서드
 	public List<InspectionSummaryDTO> getLast7DaysSummary() {
-		List<InspectionSummaryDTO> dbResult = fqcMapper.getLast7DaysSummary();
+		List<InspectionSummaryDTO> dbResult = ipiMapper.getLast7DaysSummary();
 
         // ✅ DB 결과를 날짜별 Map으로 변환
         Map<String, InspectionSummaryDTO> resultMap = new HashMap<>();
         for (InspectionSummaryDTO dto : dbResult) {
-            resultMap.put(dto.getFqcDate(), dto);
+            resultMap.put(dto.getIpiDate(), dto);
         }
 
         List<InspectionSummaryDTO> finalResult = new ArrayList<>();
@@ -188,7 +182,7 @@ public class IpiService {
             } else {
                 // ✅ DB 결과에 없으면 pass/inProgress/fail 전부 0으로 채운 DTO 생성
                 InspectionSummaryDTO emptyDto = new InspectionSummaryDTO();
-                emptyDto.setFqcDate(dateStr);
+                emptyDto.setIpiDate(dateStr);
                 emptyDto.setPassCount(0);
                 emptyDto.setInProgressCount(0);
                 emptyDto.setFailCount(0);

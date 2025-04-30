@@ -121,7 +121,7 @@
 			<!-- 오른쪽: 등록/삭제 -->
 			<div style="display: flex; align-items: center; gap: 10px;">
 				<button type="button" class="btn btn-outline-danger"
-					onclick="deleteFqc()"
+					onclick="deleteIpi()"
 					sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">삭제</button>
 			</div>
 
@@ -137,10 +137,10 @@
 
 
 		<!-- 상세 정보 영역 -->
-		<div id="fqcDetailWrapper"
+		<div id="ipiDetailWrapper"
 			style="margin-top: 20px; border: 1px solid #ddd; padding: 15px;">
 			<h3>상세 정보</h3>
-			<div id="fqcDetailContent">공정 검사항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
+			<div id="ipiDetailContent">공정 검사항목을 선택하면 상세 정보가 여기에 표시됩니다.</div>
 		</div>
 
 
@@ -170,7 +170,7 @@
 		   try {
 		
 		     // 서버로 요청 (7일치 데이터)
-		     const response = await fetch('/fqc/inspection-summary-last-7-days');
+		     const response = await fetch('/ipi/inspection-summary-last-7-days');
 		     const result = await response.json(); // 예: [{passCount, inProgressCount, failCount}, {}, {}, ... 총 7개]
 	
 		     // ✅ series용 데이터 배열 만들기
@@ -280,7 +280,7 @@
 	    async function fetchInspectionData() {
 	      try {
 	        // 예시: GET 방식으로 데이터 요청
-	        const response = await fetch('/fqc/inspection-summary');
+	        const response = await fetch('/ipi/inspection-summary');
 	        const result = await response.json(); // JSON 파싱
 
 	        // 받아온 데이터 예시
@@ -334,7 +334,7 @@
 
 	    const grid = new tui.Grid({
             el: document.getElementById('gridTop'),
-            data: /*[[${fqcList}]]*/ [],
+            data: /*[[${ipiList}]]*/ [],
             rowHeaders: ['checkbox'],
             pageOptions: {
     	        useClient: true,  // 서버 사이드 페이징 활성화
@@ -343,7 +343,7 @@
             columns: [
             	{ 
                   header: 'NO', 
-            	  name: 'fqcNo', 
+            	  name: 'ipiNo', 
             	  sortable: true, 
             	  filter: 'text', 
             	  align: "center",
@@ -358,7 +358,7 @@
               	},
             	{
            		  header: '작업 상태',
-           		  name: 'fqcInspectionStatus',
+           		  name: 'ipiInspectionStatus',
            		  sortable: true,
            		  align: 'center',
            		  width: 100,
@@ -374,14 +374,14 @@
 	           		 return `<button 
 	                 class="btn ${btnClass} btn-sm" 
 	                 data-action="status" 
-	                 data-code="${row.fqcCode}" 
+	                 data-code="${row.ipiCode}" 
 	                 data-status="${value}"
 	               >${value}</button>`;
      				}
            		},
            		{
            		  header: '합격 여부',
-           		  name: 'fqcInspectionResult',
+           		  name: 'ipiInspectionResult',
            		  sortable: true,
            		  align: 'center',
            		  width: 100,
@@ -399,7 +399,7 @@
            		},
             	{ 
                   header: '공정 검사 코드', 
-            	  name: 'fqcCode', 
+            	  name: 'ipiCode', 
             	  sortable: true, 
             	  filter: 'text', 
             	  width: 100,
@@ -466,7 +466,7 @@
               	},
             	{ 
             	  header: '무게 측정값', 
-            	  name: 'fqcMeasuredWeightValue', 
+            	  name: 'ipiMeasuredWeightValue', 
             	  sortable: true, 
             	  filter: 'text',
             	  width: 100,
@@ -482,7 +482,7 @@
               	},
             	{
            	      header: '길이 측정값', 
-           		  name: 'fqcMeasuredLengthValue', 
+           		  name: 'ipiMeasuredLengthValue', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 100,
@@ -498,7 +498,7 @@
               	},
 	    		{ 
            	      header: '검사 시작 시간', 
-           		  name: 'fqcStartTime', 
+           		  name: 'ipiStartTime', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 200,
@@ -520,7 +520,7 @@
            		},
 	    		{ 
            	      header: '검사 종료 시간', 
-           		  name: 'fqcEndTime', 
+           		  name: 'ipiEndTime', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 200,
@@ -542,7 +542,7 @@
               	},
 	    		{ 
            	      header: '비고', 
-           		  name: 'fqcRemarks', 
+           		  name: 'ipiRemarks', 
            		  sortable: true, 
            		  filter: 'text',
            		  width: 300,
@@ -579,11 +579,11 @@
 	 function onGridTopClick(e) {
 	   if (e.target.tagName !== 'BUTTON' || e.target.dataset.action !== 'status') return;
 
-	   const fqcCode = e.target.dataset.code;
+	   const ipiCode = e.target.dataset.code;
 	   const status = e.target.dataset.status;
 
 	   // 버튼이 있는 행 찾기
-	   const rowKey = grid.getData().findIndex(row => row.fqcCode === fqcCode);
+	   const rowKey = grid.getData().findIndex(row => row.ipiCode === ipiCode);
 	   const row = grid.getRow(rowKey);
 	   const woCode = row.woCode; // 또는 e.target.dataset.woCode;
 
@@ -597,12 +597,12 @@
 	     return;
 	   }
 
-	   handleStatusClick(fqcCode, status, row, rowKey, woCode); // ✅ 전달
+	   handleStatusClick(ipiCode, status, row, rowKey, woCode); // ✅ 전달
 
 	 }
 
 	 // [2] 상태 전환 핸들러
-	 async function handleStatusClick(fqcCode, status, row, rowKey, woCode) {
+	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode) {
 	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
@@ -612,7 +612,7 @@
 	       cancelButtonText: '취소'
 	     }).then(result => {
 	       if (result.isConfirmed) {
-	         updateStatus(fqcCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode);
+	         updateStatus(ipiCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode);
 	       }
 	     });
 
@@ -630,7 +630,7 @@
 	       await autoInspect(row, rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
-	       updateStatus(fqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
+	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
 	     });
 
 	   } else if (status === '검사완료') {
@@ -648,7 +648,7 @@
 
 	   const row = grid.getRow(ev.rowKey);
 	   const pdtName = row.pdtName;
-	   const status = row.fqcInspectionStatus;
+	   const status = row.ipiInspectionStatus;
 
 	   // 검사중 또는 검사완료 상태일 경우 수정 차단
 	   if (status === '검사중' || status === '검사완료') {
@@ -702,12 +702,12 @@
 
 	 // 검사중일 때 자동 검사 API 호출
 	 async function autoInspect(row, rowKey) {
-	   const fqcCode = row.fqcCode;
+	   const ipiCode = row.ipiCode;
 
-	   const response = await fetch('/fqc/auto-inspect', {
+	   const response = await fetch('/ipi/auto-inspect', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ fqcCode })
+	     body: JSON.stringify({ ipiCode })
 	   });
 	   
 	   const result = await response.json();
@@ -731,11 +731,11 @@
 	 }
 
 	 // 상태 변경 서버 요청
-	 function updateStatus(fqcCode, newStatus, successMsg, woCode) {
-	   fetch('/fqc/status-action', {
+	 function updateStatus(ipiCode, newStatus, successMsg, woCode) {
+	   fetch('/ipi/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ fqcCode, status: newStatus, woCode })
+	     body: JSON.stringify({ ipiCode, status: newStatus, woCode })
 	   })
 	     .then(res => res.json())
 	     .then(data => {
@@ -754,7 +754,7 @@
 	 // 서버에서 완제품별 검사항목 가져오기
 	 async function fetchQcmNamesByPdtName(pdtName) {
 	   try {
-	     const res = await fetch(`/fqc/names-by-pdt?pdtName=${encodeURIComponent(pdtName)}`);
+	     const res = await fetch(`/ipi/names-by-pdt?pdtName=${encodeURIComponent(pdtName)}`);
 	     if (!res.ok) throw new Error("서버 오류");
 	     const list = await res.json();
 
@@ -780,8 +780,8 @@
 	    	  const rowData = grid.getRow(rowKey);
 	    	  if (!rowData) return;
 	    	  
-	    	  const status = rowData.fqcInspectionStatus;
-	    	  const result = rowData.fqcInspectionResult;
+	    	  const status = rowData.ipiInspectionStatus;
+	    	  const result = rowData.ipiInspectionResult;
 
 	    	  let statusColor = '#6c757d'; // 기본 회색 (검사시작)
 	    	  let resultColor = '#6c757d'; // 기본 회색 (예정)
@@ -816,21 +816,21 @@
 	    		    ${makeDetailItem('작업 상태', statusHtml)}
 	    		    ${makeDetailItem('작업 상태', resultHtml)}
 	    		    ${makeDetailItem('공정 코드', rowData.woCode)}
-	    	        ${makeDetailItem('공정 검사 코드', rowData.fqcCode)}
+	    	        ${makeDetailItem('공정 검사 코드', rowData.ipiCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
 	    	        ${makeDetailItem('공정 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', `${safe(rowData.empName)} ${safe(rowData.empId)}`)}
 	    	        ${makeDetailItem('완제품', rowData.pdtName)}
-	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.fqcMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
-	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.fqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
-	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.fqcStartTime))}
-	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.fqcEndTime))}
-	    	        ${makeDetailItem('비고', rowData.fqcRemarks)}
+	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.ipiMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
+	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.ipiMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
+	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.ipiStartTime))}
+	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.ipiEndTime))}
+	    	        ${makeDetailItem('비고', rowData.ipiRemarks)}
 	    	      </div>
 	    	    </div>
 	    	  `;
 
-	    	  document.getElementById('fqcDetailContent').innerHTML = detailHtml;
+	    	  document.getElementById('ipiDetailContent').innerHTML = detailHtml;
 	    	});
 	    function makeDetailItem(label, value) {
 	    	  return `
@@ -866,15 +866,15 @@
 			        const updatedRow = grid.getRow(rk);
 			
 			        let sendData = {
-			            fqcNo: updatedRow.fqcNo,
-			            fqcRemarks: updatedRow.fqcRemarks,
+			            ipiNo: updatedRow.ipiNo,
+			            ipiRemarks: updatedRow.ipiRemarks,
 			            qcmName: updatedRow.qcmName,
 			            qcmUnitWeight: updatedRow.qcmUnitWeight,
 			            qcmUnitLength: updatedRow.qcmUnitLength
 			        };
 			
 			        $.ajax({
-			            url: "/fqc/edit",
+			            url: "/ipi/edit",
 			            type: "POST",
 			            data: sendData,
 			            success: function(result) {
@@ -911,9 +911,9 @@
         
         
         
-        async function deleteFqc() {
+        async function deleteIpi() {
   		  const checkedRows = grid.getCheckedRows();
-  		  const ids = checkedRows.map(row => row.fqcNo);
+  		  const ids = checkedRows.map(row => row.ipiNo);
 
   		  if (ids.length === 0) {
   		    await Swal.fire({
@@ -943,7 +943,7 @@
 
   		  // 삭제 API 요청
   		  try {
-  		    const response = await fetch('/fqc/delete', {
+  		    const response = await fetch('/ipi/delete', {
   		      method: 'POST',
   		      headers: {
   		        'Content-Type': 'application/json'
@@ -1006,7 +1006,7 @@
     	    const workbook = XLSX.utils.book_new();
 
     	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    	    XLSX.writeFile(workbook, 'FQC-grid-data.xlsx');
+    	    XLSX.writeFile(workbook, 'IPI-grid-data.xlsx');
     	});
     	
     	let file;
@@ -1046,24 +1046,27 @@
 
     			console.log(worksheet);
     			
-    			worksheet["A1"] = { t: "s", v: "fqcNo", r:"<t>fqcNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcNo', w: 'fqcNo' };
+    			
+    			
+    			worksheet["A1"] = { t: "s", v: "ipiNo", r:"<t>ipiNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiNo', w: 'ipiNo' };
     			worksheet["B1"] = { t: "s", v: "childLotCode", r:"<t>childLotCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'childLotCode', w: 'childLotCode' };
-    			worksheet["C1"] = { t: "s", v: "fqcInspectionStatus", r:"<t>fqcInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionStatus', w: 'fqcInspectionStatus' };
-    			worksheet["D1"] = { t: "s", v: "fqcInspectionResult", r:"<t>fqcInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionResult', w: 'fqcInspectionResult' };
-       			worksheet["E1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
+    			worksheet["C1"] = { t: "s", v: "ipiInspectionStatus", r:"<t>ipiInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiInspectionStatus', w: 'ipiInspectionStatus' };
+    			worksheet["D1"] = { t: "s", v: "ipiInspectionResult", r:"<t>ipiInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiInspectionResult', w: 'ipiInspectionResult' };
+    			worksheet["E1"] = { t: "s", v: "ipiCode", r:"<t>ipiCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiCode', w: 'ipiCode' };
     			worksheet["F1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
     			worksheet["G1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
     			worksheet["H1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
     			worksheet["I1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
     			worksheet["J1"] = { t: "s", v: "woQty", r:"<t>woQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woQty', w: 'woQty' };
     			worksheet["K1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
-    			worksheet["L1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
+    			worksheet["L1"] = { t: "s", v: "ipiMeasuredWeightValue", r:"<t>ipiMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiMeasuredWeightValue', w: 'ipiMeasuredWeightValue' };
     			worksheet["M1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["N1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
+    			worksheet["N1"] = { t: "s", v: "ipiMeasuredLengthValue", r:"<t>ipiMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiMeasuredLengthValue', w: 'ipiMeasuredLengthValue' };
     			worksheet["O1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["P1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
-    			worksheet["Q1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["R1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
+    			worksheet["P1"] = { t: "s", v: "ipiStartTime", r:"<t>ipiStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiStartTime', w: 'ipiStartTime' };
+    			worksheet["Q1"] = { t: "s", v: "ipiEndTime", r:"<t>ipiEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiEndTime', w: 'ipiEndTime' };
+    			worksheet["R1"] = { t: "s", v: "ipiRemarks", r:"<t>ipiRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiRemarks', w: 'ipiRemarks' };    			
+    			
     			
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
@@ -1073,7 +1076,7 @@
     	   
     	   	
     			// 바로 서버에 저장 요청
-    			fetch('/fqc/saveExcelData', {
+    			fetch('/ipi/saveExcelData', {
     			    method: 'POST',
     			    headers: {
     			        'Content-Type': 'application/json'
@@ -1145,8 +1148,8 @@
   		    endDate.setHours(23, 59, 59, 999);
 
   		    filtered = filtered.filter(row => {
-  		      const fqcStartTime = new Date(row.fqcStartTime);
-  		      return fqcStartTime >= startDate && fqcStartTime <= endDate;
+  		      const ipiStartTime = new Date(row.ipiStartTime);
+  		      return ipiStartTime >= startDate && ipiStartTime <= endDate;
   		    });
   		  }
 

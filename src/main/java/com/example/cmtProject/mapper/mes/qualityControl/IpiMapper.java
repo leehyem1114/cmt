@@ -6,39 +6,44 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 
 @Mapper
 public interface IpiMapper {
 
-	List<FqcDTO> getAllFqc();
+	List<IpiDTO> getAllIpi();
 
-	void fqcRemarksAndQcmNameUpdate(FqcDTO fqcDTO);
+	void ipiRemarksAndQcmNameUpdate(IpiDTO ipiDTO);
 	
 	void isVisiableToFalse(List<Long> ids);	
 	
-	void saveExcelData(FqcDTO dto);
+	void saveExcelData(IpiDTO dto);
 
 	List<Map<String, Object>> getLot(Map<String, Object> updateMap);
 	
-	int getMaxFqcCodeSeq(String datePart);
+	int getMaxIpiCodeSeq(String datePart);
 
-	void insertFqcInspectionList(Map<String, Object> row);
+	void insertIpiInspectionList(Map<String, Object> row);
 	
-	void updateFqcInspectionStatusProcessing(@Param("emp") Employees loginUser, @Param("fqc") FqcDTO fqcDTO);
+	void updateIpiInspectionStatusProcessing(@Param("emp") Employees loginUser, @Param("ipi") IpiDTO ipiDTO);
 
-	void updateFqcInspectionStatusComplete(FqcDTO fqcDTO);
+	void updateIpiInspectionStatusComplete(IpiDTO ipiDTO);
 
-	QcmDTO selectQcmInfoByFqcCode(String fqcCode);
+	QcmDTO selectQcmInfoByIpiCode(String ipiCode);
 
-	void updateMeasuredValues(@Param("fqcCode") String fqcCode,
+	void updateMeasuredValues(@Param("ipiCode") String ipiCode,
 		    				  @Param("weightValue") Double weightValue,
 		    				  @Param("lengthValue") Double lengthValue,
 		    				  @Param("result") String result);
 
 //	void updateMeasuredValues(Map<String, Object> param);
+	
+	InspectionSummaryDTO getSummary();
+	
+	List<InspectionSummaryDTO> getLast7DaysSummary();
 
 
 

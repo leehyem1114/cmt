@@ -36,7 +36,7 @@ public class Fqc {
     @Column(name = "WO_CODE")
     private String woCode;
 
-    @Column(name = "EMP_ID", nullable = false)
+    @Column(name = "EMP_ID")
     private String empId;
  
     @Column(name = "EMP_NAME")

@@ -7,9 +7,10 @@ public class InspectionSummaryDTO {
 	
 	private String iqcDate;
 	private String fqcDate;
-	private int passCount;
-	private int inProgressCount;
-	private int failCount;
+	private String ipiDate;
+	private Integer passCount;
+	private Integer inProgressCount;
+	private Integer failCount;
 	
 
 }
