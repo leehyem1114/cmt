@@ -13,10 +13,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
 import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
 import com.example.cmtProject.mapper.mes.qualityControl.FqcMapper;
+import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
 
 import jakarta.transaction.Transactional;
 
@@ -24,26 +26,26 @@ import jakarta.transaction.Transactional;
 public class IpiService {
 	
 	@Autowired
-	private FqcMapper fqcMapper;
+	private IpiMapper ipiMapper;
 
 	@Autowired
 	private InventoryUpdateMapper ium;
 
 	// 모든 입고 검사 목록
-	public List<FqcDTO> getAllFqc() {
-		return fqcMapper.getAllFqc();
+	public List<IpiDTO> getAllIpi() {
+		return ipiMapper.getAllIpi();
 	}
 
 	// 비고란 수정
 	@Transactional
-	public void fqcRemarksAndQcmNameUpdate(FqcDTO fqcDTO) {
-		fqcMapper.fqcRemarksAndQcmNameUpdate(fqcDTO);
+	public void ipiRemarksAndQcmNameUpdate(IpiDTO ipiDTO) {
+		ipiMapper.ipiRemarksAndQcmNameUpdate(ipiDTO);
 	}
 	
 	// 삭제 대신 안보이게 하기
 	@Transactional
 	public void isVisiableToFalse(List<Long> ids) {
-		fqcMapper.isVisiableToFalse(ids);
+		ipiMapper.isVisiableToFalse(ids);
 	}
 
 	// 엑셀 데이터 저장

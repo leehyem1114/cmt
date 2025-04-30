@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
-import com.example.cmtProject.service.mes.qualityControl.FqcService;
+import com.example.cmtProject.service.mes.qualityControl.IpiService;
 import com.example.cmtProject.service.mes.qualityControl.QcmService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -41,14 +41,14 @@ import lombok.extern.slf4j.Slf4j;
 public class IpiController {
 	
 	@Autowired
-	private FqcService fqcService;
+	private IpiService ipiService;
 	
 	@Autowired
 	private QcmService qcmService;
 
 	
 	@GetMapping("/inspection-info")
-	public String getFqcInfo(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+	public String getIpiInfo(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
 		
 		if (principalDetails == null) {
             return "redirect:/login"; // 로그인 페이지로 리다이렉트
@@ -59,11 +59,11 @@ public class IpiController {
     	// 현재 유저 Role 넘겨주기
     	model.addAttribute("userRole", principalDetails.getAuthorities().iterator().next().getAuthority());
     	
-    	// FQC 리스트
-    	List<FqcDTO> fqcList = fqcService.getAllFqc();
-    	model.addAttribute("fqcList", fqcList);
+    	// IPI 리스트
+    	List<IpiDTO> ipiList = ipiService.getAllIpi();
+    	model.addAttribute("ipiList", ipiList);
     	
-    	return "mes/qualityControl/fqcList";
+    	return "mes/qualityControl/ipiList";
 	}
 	
 	
@@ -77,19 +77,19 @@ public class IpiController {
 	// 그리드에서 바로 수정
 	@ResponseBody
 	@PostMapping("/edit")
-	public void qcmEditexep(@ModelAttribute FqcDTO fqcDTO) throws JsonMappingException, JsonProcessingException {
-			fqcService.fqcRemarksAndQcmNameUpdate(fqcDTO); 
+	public void qcmEditexep(@ModelAttribute IpiDTO ipiDTO) throws JsonMappingException, JsonProcessingException {
+			ipiService.ipiRemarksAndQcmNameUpdate(ipiDTO); 
 	}
 	
 	
 	// 삭제 메서드
     @PostMapping("/delete")
     @ResponseBody
-    public ResponseEntity<String> deleteFqc(@RequestBody Map<String, List<Long>> data) {
+    public ResponseEntity<String> deleteIpi(@RequestBody Map<String, List<Long>> data) {
         List<Long> ids = data.get("ids");
 
         // 삭제 로직 실행 (예: attendService.deleteByIds(ids))
-        fqcService.isVisiableToFalse(ids);
+        ipiService.isVisiableToFalse(ids);
 
         return ResponseEntity.ok("success");
     }
@@ -105,17 +105,17 @@ public class IpiController {
     	// 유저정보
     	Employees loginUser = principalDetails.getUser();
     	
-    	FqcDTO fqcDTO = new FqcDTO();
+    	IpiDTO ipiDTO = new IpiDTO();
     	
-    	fqcDTO.setFqcCode(payload.get("fqcCode"));
+    	ipiDTO.setipiCode(payload.get("ipiCode"));
         String status = payload.get("status");
-        fqcDTO.setWoCode(payload.get("woCode"));
+        ipiDTO.setWoCode(payload.get("woCode"));
 
         // TODO: 상태에 따라 분기 처리
         if ("검사중".equals(status)) {
-        	fqcService.updateFqcInspectionStatusProcessing(loginUser, fqcDTO);
+        	ipiService.updateIpiInspectionStatusProcessing(loginUser, ipiDTO);
         } else if ("검사완료".equals(status)) {
-        	fqcService.updateFqcInspectionStatusComplete(fqcDTO);
+        	ipiService.updateIpiInspectionStatusComplete(ipiDTO);
         }
     	
         
@@ -126,9 +126,9 @@ public class IpiController {
     @PostMapping("/auto-inspect")
     @ResponseBody
     public ResponseEntity<?> autoInspect(@RequestBody Map<String, String> request) {
-        String fqcCode = request.get("fqcCode");
+        String ipiCode = request.get("ipiCode");
         try {
-            FqcDTO result = fqcService.autoInspect(fqcCode);
+            IpiDTO result = ipiService.autoInspect(ipiCode);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -166,10 +166,10 @@ public class IpiController {
 	// 엑셀 파일 적용
 	@PostMapping("/saveExcelData")
 	@ResponseBody
-	public ResponseEntity<?> saveExcelData(@RequestBody List<FqcDTO> list) {
+	public ResponseEntity<?> saveExcelData(@RequestBody List<IpiDTO> list) {
 
-	    for (FqcDTO dto : list) {
-	        fqcService.saveExcelData(dto); // insert or update
+	    for (IpiDTO dto : list) {
+	        ipiService.saveExcelData(dto); // insert or update
 	    }
 	    return ResponseEntity.ok("엑셀 저장 완료");
 	}

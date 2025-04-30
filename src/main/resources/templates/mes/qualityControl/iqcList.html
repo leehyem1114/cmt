@@ -598,6 +598,9 @@
 	       cancelButtonText: '취소'
 	     }).then(async result => {
 	       if (!result.isConfirmed) return;
+	       
+	    	// ✅ 검사완료 가기 전에 자동검사 먼저
+	        await autoInspect(row, rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
 	       updateStatus(iqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', receiptCode);
@@ -687,14 +690,14 @@
 	     return false;
 	   }
 
-	   grid.setValue(rowKey, 'iqcMeasuredWeightValue', result.iqcMeasuredWeightValue ?? '');
-	   grid.setValue(rowKey, 'iqcMeasuredLengthValue', result.iqcMeasuredLengthValue ?? '');
-	   grid.setValue(rowKey, 'iqcInspectionResult', result.iqcInspectionResult);
+	   grid.setValue(rowKey, 'iqcMeasuredWeightValue', result.IQC_MEASURED_WEIGHT_VALUE ?? '');
+	   grid.setValue(rowKey, 'iqcMeasuredLengthValue', result.IQC_MEASURED_LENGTG_VALUE ?? '');
+	   grid.setValue(rowKey, 'iqcInspectionResult', result.IQC_INSPECTION_RESULT);
 
-	   Swal.fire({
-	     icon: result.iqcInspectionResult === '합격' ? 'success' : 'error',
-	     title: `자동 검사 결과: ${result.iqcInspectionResult}`,
-	     text: `측정값 - 무게: ${result.iqcMeasuredWeightValue ?? '-'}, 길이: ${result.iqcMeasuredLengthValue ?? '-'}`
+	   await Swal.fire({
+	     icon: result.IQC_INSPECTION_RESULT === '합격' ? 'success' : 'error',
+	     title: `자동 검사 결과: ${result.IQC_INSPECTION_RESULT}`,
+	     text: `측정값 - 무게: ${result.IQC_MEASURED_WEIGHT_VALUE ?? '-'}, 길이: ${result.IQC_MEASURED_LENGTG_VALUE ?? '-'}`
 	   });
 
 	   return true;
