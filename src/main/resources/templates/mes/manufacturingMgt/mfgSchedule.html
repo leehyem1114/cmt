@@ -5,6 +5,8 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 <head>
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png"
+	type="image/x-icon">
     <!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,22 +18,31 @@
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
     .top-input-group {
-        display: flex; /* 플렉스박스로 배치 */
-        align-items: flex-start; /* 위쪽 정렬 */
-        justify-content: space-between; /* 좌우 여백 최대 */
-        flex-wrap: wrap; /* 요소가 넘칠 경우 줄바꿈 */
-        gap: 10px; /* 요소 간 간격 */
-        margin-bottom: 15px; /* 하단 여백 */
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
     }
 
     /* 검색 및 파일 관련 그룹: 가로 배치, 줄바꿈 가능 */
     .search-file-group {
         display: flex;
-        align-items: center; /* 수직 정렬 */
-        gap: 8px; /* 요소 간 여백 */
-        flex-wrap: wrap; /* 줄바꿈 허용 */
-        flex: 1 1 auto; /* 공간을 적절히 차지하도록 설정 */
-        min-width: 500px; /* 최소 너비 확보 (줄바꿈 방지) */
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex: 1 1 auto;
+        min-width: 500px;
+    }
+
+    /* 엑셀 버튼 포함 그룹: 오른쪽 정렬 */
+    .search-file-group2 {
+        display: flex;
+        justify-content: flex-end; /* ✅ 모든 해상도에서 오른쪽 정렬 */
+        align-items: center;
+        width: 100%;
+        margin-bottom: 10px;
     }
 
     /* CRUD 버튼 그룹: 버튼을 가로로 배치, 줄바꿈 허용 */
@@ -44,8 +55,8 @@
 
     /* 일반 입력창 스타일: 최대 너비 설정, 반응형 대응 */
     .form-control {
-        max-width: 200px; /* 최대 너비 제한 */
-        flex: 0 1 auto; /* 내용에 따라 너비 조절 */
+        max-width: 200px;
+        flex: 0 1 auto;
     }
 
     /* 파일 업로드 입력창 스타일 */
@@ -56,29 +67,22 @@
 
     /* 엑셀 업로드/다운로드 버튼 스타일 */
     .btn-excel {
-        background-color: #1D6F42; /* 녹색 배경 */
-        color: white; /* 흰색 텍스트 */
-        white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+        background-color: #1D6F42;
+        color: white;
+        white-space: nowrap;
     }
 
     /* 엑셀 버튼 호버 시 스타일 */
     .btn-excel:hover {
-        background-color: #15562F; /* 더 어두운 녹색 */
+        background-color: #15562F;
         color: white;
     }
 
     /* 테이블 전체 스타일 */
     .table {
-        table-layout: fixed; /* 열 너비 고정 */
-        width: 100%; /* 부모 너비에 맞춤 */
+        table-layout: fixed;
+        width: 100%;
     }
-
-    /* 테이블 스크롤 영역 */
-/*     .table-responsive { */
-/*         height: 530px; /* 높이 고정 */ */
-/*         overflow: auto; /* 스크롤 활성화 */ */
-/*         -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */ */
-/*     } */
 
     /* 첫 번째 열(선택 체크박스)의 너비와 정렬 */
     th:first-child,
@@ -96,17 +100,23 @@
     /* 반응형: 화면이 좁을 때의 처리 */
     @media (max-width: 768px) {
         .top-input-group {
-            flex-direction: column; /* 세로로 배치 */
-            align-items: flex-start; /* 왼쪽 정렬 */
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .search-file-group,
         .button-group {
-            width: 100%; /* 전체 너비 사용 */
-            margin-bottom: 10px; /* 하단 여백 */
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        /* 모바일에서도 유지되도록 중복 정의 가능 */
+        .search-file-group2 {
+            justify-content: flex-end;
         }
     }
-</style>	
+</style>
+	
 </head>
 <body>
 	<div layout:fragment="content">
@@ -121,9 +131,9 @@
 						<div class="card-header">
 							<h4 class="card-title">제조 계획</h4>
 
-							<!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
+							<!-- 검색 및 CRUD 버튼 -->
 							<div class="top-input-group">
-								<!-- 왼쪽: 검색 및 엑셀 관련 -->
+								<!-- 왼쪽: 검색 관련 -->
 								<div class="search-file-group">
 									<input type="text" class="form-control" id="searchInput"
 										placeholder="제조 계획 검색">
@@ -134,17 +144,12 @@
 									<!-- 로그인한 사용자 ID -->
 									<input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
 
-									<!-- 엑셀 파일 입력 및 버튼 -->
-									<button type="button" id="ExcelDownBtn" class="btn btn-excel">
-										<i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
-									</button>
 								</div>
 
 								<!-- 오른쪽: CRUD 버튼 -->
 								<div class="button-group">
 									<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgScheduleModal">제조 계획 등록</button>
-									<button type="button" id="msSaveBtn" class="btn btn-outline-success">저장</button>
-									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger">삭제</button>
+									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger" onclick="deleteMs()">삭제</button>
 								</div>
 							</div>
 						</div>
@@ -152,9 +157,22 @@
 							<div class="table-responsive">
 								<!-- 제조 계획 그리드 -->
 								<div id="mfgScheduleGrid"></div>
-								<!-- 제조 상세 계획 그리드 -->
+								
 								<h5>제조 상세 계획</h5>
+								
+							<!-- 엑셀 버튼 -->
+							<div class="top-input-group">
+								<!-- 왼쪽: 검색 및 엑셀 관련 -->
+								<div class="search-file-group2">
+									<!-- 엑셀 파일 입력 및 버튼 -->
+									<button type="button" id="ExcelDownBtn" class="btn btn-excel">
+										<i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
+									</button>
+								</div>
+							</div>
+								<!-- 제조 상세 계획 그리드 -->								
 								<div id="msDetailGrid"></div>
+								
 							</div>
 						</div>
 					</div>
@@ -190,6 +208,13 @@
 	<script th:inline="javascript">
 	
 	//================================== 그리드 상단 부분 ================================= 
+	const statusColorMap = {
+	  '등록': 'badge bg-primary', 
+	  '대기중': 'badge bg-success', 
+	  '제조중': 'badge bg-danger',
+	  '완료': 'badge bg-warning'
+	};	
+		
 	let msList = /*[[${msList}]]*/ [];
 	
 	let grid = new tui.Grid({
@@ -214,7 +239,7 @@
 			{
 				header: '제조계획코드',
 				name: 'msCode',
-				width: 100,
+				width: 200,
 				sortable: true, 
 				filter: 'text',
 				align: "center" 
@@ -227,60 +252,87 @@
 				filter: 'text',
 				align: "center" 
             },
-			{
-                header: '등록 사원번호',
-                name: 'empId',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center",
-				editor: "text"
-            },
             {
-				header: '상태',
+				header: '제조계획상태',
                 name: 'msStatus',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false,
+				formatter: function({ value }) {
+			          const bgClass = statusColorMap[value] || 'bg-secondary';
+			          return `
+			            <span class="badge ${bgClass}" 
+			                  style="font-size: 1rem; padding: 6px 12px; font-weight: 500;">
+			              ${value}
+			            </span>
+			          `;
+			    }
             },
 			{
                 header: '우선순위',
-                name: 'msPriority',
-				width: 200,
+                name: 'mpPriority',
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: {
-					type: "select",
-					options: {
-						listItems: [
-							{ text: '높음', value: '높음' },
-							{ text: '일반', value: '일반' },
-							{ text: '낮음', value: '낮음' }
-						]	
-					}
-				}
+				editor: false
             },
 			{
                 header: '제품코드',
                 name: 'pdtCode',
-				width: 200,
+				width: 150,
 				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false
             },
-            {
-				header: '수주 수량',
-                name: 'soQty',
-				width: 200,
+			{
+                header: '제품명',
+                name: 'pdtName',
+				width: 150,
+				fontSize: '40',
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: "text"
+				editor: false
+            },
+            {
+				header: '주문수량',
+                name: 'soQty',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center',
+				editor: false
+            },
+            {
+                header: '주문단위',
+                name: 'qtyUnitName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+			{
+                header: '등록사원번호',
+                name: 'empId',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center",
+				editor: false
+            },
+			{
+                header: '등록사원명',
+                name: 'empName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center",
+				editor: false
             },
 			{
                 header: '등록일자',
@@ -333,107 +385,112 @@
 		let rk = evValue.rowKey;
 		let rowData = grid.getRow(rk);
 		let msCode = rowData.msCode;
-		console.log(msCode)
+		
 		// 제조 계획 그리드에서 선택된 제품에 해당하는 제조 계획 상세 데이터 불러오기
 		$.ajax({
-		url: '/ms/ms-selected', 
+		url: `/ms/detail`, 
         type: 'GET',
         data: { msCode: msCode },
-        success: function (msData) {
-        	msDetailGrid.resetData(msData);
-        },
-        error: function (err) {
-        	console.error("제조 계획 상세 데이터 로딩 실패", err);
-        	}
+        success: function (response) {
+			if (response.success) {
+				const msData = response.data;
+				msDetailGrid.resetData(msData);
+			} else {
+				alert("상세정보를 불러오지 못했습니다.");
+			}
+		},
+		error: function (err) {
+			console.error("제조 계획 상세 데이터 로딩 실패", err);
+		}
 		});
 	});
     	
 	//================================== 그리드 하단 bom 부분 =================================
 	
 	let msdList = /*[[${msdList}]]*/ [];
+	
+	let msDetailGrid = new tui.Grid({
+	    el: document.getElementById('msDetailGrid'), 
+	    data: msdList,
+	    rowHeaders: ['checkbox'], 
+	    scrollX: true,
+	    scrollY: true,
+	    pageOptions: {
+	       useClient: true,   // 클라이언트 사이드 페이징 사용
+	       perPage: 10        // 페이지당 행 수
+	    },
+	    columnOptions: {
+	        resizable: true,     // 열 크기 조절 가능
+	        frozenCount: 0,      // 고정 열 없음
+	        minWidth: 100        // 최소 열 너비 설정
+	    },
+	    columns: [
+	        {
+	            header: '제조상세번호',
+	            name: 'MSD_NO',
+	            sortable: true, 
+	            filter: 'text',
+	            align: "center" 
+	        },
+	        {
+	            header: '제조계획코드',
+	            name: 'MS_CODE',
+	            sortable: true, 
+	            filter: 'text',
+	            align: "center" 
+	        },
+	       {
+	            header: '제품 코드',
+	            name: 'PARENT_PDT_CODE',
+	            sortable: true, 
+	            filter: 'text',
+	            align: "center" 
+	        },
+	        {
+	            header: '제품명',
+	            name: 'PDT_NAME',
+	            sortable: true, 
+	            filter: 'text',
+	            align: "center" 
+	        },
+	        {
+	            header: '코드 유형',
+	            name: 'ITEM_TYPE',
+	            fontSize: '40',
+	            sortable: true, 
+	            filter: 'text',
+	            align: 'center',
+	            formatter: function({ value }) {
+	                if (value === 'SEMI_FINISHED') {
+	                    return '반제품';
+	                } else if (value === 'RAW_MATERIAL') {
+	                    return '완제품';
+	                } else {
+	                    return value; // 혹시 다른 값이 들어오면 원래 값 표시
+	                }
+	            }
+	        },
+	        {
+	            header: '계획수량',
+	            name: 'MS_QTY',
+	            sortable: true, 
+	            filter: 'text',
+	            align: "center",
+	            editor: "text"
+	        },
+	        {
+	            header: '투입단위',
+	            name: 'QTYUNITNAME',
+	            sortable: true, 
+	            filter: 'text',
+	            align: 'center',
+	            editor: "text"
+	        }
+	    ], // 열 설정
+	    autoEdit: true,
+	    editingEvent: 'dblclick' 
+	});
 
-		let msDetailGrid = new tui.Grid({
-        el: document.getElementById('msDetailGrid'), 
-		data: msdList,
-        rowHeaders: ['checkbox'], 
-		scrollX: true,
-        scrollY: true,
-		pageOptions: {
-		   useClient: true,   // 클라이언트 사이드 페이징 사용
-		   perPage: 10        // 페이지당 행 수
-		 },
-        columns: [
-			{
-				header: '제조계획코드',
-				name: 'MS_CODE',
-				width: 100,
-				sortable: true, 
-				filter: 'text',
-				align: "center" 
-            },
-            {
-                header: 'BOM 레벨',
-                name: 'BOM_LEVEL',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center" 
-            },
-           {
-                header: '제품 코드',
-                name: 'PARENT_PDT_CODE',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center" 
-            },
-			{
-                header: '원자재 코드',
-                name: 'CHILD_ITEM_CODE',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center" 
-            },
-			{
-                header: '코드 유형',
-                name: 'ITEM_TYPE',
-				width: 200,
-				fontSize: '40',
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-            },
-			{
-                header: '계획수량',
-                name: 'MS_QTY',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: "center",
-				editor: "text"
-            },/* 
-            {
-				header: '투입단위',
-                name: 'BOM_UNIT',
-				width: 200,
-				sortable: true, 
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            }, */
-            {
-				header: '비고',
-                name: 'COMMENTS',
-				width: 200,
-				filter: 'text',
-				align: 'center',
-				editor: "text"
-            }
-        ], // 열 설정
-		autoEdit: true,
-		editingEvent: 'dblclick' 
-    });	
 		
 		msDetailGrid.on('onGridUpdated', (ev) => {
 			// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
@@ -450,17 +507,9 @@
 			msDetailGrid.addRowClassName(selectedEv2.rowKey, 'selectedRowClass');
 		})
 	
-		
-	/*
-	grid.on('onGridUpdated', (ev) => {
-		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
-	    grid.refreshLayout();
-	});*/
-	
 	
 	// 제조 계획 등록 시 생산 계획 그리드
 	let mpList = /*[[${mpList}]]*/ [];
-	console.log("-----------------확인", mpList);
 	let grid2 = null;	
 		
 	document.getElementById('mfgScheduleModal').addEventListener('shown.bs.modal', () => {
@@ -551,6 +600,199 @@
 		}	
 	});
 	
+	//제조 계획 등록 시작 -------------------------------------------
+	$('#mfgScheduleRegiBtn').on('click', async function () {
+		// 로그인한 유저 정보
+		const empId = document.getElementById('currentUserId')?.value;
+	
+		const checkedRows = grid2.getCheckedRows(); // 선택된 행 가져오기
+	
+		if (checkedRows.length === 0) {
+	        await Swal.fire({
+	            icon: 'warning',
+	            title: '선택된 항목 없음',
+	            text: '제조 계획 등록할 항목을 선택해주세요.'
+	        });
+	        return;
+	    }
+		
+		 const confirmResult = await Swal.fire({
+		        icon: 'question',
+		        title: '제조 계획으로 등록하시겠습니까?',
+		        showCancelButton: true,
+		        confirmButtonText: '등록',
+		        cancelButtonText: '취소'
+		    });
+		
+		if (confirmResult.isConfirmed) {
+		const dataList = checkedRows.map((row, index) => ({
+	        ...row,
+	        empId: empId
+	    }));
+		
+		$.ajax({
+			url: "/ms/mfgScheduleRegi",
+			method : "POST",
+			contentType: "application/json",
+			data: JSON.stringify(dataList), // JSON 문자열로 전송
+			success : async function (response){
+				await Swal.fire({
+                    icon: 'success',
+                    title: '등록 완료',
+                    text: '제조 계획 등록이 완료되었습니다.'
+                });
+				location.reload();
+			},
+			error : function (error){
+				console.log(error);
+				Swal.fire({
+                    icon: 'error',
+                    title: '등록 실패',
+                    text: '제조 계획 등록이 실패했습니다.'
+                });
+			}
+		});
+		 }
+	});
+	// 제조 계획 등록 끝---------------------------------------------------------	
+	
+	// 행 아무곳이나 클릭하면 체크박스 활성화
+    grid.on('click', ev => {
+    	  const { rowKey, columnName } = ev;
+
+    	  if (columnName === '_checked') return;
+    	  const isChecked = grid.getCheckedRowKeys().includes(rowKey);
+    	  if (!isChecked) {
+    	    grid.check(rowKey);
+    	  } else {
+    	    grid.uncheck(rowKey);
+    	  }
+    });
+	
+
+	// 상품 계획 삭제
+    async function deleteMs() {
+  		const checkedRows = grid.getCheckedRows();
+  		const msNos = checkedRows.map(row => row.msNo);
+
+  		if (msNos.length === 0) {
+  			await Swal.fire({
+  		      icon: "warning",
+  		      title: "삭제할 데이터를 선택해주세요."
+  		    });
+  		    return;
+  		}
+  		
+  		// '등록' 상태 아닌 항목만 필터링
+  		const invalidRows = checkedRows.filter(row => row.msStatus !== '등록');
+  		
+  	    if (invalidRows.length > 0) {
+  	        const statusMap = new Map();
+
+  	        // 상태별로 mpCode를 모읍니다
+  	        invalidRows.forEach(row => {
+  	            if (!statusMap.has(row.msStatus)) {
+  	                statusMap.set(row.msStatus, []);
+  	            }
+  	            statusMap.get(row.msStatus).push(row.msCode);
+  	        });
+
+  	        // 메시지 생성
+  	        let message = '';
+	  	    for (const status of statusMap.keys()) {
+	  	    	message += `${status}인 항목은 삭제할 수 없습니다.<br>`;
+	  	    }
+
+  	        await Swal.fire({
+  	            icon: "warning",
+  	            title: "삭제 불가",
+  	            html: message
+  	        });
+  	        return;
+  	    }
+
+  		const result = await Swal.fire({
+  		    title: "정말 삭제하시겠습니까?",
+  		    text: `총 ${msNos.length}건의 데이터를 삭제합니다.`,
+  		    icon: "warning",
+  		    showDenyButton: true,
+  		    confirmButtonText: "삭제",
+  		    denyButtonText: "취소",
+  		});
+
+  		if (result.isDenied) {
+  		    await Swal.fire({
+  		      icon: "error",
+  		      title: "삭제가 취소되었습니다.",
+  		    });
+  		    return;
+  		}
+  		  
+
+  		// 삭제 API 요청
+  		try {
+  			const response = await fetch('/ms/mfgScheduleDelete', {
+  		      method: 'POST',
+  		      headers: {
+  		        'Content-Type': 'application/json'
+  		      },
+  		      body: JSON.stringify({ msNos: msNos }) // 필요 시 선택한 ID 전달
+  		    });
+
+  		    if (!response.ok) {
+  		      await Swal.fire({
+  		        icon: "error",
+  		        title: "삭제 처리 중 오류가 발생했습니다",
+  		      });
+  		      throw new Error("삭제 처리 중 오류");
+  		    }
+
+  		    await Swal.fire({
+  		      title: "삭제가 완료되었습니다",
+  		      icon: "success",
+  		    });
+  		    
+  		      location.reload();
+
+  		} catch (error) {
+  		    console.error('Error:', error);
+  		    await Swal.fire({
+  		      icon: "error",
+  		      title: "삭제 처리 중 오류가 발생했습니다",
+  		    });
+  		  }
+  		}
+	
+	
+    //그리드 -> 엑셀 파일로 다운로드
+	document.getElementById('ExcelDownBtn').addEventListener('click', function () {
+	    
+		//현재 그리드 데이터 가져오기
+		const gridData = msDetailGrid.getData();
+		
+		//현재 그리드의 컬럼 값 가져오기
+	    const columns = msDetailGrid.getColumns();
+
+		//컬럼을 header와 name으로 분리
+	    const header = columns.map(col => col.header);
+	    const keys = columns.map(col => col.name);
+
+		//header만큼 배열 생성
+	    const exportData = [header];
+
+		//row값을 데이터에 저장
+	    gridData.forEach(row => {
+	        const rowData = keys.map(key => row[key]);
+	        exportData.push(rowData);
+	    });
+
+		//CDN 이용
+	    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+	    const workbook = XLSX.utils.book_new();
+
+	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+	    XLSX.writeFile(workbook, 'MFG-SCHEDULE-grid-data.xlsx');
+	});
 	
 	
   	// grid 데이터 원본 저장
@@ -570,28 +812,10 @@
   	  // 필터링된 데이터로 그리드 업데이트
   	  grid.resetData(filtered);
   	});
-  	
-  	
-  	function applyFilter() {
-		  const keyword = document.getElementById('searchInput').value.toLowerCase();
-
-		  let filtered = originalData;
-
-		  if (keyword) {
-		    filtered = filtered.filter(row =>
-		      Object.values(row).some(val =>
-		        val != null && String(val).toLowerCase().includes(keyword)
-		      )
-		    );
-		  }
-
-		  grid.resetData(filtered);
-		}
 
   		document.getElementById('msSearchBtn').addEventListener('click', applyFilter);
 		document.getElementById('searchInput').addEventListener('input', applyFilter);
 
-	
 	</script>
 	
 	</div>

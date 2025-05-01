@@ -36,7 +36,7 @@ public class Iqc {
     @Column(name = "RECEIPT_CODE")
     private String receiptCode;
 
-    @Column(name = "EMP_ID", nullable = false)
+    @Column(name = "EMP_ID")
     private String empId;
     
     @Column(name = "EMP_NAME")
@@ -90,7 +90,7 @@ public class Iqc {
     @Column(name = "WHS_NAME")
     private String whsName;
 
-    @Column(name = "LOT_NO", nullable = false)
+    @Column(name = "LOT_NO")
     private String lotNo;
     
     @Column(name = "IQC_REMARKS")

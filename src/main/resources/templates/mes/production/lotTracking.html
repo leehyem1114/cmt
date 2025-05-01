@@ -58,30 +58,13 @@
 		    <div class="card-body"> <!-- 여기에 내용작성 -->
 		    
 			<div class="row mb-3"> <!-- 검색박스 -->
-		        <div class="col-md-3">
-		            <input type="month" class="form-control" placeholder="등록월">
-		        </div>
 		        <div class="col-md-4">
-		            <div class="input-group">
-		                <input type="text" class="form-control" placeholder="LOT 번호 또는 제품명으로 검색">
-<!-- 		                <button class="btn btn-outline-secondary" type="button"> -->
-<!-- 		                    <i class="bi bi-search"></i> -->
-<!-- 		                </button> -->
-		            </div>
-		        </div>
-	            <div class="col-md-2">
-	                <select class="form-select" >
-	                	<option>전체 공정</option>
-	                	<option>PR(프레스)</option>
-						<option>WE(용접)</option>
-						<option>PA(도장)</option>
-						<option>AS(조립)</option>
-	                </select>
+		           <div id="searchForm" class="d-flex align-items-center gap-2">
+				        <input type="text" id="lotSearchInput" class="form-control" placeholder="검색어를 입력하세요" />
+						<button id="searchBtn" class="btn btn-primary btn-m"><i class="fa-solid fa-magnifying-glass"></i></button>
+			        </div>
 	            </div>
-	            <div class="col-md-2">
-	                <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 검색 </button>
-	                <button class="btn btn-outline-secondary"><i class="fa-solid fa-arrows-rotate"></i> 초기화</button>
-	            </div>
+	        </div>
 		    </div><!-- /검색박스 -->
 		    
 		    
@@ -222,12 +205,39 @@
 				  </script>
 	            </div><!-- 공정이력 -->
 	            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-	                <p class="mt-2">품질이력 조회해서 그리드 넣기</p>
 	                
-	                <button class="btn btn-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> 불합격</button>
-	                <button class="btn btn-success rounded-pill"><i class="fa-regular fa-circle-check"></i> 합격</button>
-	                
-	                
+	                <div id="qualityGrid" style="height: 400px;"></div>
+				    <script th:inline="javascript">
+				    window.qualityGrid = new tui.Grid({
+				    	  el: document.getElementById('qualityGrid'),
+				    	  data: [],
+				    	  rowHeaders: ['rowNum'],
+				    	  scrollX: false,
+				    	  scrollY: true,
+				    	  columns: [
+				    	    { header: 'LOT No', name: 'CHILD_LOT_CODE', sortable: true, align: 'center' },
+				    	    { header: '검사 시작시간', name: 'IPI_START_TIME', sortable: true, align: 'center' },
+				    	    { header: '검사항목', name: 'QCM_NAME', sortable: true, align: 'center' },
+				    	    { header: '길이 측정값', name: 'IPI_MEASURED_LENGTH_VALUE', align: 'center' },
+				    	    { header: '무게 측정값', name: 'IPI_MEASURED_WEIGHT_VALUE', align: 'center' },
+				    	    {
+				    	    	  header: '판정', 
+				    	    	  name: 'IPI_INSPECTION_RESULT',
+				    	    	  align: 'center',
+				    	    	  formatter: function({ value }) {
+				    	    	    if (value === '불합격') {
+				    	    	      return '<button class="btn btn-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> 불합격</button>';
+				    	    	    } else if (value === '합격') {
+				    	    	      return '<button class="btn btn-success rounded-pill"><i class="fa-regular fa-circle-check"></i> 합격</button>';
+				    	    	    } else {
+				    	    	      return ''
+				    	    	    }
+				    	    	  }
+				    	    	},
+				    	    { header: '검사자', name: 'EMP_NAME', align: 'center' }
+				    	  ]
+				    	});
+				  </script>
 	                
 	            </div>
 	        </div><!-- /tab-content -->
@@ -291,6 +301,8 @@
 		    nodeDefaultState: 'opened',
 		    nodeTextTemplate: node => node.text
 		  });
+		  
+		 
 	
 		  // 트리 클릭 시 LOT 번호 저장 및 상세 AJAX 호출
 		  $('#tree').on('click', '.lot-node', function () {
@@ -306,6 +318,9 @@
 			  $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
 				  grid.refreshLayout();
 				});
+			  $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+				  qualityGrid.refreshLayout();
+				});
 			  
 			  const childLotCode = clickedLot.childLotCode;
 			  // 1. 공정 이력 AJAX
@@ -317,7 +332,7 @@
 			      const withRowNum = list.map((item, idx) => ({ ...item, rowNum: idx + 1 }));
 			      grid.resetData(withRowNum);
 			      
-			      console.log(list);
+			      console.log('공정이력',list);
 			    }
 			  });
 
@@ -327,7 +342,7 @@
 			    method: 'GET',
 			    data: { lotNo: selectedLotNo },
 			    success: function (response) {
-			    	console.log('디테일???',response);
+			    	console.log('lot 상세???',response);
 			    	
 			      $('#lotNotice').hide();
 			      $('#lotDetailForm').show();
@@ -358,8 +373,84 @@
 			      alert('서버 오류: ' + error.responseText);
 			    }
 			  });
+			  
+// 				// 3. 품질 이력 AJAX (여기서 바로 호출)
+			  $.ajax({
+				  url: '/production/qualityHistory',
+				  method: 'GET',
+				  data: { lotNo: selectedLotNo },
+				  success: function (list) {
+				    const realList = Array.isArray(list) ? list : [list];  // 여기 추가
+
+				    const withRowNum = realList.map((item, idx) => ({ ...item, rowNum: idx + 1 }));
+				    qualityGrid.resetData(withRowNum);
+
+				    console.log('품질검사 이력', realList);
+				  },
+				  error: function (error) {
+				    console.error('서버 오류:', error);
+				    alert('서버 오류: ' + error.responseText);
+				  }
+				});
 			});
+		});
+	
+		//Lot검색 
+		 document.addEventListener("DOMContentLoaded", function () {
+		    document.getElementById("searchBtn").addEventListener("click", function () {
+		    const keyword = document.getElementById("lotSearchInput").value;
+		    
+		    if (!keyword) {
+		        alert("검색어를 입력하세요.");
+		        return;
+		      }
+		    
+		      $.ajax({
+		        url: '/production/searchLotTree',
+		        method: 'GET',
+		        data: { keyword },
+		        success: function (filteredList) {
+		          rebuildTree(filteredList);
+		          console.log('keyword - ', keyword, 'filteredList - ', filteredList);
+		        },
+		        error: function (err) {
+		          alert('서버 오류 발생');
+		          console.error(err);
+		        }
+		      });
+		    });
 		  });
+		 function rebuildTree(filteredList) {
+			  console.log('[rebuildTree 호출됨]');
+			  console.log('받은 filteredList:', filteredList);
+
+			  if (!filteredList || filteredList.length === 0) {
+			    document.getElementById('tree').innerHTML = '<p>검색 결과가 없습니다.</p>';
+			    return;
+			  }
+
+			  // 여러 건 처리: 각 LOT을 루트 노드로 보여줌
+			  const treeData = filteredList.map(order => ({
+			    text: `<span class="lot-node" data-lot-no="${order.LOT_NO}">
+			             ${order.CHILD_LOT_CODE} (${order.CHILD_PDT_CODE} / ${order.PDT_NAME ?? '이름없음'})
+			           </span>`,
+			    lotNo: order.LOT_NO,
+			    lotCode: order.CHILD_LOT_CODE,
+			    pdtCode: order.CHILD_PDT_CODE,
+			    parentLotCode: order.PARENT_LOT_CODE,
+			    children: []  
+			  }));
+
+			  document.getElementById('tree').innerHTML = '';
+			  tree = new tui.Tree('#tree', {
+			    data: treeData,
+			    nodeDefaultState: 'opened',
+			    nodeTextTemplate: node => node.text
+			  });
+			}
+
+
+		
 
 	</script>
 </th:block>

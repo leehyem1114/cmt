@@ -26,11 +26,14 @@ public interface WorkOrderMapper {
 	List<LotDTO> selectLotDetail();
 	//lotNo로 상품 상세정보 들고오기
 	LotDTO selectLotNoDetail(Long lotNo);
-
+	//lotNo로 품질이력 들고오기
+	LotDTO selectQualityHistory(Long lotNo);
 	
 	//제조계획상태 변경 & 제조계획 delete
 	void updateMfgStatus(String msCode);
-	void deleteMfgList(String msCode);
+//	void deleteMfgList(String msCode);
+	//MFG_SCHEDULES - 상태 대기로 변경
+	void updateMfgStatus2(String msCode);
 	
 	//====================================
 	List<LotDTO> selectAllLotTree();
@@ -38,6 +41,17 @@ public interface WorkOrderMapper {
 	
 	//그래프
 	List<WorkOrderDTO> selectCompleteStatsLast7Days();
+	List<LotDTO> selectTodayProcessTop5();
+
+	//WoNo 중 최대값
+	Long getWoNoMax();
+	
+	//가장 마지막 WoCode
+	String getWoCodeLast();
+	//LOT검색
+	List<LotDTO> findLotsByKeyword(String string);
+	
+	
 	
 
 }

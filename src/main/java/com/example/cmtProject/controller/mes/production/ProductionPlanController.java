@@ -16,6 +16,7 @@ import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.service.mes.production.WorkOrderService;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
@@ -29,10 +30,11 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		//작업지시
 		List<WorkOrderDTO> orderList = orderService.getOrderList();
 		model.addAttribute("orderList",orderList);
-		log.info(">>"+orderList);
+		log.info("메인 리스트 orderList >>"+orderList);
 
 		//제조계획 리스트
 		List<MfgScheduleDTO> planList = orderService.getPlanList();
+		//orderMapper.selectPlanList();
 		model.addAttribute("planList",planList);
 		
 		List<WorkOrderDTO> stats = orderService.getCompleteStatsLast7Days();
@@ -45,7 +47,6 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		List<Integer> completeCountList = stats.stream()
 		    .map(WorkOrderDTO::getCompleteCount)
 		    .collect(Collectors.toList());
-
 
 	    model.addAttribute("workDateList", workDateList);
 	    model.addAttribute("completeCountList", completeCountList);
@@ -64,12 +65,54 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 	@ResponseBody
 	public String regiWorkOrderLsit(@RequestBody WorkOrderDTO workOrderDTO) {
 		//작업지시 등록
-		orderService.registMsPlan(workOrderDTO);
-		//제조계획상태 업데이트 &제조 계획리스트에서 삭제
-		orderService.updateMfgStatus(workOrderDTO.getMsNo());
 		
-		log.info("받은 데이터" + workOrderDTO);
+		Long woNo = orderService.getWoNoMax();
+		if(woNo == null) {
+			woNo = 0L;
+		}
+		
+		String woCodeLast = orderService.getWoCodeLast();
+		
+		String woCode = "";
+		if(woCodeLast == null)
+		{
+			woCode = "MSC000";
+		}else {
+			woCode = changeWoCode(woCodeLast);
+		}
+		
+		workOrderDTO.setWoNo(woNo+1);
+		workOrderDTO.setWorkOrderNo(woNo+1);
+		workOrderDTO.setWoCode(woCode);
+		
+		orderService.registMsPlan(workOrderDTO);
+		//orderMapper.insertMsPlan(workOrderDTO); // 작업지시 등록
+	
+		//제조계획상태 업데이트 &제조 계획리스트에서 삭제 (x) & MFG_SCHEDULES상태변경
+		orderService.updateMfgStatus(workOrderDTO.getWoCode());
+		
+		//log.info("받은 데이터" + workOrderDTO);
 		return "작업지시 추가 완료";
+	}
+	
+	public String changeWoCode(String code) {
+		
+		String numberPart = code.substring(3);
+        int number = Integer.parseInt(numberPart) + 1;
+        
+        String chCode = "MSC";
+        
+        if(number >= 100) {
+        	chCode += Integer.toString(number); 
+        }else if(number >= 10) {
+        	chCode += "0" + Integer.toString(number);
+        }else if(number >= 0) {
+        	chCode += "00" + Integer.toString(number);
+        }else {
+        	chCode = "error";
+        }
+		
+		return chCode;
 	}
 	
 	//공정현황**********************************

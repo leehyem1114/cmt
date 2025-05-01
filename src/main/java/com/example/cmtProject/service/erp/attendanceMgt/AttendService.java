@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,15 +60,20 @@ public class AttendService {
     public void saveAttend(AttendDTO dto, Employees employee) {
         
     	LocalDateTime now = LocalDateTime.now();
-        LocalDate today = now.toLocalDate();
+    	LocalDate today = now.toLocalDate();
 
-        // 1. 정상/지각 판단
-        LocalDateTime workTemplate = workTimeMapper.getWorkTemplateByEmpNo(employee.getEmpNo());
-        if (workTemplate.isBefore(now)) {
-            dto.setAtdStatus("ATS002"); // 지각
-        }
-        if (workTemplate.isAfter(now)) {
-            dto.setAtdStatus("ATS001"); // 정상
+    	// DB에서 TIMESTAMP 컬럼을 LocalDateTime으로 받음
+    	LocalDateTime startDateTime = workTimeMapper.getWorkTemplateByEmpNo(employee.getEmpNo());
+
+    	// 시분초만 뽑아서 오늘 날짜와 합침
+    	LocalTime baseTime = startDateTime.toLocalTime();
+    	LocalDateTime workTemplate = today.atTime(baseTime);
+    	LocalDateTime lateThreshold = workTemplate.plusMinutes(5);
+
+        if (now.isBefore(lateThreshold)) {
+            dto.setAtdStatus("ATS001"); // 정상 (허용시간 이내)
+        } else {
+            dto.setAtdStatus("ATS002"); // 지각 (5분 초과)
         }
 
         // 2. 출근 insert

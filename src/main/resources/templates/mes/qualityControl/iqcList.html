@@ -6,6 +6,8 @@
 	<head>
 		<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	    <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+	    <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+		<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
 	    <!-- 기본 메타 정보 -->
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +29,22 @@
 <style>
 	.btn-upload { background-color: #007bff; color: white; }
 	.btn-download { background-color: #28a745; color: white; } 
+	.chart-wrapper {
+	  display: flex;
+	  gap: 20px; /* ✅ 두 chart 사이에 20px 간격 */
+	}
+	
+	#chart-area, #chart-area2 {
+	  flex: 1; /* ✅ 너비 균등 분할 (원하면 빼도 됨) */
+	}
+	.chart-wrapper {
+	  display: flex;
+	  justify-content: center;
+	  gap: 20px;
+	}
 </style>	
+
+
 
 
 </head>
@@ -46,7 +63,11 @@
 	
 	
 
-	
+<div class="chart-wrapper">
+  <div id="chart-area"></div>
+  <div id="chart-area2"></div>
+</div>
+<br>
 	
 	
 	
@@ -94,6 +115,10 @@
 </div>
 
 <br>
+
+
+	
+	
 	
 	<div id="gridTop"></div>
 	
@@ -113,6 +138,152 @@
 
 
 	    <script th:inline="javascript">
+	    
+	    const el = document.getElementById('chart-area2');
+
+		 // ✅ 오늘 기준 7일 날짜+요일 가져오기
+		 const categories = getLast7DaysWithWeekday();
+	
+		 // ✅ 7일치 데이터를 서버에서 가져와서 차트 그리기
+		 async function fetchSevenDaysInspectionData() {
+		   try {
+		
+		     // 서버로 요청 (7일치 데이터)
+		     const response = await fetch('/iqc/inspection-summary-last-7-days');
+		     const result = await response.json(); // 예: [{passCount, inProgressCount, failCount}, {}, {}, ... 총 7개]
+	
+		     // ✅ series용 데이터 배열 만들기
+		     const passRates = [];
+		     const inProgressRates = [];
+		     const failRates = [];
+	
+		     result.forEach(dayData => {
+		       const totalCount = dayData.PASS_COUNT + dayData.IN_PROGRESS_COUNT + dayData.FAIL_COUNT;
+		       passRates.push(safeDivide(dayData.PASS_COUNT, totalCount));
+		       inProgressRates.push(safeDivide(dayData.IN_PROGRESS_COUNT, totalCount));
+		       failRates.push(safeDivide(dayData.FAIL_COUNT, totalCount));
+		     });
+	
+		     // ✅ 최종 차트 데이터 만들기
+		     const data = {
+		       categories: categories, // 7일 날짜
+		       series: [
+		         { name: '합격', data: passRates },
+		         { name: '검사중', data: inProgressRates },
+		         { name: '불합격', data: failRates }
+		       ]
+		     };
+	
+		     const options = {
+		       chart: { 
+		         title: '최근 7일 불량율', 
+		         height: 400 
+		       },
+		       series: { 
+		         stack: { type: 'percent' }, 
+		         dataLabels: { 
+		           visible: true,
+		           formatter: (value) => `${value.toFixed(1)}%`
+		         }
+		       }
+		     };
+	
+		     toastui.Chart.columnChart({ el, data, options });
+		     
+		   } catch (error) {
+		     console.error('7일 데이터 불러오기 실패:', error);
+		   }
+		 }
+	
+		 // ✅ 7일 날짜 + 요일 생성 함수
+		 function getLast7DaysWithWeekday() {
+		   const today = new Date();
+		   const dates = [];
+		   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+	
+		   for (let i = 6; i >= 0; i--) {
+		     const d = new Date();
+		     d.setDate(today.getDate() - i);
+		     const month = d.getMonth() + 1;
+		     const day = d.getDate();
+		     const weekDay = weekDays[d.getDay()];
+		     dates.push(`${month}/${day} (${weekDay})`);
+		   }
+		   return dates;
+		 }
+	
+		 // ✅ 실행
+		 fetchSevenDaysInspectionData();
+	    
+	    
+	    
+	    
+	    
+	 	// ✅ 안전한 나누기 함수
+	    const safeDivide = (num, total) => total === 0 ? 0 : (num / total) * 100;
+
+	    // ✅ 차트 생성 함수
+	    function drawChart(passCount, inProgressCount, failCount, totalCount) {
+	      const el = document.getElementById('chart-area');
+
+	      const passRate = safeDivide(passCount, totalCount);
+	      const inProgressRate = safeDivide(inProgressCount, totalCount);
+	      const failRate = safeDivide(failCount, totalCount);
+
+	      const data = {
+	        categories: ['불량율'],
+	        series: [
+	          { name: '합격', data: passRate },
+	          { name: '검사중', data: inProgressRate },
+	          { name: '불합격', data: failRate }
+	        ]
+	      };
+
+	      const options = {
+	        chart: { 
+	          title: '최근 7일 불량율', 
+	          height: 400 
+	        },
+	        series: {
+	          dataLabels: { 
+	            visible: true, 
+	            formatter: (value) => `${value.toFixed(1)}%`
+	          }
+	        }
+	      };
+
+	      toastui.Chart.pieChart({ el, data, options });
+	    }
+
+	    // ✅ 서버에서 데이터 가져오기
+	    async function fetchInspectionData() {
+	      try {
+	        // 예시: GET 방식으로 데이터 요청
+	        const response = await fetch('/iqc/inspection-summary');
+	        const result = await response.json(); // JSON 파싱
+
+	        // 받아온 데이터 예시
+	        const { PASS_COUNT, IN_PROGRESS_COUNT, FAIL_COUNT } = result;
+	        const totalCount = PASS_COUNT + IN_PROGRESS_COUNT + FAIL_COUNT;
+
+	        drawChart(PASS_COUNT, IN_PROGRESS_COUNT, FAIL_COUNT, totalCount);
+	      } catch (error) {
+	        console.error('데이터 불러오기 실패:', error);
+	      }
+	    }
+
+	    // ✅ 실행
+	    fetchInspectionData();
+		
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
 	    
 		const userRole = /*[[${userRole}]]*/ 'ROLE_USER'; // 기본값은 일반유저
 	    
@@ -343,15 +514,6 @@
 	           		}
               	},
 	    		{ 
-           	      header: '입고 창고', 
-           		  name: 'whsName', 
-           		  sortable: true, 
-           		  filter: 'text',
-           		  width: 100,
-           		  align: "center",
-            	  hidden: true
-              	},
-	    		{ 
            	      header: '비고', 
            		  name: 'iqcRemarks', 
            		  sortable: true, 
@@ -392,7 +554,6 @@
 
 	   const iqcCode = e.target.dataset.code;
 	   const status = e.target.dataset.status;
-	   const receiptCode = e.target.dataset.receiptCode;
 
 	   // 버튼이 있는 행 찾기
 	   const rowKey = grid.getData().findIndex(row => row.iqcCode === iqcCode);
@@ -415,7 +576,7 @@
 
 	 // [2] 상태 전환 핸들러
 	 async function handleStatusClick(iqcCode, status, row, rowKey, receiptCode) {
-	   if (status === '검사전') {
+	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
 	       icon: 'warning',
@@ -437,15 +598,9 @@
 	       cancelButtonText: '취소'
 	     }).then(async result => {
 	       if (!result.isConfirmed) return;
-
-	       // ✅ 검사완료 가기 전에 자동검사 먼저
-	       const autoSuccess = await autoInspect(row, rowKey);
 	       
-	       
-	       if (!autoSuccess) {
-	         Swal.fire('자동 검사 실패', '자동 검사에 실패했습니다.', 'error');
-	         return;
-	       }
+	    	// ✅ 검사완료 가기 전에 자동검사 먼저
+	        await autoInspect(row, rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
 	       updateStatus(iqcCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', receiptCode);
@@ -466,6 +621,17 @@
 
 	   const row = grid.getRow(ev.rowKey);
 	   const mtlName = row.mtlName;
+	   const status = row.iqcInspectionStatus;
+
+	   // 검사중 또는 검사완료 상태일 경우 수정 차단
+	   if (status === '검사중' || status === '검사완료') {
+	     Swal.fire({
+	       icon: 'warning',
+	       title: '검사 항목 수정 불가',
+	       text: `${status} 상태에서는 검사 항목을 변경할 수 없습니다.`
+	     });
+	     return;
+	   }
 
 	   if (!mtlName) {
 	     alert("원자재 이름이 없습니다.");
@@ -524,14 +690,14 @@
 	     return false;
 	   }
 
-	   grid.setValue(rowKey, 'iqcMeasuredWeightValue', result.iqcMeasuredWeightValue ?? '');
-	   grid.setValue(rowKey, 'iqcMeasuredLengthValue', result.iqcMeasuredLengthValue ?? '');
-	   grid.setValue(rowKey, 'iqcInspectionResult', result.iqcInspectionResult);
+	   grid.setValue(rowKey, 'iqcMeasuredWeightValue', result.IQC_MEASURED_WEIGHT_VALUE ?? '');
+	   grid.setValue(rowKey, 'iqcMeasuredLengthValue', result.IQC_MEASURED_LENGTG_VALUE ?? '');
+	   grid.setValue(rowKey, 'iqcInspectionResult', result.IQC_INSPECTION_RESULT);
 
-	   Swal.fire({
-	     icon: result.iqcInspectionResult === '합격' ? 'success' : 'error',
-	     title: `자동 검사 결과: ${result.iqcInspectionResult}`,
-	     text: `측정값 - 무게: ${result.iqcMeasuredWeightValue ?? '-'}, 길이: ${result.iqcMeasuredLengthValue ?? '-'}`
+	   await Swal.fire({
+	     icon: result.IQC_INSPECTION_RESULT === '합격' ? 'success' : 'error',
+	     title: `자동 검사 결과: ${result.IQC_INSPECTION_RESULT}`,
+	     text: `측정값 - 무게: ${result.IQC_MEASURED_WEIGHT_VALUE ?? '-'}, 길이: ${result.IQC_MEASURED_LENGTG_VALUE ?? '-'}`
 	   });
 
 	   return true;
@@ -590,26 +756,27 @@
 	    	  const status = rowData.iqcInspectionStatus;
 	    	  const result = rowData.iqcInspectionResult;
 
-	    	  let color = '#6c757d'; // 기본 회색 (검사전)
+	    	  let statusColor = '#6c757d'; // 기본 회색 (검사시작)
+	    	  let resultColor = '#6c757d'; // 기본 회색 (예정)
+
 	    	  if (status === '검사중') {
-	    	    color = '#0d6efd'; // 파랑
-	    	  } 
-	    	  if (status === '검사완료') {
-	    	    color = '#198754'; // 초록
+	    	    statusColor = '#0d6efd'; // 파랑
+	    	  } else if (status === '검사완료') {
+	    	    statusColor = '#198754'; // 초록
 	    	  }
-	    	  if (result === 'P') {
-		    	    color = '#198754'; // 초록
-		      }
-	    	  if (result === 'F') {
-		    	    color = '#dc3545'; // 빨강
-		      }
+
+	    	  if (result === '합격') {
+	    	    resultColor = '#198754'; // 초록
+	    	  } else if (result === '불합격') {
+	    	    resultColor = '#dc3545'; // 빨강
+	    	  }
 
 	    	  const resultLabel = result === '합격' ? '합격'
-	                		    : result === '불합격' ? '불합격'
-	                  			: '예정';
+	    	                  : result === '불합격' ? '불합격'
+	    	                  : '예정';
 
-			  const statusHtml = `<span style="font-weight: 600; color: ${color};"><b>${status}</b></span>`;
-			  const resultHtml = `<span style="font-weight: 600; color: ${color};"><b>${resultLabel}</b></span>`;
+			  const statusHtml = `<span style="font-weight: 600; color: ${statusColor};"><b>${status}</b></span>`;
+			  const resultHtml = `<span style="font-weight: 600; color: ${resultColor};"><b>${resultLabel}</b></span>`;
 			  
 			  function safe(value) {
 				  return (value === null || value === undefined) ? ' ' : value;
@@ -630,7 +797,6 @@
 	    	        ${makeDetailItem('길이 측정값', `${safe(rowData.iqcMeasuredLengthValue)} ${safe(rowData.qcmUnitLength)}`)}
 	    	        ${makeDetailItem('검사 시작 시간', formatDate(rowData.iqcStartTime))}
 	    	        ${makeDetailItem('검사 종료 시간', formatDate(rowData.iqcEndTime))}
-	    	        ${makeDetailItem('입고 창고', rowData.whsName)}
 	    	        ${makeDetailItem('비고', rowData.iqcRemarks)}
 	    	      </div>
 	    	    </div>
@@ -665,31 +831,35 @@
 	    	
 	    	//수정
 			grid.on('afterChange', (ev) => {
-				
-				let evValue = ev.changes[0];
+			    let evValue = ev.changes[0];
 			    let rk = evValue.rowKey;
-			    let rowData = grid.getRow(rk);
-				
-			    let sendData = {
-		            iqcNo: rowData.iqcNo,
-		            iqcRemarks: rowData.iqcRemarks,
-		            qcmName: rowData.qcmName,
-		            qcmUnitWeight: rowData.qcmUnitWeight,
-		            qcmUnitLength: rowData.qcmUnitLength
-		        };
-			    
-				$.ajax({
-					url: "/iqc/edit",
-					type: "POST",
-					data: sendData,
-					success: function(result) {
-						console.log(result);
-					},
-					error: function(errorResult) {
-						grid.restore(); // 이전 상태로 롤백
-					}
-				});
-		    });
+			
+			    setTimeout(() => { // ✅ afterChange 다음에 한 프레임 쉬고 실행
+			        const updatedRow = grid.getRow(rk);
+			
+			        let sendData = {
+			            iqcNo: updatedRow.iqcNo,
+			            iqcRemarks: updatedRow.iqcRemarks,
+			            qcmName: updatedRow.qcmName,
+			            qcmUnitWeight: updatedRow.qcmUnitWeight,
+			            qcmUnitLength: updatedRow.qcmUnitLength
+			        };
+			
+			        $.ajax({
+			            url: "/iqc/edit",
+			            type: "POST",
+			            data: sendData,
+			            success: function(result) {
+			                console.log(result);
+			            },
+			            error: function(errorResult) {
+			                grid.restore();
+			            }
+			        });
+			
+			    }, 0); // ✅ 아주 살짝 쉬었다가 실행 (렌더링 끝난 후)
+			});
+
 
 	    
 
@@ -864,8 +1034,7 @@
     			worksheet["N1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
     			worksheet["O1"] = { t: "s", v: "iqcStartTime", r:"<t>iqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcStartTime', w: 'iqcStartTime' };
     			worksheet["P1"] = { t: "s", v: "iqcEndTime", r:"<t>iqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcEndTime', w: 'iqcEndTime' };
-    			worksheet["Q1"] = { t: "s", v: "whsName", r:"<t>whsName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'whsName', w: 'whsName' };
-    			worksheet["R1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
+    			worksheet["Q1"] = { t: "s", v: "iqcRemarks", r:"<t>iqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcRemarks', w: 'iqcRemarks' };
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 

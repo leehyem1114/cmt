@@ -1,15 +1,52 @@
-<div class="form-group" >
-							<button class="btn btn-primary" id="adminInitBtn">현재 작업 초기화</button>
-						</div>
+if(username === '991114'){ //관리자 계정 991114 추가
+					
+					alert("관리자")
+					
+					if(!savePRC){ //관리자 계정이면서 기존 작업이 없므면 버튼에 최대값 적용
+						$.ajax({
+							url: '/production/getRnRowNumMax',
+							data: {woCode: woCode},
+							success : function(response){
+								
+								if(response > 0){
+									presentBtnRow = response - 1;	
+								}else{
+									alert("presentBtnRow 음수");
+								}
+								
+								console.log("위에 관리자 presentBtnRow:" + presentBtnRow);
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: error,
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+					      	}// error: function(error) {
+						}); //$.ajax({
 						
-						<div class="form-group" >
-							<button class="btn btn-primary" id="adminSendQtyDataBtn">수량 데이터 전송</button>
-						</div>
-						
-						<div class="form-group" >
-							<button class="btn btn-primary" id="adminActivePRCJobBtn">공정 작업 등록 버튼 활성화</button>
-						</div>
-						
-			//현재 작업 초기화 - save_prc테이블 삭제
-			//수량 데이터 전송 - 현재 작업지시서에 해당하는 CP 찾아서 알림과 함께 데이터 전송
-			//공정 작업 버튼 활성화 - class추가
+					}else if(savePRC == null){		//관리자 계정이 아닌 경우
+						alert("dfsdf")
+						$.ajax({
+							url: '/production/getRnRowNumMax',
+							data: {woCode: woCode},
+							success : function(response){
+								
+								if(response > 0){
+									presentBtnRow = response - 1;	
+								}else{
+									alert("presentBtnRow 음수");
+								}
+								
+								console.log("위에 매니저/일반 presentBtnRow:" + presentBtnRow);
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: error,
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+					      	}// error: function(error) {
+						}); //$.ajax({
+					} //else if(!savePRC){	
+				}// if(username === '991114'){ 

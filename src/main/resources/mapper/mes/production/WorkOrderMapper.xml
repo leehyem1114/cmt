@@ -12,9 +12,8 @@
 			  W.WO_NO
 			, W.WO_CODE
 			, W.PDT_CODE
-			, W.PRC_CODE
+			, P.PRC_TYPE_CODE
 			, W.ORDER_DATE
-			, W.WO_QTY
 			, S.WO_STATUS_CODE
 			, S.WO_STATUS_NAME
 			, W.STATUS
@@ -25,11 +24,14 @@
  			, W.WO_END_DATE  
             , P.PDT_NAME 
             , E.EMP_NAME
+			, W.WO_QTY AS SO_QTY
+			, M.MS_CODE
             
 		  FROM WORK_ORDER W 
-		           JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
-		           JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
-		           JOIN WORK_ORDER_STATUS S ON W.WO_STATUS_CODE = S.WO_STATUS_CODE
+		          LEFT JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
+		          LEFT JOIN EMPLOYEES E ON W.EMP_ID = E.EMP_ID
+		          LEFT JOIN WORK_ORDER_STATUS S ON W.WO_STATUS_CODE = S.WO_STATUS_CODE
+		          LEFT JOIN MFG_SCHEDULES M ON W.MS_CODE = M.MS_CODE
 		 ORDER BY WORK_ORDER_NO DESC
 	</select>
 	<!-- 제조계획 리스트 - 모달 -->
@@ -39,19 +41,23 @@
 		    , S.MS_CODE
 		    , S.PDT_CODE
 		    , P.PDT_NAME
+		    , P.PRC_TYPE_CODE
+		    , P.PDT_TYPE
 		    , S.SO_QTY
-		    , S.MS_START_TIME
-		    , S.MS_END_TIME
+		   -- , S.MS_START_TIME 
+		   -- , S.MS_END_TIME 
 		    , S.EMP_ID
-		    , S.MS_PRIORITY
+		    , S.MP_PRIORITY
 		    , S.MS_STATUS
 		    , S.MS_UPDATED_AT
-		    , S.PRC_CODE
+		    --, S.PRC_CODE
 		    , S.MP_CODE
-		    , S.SO_QTY
-		  --  , S.PDT_PRC_TYPE_CODE
+		    , E.EMP_NAME
+		    -- , S.SO_QTY
+		    --  , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
-		WHERE  MS_STATUS != '대기'
+							JOIN EMPLOYEES E ON S.EMP_ID = E.EMP_ID
+		WHERE  MS_STATUS = '등록'
 		ORDER BY S.MS_NO DESC
 	</select>
 	<!-- 제조계획리스트 -> workOrder 테이블에 insert -->
@@ -67,32 +73,39 @@
 			 , PRC_CODE
 			 , WORK_START_DATE
 			 , WORK_END_DATE
-			 -- , WO_STATUS_CODE -- 공정상태
+			 , MS_CODE
+			 , WORK_ORDER_NO
 		) VALUES (
-				WORK_ORDER_SEQ.NEXTVAL
-			, #{msCode, jdbcType=VARCHAR}
+			#{woNo}
+			, #{woCode, jdbcType=VARCHAR}
 			, #{pdtCode, jdbcType=VARCHAR}
 			, #{pdtName, jdbcType=VARCHAR}
-			, #{allocatedQty, jdbcType=VARCHAR}
-			, #{empId, jdbcType=VARCHAR}
+			, #{soQty, jdbcType=VARCHAR}
+			, #{empId}
 			, #{lineCode, jdbcType=VARCHAR}
 			, #{prcCode, jdbcType=VARCHAR}
 			, #{msStartDate, jdbcType=DATE}
-<!-- 			, #{msEndDate, jdbcType=DATE} -->
 			, NULL
-<!-- 			,#{msStatus, jdbcType=VARCHAR} -->
+			, #{msCode, jdbcType=VARCHAR}
+			, #{workOrderNo, jdbcType=NUMERIC}
 		)
 	</insert>
 	<update id="updateMfgStatus">
 		UPDATE WORK_ORDER
 		SET WO_STATUS_CODE = 'SB'
-		WHERE WO_CODE = #{msCode}
+		WHERE WO_CODE = #{woCode}
 	</update>
 	
-	<delete id="deleteMfgList">
-		DELETE FROM MFG_SCHEDULES 
-		WHERE MS_CODE = #{msCode}
-	</delete>
+	<!--MFG_SCHEDULES - 대기로 변경-->
+	<update id="updateMfgStatus2"> 
+		UPDATE MFG_SCHEDULES SET MS_STATUS = '대기'
+		WHERE MS_CODE = (SELECT MS_CODE FROM WORK_ORDER WHERE WO_CODE = #{woCode}) 
+	</update>
+	
+<!--	<delete id="deleteMfgList">-->
+<!--		DELETE FROM MFG_SCHEDULES -->
+<!--		WHERE MS_CODE = #{msCode}-->
+<!--	</delete>-->
 	
 	
 	<!-- 작업시작 버튼 = 날짜 업데이트&진행중 -->
@@ -103,7 +116,7 @@
 	     WHERE WO_NO = #{woNo}
 	</update>
 	
-	<!-- 로트번호로 단일제품 정보 들고오기 -->
+	<!-- 로트번호로 단일제품 정보 들고오기 LOT DETAIL -->
 	<select id="selectLotNoDetail" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
 		SELECT 
 		    L.*, 
@@ -129,7 +142,7 @@
 	<!-- 로트번호 뿌리기 -->
 	<select id="selectLotDetail" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
 		SELECT L.*,W.PDT_NAME
-		FROM LOT L JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+		FROM LOT L LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
 	</select>
 	
 	
@@ -169,6 +182,7 @@
 
 	</select>
 	
+	<!--  특정 lot기준으로 그 하위공정 목록만 조회 -->
 	<select id="selectLotProcessListByLotNo" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
 		SELECT
 		  L.LOT_NO,
@@ -179,12 +193,9 @@
 		  L.PRC_TYPE,
 		  L.START_TIME,
 		  L.FINISH_TIME,
-
-		  W.EMP_NAME,
+		--  W.EMP_NAME,
 		  W.WO_STATUS_CODE,
 		  S.WO_STATUS_NAME,
-
-
 		  L.WO_QTY,
 		  P.PRC_TYPE_NAME,
 		  E.EMP_NAME
@@ -200,15 +211,73 @@
 	</select>
 	
   <select id="selectCompleteStatsLast7Days"  resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
-    SELECT TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') AS workDate,
-           COUNT(*) AS completeCount 
-    FROM WORK_ORDER
-    WHERE WO_END_DATE BETWEEN SYSDATE - 6 AND SYSDATE
-      AND WO_STATUS_CODE = 'CP'
-    GROUP BY TO_CHAR(WO_END_DATE, 'YYYY-MM-DD')
-    ORDER BY workDate
+<!--     SELECT TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') AS workDate, -->
+<!--            COUNT(*) AS completeCount  -->
+<!--     FROM WORK_ORDER -->
+<!--     WHERE WO_END_DATE BETWEEN SYSDATE - 6 AND SYSDATE -->
+<!--       AND WO_STATUS_CODE = 'CP' -->
+<!--     GROUP BY TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') -->
+<!--     ORDER BY workDate -->
+    
+    <!-- LOT기준으로 그래프 그리기 >>> 값이 하루에만 너무 많아짐 -->
+    SELECT TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') AS workDate,
+       COUNT(*) AS completeCount 
+	FROM LOT
+	WHERE CREATE_DATE BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE) + 0.99999
+	  AND WO_STATUS_NO = 'CP'
+	GROUP BY TO_CHAR(CREATE_DATE, 'YYYY-MM-DD')
+	ORDER BY workDate
   </select>
   
+  <!-- lotNo로 품질이력 들고오기 -->
+  <select id="selectQualityHistory" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+  	SELECT 
+	  	IPI_START_TIME
+	  	,IPI_END_TIME 
+	  	,IPI_MEASURED_LENGTH_VALUE
+	  	,IPI_MEASURED_WEIGHT_VALUE
+	  	,IPI_INSPECTION_RESULT
+	  	,CHILD_LOT_CODE
+	  	,QCM_NAME
+	  	,LOT_NO
+	  	,EMP_NAME
+  	  FROM IPI 
+  	 WHERE LOT_NO = #{lotNo}
+  </select>
   
+  <select id="selectTodayProcessTop5"  resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+	  SELECT 
+		    P.PRC_TYPE_NAME AS processName, 
+		    COUNT(*) AS incompleteCount
+		FROM LOT L
+		LEFT JOIN PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
+		WHERE L.CREATE_DATE BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 0.99999
+		  AND L.WO_STATUS_NO != 'CP' -- 미완료만
+		GROUP BY P.PRC_TYPE_NAME
+		ORDER BY incompleteCount DESC
+		FETCH FIRST 5 ROWS ONLY
+  </select>
+  
+  <select id="getWoNoMax" resultType="Long">
+  		SELECT MAX(WO_NO) 
+  		  FROM WORK_ORDER
+  </select>
+  
+  <select id="getWoCodeLast" resultType="String">
+  	  SELECT WO_CODE
+	  FROM WORK_ORDER
+	  WHERE WO_NO = (SELECT NVL(MAX(WO_NO),0) FROM WORK_ORDER)
+  </select>
+  <!-- LOT검색 -->
+  <select id="findLotsByKeyword" parameterType="String" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+  	SELECT 
+	    L.*, 
+	    W.PDT_NAME
+	  FROM LOT L
+	  LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+	  WHERE LOWER(L.CHILD_LOT_CODE) LIKE LOWER(#{keyword})
+	     OR LOWER(L.WO_CODE) LIKE LOWER(#{keyword})
+	     OR LOWER(W.PDT_NAME) LIKE LOWER(#{keyword})
+  </select>
 </mapper>
 	

@@ -4,6 +4,7 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 <head>
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
     <!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -134,10 +135,6 @@
 	            					<input type="hidden" id="currentUserId" th:value="${#authentication.name}" />
                                     
                                     <!-- 엑셀 파일 입력 및 버튼 -->
-                                    <input type="file" class="form-control file-input" id="wareHouseFileInput" accept=".xlsx,.xls">
-                                    <button type="button" id="ExcelUpBtn" class="btn btn-excel">
-                                        <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
-                                    </button>
                                     <button type="button" id="ExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
@@ -185,6 +182,14 @@
 	<script th:inline="javascript">
 	
 	//================================== 그리드 부분 ================================= 
+	const statusColorMap = {
+	  '등록': 'badge bg-primary', 
+	  '대기': 'badge bg-success', 
+	  '생산중': 'badge bg-danger',
+	  '완료': 'badge bg-warning'
+	};
+		
+		
 	let mpList = /*[[${mpList}]]*/ [];
 	
 	let grid1 = new tui.Grid({
@@ -222,28 +227,60 @@
 				filter: 'text',
 				align: "center" 
             },
-			{
-                header: '등록 직원명',
-                name: 'empName',
-				width: 200,
-				fontSize: '40',
+            {
+                header: '제품코드',
+                name: 'pdtCode',
+				width: 150,
 				sortable: true, 
 				filter: 'text',
-				align: 'center'
+				align: "center" 
             },
             {
-				header: '상태',
+                header: '제품명',
+                name: 'pdtName',
+				width: 150,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+            {
+                header: '주문수량',
+                name: 'soQty',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+            {
+                header: '주문단위',
+                name: 'qtyUnitName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: "center" 
+            },
+            {
+				header: '생산계획상태',
                 name: 'mpStatus',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: false
+				editor: false,
+			    formatter: function({ value }) {
+			          const bgClass = statusColorMap[value] || 'bg-secondary';
+			          return `
+			            <span class="badge ${bgClass}" 
+			                  style="font-size: 1rem; padding: 6px 12px; font-weight: 500;">
+			              ${value}
+			            </span>
+			          `;
+			    }
             },
             {
 				header: '우선순위',
                 name: 'mpPriority',
-				width: 200,
+				width: 100,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -259,9 +296,9 @@
 				}
             },
 			{
-                header: '생산 시작 예정일',
+                header: '생산시작예정일',
                 name: 'mpStartDate', 
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -273,9 +310,9 @@
 				}
             },
 			{
-                header: '생산 완료 예정일',
+                header: '생산완료예정일',
                 name: 'mpEndDate',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
@@ -285,24 +322,40 @@
 						format: 'yyyy-MM-dd'
 					}
 				}
+            },
+			{
+                header: '등록사원번호',
+                name: 'empId',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center'
+            },
+			{
+                header: '등록사원명',
+                name: 'empName',
+				width: 100,
+				sortable: true, 
+				filter: 'text',
+				align: 'center'
             },
 			{
                 header: '등록일자',
                 name: 'mpCreatedAt',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: null
+				editor: false
             },
 			{
                 header: '수정일자',
                 name: 'mpUpdatedAt',
-				width: 200,
+				width: 150,
 				sortable: true, 
 				filter: 'text',
 				align: 'center',
-				editor: null
+				editor: false
             }
         ], 
 		autoEdit: true,
@@ -311,7 +364,6 @@
 
 
 	let soList = /*[[${soList}]]*/ [];
-	console.log("-----------------확인", soList);
 	let grid2 = null;
 	
 	let mpCode = "";
@@ -363,14 +415,14 @@
 						align: "center"
 					},
 					{
-						header: '납품기한',
-						name: 'soDueDate',
+						header: '수주일자',
+						name: 'soDate',
 						sortable: true,
 						align: "center"
 					},
 					{
-						header: '소요시간',
-						name: 'leadTime', 
+						header: '납품기한',
+						name: 'soDueDate',
 						sortable: true,
 						align: "center"
 					},
@@ -416,76 +468,93 @@
 					},
 					{
 						header: '재고 조회',
-						name: 'selectPdtQty', 
+						name: 'checkStock', 
 						sortable: true,
 						align: "center",
-						formatter: (pdtQty) => {
-							 if (pdtQty.value === "등록 가능") {
-							        return '<span class="text-success">' + pdtQty.value + '</span>';
-							    } else if (pdtQty.value === "재고 부족") {
-							        return '<span class="text-secondary">' + pdtQty.value + '</span>';
+						formatter: (qty) => {
+							 if (qty.value === true) {
+							        return '<span class="text-success"><strong>등록 가능</strong></span>';
+							    } else if (qty.value === false) {
+							        return '<span class="text-secondary"><strong>재고 부족</strong></span>';
 							    }
-							    return '<button class="btn btn-warning btn-sm select-pdtQty-btn">조회</button>';
+							    return '<button class="btn btn-success btn-sm check-stock-btn">조회</button>';
 						}
 					}
 				]
 			});
+		} else {
+			grid2.resetData([...soList]); // 그리드 초기화
 		}
 		
-/* 		grid2.on('afterChange', (ev) => {
+		grid2.on('afterChange', ev => {
 		    ev.changes.forEach(change => {
-		        if (change.columnName === 'mpStartDate') {
-		            const rowKey = change.rowKey;
-		            const mpStartDateStr = change.value; // 입력된 생산 시작 예정일 (문자열)
-		            const leadTimeHours = grid2.getValue(rowKey, 'leadTime'); // 소요시간 가져오기
-		            console.log("DDDDD",leadTime);
-		            
-		            if (mpStartDateStr && leadTimeHours) {
-		                const mpStartDate = new Date(mpStartDateStr);
-		                const leadTimeDays = Math.ceil(leadTimeHours / 24); // 소요시간을 24로 나누어 일 수 계산
-		                mpStartDate.setDate(mpStartDate.getDate() + leadTimeDays); // 날짜 더하기
+		        const rowKey = change.rowKey;
 
-		                const mpEndDateStr = mpStartDate.toISOString().split('T')[0]; // yyyy-MM-dd 포맷
-		                grid2.setValue(rowKey, 'mpEndDate', mpEndDateStr); // 종료일 업데이트
+		        const startDateStr = grid2.getValue(rowKey, 'mpStartDate');
+		        const endDateStr = grid2.getValue(rowKey, 'mpEndDate');
+		        const soDateStr = grid2.getValue(rowKey, 'soDate');
+
+		        const startDate = startDateStr ? new Date(startDateStr) : null;
+		        const endDate = endDateStr ? new Date(endDateStr) : null;
+		        const soDate = soDateStr ? new Date(soDateStr) : null;
+
+		        // 생산 시작 예정일 체크
+		        if (change.columnName === 'mpStartDate' && startDate && soDate) {
+		            if (startDate < soDate) {
+		                Swal.fire({
+		                    icon: 'warning',
+		                    title: '잘못된 시작일',
+		                    text: '생산 시작 예정일은 수주일자 이후여야 합니다.'
+		                });
+		                grid2.setValue(rowKey, 'mpStartDate', null);
+		            }
+		        }
+
+		        // 생산 완료 예정일 체크
+		        if (change.columnName === 'mpEndDate' && endDate) {
+		            if (soDate && endDate < soDate) {
+		                Swal.fire({
+		                    icon: 'warning',
+		                    title: '잘못된 완료일',
+		                    text: '생산 완료 예정일은 수주일자 이후여야 합니다.'
+		                });
+		                grid2.setValue(rowKey, 'mpEndDate', null);
+		                return;
+		            }
+
+		            if (startDate && endDate < startDate) {
+		                Swal.fire({
+		                    icon: 'warning',
+		                    title: '잘못된 완료일',
+		                    text: '생산 완료 예정일은 생산 시작 예정일 이후여야 합니다.'
+		                });
+		                grid2.setValue(rowKey, 'mpEndDate', null);
 		            }
 		        }
 		    });
-		}); */
-		
-		// 행 아무곳이나 클릭하면 체크박스 활성화
-	    grid2.on('click', ev => {
-	    	  const { rowKey, columnName } = ev;
+		});
 
-	    	  if (columnName === '_checked') return;
-	    	  const isChecked = grid2.getCheckedRowKeys().includes(rowKey);
-	    	  if (!isChecked) {
-	    	    grid2.check(rowKey);
-	    	  } else {
-	    	    grid2.uncheck(rowKey);
-	    	  }
-	    });
 		
 		
 		grid2.on('click', (ev) => {
-		    if (ev.columnName === 'selectPdtQty') {
+		    if (ev.columnName === 'checkStock') {
 		    	
 		    	const rowKey = ev.rowKey;
 		        const rowData = grid2.getRow(rowKey);
 		        
 		        $.ajax({
-		            url: '/mp/selectAvailableQty',
+		            url: '/mp/checkStock',
 		            type: 'GET',
 		            data: {
 		            	soCode: rowData.soCode,
 		            	soQty: rowData.soQty
 		            },
 		            success: function(isAvailable) {
-		                grid2.setValue(rowKey, 'selectPdtQty', isAvailable);
+		                grid2.setValue(rowKey, 'checkStock', isAvailable);
 		                
 		            },
 		            error: function(xhr, status, error) {
 		                console.error('재고 확인 중 오류:', error);
-		               
 		            }
 		        });
 		    }
@@ -493,16 +562,7 @@
 		
 	});	
 	
-	
-	
-	/*
-	grid.on('onGridUpdated', (ev) => {
-		// 그리드 레이아웃 새로고침 (로드가 다 되지 않는 경우 그리드가 흰색 화면으로 출력될 때가 있다.)
-	    grid.refreshLayout();
-	});*/
-	
-	
-	// TODO
+
 	//상품 계획 등록 시작 -------------------------------------------
 	$('#mfgPlanRegiBtn').on('click', async function () {
 		// 로그인한 유저 정보
@@ -510,51 +570,74 @@
 	
 		const checkedRows = grid2.getCheckedRows(); // 선택된 행 가져오기
 		
-		// 생산계획번호 자동 생성
-// 		const today = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
-// 		const mpCodePromises = checkedRows.map(() => 
+	    if (checkedRows.length === 0) {
+	        await Swal.fire({
+	            icon: 'warning',
+	            title: '선택된 항목 없음',
+	            text: '생산 계획 등록할 항목을 선택해주세요.'
+	        });
+	        return;
+	    }
 		
-// 			$.ajax({
-// 				url: '/mp/makeMpCode',
-// 				method: 'GET',
-// 				data: { data: today },
-// 				success: function (code) {
-// 					debugger;
-// 					mpCode = code; // 등록 시 사용할 예정
-// 					console.log("자동 생성된 MP 코드:", mpCode);
-// 				},
-// 				error: function () {
-// 					alert("생산계획코드 자동 생성 실패");
-// 				}
-// 			})
-// 		);
-// 		const mpCodes = await Promise.all(mpCodePromises);
-
+		
+		for (let row of checkedRows) {
+	        if (!row.mpPriority || !row.mpStartDate || !row.mpEndDate) {
+	            await Swal.fire({
+	                icon: 'warning',
+	                title: '필수 항목 누락',
+	                text: '입력하지 않은 항목이 있습니다.'
+	            });
+	            return;
+	        }
+	        
+	        if (row.checkStock !== true) {
+	            await Swal.fire({
+	                icon: 'warning',
+	                title: '재고 확인 필요',
+	                text: '모든 항목의 재고를 조회하고, 등록 가능 상태여야 합니다.'
+	            });
+	            return;
+	        }
+	    }
+		
+		 const confirmResult = await Swal.fire({
+		        icon: 'question',
+		        title: '생산 계획으로 등록하시겠습니까?',
+		        showCancelButton: true,
+		        confirmButtonText: '등록',
+		        cancelButtonText: '취소'
+		    });
+		
+		
+		 if (confirmResult.isConfirmed) {
 		const dataList = checkedRows.map((row, index) => ({
 	        ...row,
-	        empId: empId,
-// 	        mpCode: mpCodes[index] // 각 수주별 개별 mpCode
+	        empId: empId
 	    }));
-	
-		
-		// 체크를 해야만 값이 넘어오고
-		// 여러 건 체크했을 때도 값이 넘어와야 하고
-		// { ...checkedRows[0] } => 0번 row가 이상함! 0번 row.........
-		// 2개 체크해서 버튼 눌러도 0번 row만 넘어옴;;
-		
+
 		$.ajax({
 			url: "/mp/mfgPlanRegi",
 			method : "POST",
 			contentType: "application/json",
 			data: JSON.stringify(dataList), // JSON 문자열로 전송
-			success : function (response){
-				alert(response);
+			success : async function (response){
+				await Swal.fire({
+                    icon: 'success',
+                    title: '등록 완료',
+                    text: '생산 계획 등록이 완료되었습니다.'
+                });
 				location.reload();
 			},
 			error : function (error){
 				console.log(error);
+				Swal.fire({
+                    icon: 'error',
+                    title: '등록 실패',
+                    text: '생산 계획 등록이 실패했습니다.'
+                });
 			}
-		})
+		});
+		}
 	});
 	// 상품 계획 등록 끝---------------------------------------------------------	
 	
@@ -629,6 +712,34 @@
   		    });
   		    return;
   		}
+  		
+  		// '등록' 상태 아닌 항목만 필터링
+  		const invalidRows = checkedRows.filter(row => row.mpStatus !== '등록');
+  		
+  	    if (invalidRows.length > 0) {
+  	        const statusMap = new Map();
+
+  	        // 상태별로 mpCode를 모읍니다
+  	        invalidRows.forEach(row => {
+  	            if (!statusMap.has(row.mpStatus)) {
+  	                statusMap.set(row.mpStatus, []);
+  	            }
+  	            statusMap.get(row.mpStatus).push(row.mpCode);
+  	        });
+
+  	        // 메시지 생성
+  	        let message = '';
+	  	    for (const status of statusMap.keys()) {
+	  	    	message += `${status}인 항목은 삭제할 수 없습니다.<br>`;
+	  	    }
+
+  	        await Swal.fire({
+  	            icon: "warning",
+  	            title: "삭제 불가",
+  	            html: message
+  	        });
+  	        return;
+  	    }
 
   		const result = await Swal.fire({
   		    title: "정말 삭제하시겠습니까?",
@@ -661,9 +772,9 @@
   		    if (!response.ok) {
   		      await Swal.fire({
   		        icon: "error",
-  		        title: "삭제 처리 중 서버 오류가 발생했습니다",
+  		        title: "삭제 처리 중 오류가 발생했습니다",
   		      });
-  		      throw new Error("삭제 처리 중 서버 오류");
+  		      throw new Error("삭제 처리 중 오류");
   		    }
 
   		    await Swal.fire({
@@ -677,7 +788,7 @@
   		    console.error('Error:', error);
   		    await Swal.fire({
   		      icon: "error",
-  		      title: "삭제 처리 중 예외가 발생했습니다",
+  		      title: "삭제 처리 중 오류가 발생했습니다",
   		    });
   		  }
   		}
@@ -714,80 +825,6 @@
 	    XLSX.writeFile(workbook, 'MFG-PLAN-grid-data.xlsx');
 	});
 	
-	let file;
-	let reader;
-
-	//버튼 클릭 시 선택된 엑셀 파일을 그리드에 출력
-	document.getElementById('ExcelUpBtn').addEventListener('click', function (e) {
-		
-		if (!file) {
-			document.getElementById('fileInput').click();
-	        return;
-	    }
-		
-		reader.onload = function (event) {
-			const data = new Uint8Array(event.target.result);
-		    const workbook = XLSX.read(data, { type: 'array' });
-
-			const firstSheetName = workbook.SheetNames[0];
-		    const worksheet = workbook.Sheets[firstSheetName];
-
-			console.log(worksheet);
-			
-			worksheet["A1"] = { t: "s", v: "mpNo", r:"<t>mpNo</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpNo', w: 'mpNo' };
-			worksheet["B1"] = { t: "s", v: "mpCode", r:"<t>mpCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpCode', w: 'mpCode' };
-			worksheet["C1"] = { t: "s", v: "soCode", r:"<t>soCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'soCode', w: 'soCode' };    			
-			worksheet["D1"] = { t: "s", v: "iqcCode", r:"<t>iqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'iqcCode', w: 'iqcCode' };
-			worksheet["E1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
-			worksheet["F1"] = { t: "s", v: "mpStatus", r:"<t>mpStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpStatus', w: 'mpStatus' };
-			worksheet["G1"] = { t: "s", v: "mpPriority", r:"<t>mpPriority</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpPriority', w: 'mpPriority' };
-			worksheet["H1"] = { t: "s", v: "mpCreatedAt", r:"<t>mpCreatedAt</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpCreatedAt', w: 'mpCreatedAt' };    			
-			worksheet["I1"] = { t: "s", v: "mpUpdatedAt", r:"<t>mpUpdatedAt</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpUpdatedAt', w: 'mpUpdatedAt' };    			
-			worksheet["J1"] = { t: "s", v: "mpStartDate", r:"<t>mpStartDate</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpStartDate', w: 'mpStartDate' };
-			worksheet["K1"] = { t: "s", v: "mpEndDate", r:"<t>mpEndDate</t><phoneticPr fontId='1' type='noConversion'/>", h: 'mpEndDate', w: 'mpEndDate' };
-			
-			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-			// TUI Grid에 반영
-			grid1.resetData(jsonData);
-	   
-	   	
-			// 바로 서버에 저장 요청
-			fetch('/mp/saveExcelData', {
-			    method: 'POST',
-			    headers: {
-			        'Content-Type': 'application/json'
-			    },
-			    body: JSON.stringify(jsonData)
-			})
-			.then(res => {
-			    if (!res.ok) throw new Error("저장 실패");
-			    return res.text();
-			})
-			.then(data => {
-			    Swal.fire({
-			        icon: 'success',
-			        title: '업로드 완료',
-			        text: '엑셀 업로드 및 저장이 완료되었습니다.',
-			        confirmButtonText: '확인'
-			    });
-			})
-			.catch(err => {
-			    console.error(err);
-			    Swal.fire({
-			        icon: 'error',
-			        title: '저장 오류',
-			        text: '엑셀 저장 중 오류가 발생했습니다.',
-			        confirmButtonText: '닫기'
-			    });
-			});
-			
-			};
-
-		reader.readAsArrayBuffer(file);
-		
-	});	
-	
     
   	// grid 데이터 원본 저장
   	const originalData = grid1.getData();
@@ -806,29 +843,10 @@
   	  // 필터링된 데이터로 그리드 업데이트
   	  grid1.resetData(filtered);
   	});
-  	
-  	
-  	function applyFilter() {
-		  const keyword = document.getElementById('searchInput').value.toLowerCase();
-
-		  let filtered = originalData;
-
-		  if (keyword) {
-		    filtered = filtered.filter(row =>
-		      Object.values(row).some(val =>
-		        val != null && String(val).toLowerCase().includes(keyword)
-		      )
-		    );
-		  }
-
-		  grid1.resetData(filtered);
-		}
 
   		document.getElementById('mpSearchBtn').addEventListener('click', applyFilter);
 		document.getElementById('searchInput').addEventListener('input', applyFilter);
 
-	
-	
 	</script>
 	
 	</div>

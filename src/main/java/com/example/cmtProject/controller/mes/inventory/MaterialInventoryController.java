@@ -26,7 +26,7 @@ public class MaterialInventoryController {
     /**
      * 원자재 재고 메인페이지
      */
-    @GetMapping(PathConstants.MATERIALINVENTORY_VIEW)
+    @GetMapping(PathConstants.VIEW)
     public String materialInventoryGet(Model model) {
         Map<String,Object> findMap = new HashMap<>();
         List<Map<String,Object>> mInventoryList = mis.inventoryList(findMap);

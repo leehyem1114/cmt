@@ -26,7 +26,7 @@ public class MaterialReceiptController {
     /**
      * 입고관리 메인페이지
      */
-    @GetMapping(PathConstants.MATERIALRECEIPT_VIEW)
+    @GetMapping(PathConstants.VIEW)
     public String materialReceiptGet(Model model) {
         
         Map<String, Object> findMap = new HashMap<>();

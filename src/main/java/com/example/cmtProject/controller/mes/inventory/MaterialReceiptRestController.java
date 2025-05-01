@@ -37,7 +37,7 @@ public class MaterialReceiptRestController {
      * @param keyword 검색 키워드 (선택)
      * @return 입고 목록 데이터
      */
-    @GetMapping("/list")
+    @GetMapping(PathConstants.LIST)
     public ApiResponse<List<Map<String, Object>>> getMaterialReceipt(
             @RequestParam(name = "keyword", required = false) String keyword) {
         
@@ -59,7 +59,7 @@ public class MaterialReceiptRestController {
      * @param receiptNo 입고 번호
      * @return 입고 상세 정보
      */
-    @GetMapping("/detail/{receiptNo}")
+    @GetMapping(PathConstants.DETAIL + "/{receiptNo}")
     public ApiResponse<Map<String, Object>> getReceiptDetail(@PathVariable("receiptNo") Long receiptNo) {
         log.info("입고 상세 정보 조회 요청. 입고번호: {}", receiptNo);
         Map<String, Object> detail = mrs.getReceiptDetail(receiptNo);
@@ -77,7 +77,7 @@ public class MaterialReceiptRestController {
      * @param receiptNo 입고 번호
      * @return 입고 이력 정보 목록
      */
-    @GetMapping("/history/{receiptNo}")
+    @GetMapping(PathConstants.HISTORY + "/{receiptNo}")
     public ApiResponse<List<Map<String, Object>>> getReceiptHistory(@PathVariable("receiptNo") Long receiptNo) {
         log.info("입고 이력 정보 조회 요청. 입고번호: {}", receiptNo);
         
@@ -117,7 +117,7 @@ public class MaterialReceiptRestController {
      * @param params 입고 확정 처리할 항목 정보
      * @return 처리 결과
      */
-    @PostMapping("/confirm")
+    @PostMapping(PathConstants.CONFIRM)
     public ApiResponse<Map<String, Object>> confirmReceipt(@RequestBody Map<String, Object> params) {
         log.info("입고 확정 처리 요청: {}", params);
         
@@ -139,7 +139,7 @@ public class MaterialReceiptRestController {
      * @param params 검수 등록 처리할 항목 정보
      * @return 처리 결과
      */
-    @PostMapping("/inspection")
+    @PostMapping(PathConstants.INSPECTION)
     public ApiResponse<Map<String, Object>> registerInspection(@RequestBody Map<String, Object> params) {
         log.info("검수 등록 처리 요청: {}", params);
         

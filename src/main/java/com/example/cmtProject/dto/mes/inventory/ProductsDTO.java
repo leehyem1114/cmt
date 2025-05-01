@@ -16,7 +16,7 @@ public class ProductsDTO {
     private Long pdtNo;             // 제품 번호 (PK)
     private String pdtCode;         // 제품 코드
     private String pdtName;         // 제품 이름
-    private String pdtShippingPrice; // 배송비
+    private String pdtShippingPrice; // 비용
     private String pdtComments;     // 제품 설명
     private String pdtUseyn;        // 사용 여부 (Y/N)
     private String mtlTypeCode;     // 자재 유형 코드

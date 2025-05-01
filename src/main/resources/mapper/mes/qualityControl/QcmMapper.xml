@@ -133,6 +133,16 @@
 		FROM QCM 
 		WHERE MTL_NAME = #{mtlName}
 	</select>
+
+	<!-- 특정 QCM이름 가져오기 -->
+	<select id="getQcmNamesByPdtName" resultType="map">
+		SELECT 
+			QCM_NAME,
+			QCM_UNIT_LENGTH,
+			QCM_UNIT_WEIGHT 
+		FROM QCM 
+		WHERE PDT_NAME = #{pdtName}
+	</select>
 	
 	
 	

@@ -3,11 +3,13 @@ package com.example.cmtProject.controller.mes.qualityControl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -18,15 +20,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.cmtProject.dto.mes.qualityControl.FqcDTO;
-import com.example.cmtProject.dto.mes.qualityControl.IqcDTO;
+import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.entity.erp.employees.PrincipalDetails;
-import com.example.cmtProject.entity.mes.qualityControl.Fqc;
-import com.example.cmtProject.repository.mes.qualityControl.FqcRepository;
 import com.example.cmtProject.service.mes.qualityControl.FqcService;
+import com.example.cmtProject.service.mes.qualityControl.QcmService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
@@ -42,6 +44,9 @@ public class FqcController {
 	
 	@Autowired
 	private FqcService fqcService;
+	
+	@Autowired
+	private QcmService qcmService;
 
 	
 	@GetMapping("/inspection-info")
@@ -60,8 +65,14 @@ public class FqcController {
     	List<FqcDTO> fqcList = fqcService.getAllFqc();
     	model.addAttribute("fqcList", fqcList);
     	
-    	
     	return "mes/qualityControl/fqcList";
+	}
+	
+	
+	@GetMapping("/names-by-pdt")
+	@ResponseBody
+	public List<Map<String, Object>> getQcmNamesByPdt(@RequestParam("pdtName") String pdtName) {
+	    return qcmService.getQcmNamesByPdtName(pdtName);
 	}
 	
 	
@@ -69,7 +80,7 @@ public class FqcController {
 	@ResponseBody
 	@PostMapping("/edit")
 	public void qcmEditexep(@ModelAttribute FqcDTO fqcDTO) throws JsonMappingException, JsonProcessingException {
-			fqcService.fqcRemarksUpdate(fqcDTO); 
+			fqcService.fqcRemarksAndQcmNameUpdate(fqcDTO); 
 	}
 	
 	
@@ -86,7 +97,7 @@ public class FqcController {
     }
     
     
- // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
+    // 검사전 버튼 누르면 검사중으로 바뀌고 검사중 버튼 누르면 검사완료 버튼이 된다
     @ResponseBody
     @PostMapping("/status-action")
     public ResponseEntity<?> postMethodName(Model model, 
@@ -100,15 +111,53 @@ public class FqcController {
     	
     	fqcDTO.setFqcCode(payload.get("fqcCode"));
         String status = payload.get("status");
+        fqcDTO.setWoCode(payload.get("woCode"));
 
         // TODO: 상태에 따라 분기 처리
-        if ("검사전".equals(status)) {
+        if ("검사중".equals(status)) {
         	fqcService.updateFqcInspectionStatusProcessing(loginUser, fqcDTO);
-        } else if ("검사중".equals(status)) {
+        } else if ("검사완료".equals(status)) {
         	fqcService.updateFqcInspectionStatusComplete(fqcDTO);
         }
     	
+        
         return ResponseEntity.ok(Collections.singletonMap("result", "success"));
+    }
+    
+    
+    @PostMapping("/auto-inspect")
+    @ResponseBody
+    public ResponseEntity<?> autoInspect(@RequestBody Map<String, String> request) {
+        String fqcCode = request.get("fqcCode");
+        try {
+            FqcDTO result = fqcService.autoInspect(fqcCode);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("message", e.getMessage()));
+        }
+    }
+    
+    
+    // 차트 값 넘겨주기
+    @GetMapping("/inspection-summary")
+    @ResponseBody
+    public Map<String, Integer> getInspectionSummary() {
+
+         Map<String, Integer> result = new HashMap<>();
+         InspectionSummaryDTO summary = fqcService.getSummary();
+         result.put("passCount", summary.getPassCount() != null ? summary.getPassCount() : 0);
+         result.put("inProgressCount", summary.getInProgressCount() != null ? summary.getInProgressCount() : 0);
+         result.put("failCount", summary.getFailCount() != null ? summary.getFailCount() : 0);
+
+         return result;
+    }
+    
+    // ✅ 최근 7일 검사 요약 조회
+    @ResponseBody
+    @GetMapping("/inspection-summary-last-7-days")
+    public List<InspectionSummaryDTO> getLast7DaysInspectionSummary() {
+        return fqcService.getLast7DaysSummary();
     }
     
     

@@ -37,8 +37,8 @@ const MaterialReceiptManager = (function() {
     const RECEIPT_STATUS = {
         WAITING: '입고대기',
         INSPECTING: '검수중',
-		INSPECT_PASSED: '검수합격',
-		INSPECT_FAILED: '검수 불합격',
+		INSPECT_PASSED: '검사 합격',
+		INSPECT_FAILED: '검사 불합격',
         COMPLETED: '입고완료',
         CANCELED: '취소'
     };
@@ -240,7 +240,7 @@ const MaterialReceiptManager = (function() {
                             } else if (status === RECEIPT_STATUS.COMPLETED) {
                                 badgeClass = 'badge-completed';
                             } else if(status === RECEIPT_STATUS.INSPECT_PASSED){
-								badgeClass = 'badge-completed'
+								badgeClass = 'badge-inspectPass'
 							}else if(status === RECEIPT_STATUS.INSPECT_FAILED){
 								badgeClass = 'badge-canceled';
 							} else if (status === RECEIPT_STATUS.CANCELED) {
@@ -388,9 +388,13 @@ const MaterialReceiptManager = (function() {
             badgeClass = 'badge-inspecting';
         } else if (status === RECEIPT_STATUS.COMPLETED) {
             badgeClass = 'badge-completed';
-        } else if (status === RECEIPT_STATUS.CANCELED) {
+        } else if (status === RECEIPT_STATUS.INSPECT_PASSED){
+            badgeClass = 'badge-inspectPass';
+		} else if (status === RECEIPT_STATUS.INSPECT_FAILED){
             badgeClass = 'badge-canceled';
-        }
+		} else if (status === RECEIPT_STATUS.CANCELED) {
+            badgeClass = 'badge-canceled';
+		}
         
         document.getElementById('receiptStatus').innerHTML = `<span class="badge ${badgeClass}">${status}</span>`;
         document.getElementById('poCode').textContent = detailData.PO_CODE || '';

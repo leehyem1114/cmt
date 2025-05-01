@@ -349,7 +349,7 @@ public class SalaryController {
         }
     }
 
-	// 급여 대장 조회
+	// 월별 급여 대장 조회
 	@GetMapping("/payroll")
 	public String getPayroll(Model model) {
 		List<PaymentDTO> payrollSummaryList = salaryService.getMonthlyPayrollSummaryList();
@@ -358,13 +358,13 @@ public class SalaryController {
 	}
 	
 	// 월별 급여 대장 상세 조회
-	@PostMapping("/payroll/detail")
+	@PostMapping("/payroll/month")
 	@ResponseBody
 	public Map<String, Object> getPayrollDetail(@RequestParam("payMonth") String payMonth) {
 		System.out.println("전달된 payMonth = " + payMonth);
 		
 		Map<String, Object> result = new HashMap<>();
-		result.put("deptList", salaryService.getMonthlyDeptPayrollList(payMonth)); // 부서별 급여 내역
+		result.put("deptList", salaryService.getMonthlyDeptPayrollList(payMonth)); // 급여 현황
 		System.out.println("SDSFSDDSDF"+salaryService.getMonthlyDeptPayrollList(payMonth));
 		
 		System.out.println(salaryService.getMonthlyPayrollTotalList(payMonth));
@@ -374,12 +374,18 @@ public class SalaryController {
 	    return result;
 	}
 	
+	// 연간 급여 대장 조회
+	@PostMapping("/payroll/yearly")
+	@ResponseBody
+	public Map<String, Object> getPayrollYearly(@RequestParam("payYear") String payYear) {
+		List<Map<String, Object>> resultList = salaryService.getYearlyPayrollList(payYear);
+		Map<String, Object> result = new HashMap<>();
+		
+	    result.put("DATA", resultList);
+		System.out.println("adsfasdfadsfd" + resultList);
+		return result;
+	}
 
-	
-	
-	
-	
-	
 	//==========================================
 	
 	@GetMapping("insertPayForm/{empId}")

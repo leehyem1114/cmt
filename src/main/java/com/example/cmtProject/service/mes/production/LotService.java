@@ -9,6 +9,8 @@ import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotStructurePathDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
+import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomStructurePathDTO;
 import com.example.cmtProject.mapper.mes.production.LotMapper;
 
@@ -82,7 +84,32 @@ public class LotService {
 		lotMapper.deleteSavePrc();
 	}
 
-	
+	public List<SemiFinalBomQty> getBomQty(String woCode) {
+		return lotMapper.getBomQty(woCode);
+	}
 
-	
+	public List<String> selectParentPdtCode(String pdtCode) {
+		return lotMapper.selectParentPdtCode(pdtCode);
+	}
+
+	public Long getIpiNo() {
+		return lotMapper.getIpiNo();
+	}
+
+	public void updateWoEndDate(String woCode, String today) {
+		lotMapper.updateWoEndDate(woCode, today);
+	}
+
+	public void insertIpi(IpiDTO ipidto) {
+		lotMapper.insertIpi(ipidto);
+	}
+
+	public void updateMfgScdStatus(String woCode, String mfgscd) {
+		lotMapper.updateMfgScdStatus(woCode, mfgscd);
+	}
+
+	public void updateMfgPlanStatus(String woCode, String mfgPlan) {
+		lotMapper.updateMfgPlanStatus(woCode, mfgPlan);
+		
+	}
 }

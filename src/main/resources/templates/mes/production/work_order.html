@@ -5,21 +5,8 @@
 	      layout:decorate="~{layouts/layout}">
 <head>
 <meta charset="UTF-8">
-	<!-- 최신 xlsx 스크립트 CDN(엑셀용) -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-	
-	<!-- CSS -->
-	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" />
-	
-	<!-- JS -->
-	<script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
-	<script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
-	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.js"></script>
-	
-	<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-	
 
+	
 
 </head>
 <body>
@@ -33,16 +20,11 @@
 		        <h5 class="card-title"></h5>
 		    </div>
 			<div class="row mb-3"> <!-- 검색박스 -->
-		        <div class="col-md-3">
-		            <input type="month" class="form-control" placeholder="등록월">
-		        </div>
 		        <div class="col-md-4">
-		            <div class="input-group">
-		                <input type="text" class="form-control" placeholder="상품명을 입력해주세요.">
-		                <button class="btn btn-outline-secondary" type="button">
-		                    <i class="bi bi-search"></i>
-		                </button>
-		            </div>
+			        <div id="searchForm" class="d-flex align-items-center gap-2">
+				        <input type="text" id="searchInput" class="form-control" placeholder="검색어를 입력하세요" />
+						<button id="dateSearchBtn" class="btn btn-primary btn-m"><i class="fa-solid fa-magnifying-glass"></i></button>
+			        </div>
 		        </div>
 	   			<div class="text-end" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')"> <!-- 작업등록 버튼 -->
 				    <button class="btn btn-primary btn-m" id="regeWork" data-bs-toggle="modal" data-bs-target="#workModal"><i class="fa-solid fa-magnifying-glass"></i> 작업등록</button>
@@ -54,33 +36,33 @@
 			<div class="card-header">
 		        <h5 class="card-title"><i class="fa-solid fa-bars"></i> 작업지시 목록</h5>
 		    </div>
-		    <div id="grid" style="height: 400px;"></div>
+		    
+		    
+		    <div id="grid" style="height: 400px;width:1300px"></div>
 		    
 		    <script th:inline="javascript">
 		    	const gridData = /*[[${orderList}]]*/ [];
 		    	gridData.forEach((list, index) => list.rowNum = index + 1); //row번호
-		    	console.log(gridData);
+		    	//console.log(gridData);
 			    const grid = new tui.Grid({
 			      el: document.getElementById('grid'),
 			      data: gridData,
 			      rowHeaders: ['checkbox'],
-			      scrollX: false,
-			      scrollY: true,
-			      bodyHeight: 300,
 			      columns: [
-			    	{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center'},
-			        { header: '계획코드', name: 'woCode',sortable: true,align: 'center' },
-			        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
-			        { header: '품목', name: 'pdtName' ,align: 'center'},
-			        { header: '수량', name: 'woQty' ,align: 'center'},
-			        { header: '단위', name: 'unit' ,align: 'center' ,formatter: () => 'EA'},
-			        { header: '작업담당자', name: 'empName' ,align: 'center'},
+			    	{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center', width:'80'},
+					{ header: '제조코드', name: 'msCode',sortable: true,align: 'center', width:'150'},
+			        { header: '작업지시코드', name: 'woCode',sortable: true,align: 'center', width:'150'},
+			        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center' ,width:'150'},
+			        { header: '품목', name: 'pdtName' ,align: 'center', width:'150'},
+			        { header: '수량', name: 'soQty' ,align: 'center',  width:'100'},
+			        { header: '단위', name: 'unit' ,align: 'center' ,formatter: () => 'EA', width:'100'},
+			        { header: '작업담당자', name: 'empName' ,align: 'center', width:'100'},
 // 			        { header: '라인', name: 'lineCode' ,align: 'center'},
-			        { header: '공정', name: 'prcCode' ,align: 'center'},
-			        { header: '공정 상태', name: 'woStatusName' ,align: 'center'},
-			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
-			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'}
-			      ]
+			        { header: '공정', name: 'prcTypeCode' ,align: 'center' ,width:'150'},
+			        { header: '공정 상태', name: 'woStatusName' ,align: 'center',  width:'150'},
+			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' ,width:'150' },
+			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center' ,width:'150'}
+			      ],
 			    });
 		    	
 			    grid.on('click', ev => {
@@ -102,11 +84,56 @@
 				<button class="btn btn-warning btn-m" id="defectCheckBtn"><i class="fa-solid fa-spinner"></i> 품질검사</button>
 				<button class="btn btn-secondary btn-m" id="workEndBtn"><i class="fa-solid fa-file-circle-check"></i> 작업종료</button>
 			</div>
-		  
-		  <div class="card-header">
-		        <h5 class="card-title">👋 오늘 기준 미완료 공정 TOP 5</h5>
-		    </div>
-		    
+		  	<div class="card-header">
+			  <h5 class="card-title">👋 오늘 기준 미완료 공정 TOP 5</h5>
+			</div>
+			
+			<div id="myChart6"></div>
+			
+			<script type="text/javascript" th:inline="javascript">
+				let processNameList = /*[[${processNameList}]]*/ [];
+				if (!processNameList) {
+				  processNameList = [];
+				}
+	
+				let incompleteCountList = /*[[${incompleteCountList}]]*/ [];
+				if (!incompleteCountList) {
+				  incompleteCountList = [];
+				}
+				const data6 = {
+				  categories: processNameList,
+				  series: [
+				    {
+				      name: '미완료 건수',
+				      data: incompleteCountList
+				    }
+				  ]
+				};
+	
+				if (processNameList.length == 0) {
+					  // 미완료 공정이 없을 때
+					  document.getElementById('myChart6').innerHTML = '<span> - 현재 미완료 공정이 없습니다 <i class="fa-regular fa-face-smile-beam"></i></span>';
+					} else {
+					  const data6 = {
+					    categories: processNameList,
+					    series: [
+					      {
+					        name: '미완료 건수',
+					        data: incompleteCountList
+					      }
+					    ]
+					  };
+	
+				toastui.Chart.barChart({
+				  el: document.getElementById('myChart6'),
+				  data: data6,
+				  options: options6
+				});
+			}
+
+				</script>
+				
+		  	
 		    <div class="card-header">
 		        <h5 class="card-title">📈 최근 7일간 공정 완료 추이</h5>
 		    </div>
@@ -125,6 +152,7 @@
 					  series: [{
 					    name: "공정 완료 수",
 					    data: completeCountList
+					    
 					  }],
 					  xaxis: {
 					    type: 'category',
@@ -151,8 +179,8 @@
 					    }
 					  }
 					};
-					console.log(workDateList); // 날짜
-					console.log(completeCountList); // 개수
+					//console.log(workDateList); // 날짜
+					//console.log(completeCountList); // 개수
 				  const chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
 				  chart9.render();
 		</script>
@@ -177,21 +205,22 @@
 	                <div id="grid3" ></div>
 					<script th:inline="javascript">
 						const gridData3 = /*[[${planList}]]*/ []; //생산계획 리스트
-						 console.log('gdfgdfgfdfg',gridData3);
+						 //console.log('모달> 제조계획 >',gridData3);
 						
 						const grid3 = new tui.Grid({
 						  el: document.getElementById('grid3'),
 						  data: gridData3,
 						  rowHeaders: ['checkbox'],
-						  scrollX: false,
+						  scrollX: true,
 						  scrollY: true,
 						  columns: [
 					        { header: '계획코드', name: 'msCode',sortable: true,align: 'center' },
 					        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
 					        { header: '품목', name: 'pdtName' ,align: 'center'},
 					        { header: '계획 수량', name: 'soQty' ,align: 'center'},
-					        { header: '생산 시작 예정일', name: 'msStartTime',sortable: true,align: 'center' },
-					        { header: '생산 완료 목표일', name: 'msEndTime' ,align: 'center'}
+					        { header: '담당자', name: 'empName' ,align: 'center'},
+// 					        { header: '생산 시작 예정일', name: 'msStartTime',sortable: true,align: 'center' },
+// 					        { header: '생산 완료 목표일', name: 'msEndTime' ,align: 'center'}
 						  ]
 						});
 						
@@ -232,9 +261,8 @@
 			
 			const data = { ...selectedRows[0] }; //1개 row
 // 			const data = selectedRows
-
 			
-			console.log("보낼 데이터>>>", data);
+			//console.log("보낼 데이터>>>", data);
 			
 			$.ajax({
 				url : "/workOrder/regist",
@@ -243,15 +271,16 @@
 				data: JSON.stringify(data),
 // 				data : {data},
 				success : function (response){
-					alert(response);
 					grid3.removeCheckedRows();
-// 					location.reload();
 
 					$.ajax({
 					    url: "/workOrder/data",
 					    method: "GET",
 					    success: function(newData) {
+							console.log(newData);
 					        grid.resetData(newData);
+							
+							location.reload();
 					    }
 					});
 				},
@@ -282,7 +311,7 @@
 				contentType: "application/json",
 				data: JSON.stringify(data),
 				success : function (response){
-					console.log(response);
+					//console.log(response);
 					 Swal.fire({
 					        title: '작업시작!',
 					        icon: 'success',
@@ -300,6 +329,27 @@
 			});
 		}
 	
+		document.addEventListener("DOMContentLoaded", function () {
+		    const originalData = [...gridData];
+
+		    function applyFilter() {
+		      const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+		      let filtered = originalData;
+
+		      if (keyword) {
+		        filtered = filtered.filter(row =>
+		          Object.values(row).some(val =>
+		            val != null && String(val).toLowerCase().includes(keyword)
+		          )
+		        );
+		      }
+
+		      grid.resetData(filtered);
+		    }
+
+		    document.getElementById('searchInput').addEventListener('input', applyFilter);
+		  });
 	</script>
 </th:block>
 </body>

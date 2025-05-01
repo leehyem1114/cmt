@@ -7,6 +7,7 @@
     <select id="pInventoryList" resultType="map" parameterType="map">
         SELECT
             PI.PINV_NO,                   <!--  재고 관리번호 -->
+            PI.PDT_NO,                    <!--  제품 번호 -->
             PI.PDT_CODE,                  <!--  제품 코드 -->
             P.PDT_NAME,                   <!--  제품명 -->
             PI.WAREHOUSE_CODE,            <!--  창고 코드 -->
@@ -35,7 +36,8 @@
                     PI.PDT_CODE LIKE '%' || #{keyword} || '%' OR
                     P.PDT_NAME LIKE '%' || #{keyword} || '%' OR
                     PI.WAREHOUSE_CODE LIKE '%' || #{keyword} || '%' OR
-                    PI.LOCATION_CODE LIKE '%' || #{keyword} || '%'
+                    PI.LOCATION_CODE LIKE '%' || #{keyword} || '%' OR
+                    PI.LOT_NO LIKE '%' || #{keyword} || '%'
                 )
             </if>
         </where>
@@ -124,11 +126,13 @@
     <insert id="insertInventory" parameterType="java.util.Map">
         INSERT INTO PRODUCTS_INVENTORY (
             PINV_NO,
+            PDT_NO,
             PDT_CODE,
             WAREHOUSE_CODE,
             LOCATION_CODE,
             CURRENT_QTY,
             ALLOCATED_QTY,
+            AVAILABLE_QTY,
             LOT_NO,
             LAST_MOVEMENT_DATE,
             SAFETY_STOCK_ALERT,
@@ -136,11 +140,13 @@
             CREATED_DATE
         ) VALUES (
             SEQ_PRODUCTS_INVENTORY.NEXTVAL,
+            #{PDT_NO, jdbcType=NUMERIC},
             #{PDT_CODE},
             #{WAREHOUSE_CODE},
             #{LOCATION_CODE},
             #{CURRENT_QTY},
             #{ALLOCATED_QTY},
+            #{AVAILABLE_QTY},
             #{LOT_NO, jdbcType=VARCHAR},
             SYSDATE,
             #{SAFETY_STOCK_ALERT, jdbcType=VARCHAR},
@@ -158,6 +164,7 @@
             LOCATION_CODE = #{LOCATION_CODE},
             CURRENT_QTY = #{CURRENT_QTY},
             ALLOCATED_QTY = #{ALLOCATED_QTY},
+            AVAILABLE_QTY = #{AVAILABLE_QTY},
             LOT_NO = #{LOT_NO, jdbcType=VARCHAR},
             LAST_MOVEMENT_DATE = SYSDATE,
             SAFETY_STOCK_ALERT = #{SAFETY_STOCK_ALERT, jdbcType=VARCHAR},

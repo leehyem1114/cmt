@@ -49,6 +49,10 @@ public class QcmService {
 	public List<Map<String, Object>> getQcmNamesByMtlName(String mltName){
 		return qcmMapper.getQcmNamesByMtlName(mltName);
 	}
+	
+	public List<Map<String, Object>> getQcmNamesByPdtName(String pdtName){
+		return qcmMapper.getQcmNamesByPdtName(pdtName);
+	}
 
 	@Transactional
 	public void saveExcelData(QcmDTO dto) {

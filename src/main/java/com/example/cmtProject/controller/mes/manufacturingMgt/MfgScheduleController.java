@@ -3,6 +3,7 @@ package com.example.cmtProject.controller.mes.manufacturingMgt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -17,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.cmtProject.comm.response.ApiResponse;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
-import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDetailDTO;
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO;
 import com.example.cmtProject.service.mes.manufacturingMgt.MfgScheduleService;
 
@@ -28,33 +29,32 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/ms")
 @Slf4j
-public class MfgScheduleController {
+public class MfgScheduleController { // 제조 계획 Controller
 	
 	@Autowired
 	private MfgScheduleService mfgScheduleService;
 		
-	// 제조 계획 조회
+	// 제조 계획 조회 (상단 그리드)
 	@GetMapping("/mfg-schedule")
 	public String mfgSchedule(Model model) {
 		
-		// 제조 계획
+		// 제조 계획 목록
 		List<MfgScheduleDTO> msList = mfgScheduleService.getMfgScheduleTotalList();
 		model.addAttribute("msList", msList);
 		
+		// 생산 계획 목록
 		List<MfgSchedulePlanDTO> mpList = mfgScheduleService.getMpList();
 		model.addAttribute("mpList", mpList);
-		
-		// 제조 계획 상세
-		//List<MfgScheduleDetailDTO> msdList = mfgService.getMsdList();
 		
 		return "mes/manufacturingMgt/mfgSchedule";
 	}
 	
-	// 제조 계획 상세 조회
-	@GetMapping("/ms-selected")
-	@ResponseBody
-	public List<MfgScheduleDetailDTO> getMsdList(@RequestParam("msCode") String msCode) {
-	    return mfgScheduleService.getMsdDetailList(msCode);
+	// 제조 계획 등록 조회 (생산 계획 데이터)
+	@GetMapping("/mfgScheduleRegiList")
+	public String mfgScheduleRegiList(Model model) {
+		List<MfgSchedulePlanDTO> mpList = mfgScheduleService.getMpList();
+		
+		return "mes/manufacturingMgt/mfgSchedule";
 	}
 	
 	// 제조 계획 등록
@@ -62,18 +62,42 @@ public class MfgScheduleController {
 	@ResponseBody
 	public String mfgScheduleRegi(@RequestBody List<MfgScheduleDTO> msList) {
 		
-		mfgScheduleService.registMsPlan(msList);
-		
+		for(MfgScheduleDTO dto : msList) {
+			// 제조 계획 등록
+			mfgScheduleService.registMsPlan(dto);
+			// 제조 계획 등록 시 생산 계획 상태 업데이트
+			mfgScheduleService.updateMpStatus(dto.getMpCode());
+		}
 		return "success";
 	}
 	
+	// 제조 계획 상세 조회 (하단 그리드)
+	@GetMapping("/detail")
+	@ResponseBody
+	public ApiResponse<List<Map<String, Object>>> getMsDetail(@RequestParam("msCode") String msCode) {
+	    List<Map<String, Object>> msdList = mfgScheduleService.getBomDetailByMsCode(msCode);
+	    
+	    return ApiResponse.success(msdList);
+	}
 	
+	// 제조 계획 삭제 (숨김 처리)
+    @PostMapping("/mfgScheduleDelete")
+    @ResponseBody
+    public ResponseEntity<String> deleteMsPlan(@RequestBody Map<String, List<Long>> data) {
+        List<Long> msNos = data.get("msNos");
+
+        // 삭제 로직 실행
+        mfgScheduleService.isVisiableToFalse(msNos);
+
+        return ResponseEntity.ok("success");
+    }
+
 	//----------------------------------------------------------------------------------------------------	
 	
 	// 엑셀 파일 다운로드
 	@GetMapping("/excel-file-down")
 	public void downloadExcel(HttpServletResponse response) throws IOException {
-		String fileName = "mp_form.xls";
+		String fileName = "ms_form.xls";
 		String filePath = "/excel/" + fileName;
 
 		// /static/ 디렉토리 기준으로 파일을 읽어옴
@@ -89,15 +113,4 @@ public class MfgScheduleController {
 		response.flushBuffer();
 	}
 
-	// 엑셀 파일 적용
-	@PostMapping("/SaveExcelData")
-	@ResponseBody
-	public ResponseEntity<?> saveExcelData(@RequestBody List<MfgScheduleDTO> list) {
-
-		for (MfgScheduleDTO dto : list) {
-			mfgScheduleService.saveExcelData(dto); // insert or update
-		}
-		return ResponseEntity.ok("엑셀 저장 완료");
-	}
-	
 }

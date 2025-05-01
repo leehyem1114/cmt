@@ -27,16 +27,19 @@ public class WorkOrderDTO {
     private LocalDate woStartDate; // 작업 시작 시간
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate woEndDate;   // 작업 종료 시간
+    private Long workOrderNo;
     
     //=============================
     private String msNo;
     private String msCode;
     private String prcCode;
+    private String prcTypeCode;
     private String lineCode;
     private String allocatedQty;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate msStartDate;
     private LocalDate msEndDate;
-    private String empId;
+    private Long empId;
     private String empName;
     private String msStatus;
     private String woStatusCode;
@@ -46,8 +49,5 @@ public class WorkOrderDTO {
     //======================
     private String workDate;
     private int completeCount;
-
-    
-    
 
 }

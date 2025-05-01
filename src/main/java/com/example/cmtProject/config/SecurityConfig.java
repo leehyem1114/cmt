@@ -33,11 +33,15 @@ public class SecurityConfig{
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests((authorizeRequests) -> authorizeRequests
             .requestMatchers("/user/**").authenticated() //user는 로그인하면 접근 가능
-            .requestMatchers("/eapproval/**").authenticated()
+            .requestMatchers("/eapproval/**").authenticated() //전자결재 로그인필수
             .requestMatchers("/emp/findId").permitAll() //아이디 찾기 누구나 가능
-            .requestMatchers("/salaries/**").authenticated()
+            .requestMatchers("/salaries/**").authenticated() //급여 관리 로그인필수
             .requestMatchers("/emp/**").authenticated() //인사테이블은 로그인필수
             .requestMatchers("/notice/**").authenticated() //공지사항테이블은 로그인필수
+            .requestMatchers("/mp/**").authenticated() //생산 계획 로그인필수
+            .requestMatchers("/ms/**").authenticated() //제조 계획 로그인필수
+            .requestMatchers("/production/**").authenticated() //production 로그인필수
+            .requestMatchers("/workOrder").authenticated() //workOrder 로그인필수
             .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER") //ADMIN또는 MANAGER가 접근
             .requestMatchers("/admin/**","/comm/**").hasRole("ADMIN") //ADMIN만 접근
             .anyRequest().permitAll() //그 외 모든 요청은 허용

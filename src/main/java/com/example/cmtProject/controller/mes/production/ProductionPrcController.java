@@ -26,7 +26,9 @@ import com.example.cmtProject.dto.mes.production.LotOrderDTO;
 import com.example.cmtProject.dto.mes.production.LotOriginDTO;
 import com.example.cmtProject.dto.mes.production.LotUpdateDTO;
 import com.example.cmtProject.dto.mes.production.SavePRCDTO;
+import com.example.cmtProject.dto.mes.production.SemiFinalBomQty;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
+import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.service.mes.production.LotService;
@@ -117,7 +119,6 @@ public class ProductionPrcController {
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String username = authentication.getName(); // 로그인한 아이디 (admin, user 등)
-		log.info(username);
 		//username:971114 - user
 		//username:981114 - manager
 		//username:991114 - admin
@@ -324,6 +325,12 @@ public class ProductionPrcController {
 		LotOriginDTO lod = new LotOriginDTO();
 		
 		int checkLast = 0; //startTime 때문에 사용
+		
+		//MFG_SCHEDULES_DETAIL 에서 수량 가져오기
+		List<SemiFinalBomQty> bomQtyList = lotService.getBomQty(woCode);
+		//MFG_SCHEDULES_DETAIL과 수량을 맞추기 위한 PARENT_PDT_CODE
+		//List<String> parentPdtCodeList = lotService.selectParentPdtCode(pdtCode);
+		
 		for(BomInfoDTO b : selectPdtCodeList) {
 			
 			//================ 부모 컬럼 lot생성=========================================================
@@ -347,7 +354,7 @@ public class ProductionPrcController {
 			String childPdtCode = b.getChildItemCode();
 			
 			String createDate = String.valueOf(today);
-			
+		
 			String prcType = b.getBomPrcType();
 			String bomQty = b.getBomQty();
 			String bomUnit = b.getBomUnit();
@@ -371,13 +378,32 @@ public class ProductionPrcController {
 			lod.setChildPdtCode(childPdtCode);
 			lod.setParentPdtCode(parentPdtCode);
 			lod.setCreateDate(today);
+			
+			String input = "00/01/01"; // 00/00/00 형식 입력
+	        // 포맷터 생성
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy/MM/dd");
+	        // 문자열 → LocalDate 변환
+	        LocalDate date = LocalDate.parse(input, formatter);
+			lod.setEndDate(date);
+			
 			lod.setPrcType(prcType);
-			lod.setBomQty(bomQty);
+			
+			// -- 제조계획 수량 일치 --
+			//MFG_SCHEDULES
+			//모달에서 제조계획을 클릭해서 작업지시서가 만들어질 때 woQty가 입력되야한다 
+			lod.setWoQty(woQty);  // -- 완제품 수량
+			
+			for(SemiFinalBomQty sfb : bomQtyList) {
+				//log.info("work_order_detail ParentPdtCode()"+sfb.getParentPdtCode() + " : lot테이블 ParentPdtCode:"+ b.getParentPdtCode());
+				if(sfb.getParentPdtCode().equals(b.getParentPdtCode())) {
+					lod.setBomQty(sfb.getMsQty()); // -- 반제픔 수량
+				}
+			}
+			
 			lod.setBomUnit(bomUnit);
 			lod.setLineCode("");
 			lod.setEqpCode("");
 			lod.setWoCode(woCode);
-			lod.setWoQty(woQty);
 			lod.setStartTime(startTime);
 			lod.setFinishTime("00:00:00");
 			lod.setWoStatusNo(woStatusNo);
@@ -388,6 +414,12 @@ public class ProductionPrcController {
 			
 			checkLast++;
 		}//for(BomInfoDTO b : selectPdtCodeList) {
+		
+		//MFG 상태 업데이트
+		String mfgscd = "제조중";
+		String mfgPlan = "생산중";
+		lotService.updateMfgScdStatus(woCode, mfgscd);
+		lotService.updateMfgPlanStatus(woCode, mfgPlan);
 		
 		//---------------------------------- 하단 그리드 작업 중으로 주석 처리
 		//작업지시에서 받아온 작업 RN으로 변경
@@ -437,7 +469,7 @@ public class ProductionPrcController {
 	public List<LotOriginDTO> prcBoard(@RequestParam("woCode") String woCode) {
 		
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(woCode);
-		log.info("/prcBoard의 selectLotOrigin:" + selectLotOrigin);
+		//log.info("/prcBoard의 selectLotOrigin:" + selectLotOrigin);
 		
 		return selectLotOrigin;
 	}
@@ -465,10 +497,12 @@ public class ProductionPrcController {
 	
 		LotOriginDTO lotOrigin = new LotOriginDTO();
 		
-		//log.info(lotUpdateDTO.)
-		
 		//LOT_NO
 		lotOrigin.setLotNo(lotNo);
+		
+		//END_DATE
+		LocalDate today = LocalDate.now(); //2025-04-21
+		lotOrigin.setEndDate(today);
 		
 		//FINISH_TIME
 		LocalTime time = LocalTime.now();
@@ -485,13 +519,8 @@ public class ProductionPrcController {
 		lotOrigin.setWoCode(lotUpdateDTO.getWoCode());
 		
 		lotService.updateLotPresentPRC(lotOrigin);
-		/*
-		log.info("num:" + lotUpdateDTO.getNum());
-		log.info("lotNo:"+ lotNo.toString());
-		log.info("ChildPdtCode():"+lotUpdateDTO.getChildPdtCode());
-		log.info("PdtCode():"+lotUpdateDTO.getPdtCode());
-		*/
-		if(!lotUpdateDTO.getNum().equals("1")) {
+		
+		if(!lotUpdateDTO.getNum().equals("0")) { //공정의 끝인지 아닌지 파악
 			
 			//LOT_NO - 1 에 START_TIME 등록
 			//LOT테이블의 다음 작업에 startTime 업데이트 => 전 공정의 finishTime이 이후 공정의 startTime
@@ -503,11 +532,64 @@ public class ProductionPrcController {
 			lotService.updateWOtoCP(lotUpdateDTO.getWoCode());
 		}
 		
-		//grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다
+		// ----------- IPI 테이블에 insert -----------
+		//품질로 데이터 전송
+		//IPI_INSPECTION_RESLT : 예정
+		//IPI_INSPECTION_STATUS : 검사시작
+		//PDT_CODE, PDT_NAME, WO_CODE, WO_QTY, LOT_NO = NULL, PDT_TYPE(반제품, 완제품)
+
+		IpiDTO ipidto = new IpiDTO();
+		// UNIT_QTY, WO_CODE, WO_QTY, PDT_TYPE)
+		//IPI_NO 입력
+		Long ipiNo = lotService.getIpiNo();
+		ipidto.setIpiNo(ipiNo + 1);
+		
+		//childLotCode
+		ipidto.setChildLotCode(lotUpdateDTO.getChildLotCode());
+		
+		//InspectionResult
+		//ipidto.setIpiInspectionResult("예정");
+		
+		//IpiInspectionStatus
+		//ipidto.setIpiInspectionStatus("검사시작");
+		
+		//pdtCode
+		ipidto.setPdtCode(lotUpdateDTO.getChildPdtCode());
+		
+		//pdtName 가져오기 위한 코드
+		List<ProductTotalDTO> pdtTotalDto = productionPrcService.selectProductInfo(lotUpdateDTO.getPdtCode());
+		ipidto.setPdtName(pdtTotalDto.get(0).getPdtName());
+		
+		//pdtType
+		ipidto.setPdtType(pdtTotalDto.get(0).getPdtType());
+		
+		//wo_code
+		ipidto.setWoCode(lotUpdateDTO.getWoCode());
+		
+		//wo_qty
+		ipidto.setWoQty(lotUpdateDTO.getBomQty());
+		
+		//UPDATE
+		lotService.insertIpi(ipidto);
+		
+		// ----------- grid를 다시 그려주기 위해서 새로 데이터를 읽어와서 넘겨준다 -----------
 		List<LotOriginDTO> selectLotOrigin = lotService.selectLotOrigin(lotUpdateDTO.getWoCode());
 		//log.info("/jobCmpl의 selectLotOrigin:" + selectLotOrigin);
 		
 		return selectLotOrigin;
+	}
+	
+	//SAVE_PRC테이블에 데이터 입력(위에 jobCmpl 작업 실행 내부에서 연달아 실행)
+	@PostMapping("/insertSavePrc")
+	@ResponseBody
+	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
+		
+		//현재 상태 SAVE_PRC 테이블 입력
+		lotService.insertSavePrc(savePrcDto);
+		
+		//log.info("savePrcDto:"+savePrcDto);	
+		
+		return "success";
 	}
 	
 	//SAVE_PRC테이블에 데이터가 있는 경우 최초 로딩시 상단 그리드에 출력
@@ -541,31 +623,37 @@ public class ProductionPrcController {
 		
 		Integer rnRowNumMax = lotService.selectRnRowNumMax(woCode);
 		
-		log.info("/getRnRowNumMax의 rnRowNumMax:" + rnRowNumMax);
+		//log.info("/getRnRowNumMax의 rnRowNumMax:" + rnRowNumMax);
 		
 		return rnRowNumMax;
 	}
 	
-	//그리드 안에 버튼 클릭시 데이터 입력
-	@PostMapping("/insertSavePrc")
-	@ResponseBody
-	public String insertSavePrc(@RequestBody SavePRCDTO savePrcDto) {
-		
-		lotService.insertSavePrc(savePrcDto);
-		
-		return "success";
-	}
 	
-	//수량 전송 후 SAVE_PRC 데이터 삭제
-	@GetMapping("/deleteSavePrc")
+	
+	//작업 완료 버튼 클릭
+	@PostMapping("/deleteSavePrc")
 	@ResponseBody
-	public String deleteSavePrc() {
+	public String deleteSavePrc(@RequestParam("woCode") String woCode) {
 		
 		//saveprc의 모든 데이터 삭제
 		lotService.deleteSavePrc();
 		
+		//작업지시서 완료 날짜 업데이트
+		LocalDate today = LocalDate.now(); //2025-04-21
+		lotService.updateWoEndDate(woCode ,String.valueOf(today));
+		
+		//MFG 상태 업데이트
+		String mfgscd = "완료";
+		String mfgPlan = "완료";
+		lotService.updateMfgScdStatus(woCode, mfgscd);
+		lotService.updateMfgPlanStatus(woCode, mfgPlan);
+		
+		
+		//IPI로 완제품 정보 넘기기 - 현재 작업 한거까지의 데이터는 품질로 바로 전송된 상태, 완제품 정보 넘길 필요x
+		
 		return "success";
 	}
+	
 }
 
 

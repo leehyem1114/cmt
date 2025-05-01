@@ -22,45 +22,36 @@ public class MfgSchedule { // 제조 계획
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "MS_NO")
-	private Long msNo;  // 제조 계획 번호
+	private Long msNo;  				// 제조 계획 번호
 	
     @Column(name = "MS_CODE")
-	private String msCode;  // 제조 계획 코드
+	private String msCode;  			// 제조 계획 코드
 	
     @Column(name = "MP_CODE")
-	private String mpCode;  // 생산 계획 코드
+	private String mpCode;  			// 생산 계획 코드
     
     @Column(name = "PDT_CODE")
-	private String pdtCode;  // 제품 코드
-
-    //@Column(name = "PRC_CODE")
-	//private String prcCode;  // 공정 코드
+	private String pdtCode;  			// 제품 코드
 
     @Column(name = "EMP_ID")
-	private String empId;  // 등록 직원 사번
-    
-//    @Column(name = "STAFF_ID")
-//	private String staffId;  // 담당 직원 사번
+	private String empId;  				// 등록 직원 사번
 
     @Column(name = "SO_QTY")
-	private String soQty;  // 수주 수량
+	private String soQty;  				// 수주 수량
 
     @Column(name = "MS_STATUS")
-	private String msStatus;  // 제조 계획 상태
+	private String msStatus;  			// 제조 계획 상태
 
-    @Column(name = "MS_PRIORITY")
-	private String msPriority;  // 우선순위
+    @Column(name = "MP_PRIORITY")
+	private String mpPriority;  		// 생산 우선순위
 
     @Column(name = "MS_CREATED_AT")
-	private LocalDate msCreatedAt;  // 등록일자
+	private LocalDate msCreatedAt;  	// 등록일자
     
     @Column(name = "MS_UPDATED_AT")
 	private LocalDate msUpdatedAt;  // 수정일자
-
-//    @Column(name = "MS_START_TIME")
-//	private LocalDate msStartTime;  // 제조 시작 예정일시
-//    
-//    @Column(name = "MS_END_TIME")
-//	private LocalDate msEndTime;  // 제조 종료 예정일시
+    
+    @Column(name = "MS_VISIBLE")
+	private String msVisible;  // 삭제 시 숨김 처리
     
 }
