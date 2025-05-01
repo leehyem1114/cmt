@@ -37,7 +37,7 @@ public class ProductsIssueRestController {
      * @param keyword 검색 키워드 (선택)
      * @return 출고 목록 데이터
      */
-    @GetMapping("/list")
+    @GetMapping(PathConstants.LIST)
     public ApiResponse<List<Map<String, Object>>> getProductsIssue(
             @RequestParam(name = "keyword", required = false) String keyword) {
         
@@ -59,7 +59,7 @@ public class ProductsIssueRestController {
      * @param keyword 검색 키워드 (선택)
      * @return 수주 목록 데이터
      */
-    @GetMapping("/sales-orders")
+    @GetMapping(PathConstants.SALES_ORDERS)
     public ApiResponse<List<Map<String, Object>>> getSalesOrders(
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "status", required = false) String status) {
@@ -89,7 +89,7 @@ public class ProductsIssueRestController {
      * @param issueNo 출고 번호
      * @return 출고 상세 정보
      */
-    @GetMapping("/detail/{issueNo}")
+    @GetMapping(PathConstants.DETAIL + "/{issueNo}")
     public ApiResponse<Map<String, Object>> getIssueDetail(@PathVariable("issueNo") Long issueNo) {
         log.info("출고 상세 정보 조회 요청. 출고번호: {}", issueNo);
         Map<String, Object> detail = pIssueService.getIssueDetail(issueNo);
@@ -107,7 +107,7 @@ public class ProductsIssueRestController {
      * @param issueNo 출고 번호
      * @return 출고 이력 정보 목록
      */
-    @GetMapping("/history/{issueNo}")
+    @GetMapping(PathConstants.HISTORY + "/{issueNo}")
     public ApiResponse<List<Map<String, Object>>> getIssueHistory(@PathVariable("issueNo") Long issueNo) {
         log.info("출고 이력 정보 조회 요청. 출고번호: {}", issueNo);
         
@@ -128,7 +128,7 @@ public class ProductsIssueRestController {
      * @param soData 수주 데이터
      * @return 처리 결과
      */
-    @PostMapping("/request")
+    @PostMapping(PathConstants.REQUEST)
     public ApiResponse<Map<String, Object>> createIssueRequest(@RequestBody Map<String, Object> soData) {
         log.info("수주 정보 기반 출고 요청 생성. 수주코드: {}", soData.get("SO_CODE"));
         
@@ -147,7 +147,7 @@ public class ProductsIssueRestController {
      * @param params 여러 수주 데이터 목록
      * @return 처리 결과
      */
-    @PostMapping("/request-batch")
+    @PostMapping(PathConstants.REQUEST + PathConstants.BATCH_SUFFIX)
     public ApiResponse<Map<String, Object>> createIssueRequestBatch(@RequestBody Map<String, Object> params) {
         log.info("다건 출고 요청 생성 요청");
         
@@ -173,7 +173,7 @@ public class ProductsIssueRestController {
      * @param params 검수 등록 정보
      * @return 처리 결과
      */
-    @PostMapping("/inspection")
+    @PostMapping(PathConstants.INSPECTION)
     public ApiResponse<Map<String, Object>> registerInspection(@RequestBody Map<String, Object> params) {
         log.info("검수 등록 요청: {}", params);
         
@@ -194,7 +194,7 @@ public class ProductsIssueRestController {
      * @param params 검수 등록 정보 (여러 건)
      * @return 처리 결과
      */
-    @PostMapping("/inspection-batch")
+    @PostMapping(PathConstants.INSPECTION + PathConstants.BATCH_SUFFIX)
     public ApiResponse<Map<String, Object>> registerInspectionMultiple(@RequestBody Map<String, Object> params) {
         log.info("다건 검수 등록 요청");
         
@@ -213,7 +213,7 @@ public class ProductsIssueRestController {
      * @param params 출고 처리 정보
      * @return 처리 결과
      */
-    @PostMapping("/process")
+    @PostMapping(PathConstants.PROCESS)
     public ApiResponse<Map<String, Object>> processIssue(@RequestBody Map<String, Object> params) {
         log.info("출고 처리 요청: {}", params);
         
@@ -232,7 +232,7 @@ public class ProductsIssueRestController {
      * @param params 출고 처리 정보 (여러 건)
      * @return 처리 결과
      */
-    @PostMapping("/process-batch")
+    @PostMapping(PathConstants.PROCESS + PathConstants.BATCH_SUFFIX)
     public ApiResponse<Map<String, Object>> processIssueBatch(@RequestBody Map<String, Object> params) {
         log.info("다건 출고 처리 요청");
         
@@ -251,7 +251,7 @@ public class ProductsIssueRestController {
      * @param params 취소 처리 정보
      * @return 처리 결과
      */
-    @PostMapping("/cancel")
+    @PostMapping(PathConstants.CANCEL)
     public ApiResponse<Map<String, Object>> cancelIssue(@RequestBody Map<String, Object> params) {
         log.info("출고 취소 요청: {}", params);
         
@@ -270,7 +270,7 @@ public class ProductsIssueRestController {
      * @param params 상태 조건
      * @return 처리 결과
      */
-    @PostMapping("/request-by-status")
+    @PostMapping(PathConstants.REQUEST + PathConstants.BY_STATUS)
     public ApiResponse<Map<String, Object>> createIssueRequestsByStatus(@RequestBody Map<String, Object> params) {
         log.info("수주 상태별 출고 요청 생성 요청: {}", params);
         

@@ -16,7 +16,7 @@ import com.example.cmtProject.service.mes.inventory.ProductsIssueService;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@RequestMapping("/productsissue")
+@RequestMapping(PathConstants.PRODUCTSISSUE_BASE)
 @Slf4j
 public class ProductsIssueController {
     
@@ -26,12 +26,12 @@ public class ProductsIssueController {
     /**
      * 제품 출고 메인페이지
      */
-    @GetMapping("/view")
+    @GetMapping(PathConstants.VIEW)
     public String productsIssueGET(Model model) {
         Map<String, Object> findMap = new HashMap<>();
         List<Map<String, Object>> pIssueList = pis.issueList(findMap);
         model.addAttribute("pIssueList", pIssueList);
         
-        return "mes/inventory/productsIssue";
+        return PathConstants.VIEW_PRODUCTSISSUE_VIEW;
     }
 }

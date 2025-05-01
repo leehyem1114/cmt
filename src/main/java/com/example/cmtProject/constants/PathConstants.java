@@ -75,11 +75,38 @@ public class PathConstants {
     /** 양식 조회 경로 */
     public static final String FORM_VIEW = "/view";
     
-    /** 창고 조회 경로 */
-    public static final String WAREHOUSE_VIEW = "/view";
+    /** 기본 조회 경로 (공통) */
+    public static final String VIEW = "/view";
     
-    /** 창고 기준정보 목록 경로 */
-    public static final String WAREHOUSE_LIST = "/list";
+    /** 목록 경로 (공통) */
+    public static final String LIST = "/list";
+    
+    /** 상세 조회 경로 */
+    public static final String DETAIL = "/detail";
+    
+    /** 이력 조회 경로 */
+    public static final String HISTORY = "/history";
+    
+    /** 확인 경로 */
+    public static final String CONFIRM = "/confirm";
+    
+    /** 검사 경로 */
+    public static final String INSPECTION = "/inspection";
+    
+    /** 요청 경로 */
+    public static final String REQUEST = "/request";
+    
+    /** 처리 경로 */
+    public static final String PROCESS = "/process";
+    
+    /** 취소 경로 */
+    public static final String CANCEL = "/cancel";
+    
+    /** 소비/차감 경로 */
+    public static final String CONSUME = "/consume";
+    
+    /** 저장 경로 */
+    public static final String SAVE = "/save";
     
     /** 창고 기준정보 단일 조회 경로 (경로 변수 포함) */
     public static final String WAREHOUSE_SINGLE = "/{whsCode}";
@@ -87,29 +114,14 @@ public class PathConstants {
     /** 창고 기준정보 일괄 저장 경로 */
     public static final String WAREHOUSE_BATCH = "/batch";
     
-    /** 원자재 재고 조회 경로 */
-    public static final String MATERIALINVENTORY_VIEW = "/view";
-    
-    /** 원자재 입고 조회 경로 */
-    public static final String MATERIALRECEIPT_VIEW = "/view";
-    
-    /** 제품 재고 조회 경로 */
-    public static final String PRODUCTSINVENTORY_VIEW = "/view";
-    
-    /** 제품 출고 조회 경로 */
-    public static final String PRODUCTSISSUE_VIEW = "/view";
-    
-    /** 원자재 기준정보 조회 경로 */
-    public static final String MATERIAL_INFO_VIEW = "/view";
-    
     /** 원자재 기준정보 목록 경로 */
     public static final String MATERIAL_INFO_LIST = "/list";
     
     /** 원자재 기준정보 단일 조회 경로 (경로 변수 포함) */
     public static final String MATERIAL_INFO_SINGLE = "/{mtlCode}";
     
-    /** 원자재 기준정보 일괄 저장 경로 */
-    public static final String MATERIAL_INFO_BATCH = "/batch";
+    /** 원자재 기준정보, 제품 기준정보 일괄 저장 경로 */
+    public static final String BATCH = "/batch";
     
     /** 제품 기준정보 목록 경로 */
     public static final String PRODUCTS_INFO_LIST = "/list";
@@ -117,14 +129,23 @@ public class PathConstants {
     /** 제품 기준정보 단일 조회 경로 (경로 변수 포함) */
     public static final String PRODUCTS_INFO_SINGLE = "/{pdtCode}";
     
-    /** 제품 기준정보 일괄 저장 경로 */
-    public static final String PRODUCTS_INFO_BATCH = "/batch";
+    /** 수주 정보 조회 경로 */
+    public static final String SALES_ORDERS = "/sales-orders";
+    
+    /** 다건 처리 경로 접미사 */
+    public static final String BATCH_SUFFIX = "-batch";
+    
+    /** 상태별 처리 경로 */
+    public static final String BY_STATUS = "-by-status";
     
     // ======================================================================
     // API 경로 (REST 컨트롤러) - RESTful API 엔드포인트의 기본 경로
     // ======================================================================
+    /** API 기본 경로 접두사 */
+    public static final String API_PREFIX = "/api";
+    
     /** 전자결재 API 기본 경로 */
-    public static final String API_BASE = "/api/eapproval";
+    public static final String API_BASE = API_PREFIX + "/eapproval";
     
     /** 문서 API 경로 (단일 문서) */
     public static final String API_DOCUMENT = "/document";
@@ -142,25 +163,25 @@ public class PathConstants {
     public static final String API_FORMS = "/forms";
     
     /** 창고 API 기본 경로 */
-    public static final String API_WAREHOUSE_BASE = "/api/warehouse";
+    public static final String API_WAREHOUSE_BASE = API_PREFIX + WAREHOUSE_BASE;
     
-    /** 원자재 재고 API 기본 경로 */
-    public static final String API_MATERIALINVENTORY_BASE = "/api/materialInventory";
+    /** 원자재 재고 API 기본 경로 - 케이스 통일 */
+    public static final String API_MATERIALINVENTORY_BASE = API_PREFIX + "/materialinventory";
     
     /** 원자재 입고 API 기본 경로 */
-    public static final String API_MATERIALRECEIPT_BASE = "/api/materialreceipt";
+    public static final String API_MATERIALRECEIPT_BASE = API_PREFIX + MATERIALRECEIPT_BASE;
     
-    /** 제품 재고 API 기본 경로 */
-    public static final String API_PRODUCTSINVENTORY_BASE = "/api/productsInventory";
+    /** 제품 재고 API 기본 경로 - 케이스 통일 */
+    public static final String API_PRODUCTSINVENTORY_BASE = API_PREFIX + "/productsinventory";
     
-    /** 제품 출고 API 기본 경로 */
-    public static final String API_PRODUCTSISSUE_BASE = "/api/productsIssue";
+    /** 제품 출고 API 기본 경로 - 케이스 통일 */
+    public static final String API_PRODUCTSISSUE_BASE = API_PREFIX + "/productsissue";
     
     /** 원자재 기준정보 API 기본 경로 */
-    public static final String API_MATERIAL_INFO_BASE = "/api/material-info";
+    public static final String API_MATERIAL_INFO_BASE = API_PREFIX + MATERIAL_INFO_BASE;
     
     /** 제품 기준정보 API 기본 경로 */
-    public static final String API_PRODUCTS_INFO_BASE = "/api/products-info";
+    public static final String API_PRODUCTS_INFO_BASE = API_PREFIX + PRODUCTS_INFO_BASE;
     
     // ======================================================================
     // 뷰 경로 (Thymeleaf 템플릿) - 컨트롤러에서 반환하는 뷰 템플릿 경로
