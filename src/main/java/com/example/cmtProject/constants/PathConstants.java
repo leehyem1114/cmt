@@ -30,6 +30,9 @@ public class PathConstants {
     /** 원자재 기준정보 모듈 기본 경로 */
     public static final String MATERIAL_INFO_BASE = "/material-info";
     
+    /** 제품 기준정보 모듈 기본 경로 */
+    public static final String PRODUCTS_INFO_BASE = "/products-info";
+    
     // ======================================================================
     // URL 경로 (컨트롤러 매핑) - 각 컨트롤러 내부의 HTTP 요청 매핑 경로
     // ======================================================================
@@ -99,6 +102,15 @@ public class PathConstants {
     /** 원자재 기준정보 일괄 저장 경로 */
     public static final String MATERIAL_INFO_BATCH = "/batch";
     
+    /** 제품 기준정보 목록 경로 */
+    public static final String PRODUCTS_INFO_LIST = "/list";
+    
+    /** 제품 기준정보 단일 조회 경로 (경로 변수 포함) */
+    public static final String PRODUCTS_INFO_SINGLE = "/{pdtCode}";
+    
+    /** 제품 기준정보 일괄 저장 경로 */
+    public static final String PRODUCTS_INFO_BATCH = "/batch";
+    
     // ======================================================================
     // API 경로 (REST 컨트롤러) - RESTful API 엔드포인트의 기본 경로
     // ======================================================================
@@ -134,6 +146,9 @@ public class PathConstants {
     
     /** 원자재 기준정보 API 기본 경로 */
     public static final String API_MATERIAL_INFO_BASE = "/api/material-info";
+    
+    /** 제품 기준정보 API 기본 경로 */
+    public static final String API_PRODUCTS_INFO_BASE = "/api/products-info";
     
     // ======================================================================
     // 뷰 경로 (Thymeleaf 템플릿) - 컨트롤러에서 반환하는 뷰 템플릿 경로
@@ -183,6 +198,9 @@ public class PathConstants {
     /** 원자재 기준정보 목록 뷰 경로 */
     public static final String VIEW_MATERIAL_INFO = "mes/inventory/materialInfo";
     
+    /** 제품 기준정보 목록 뷰 경로 */
+    public static final String VIEW_PRODUCTS_INFO = "mes/inventory/productsInfo";
+    
     // ======================================================================
     // 리다이렉트 경로 - 리다이렉트에 사용되는 완전한 URL 경로
     // ======================================================================
@@ -194,4 +212,7 @@ public class PathConstants {
     
     /** 원자재 기준정보 목록으로 리다이렉트 경로 */
     public static final String REDIRECT_MATERIAL_INFO = "redirect:" + MATERIAL_INFO_BASE;
+    
+    /** 제품 기준정보 목록으로 리다이렉트 경로 */
+    public static final String REDIRECT_PRODUCTS_INFO = "redirect:" + PRODUCTS_INFO_BASE;
 }
