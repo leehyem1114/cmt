@@ -208,11 +208,6 @@ const MaterialReceiptManager = (function() {
                         sortable: true
                     },
                     {
-                        header: 'LOT 번호',
-                        name: 'LOT_NO',
-                        sortable: true
-                    },
-                    {
                         header: '입고일',
                         name: 'RECEIPT_DATE',
                         sortable: true,
@@ -485,31 +480,31 @@ const MaterialReceiptManager = (function() {
         document.getElementById('inspectionContent').innerHTML = inspectionHtml;
     }
     
-    /**
-     * LOT 정보 표시 함수
-     * 
-     * @param {Array} lotData - LOT 정보 데이터 배열
-     */
-    function displayLotInfo(lotData) {
-        if (!lotData || !lotData.length) {
-            return;
-        }
-        
-        // LOT 정보 HTML 구성
-        let html = '';
-        lotData.forEach(lot => {
-            html += `
-                <tr>
-                    <td>${lot.LOT_NO || ''}</td>
-                    <td>${lot.LOT_QTY || ''}</td>
-                    <td>${formatDate(lot.LOT_DATE)}</td>
-                    <td>${lot.LOT_STATUS || ''}</td>
-                </tr>
-            `;
-        });
-        
-        document.getElementById('lotInfoBody').innerHTML = html;
-    }
+//    /**
+//     * LOT 정보 표시 함수
+//     * 
+//     * @param {Array} lotData - LOT 정보 데이터 배열
+//     */
+//    function displayLotInfo(lotData) {
+//        if (!lotData || !lotData.length) {
+//            return;
+//        }
+//        
+//        // LOT 정보 HTML 구성
+//        let html = '';
+//        lotData.forEach(lot => {
+//            html += `
+//                <tr>
+//                    <td>${lot.LOT_NO || ''}</td>
+//                    <td>${lot.LOT_QTY || ''}</td>
+//                    <td>${formatDate(lot.LOT_DATE)}</td>
+//                    <td>${lot.LOT_STATUS || ''}</td>
+//                </tr>
+//            `;
+//        });
+//        
+//        document.getElementById('lotInfoBody').innerHTML = html;
+//    }
     
     /**
      * 위치 정보 표시 함수

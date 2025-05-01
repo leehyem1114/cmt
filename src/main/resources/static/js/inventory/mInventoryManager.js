@@ -141,7 +141,6 @@ const MaterialInventoryManager = (function() {
                     '위치코드': 'LOCATION_CODE',
                     '현재수량': 'CURRENT_QTY',
                     '할당수량': 'ALLOCATED_QTY',
-                    'LOT번호': 'LOT_NO'
                 },
                 beforeLoad: function() {
                     console.log('엑셀 업로드 시작');
@@ -237,12 +236,6 @@ const MaterialInventoryManager = (function() {
                         }
                     },
                     {
-                        header: 'LOT번호',
-                        name: 'LOT_NO',
-                        editor: false,
-                        sortable: true
-                    },
-                    {
                         header: '마지막이동일',
                         name: 'LAST_MOVEMENT_DATE',
                         editor: false,
@@ -270,9 +263,9 @@ const MaterialInventoryManager = (function() {
                 draggable: false,
                 hiddenColumns: ['ROW_TYPE'],
                 gridOptions: {
-                    rowHeaders: ['rowNum', 'checkbox']
+                    rowHeaders: ['rowNum']
                 },
-                toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
+                toggleRowCheckedOnClick: false // 행 클릭 시 체크박스 토글 기능 활성화
             });
             
             // 편집 완료 이벤트 처리 - 변경된 행 추적
@@ -316,7 +309,6 @@ const MaterialInventoryManager = (function() {
                 CURRENT_QTY: '0',
                 ALLOCATED_QTY: '0',
                 AVAILABLE_QTY: '0', // 트리거에 의해 자동 계산됨
-                LOT_NO: '',
                 LAST_MOVEMENT_DATE: new Date()
                 // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
             };
