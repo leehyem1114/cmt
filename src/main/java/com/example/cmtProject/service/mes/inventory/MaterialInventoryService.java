@@ -11,6 +11,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,9 +48,12 @@ public class MaterialInventoryService {
         try {
             log.info("재고 정보 저장 시작: {}건", inventoryList.size());
             
+            // 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
             for (Map<String, Object> item : inventoryList) {
-                // 처리자 설정 (사용자 정보나 시스템 정보에서 추출)
-                item.put("updatedBy", item.getOrDefault("updatedBy", "SYSTEM"));
+                // 처리자 설정 (현재 로그인한 사용자 ID)
+                item.put("updatedBy", userId);
                 
                 // 재고번호 있으면 업데이트, 없으면 신규 등록
                 if (item.get("INV_NO") != null && !item.get("INV_NO").toString().isEmpty()) {
@@ -97,6 +101,9 @@ public class MaterialInventoryService {
             String mtlCode = (String) params.get("mtlCode");
             String consumptionQty = (String) params.get("consumptionQty");
             
+            // 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
             log.info("FIFO 재고 차감 시작: 자재코드={}, 차감수량={}", mtlCode, consumptionQty);
             
             // 1. 해당 자재의 총 재고 확인
@@ -137,7 +144,7 @@ public class MaterialInventoryService {
                 Map<String, Object> deductParams = new HashMap<>();
                 deductParams.put("receiptStockNo", stockNo);
                 deductParams.put("deductQty", String.valueOf(qtyToDeduct));
-                deductParams.put("updatedBy", params.get("updatedBy"));
+                deductParams.put("updatedBy", userId);
                 
                 rSmapper.deductStock(deductParams);
                 
@@ -149,7 +156,7 @@ public class MaterialInventoryService {
             Map<String, Object> inventoryParams = new HashMap<>();
             inventoryParams.put("mtlCode", mtlCode);
             inventoryParams.put("consumptionQty", consumptionQty);
-            inventoryParams.put("updatedBy", params.get("updatedBy"));
+            inventoryParams.put("updatedBy", userId);
             
             mImapper.deductInventory(inventoryParams);
             

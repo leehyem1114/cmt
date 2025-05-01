@@ -40,8 +40,8 @@ const ProductsIssueManager = (function() {
     const ISSUE_STATUS = {
         WAITING: '출고대기',
         INSPECTING: '검수중',
-        INSPECT_PASSED: '검사합격',
-        INSPECT_FAILED: '검사불합격',
+        INSPECT_PASSED: '검사 합격',
+        INSPECT_FAILED: '검사 불합격',
         COMPLETED: '출고완료',
         CANCELED: '취소'
     };
@@ -258,11 +258,6 @@ const ProductsIssueManager = (function() {
                     {
                         header: '제품명',
                         name: 'PDT_NAME',
-                        sortable: true
-                    },
-                    {
-                        header: 'LOT 번호',
-                        name: 'LOT_NO',
                         sortable: true
                     },
                     {

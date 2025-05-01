@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.warehouse.WarehouseMasterMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +53,12 @@ public class WarehouseMasterService {
         try {
             log.info("창고 정보 저장 시작: {}", params);
             
+            // 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
+            // 처리자 정보 설정
+            params.put("updatedBy", userId);
+            
             // 창고 코드로 기존 데이터 조회
             Map<String, Object> existingData = warehouseSingle(params);
             
@@ -71,6 +78,9 @@ public class WarehouseMasterService {
                 }
             } else {
                 log.info("창고 정보 등록: {}", params.get("WHS_CODE"));
+                // 생성자 정보 설정
+                params.put("createdBy", userId);
+                
                 result = warehouseMapper.insertWarehouse(params);
                 
                 if (result > 0) {
@@ -112,8 +122,15 @@ public class WarehouseMasterService {
         try {
             log.info("창고 정보 일괄 저장 시작: {}건", warehouseList.size());
             
+            // 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
             for (Map<String, Object> warehouseData : warehouseList) {
                 try {
+                    // 처리자 정보 설정
+                    warehouseData.put("updatedBy", userId);
+                    warehouseData.put("createdBy", userId);
+                    
                     Map<String, Object> result = saveWarehouse(warehouseData);
                     
                     if ((Boolean) result.get("success")) {
