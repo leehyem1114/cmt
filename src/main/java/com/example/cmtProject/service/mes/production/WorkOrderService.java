@@ -36,14 +36,19 @@ public class WorkOrderService {
 
 	@Transactional
 	public void updateMfgStatus(String msCode) {
-		orderMapper.updateMfgStatus(msCode);// 제조계획 상태 변경
+		orderMapper.updateMfgStatus(msCode);// 제조계획 상태 변경 - workOrder
 		// deleteMfgList(msCode); //제조계획 리스트에서 제거 
+		orderMapper.updateMfgStatus2(msCode); //status '대기'로 변경 - MFG_SCHEDULES 
 	}
-	//작업지시 등록시 제거됨
-	private void deleteMfgList(String msCode) {
-		orderMapper.deleteMfgList(msCode);
-	}
+//	//작업지시 등록시 제거됨
+//	private void deleteMfgList(String msCode) {
+//		orderMapper.deleteMfgList(msCode);
+//	}
 	
+	//MFG_SCHEDULES 상태변경 
+	private void updateMfgStatus2(String msCode) {
+		orderMapper.updateMfgStatus2(msCode);
+	}
 	//로트번호로 단일제품정보 들고오기
 	public WorkOrderDTO getProductDetail(String lotNo) {
 		return orderMapper.selectProductDetail(lotNo);

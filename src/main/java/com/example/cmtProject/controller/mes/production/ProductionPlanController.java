@@ -74,7 +74,7 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		workOrderDTO.setWoCode(woCode);
 		
 		orderService.registMsPlan(workOrderDTO);
-		//제조계획상태 업데이트 &제조 계획리스트에서 삭제
+		//제조계획상태 업데이트 &제조 계획리스트에서 삭제 (x) & MFG_SCHEDULES상태변경
 		orderService.updateMfgStatus(workOrderDTO.getMsNo());
 		
 		log.info("받은 데이터" + workOrderDTO);

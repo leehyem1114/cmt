@@ -96,10 +96,16 @@
 		WHERE WO_CODE = #{msCode}
 	</update>
 	
-	<delete id="deleteMfgList">
-		DELETE FROM MFG_SCHEDULES 
-		WHERE MS_CODE = #{msCode}
-	</delete>
+	<!--MFG_SCHEDULES - 대기로 변경-->
+	<update id="updateMfgStatus2">
+		UPDATE MFG_SCHEDULES SET MS_STATUS = '등록'
+		WHERE MS_CODE = (SELECT MS_CODE FROM WORK_ORDER WHERE WO_CODE = #{woCode}) 
+	</update>
+	
+<!--	<delete id="deleteMfgList">-->
+<!--		DELETE FROM MFG_SCHEDULES -->
+<!--		WHERE MS_CODE = #{msCode}-->
+<!--	</delete>-->
 	
 	
 	<!-- 작업시작 버튼 = 날짜 업데이트&진행중 -->
