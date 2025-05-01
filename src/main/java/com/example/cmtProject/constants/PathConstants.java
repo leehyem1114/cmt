@@ -78,6 +78,15 @@ public class PathConstants {
     /** 창고 조회 경로 */
     public static final String WAREHOUSE_VIEW = "/view";
     
+    /** 창고 기준정보 목록 경로 */
+    public static final String WAREHOUSE_LIST = "/list";
+    
+    /** 창고 기준정보 단일 조회 경로 (경로 변수 포함) */
+    public static final String WAREHOUSE_SINGLE = "/{whsCode}";
+    
+    /** 창고 기준정보 일괄 저장 경로 */
+    public static final String WAREHOUSE_BATCH = "/batch";
+    
     /** 원자재 재고 조회 경로 */
     public static final String MATERIALINVENTORY_VIEW = "/view";
     
@@ -132,6 +141,9 @@ public class PathConstants {
     /** 양식 목록 API 경로 */
     public static final String API_FORMS = "/forms";
     
+    /** 창고 API 기본 경로 */
+    public static final String API_WAREHOUSE_BASE = "/api/warehouse";
+    
     /** 원자재 재고 API 기본 경로 */
     public static final String API_MATERIALINVENTORY_BASE = "/api/materialInventory";
     
@@ -181,7 +193,7 @@ public class PathConstants {
     public static final String VIEW_FORM_VIEW = "erp/eapproval/docFormView";
     
     /** 창고 목록 뷰 경로 */
-    public static final String VIEW_WAREHOUSE_VIEW = "mes/wareHouse/wareHouseList";
+    public static final String VIEW_WAREHOUSE_VIEW = "mes/warehouse/warehouseInfo";
     
     /** 원자재 재고 목록 뷰 경로 */
     public static final String VIEW_METINVENTORY_VIEW = "mes/inventory/metInventoryList";
@@ -209,6 +221,9 @@ public class PathConstants {
     
     /** 양식 목록으로 리다이렉트 경로 */
     public static final String REDIRECT_FORM_LIST = "redirect:" + APPROVAL_BASE + FORM_BASE;
+    
+    /** 창고 redirect 경로 */
+    public static final String REDIRECT_WAREHOUSE = "redirect:" + WAREHOUSE_BASE;
     
     /** 원자재 기준정보 목록으로 리다이렉트 경로 */
     public static final String REDIRECT_MATERIAL_INFO = "redirect:" + MATERIAL_INFO_BASE;
