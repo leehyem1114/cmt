@@ -1,82 +1,52 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-	      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-	      layout:decorate="~{layouts/layout}">
-<head>
-<meta charset="UTF-8">
-	<!-- 최신 xlsx 스크립트 CDN -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-</head>
-<body>
-<div layout:fragment="content">
-
-	<h3>공정 라인 정보</h3>
-	
-	<div class="card">
-	    <div class="card-header">
-	        <h5 class="card-title">라인 목록</h5>
-	    </div>
-	    <div class="card-body"> <!-- 여기에 내용작성 -->
-	    
-		<div class="row mb-3"> <!-- 검색박스 -->
-	        <div class="col-md-3">
-	            <input type="month" class="form-control" placeholder="등록월">
-	        </div>
-	        <div class="col-md-4">
-	            <div class="input-group">
-	                <input type="text" class="form-control" placeholder="거래처 이름을 입력해주세요.">
-	                <button class="btn btn-outline-secondary" type="button">
-	                    <i class="bi bi-search"></i>
-	                </button>
-	            </div>
-	        </div>
-	    </div><!-- /검색박스 -->
-	    <div class="text-end" sec:authorize="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')"> <!-- 거래처등록 버튼 -->
-		    <button class="btn btn-primary btn-m" id="regeWork" data-bs-toggle="modal" data-bs-target="#workModal"><i class="fa-solid fa-person-walking-luggage"></i> 거래처 등록</button>
-		    <button class="btn btn-outline-danger  btn-m" id="deleteClient" onclick="deleteClient()"><i class="fa-solid fa-trash-can"></i> 거래처 삭제</button>
-		</div><!-- 거래처 등록 버튼 -->
-		<hr>
-		
-		<h6 class="section-title">상품</h6>
-		<!-- grid 사용-->
-		<div th:replace="~{fragments/gridLayout :: tuiGrid('lineGrid', ${lineGridOptions})}"></div>
-		
-	    </div><!-- /card-body -->
-	</div><!-- /card -->
-
-	<!-- 모달 -->
-	<div class="modal fade" id="workModal" tabindex="-1" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-	    <div class="modal-dialog modal-dialog-centered modal-lg">
-	        <div class="modal-content">
-	            <div class="modal-header">
-	                <h5 class="modal-title" id="exampleModalCenterTitle">거래처 등록</h5>
-	            </div>
-	            <form action="/clientInfoForm" method="POST">
-	            <div class="modal-body">
-	                <div class="form-group">
-                        <label for="basicInput">거래처 구분</label>
-                        <select class="form-select" id="basicSelect" name="cltType">
-                            <option value="SUPPLIER">수주</option>
-                            <option value="ORDER">발주</option>
-                            <option value="ect">기타</option>
-                        </select>
-                    </div>
-	            </div>
-	            <div class="modal-footer">
-	                <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
-	                    <span class="d-none d-sm-block">닫기</span>
-	                </button>
-	                <button type="submit" class="btn btn-primary ms-1" >
-	                    <span class="d-none d-sm-block">등록</span>
-	                </button>
-	            </div>
-	            </form>
-	        </div>
-	    </div>
-	</div><!-- /모달 -->
-
-</div> <!-- /layout:fragment -->
-</body>
-</html>
+if(username === '991114'){ //관리자 계정 991114 추가
+					
+					alert("관리자")
+					
+					if(!savePRC){ //관리자 계정이면서 기존 작업이 없므면 버튼에 최대값 적용
+						$.ajax({
+							url: '/production/getRnRowNumMax',
+							data: {woCode: woCode},
+							success : function(response){
+								
+								if(response > 0){
+									presentBtnRow = response - 1;	
+								}else{
+									alert("presentBtnRow 음수");
+								}
+								
+								console.log("위에 관리자 presentBtnRow:" + presentBtnRow);
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: error,
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+					      	}// error: function(error) {
+						}); //$.ajax({
+						
+					}else if(savePRC == null){		//관리자 계정이 아닌 경우
+						alert("dfsdf")
+						$.ajax({
+							url: '/production/getRnRowNumMax',
+							data: {woCode: woCode},
+							success : function(response){
+								
+								if(response > 0){
+									presentBtnRow = response - 1;	
+								}else{
+									alert("presentBtnRow 음수");
+								}
+								
+								console.log("위에 매니저/일반 presentBtnRow:" + presentBtnRow);
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: error,
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+					      	}// error: function(error) {
+						}); //$.ajax({
+					} //else if(!savePRC){	
+				}// if(username === '991114'){ 
