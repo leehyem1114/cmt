@@ -103,4 +103,13 @@ public class LotService {
 	public void insertIpi(IpiDTO ipidto) {
 		lotMapper.insertIpi(ipidto);
 	}
+
+	public void updateMfgScdStatus(String woCode, String mfgscd) {
+		lotMapper.updateMfgScdStatus(woCode, mfgscd);
+	}
+
+	public void updateMfgPlanStatus(String woCode, String mfgPlan) {
+		lotMapper.updateMfgPlanStatus(woCode, mfgPlan);
+		
+	}
 }
