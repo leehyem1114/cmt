@@ -25,6 +25,7 @@
             , P.PDT_NAME 
             , E.EMP_NAME
 			, W.WO_QTY AS SO_QTY
+			, M.MS_CODE
             
 		  FROM WORK_ORDER W 
 		          LEFT JOIN PRODUCTS P ON W.PDT_CODE = P.PDT_CODE
@@ -56,7 +57,6 @@
 		    --  , S.PDT_PRC_TYPE_CODE
 		FROM MFG_SCHEDULES S JOIN PRODUCTS P ON S.PDT_CODE = P.PDT_CODE
 							JOIN EMPLOYEES E ON S.EMP_ID = E.EMP_ID
-	--	WHERE  MS_STATUS != '대기'
 		WHERE  MS_STATUS = '등록'
 		ORDER BY S.MS_NO DESC
 	</select>
@@ -80,7 +80,7 @@
 			, #{woCode, jdbcType=VARCHAR}
 			, #{pdtCode, jdbcType=VARCHAR}
 			, #{pdtName, jdbcType=VARCHAR}
-			, #{allocatedQty, jdbcType=VARCHAR}
+			, #{soQty, jdbcType=VARCHAR}
 			, #{empId}
 			, #{lineCode, jdbcType=VARCHAR}
 			, #{prcCode, jdbcType=VARCHAR}
@@ -93,12 +93,12 @@
 	<update id="updateMfgStatus">
 		UPDATE WORK_ORDER
 		SET WO_STATUS_CODE = 'SB'
-		WHERE WO_CODE = #{msCode}
+		WHERE WO_CODE = #{woCode}
 	</update>
 	
 	<!--MFG_SCHEDULES - 대기로 변경-->
 	<update id="updateMfgStatus2"> 
-		UPDATE MFG_SCHEDULES SET MS_STATUS = '등록'
+		UPDATE MFG_SCHEDULES SET MS_STATUS = '대기'
 		WHERE MS_CODE = (SELECT MS_CODE FROM WORK_ORDER WHERE WO_CODE = #{woCode}) 
 	</update>
 	
@@ -264,10 +264,9 @@
   </select>
   
   <select id="getWoCodeLast" resultType="String">
-  		SELECT WO_CODE 
-  		  FROM WORK_ORDER
-		 WHERE WO_NO = (SELECT MAX(WO_NO) 
-		  FROM WORK_ORDER)
+  	  SELECT WO_CODE
+	  FROM WORK_ORDER
+	  WHERE WO_NO = (SELECT NVL(MAX(WO_NO),0) FROM WORK_ORDER)
   </select>
   <!-- LOT검색 -->
   <select id="findLotsByKeyword" parameterType="String" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
