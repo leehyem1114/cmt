@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +53,12 @@ public class ProductsMasterService {
 		try {
 			log.info("제품 정보 저장 시작: {}", params);
 			
+			// 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
+            // 처리자 정보 설정
+            params.put("updatedBy", userId);
+			
 			// 제품 코드로 기존 데이터 조회
 			Map<String, Object> existingData = productsSingle(params);
 			
@@ -71,6 +78,9 @@ public class ProductsMasterService {
 				}
 			} else {
 				log.info("제품 정보 등록: {}", params.get("PDT_CODE"));
+				// 생성자 정보 설정
+                params.put("createdBy", userId);
+                
 				result = productsMapper.insertProducts(params);
 				
 				if (result > 0) {
@@ -112,8 +122,15 @@ public class ProductsMasterService {
 		try {
 			log.info("제품 정보 일괄 저장 시작: {}건", productsList.size());
 			
+			// 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
 			for (Map<String, Object> productsData : productsList) {
 				try {
+				    // 처리자 정보 설정
+				    productsData.put("updatedBy", userId);
+				    productsData.put("createdBy", userId);
+				    
 					Map<String, Object> result = saveProducts(productsData);
 					
 					if ((Boolean) result.get("success")) {

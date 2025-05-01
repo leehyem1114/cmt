@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.cmtProject.comm.response.ApiResponse;
 import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.service.mes.inventory.MaterialInventoryService;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,6 +60,10 @@ public class MaterialInventoryRestController {
     @PostMapping(PathConstants.CONSUME)
     public ApiResponse<Map<String, Object>> consumeMaterial(@RequestBody Map<String, Object> params) {
         log.info("자재 재고 차감 요청: {}", params);
+        
+        // 현재 사용자 ID 설정 (이미 서비스 내에서 처리됨)
+        // String userId = SecurityUtil.getUserId();
+        // params.put("updatedBy", userId);
         
         Map<String, Object> result = mis.consumeMaterialFIFO(params);
         

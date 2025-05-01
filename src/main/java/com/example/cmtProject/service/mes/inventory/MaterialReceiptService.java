@@ -16,6 +16,7 @@ import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,6 +87,9 @@ public class MaterialReceiptService {
 	        LocalDate now = LocalDate.now();
 	        String nowStr = now.toString();
 	        
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
 	        for (Map<String, Object> po : purchaseOrders) {
 	            try {
 	                // 입고 정보 맵 생성
@@ -100,9 +104,9 @@ public class MaterialReceiptService {
 	                receiptMap.put("receiptStatus", "입고대기");
 	                receiptMap.put("warehouseCode", po.get("WHS_CODE"));
 	                receiptMap.put("locationCode", "LOC-DEFAULT");
-	                receiptMap.put("receiver", "SYSTEM");
-	                receiptMap.put("createdBy", "SYSTEM");
-	                receiptMap.put("updatedBy", "SYSTEM");
+	                receiptMap.put("receiver", userId);
+	                receiptMap.put("createdBy", userId);
+	                receiptMap.put("updatedBy", userId);
 	                receiptMap.put("createdDate", nowStr);
 	                receiptMap.put("updatedDate", nowStr);
 	                
@@ -120,8 +124,8 @@ public class MaterialReceiptService {
 	                    historyMap.put("receiptNo", receiptNo);
 	                    historyMap.put("actionType", "입고등록");
 	                    historyMap.put("actionDescription", "발주번호 " + po.get("PO_CODE") + "의 자동 입고 등록");
-	                    historyMap.put("actionUser", "SYSTEM");
-	                    historyMap.put("createdBy", "SYSTEM");
+	                    historyMap.put("actionUser", userId);
+	                    historyMap.put("createdBy", userId);
 	                    
 	                    mRhmapper.insertHistory(historyMap);
 	                    
@@ -269,6 +273,9 @@ public class MaterialReceiptService {
 	        LocalDate now = LocalDate.now();
 	        String nowStr = now.toString();
 	        
+	        // 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
 	        for (Map<String, Object> item : items) {
 	            try {
 	                // 입고 번호 추출
@@ -307,7 +314,7 @@ public class MaterialReceiptService {
 	                Map<String, Object> updateMap = new HashMap<>();
 	                updateMap.put("receiptNo", receiptNo);
 	                updateMap.put("receiptStatus", "입고완료");
-	                updateMap.put("updatedBy", item.get("updatedBy"));
+	                updateMap.put("updatedBy", userId);
 	                updateMap.put("updatedDate", nowStr);
 	                
 	                int result = mRmapper.updateReceiptStatus(updateMap);
@@ -320,8 +327,8 @@ public class MaterialReceiptService {
 	                    historyMap.put("receiptNo", receiptNo);
 	                    historyMap.put("actionType", "입고확정");
 	                    historyMap.put("actionDescription", "입고 확정 처리됨");
-	                    historyMap.put("actionUser", item.get("updatedBy"));
-	                    historyMap.put("createdBy", item.get("updatedBy"));
+	                    historyMap.put("actionUser", userId);
+	                    historyMap.put("createdBy", userId);
 	                    
 	                    mRhmapper.insertHistory(historyMap);
 	                    
@@ -335,7 +342,7 @@ public class MaterialReceiptService {
 	                        inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
 	                        inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
 	                        inventoryParams.put("receivedQty", receiptDetail.get("RECEIVED_QTY"));
-	                        inventoryParams.put("updatedBy", item.get("updatedBy"));
+	                        inventoryParams.put("updatedBy", userId);
 	                        
 	                        // 재고 업데이트 (있으면 증가, 없으면 생성)
 	                        mImapper.mergeInventory(inventoryParams);
@@ -346,7 +353,7 @@ public class MaterialReceiptService {
 	                        stockParams.put("mtlCode", receiptDetail.get("MTL_CODE"));
 	                        stockParams.put("remainingQty", receiptDetail.get("RECEIVED_QTY"));
 	                        stockParams.put("receiptDate", receiptDetail.get("RECEIPT_DATE"));
-	                        stockParams.put("createdBy", item.get("updatedBy"));
+	                        stockParams.put("createdBy", userId);
 	                        
 	                        mRsmapper.insertStock(stockParams);
 	                        
@@ -420,12 +427,15 @@ public class MaterialReceiptService {
             LocalDate today = LocalDate.now();
             String todayStr = today.toString();
             
+            // 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
             // 입고 상태 및 입고일 업데이트
             Map<String, Object> updateMap = new HashMap<>();
             updateMap.put("receiptNo", receiptNo);
             updateMap.put("receiptStatus", "검수중");
             updateMap.put("receiptDate", todayStr); // 검수 요청일을 입고일로 설정
-            updateMap.put("updatedBy", params.get("updatedBy"));
+            updateMap.put("updatedBy", userId);
             updateMap.put("updatedDate", todayStr);
             updateMap.put("receiptCode", params.get("receiptCode"));
             
@@ -439,8 +449,8 @@ public class MaterialReceiptService {
                 historyMap.put("receiptNo", receiptNo);
                 historyMap.put("actionType", "검수시작");
                 historyMap.put("actionDescription", "검수 등록됨");
-                historyMap.put("actionUser", params.get("updatedBy"));
-                historyMap.put("createdBy", params.get("updatedBy"));
+                historyMap.put("actionUser", userId);
+                historyMap.put("createdBy", userId);
                 
                 mRhmapper.insertHistory(historyMap);
                 
@@ -479,7 +489,7 @@ public class MaterialReceiptService {
         try {
             log.info("다건 검수 등록 처리 시작: {}", params);
             
-            // 다건 처리 지원
+            // 다건
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> items = (List<Map<String, Object>>) params.get("items");
             

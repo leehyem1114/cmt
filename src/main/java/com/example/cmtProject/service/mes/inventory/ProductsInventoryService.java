@@ -11,6 +11,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +48,9 @@ public class ProductsInventoryService {
 		try {
 			log.info("재고 정보 저장 시작: {}건", inventoryList.size());
 			
+			// 현재 사용자 ID 가져오기
+			String userId = SecurityUtil.getUserId();
+			
 			for (Map<String, Object> item : inventoryList) {
                 // 계산된 가용수량 설정 (가용수량 = 현재수량 - 할당수량)
                 double currentQty = Double.parseDouble(item.get("CURRENT_QTY").toString());
@@ -56,8 +60,8 @@ public class ProductsInventoryService {
                 // 가용수량 업데이트
                 item.put("AVAILABLE_QTY", String.valueOf(availableQty));
                 
-                // 처리자 설정 (사용자 정보나 시스템 정보에서 추출)
-                item.put("updatedBy", item.getOrDefault("updatedBy", "SYSTEM"));
+                // 처리자 설정 (현재 로그인한 사용자 ID)
+                item.put("updatedBy", userId);
                 
                 // 재고번호 있으면 업데이트, 없으면 신규 등록
                 if (item.get("PINV_NO") != null && !item.get("PINV_NO").toString().isEmpty()) {
@@ -105,6 +109,9 @@ public class ProductsInventoryService {
             String pdtCode = (String) params.get("pdtCode");
             String consumptionQty = (String) params.get("consumptionQty");
             
+            // 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
             log.info("FIFO 재고 차감 시작: 제품코드={}, 차감수량={}", pdtCode, consumptionQty);
             
             // 1. 해당 제품의 총 재고 확인
@@ -146,7 +153,7 @@ public class ProductsInventoryService {
                 Map<String, Object> deductParams = new HashMap<>();
                 deductParams.put("issueStockNo", stockNo);
                 deductParams.put("deductQty", String.valueOf(qtyToDeduct));
-                deductParams.put("updatedBy", params.get("updatedBy"));
+                deductParams.put("updatedBy", userId);
                 
                 // pIsmapper.deductStock(deductParams); // 실제 구현 필요
                 */
@@ -159,7 +166,7 @@ public class ProductsInventoryService {
             Map<String, Object> inventoryParams = new HashMap<>();
             inventoryParams.put("pdtCode", pdtCode);
             inventoryParams.put("consumptionQty", consumptionQty);
-            inventoryParams.put("updatedBy", params.get("updatedBy"));
+            inventoryParams.put("updatedBy", userId);
             
             pImapper.deductInventory(inventoryParams);
             

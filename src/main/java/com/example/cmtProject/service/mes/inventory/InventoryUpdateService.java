@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +27,11 @@ public class InventoryUpdateService {
 	public void updateAllocatedQuantities(Map<String, Object> params) {
 	    String soCode = (String) params.get("soCode");
 	    Long soQty = (Long) params.get("soQty");
+	    
+	    // 현재 사용자 ID 가져오기
+	    String userId = SecurityUtil.getUserId();
+	    params.put("updatedBy", userId);
+	    
 	    log.info("재고 할당 시작 - 주문코드: {}, 주문수량: {}", soCode, soQty);
 	    
 	    // BOM 항목 조회

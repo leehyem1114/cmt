@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.MaterialMasterMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,12 +53,11 @@ public class MaterialMasterService {
 		try {
 			log.info("원자재 정보 저장 시작: {}", params);
 			
-			// 필수 파라미터 검증
-//			if (params == null || !params.containsKey("mtlCode") || !params.containsKey("mtlName")) {
-//				resultMap.put("success", false);
-//				resultMap.put("message", "필수 파라미터가 누락되었습니다. (원자재코드, 원자재명)");
-//				return resultMap;
-//			}
+			// 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
+            // 처리자 정보 설정
+            params.put("updatedBy", userId);
 			
 			// 원자재 코드로 기존 데이터 조회
 			Map<String, Object> existingData = materialSingle(params);
@@ -78,6 +78,9 @@ public class MaterialMasterService {
 				}
 			} else {
 				log.info("원자재 정보 등록: {}", params.get("mtlCode"));
+				// 생성자 정보 설정
+                params.put("createdBy", userId);
+                
 				result = materialMapper.insertMaterials(params);
 				
 				if (result > 0) {
@@ -119,8 +122,15 @@ public class MaterialMasterService {
 		try {
 			log.info("원자재 정보 일괄 저장 시작: {}건", materialList.size());
 			
+			// 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
 			for (Map<String, Object> materialData : materialList) {
 				try {
+				    // 처리자 정보 설정
+				    materialData.put("updatedBy", userId);
+				    materialData.put("createdBy", userId);
+				    
 					Map<String, Object> result = saveMaterial(materialData);
 					
 					if ((Boolean) result.get("success")) {
@@ -168,13 +178,6 @@ public class MaterialMasterService {
 		
 		try {
 			log.info("원자재 정보 삭제 시작: {}", params);
-			
-			// 필수 파라미터 검증
-//			if (params == null || !params.containsKey("mtlCode")) {
-//				resultMap.put("success", false);
-//				resultMap.put("message", "필수 파라미터가 누락되었습니다. (원자재코드)");
-//				return resultMap;
-//			}
 			
 			// 삭제 전 데이터 존재 여부 확인
 			Map<String, Object> existingData = materialSingle(params);

@@ -206,12 +206,6 @@ const ProductsInventoryManager = (function() {
                         }
                     },
                     {
-                        header: 'LOT번호',
-                        name: 'LOT_NO',
-                        editor: false,
-                        sortable: true
-                    },
-                    {
                         header: '마지막이동일',
                         name: 'LAST_MOVEMENT_DATE',
                         editor: false,
