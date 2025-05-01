@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.cmtProject.mapper.mes.inventory.WarehouseMasterMapper">
+<mapper namespace="com.example.cmtProject.mapper.mes.warehouse.WarehouseMasterMapper">
 
     <!-- 창고 기준정보 목록 조회-->
     <select id="selectWarehouses" resultType="map" parameterType="map">
@@ -13,7 +13,6 @@
             WHS_LOCATION,                  
             WHS_CAPACITY,           
             WHS_COMMENTS,           
-            CURRENT_USAGE,           
             USE_YN,           
             CREATED_BY,           
             UPDATED_BY,
@@ -44,7 +43,6 @@
             WHS_LOCATION,                  
             WHS_CAPACITY,           
             WHS_COMMENTS,           
-            CURRENT_USAGE,           
             USE_YN,           
             CREATED_BY,           
             UPDATED_BY,
@@ -66,7 +64,6 @@
             WHS_LOCATION,                  
             WHS_CAPACITY,           
             WHS_COMMENTS,           
-            CURRENT_USAGE,           
             USE_YN,           
             CREATED_BY,           
             UPDATED_BY,
@@ -80,7 +77,6 @@
             #{WHS_LOCATION},
             #{WHS_CAPACITY},
             #{WHS_COMMENTS},
-            #{CURRENT_USAGE},
             #{USE_YN},
             #{CREATED_BY},
             #{UPDATED_BY},
@@ -98,7 +94,6 @@
             WHS_LOCATION =   #{WHS_LOCATION},           
             WHS_CAPACITY =   #{WHS_CAPACITY},          
             WHS_COMMENTS =   #{WHS_COMMENTS},        
-            CURRENT_USAGE =  #{CURRENT_USAGE},        
             USE_YN =         #{USE_YN},      
             UPDATED_BY =     #{UPDATED_BY},
             UPDATED_DATE =   SYSDATE        

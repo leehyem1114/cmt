@@ -34,7 +34,7 @@ public class ProductsMasterRestController {
      * @param keyword 검색 키워드 (선택사항)
      * @return 제품 목록 데이터
      */
-    @GetMapping(PathConstants.PRODUCTS_INFO_LIST)
+    @GetMapping(PathConstants.LIST)
     public ApiResponse<List<Map<String, Object>>> getProductsList(
             @RequestParam(name = "keyword", required = false) String keyword) {
         
@@ -99,7 +99,7 @@ public class ProductsMasterRestController {
      * @param requestData 저장할 데이터 목록
      * @return 처리 결과
      */
-    @PostMapping(PathConstants.PRODUCTS_INFO_BATCH)
+    @PostMapping(PathConstants.BATCH)
     public ApiResponse<Map<String, Object>> saveBatch(@RequestBody List<Map<String, Object>> requestData) {
         log.info("제품 정보 일괄 저장 요청. 데이터 건수: {}", requestData.size());
         

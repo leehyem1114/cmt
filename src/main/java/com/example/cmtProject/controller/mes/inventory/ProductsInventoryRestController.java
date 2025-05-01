@@ -32,7 +32,7 @@ public class ProductsInventoryRestController {
      * @param keyword 검색 키워드 (선택사항)
      * @return 재고 목록 데이터
      */
-    @GetMapping("/list")
+    @GetMapping(PathConstants.LIST)
     public ApiResponse<List<Map<String, Object>>> getProductsInventory(
             @RequestParam(name = "keyword", required = false) String keyword) {
         
@@ -56,7 +56,7 @@ public class ProductsInventoryRestController {
      * @param params 차감 정보 (pdtCode: 제품코드, consumptionQty: 소비량, updatedBy: 처리자)
      * @return 처리 결과
      */
-    @PostMapping("/consume")
+    @PostMapping(PathConstants.CONSUME)
     public ApiResponse<Map<String, Object>> consumeProduct(@RequestBody Map<String, Object> params) {
         log.info("제품 재고 차감 요청: {}", params);
         
@@ -78,7 +78,7 @@ public class ProductsInventoryRestController {
      * @param inventoryList 저장할 재고 정보 목록
      * @return 처리 결과
      */
-    @PostMapping("/save")
+    @PostMapping(PathConstants.SAVE)
     public ApiResponse<Map<String, Object>> saveInventory(@RequestBody List<Map<String, Object>> inventoryList) {
         log.info("재고 정보 저장 요청: {}건", inventoryList.size());
         

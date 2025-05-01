@@ -26,7 +26,7 @@ public class WarehouseMasterController {
     /**
      * 창고 기준정보 메인페이지
      */
-    @GetMapping(PathConstants.WAREHOUSE_VIEW)
+    @GetMapping(PathConstants.VIEW)
     public String warehouseInfoGet(Model model) {
         log.info("창고 기준정보 메인 페이지 요청");
         
