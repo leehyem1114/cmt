@@ -394,7 +394,7 @@ public class ProductionPrcController {
 			lod.setWoQty(woQty);  // -- 완제품 수량
 			
 			for(SemiFinalBomQty sfb : bomQtyList) {
-				log.info("work_order_detail ParentPdtCode()"+sfb.getParentPdtCode() + " : lot테이블 ParentPdtCode:"+ b.getParentPdtCode());
+				//log.info("work_order_detail ParentPdtCode()"+sfb.getParentPdtCode() + " : lot테이블 ParentPdtCode:"+ b.getParentPdtCode());
 				if(sfb.getParentPdtCode().equals(b.getParentPdtCode())) {
 					lod.setBomQty(sfb.getMsQty()); // -- 반제픔 수량
 				}
@@ -587,7 +587,7 @@ public class ProductionPrcController {
 		//현재 상태 SAVE_PRC 테이블 입력
 		lotService.insertSavePrc(savePrcDto);
 		
-		log.info("savePrcDto:"+savePrcDto);	
+		//log.info("savePrcDto:"+savePrcDto);	
 		
 		return "success";
 	}

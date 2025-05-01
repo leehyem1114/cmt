@@ -378,30 +378,30 @@
 							let liList = document.querySelectorAll('#bom-tree li');
 
 							liList.forEach(li => {
-							  li.childNodes.forEach(node => {
+								li.childNodes.forEach(node => {
 							    if (node.nodeType === Node.TEXT_NODE) {
-							      let nodeValue = node.nodeValue.replace(/\s/g, ''); // 기존 공백 제거
+							    	let nodeValue = node.nodeValue.replace(/\s/g, ''); // 기존 공백 제거
 
-							      inputList.forEach(input => {  // 🔥 배열을 반복해서 각각 체크
+							      	inputList.forEach(input => {  
 							        if (nodeValue.includes(input)) {
-							          const before = node.nodeValue.split(input)[0];
-							          const after = node.nodeValue.split(input)[1];
+							       		const before = node.nodeValue.split(input)[0];
+							         	const after = node.nodeValue.split(input)[1];
 
-							          const span = document.createElement('span');
-							          span.style.textDecoration = 'line-through';
-							          span.textContent = input;
+							           	const span = document.createElement('span');
+							          	span.style.textDecoration = 'line-through';
+							          	span.textContent = input;
 
-							          const beforeText = document.createTextNode(before);
-							          const afterText = document.createTextNode(after);
+								        const beforeText = document.createTextNode(before);
+								        const afterText = document.createTextNode(after);
 
-							          li.insertBefore(beforeText, node);
-							          li.insertBefore(span, node);
-							          li.insertBefore(afterText, node);
-							          li.removeChild(node);
-							        }
-							      });
-							    }
-							  });// li.childNodes.forEach(node => {
+							          	li.insertBefore(beforeText, node);
+							          	li.insertBefore(span, node);
+							          	li.insertBefore(afterText, node);
+							          	li.removeChild(node);
+							        	}//if (nodeValue.includes(input)) {
+							      	});//inputList.forEach(input => {
+							    	}//if (node.nodeType === Node.TEXT_NODE) {
+							  	});// li.childNodes.forEach(node => {
 							});//liList.forEach(li => {
 							//-----------------------------------------
 						}, 1000);
@@ -422,16 +422,13 @@
 					document.getElementById('finishJobBtn').style.display = 'inline-block';
 				}
 				
-
 			}else{ //if(savePRC){ //SAVE_PRC 테이블에 저장된 작업지시서가 있는 경우
 				
 				//설렉트 박스가 선택 될 때 pdtCode와 woCode가 결정 되므로 패이지가 로딩 될 때는 당연히 값이 없다 
 				//pdtCode = "";
 				//woCode = "";
 				
-				
 			}//else{
-			
 			
 			//======================================= 모달 안에 셀렉트 박스 이벤트 ================================================
 			$("#woCodeSelected").on('change', function(){
@@ -610,6 +607,7 @@
 				let urlCheck = "";
 				
 				//최초 작업을 하는 경우만 getRnRowNumMax에서 MAX값을 받아온다, 기존 작업이 있는 경우는 최초 설정한 presentBtnRow를 그대로 사용
+				/*
 				if(!savePRC || username === '991114'){ //관리자 계정 991114 추가
 					$.ajax({
 						url: '/production/getRnRowNumMax',
@@ -632,10 +630,65 @@
 					        });
 				      	}// error: function(error) {
 					}); //$.ajax({
-				}
+				}*/
+				
+				
+				// ---------------- 로직 변경(관리자 권한과 USER권한 나눔) ----------------------------
+				
+				if(username === '991114'){ //관리자 계정 991114 추가
 					
+					if(!savePRC){ //관리자 계정이면서 기존 작업이 없므면 버튼에 최대값 적용
+						$.ajax({
+							url: '/production/getRnRowNumMax',
+							data: {woCode: woCode},
+							success : function(response){
+								
+								if(response > 0){
+									presentBtnRow = response - 1;	
+								}else{
+									alert("presentBtnRow 음수");
+								}
+								
+								console.log("위에 관리자 presentBtnRow:" + presentBtnRow);
+							},
+							error: function(error) {
+						        Swal.fire({
+						        	icon: 'error',
+						          	title: error,
+						          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+						        });
+					      	}// error: function(error) {
+						}); //$.ajax({
+					}//if(!savePRC){
+						
+				}else if(savePRC == null){		//관리자 계정이 아닌 경우
+					
+					$.ajax({
+						url: '/production/getRnRowNumMax',
+						data: {woCode: woCode},
+						success : function(response){
+							
+							if(response > 0){
+								presentBtnRow = response - 1;	
+							}else{
+								alert("presentBtnRow 음수");
+							}
+							
+							console.log("위에 매니저/일반 presentBtnRow:" + presentBtnRow);
+						},
+						error: function(error) {
+					        Swal.fire({
+					        	icon: 'error',
+					          	title: error,
+					          	text: '작업 완료 처리 중 오류가 발생했습니다.',
+					        });
+				      	}// error: function(error) {
+					}); //$.ajax({
+				} //else if(!savePRC){	
+				
 				//-------------------- 두번째 하단 그리드에 값을 출력하기 위한 비동기 --------------------
 				
+				//버튼이 그려지고나서 presentBtnRow를 적용하기 위해 setTimeout설정
 				setTimeout(() => {
 				  
 					$.ajax({
@@ -654,8 +707,6 @@
 					      	});
 				      	}// error: function(error) {
 					});//$.ajax
-					
-					
 					
 				}, 1000);
 				
