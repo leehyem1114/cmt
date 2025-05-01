@@ -146,7 +146,6 @@ const MaterialManager = (function() {
                     '재질코드': 'MTL_TYPE_CODE',
                     '사용여부': 'MTL_USE_YN',
                     '비고': 'MTL_COMMENTS',
-                    '공급처코드': 'MTL_SUPP_CODE'
                 },
                 beforeLoad: function() {
                     console.log('엑셀 업로드 시작');
@@ -261,13 +260,6 @@ const MaterialManager = (function() {
                         editor: 'text',
                         sortable: true,
                         width: 150
-                    },
-                    {
-                        header: '공급처코드',
-                        name: 'MTL_SUPP_CODE',
-                        editor: 'text',
-                        sortable: true,
-                        width: 120
                     },
                     {
                         header: '타입',
