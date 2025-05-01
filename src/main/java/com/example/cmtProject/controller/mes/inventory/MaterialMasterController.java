@@ -10,13 +10,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.service.mes.inventory.MaterialMasterService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-//@RequestMapping()
+@RequestMapping("/material-info")
 @Slf4j
 public class MaterialMasterController {
     
@@ -26,12 +25,16 @@ public class MaterialMasterController {
     /**
      * 원자재 기준정보 메인페이지
      */
-   // @GetMapping()
-    public String materialInventoryGet(Model model) {
+    @GetMapping("")
+    public String materialInfoGet(Model model) {
+        log.info("원자재 기준정보 메인 페이지 요청");
+        
         Map<String,Object> findMap = new HashMap<>();
         List<Map<String,Object>> materialList = mms.materialList(findMap);
         model.addAttribute("materialList", materialList);
         
-        return "";
+        log.info("원자재 기준정보 조회 결과: {}건", materialList.size());
+        
+        return "mes/inventory/materialInfo";
     }
 }
