@@ -97,7 +97,7 @@
 	</update>
 	
 	<!--MFG_SCHEDULES - 대기로 변경-->
-	<update id="updateMfgStatus2">
+	<update id="updateMfgStatus2"> 
 		UPDATE MFG_SCHEDULES SET MS_STATUS = '등록'
 		WHERE MS_CODE = (SELECT MS_CODE FROM WORK_ORDER WHERE WO_CODE = #{woCode}) 
 	</update>
