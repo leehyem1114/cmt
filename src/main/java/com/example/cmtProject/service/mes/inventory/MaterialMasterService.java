@@ -53,11 +53,11 @@ public class MaterialMasterService {
 			log.info("원자재 정보 저장 시작: {}", params);
 			
 			// 필수 파라미터 검증
-			if (params == null || !params.containsKey("mtlCode") || !params.containsKey("mtlName")) {
-				resultMap.put("success", false);
-				resultMap.put("message", "필수 파라미터가 누락되었습니다. (원자재코드, 원자재명)");
-				return resultMap;
-			}
+//			if (params == null || !params.containsKey("mtlCode") || !params.containsKey("mtlName")) {
+//				resultMap.put("success", false);
+//				resultMap.put("message", "필수 파라미터가 누락되었습니다. (원자재코드, 원자재명)");
+//				return resultMap;
+//			}
 			
 			// 원자재 코드로 기존 데이터 조회
 			Map<String, Object> existingData = materialSingle(params);
@@ -170,11 +170,11 @@ public class MaterialMasterService {
 			log.info("원자재 정보 삭제 시작: {}", params);
 			
 			// 필수 파라미터 검증
-			if (params == null || !params.containsKey("mtlCode")) {
-				resultMap.put("success", false);
-				resultMap.put("message", "필수 파라미터가 누락되었습니다. (원자재코드)");
-				return resultMap;
-			}
+//			if (params == null || !params.containsKey("mtlCode")) {
+//				resultMap.put("success", false);
+//				resultMap.put("message", "필수 파라미터가 누락되었습니다. (원자재코드)");
+//				return resultMap;
+//			}
 			
 			// 삭제 전 데이터 존재 여부 확인
 			Map<String, Object> existingData = materialSingle(params);

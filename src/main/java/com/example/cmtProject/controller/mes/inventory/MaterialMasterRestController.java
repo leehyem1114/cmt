@@ -122,7 +122,8 @@ public class MaterialMasterRestController {
         log.info("원자재 정보 삭제 요청. 원자재 코드: {}", mtlCode);
         
         Map<String, Object> param = new HashMap<>();
-        param.put("mtlCode", mtlCode);
+        // 프론트에서 바로 정보를 받아옴으로 인해 카멜이 아닌 스네이크로 적어야함
+        param.put("MTL_CODE", mtlCode);
         
         Map<String, Object> result = mms.deleteMaterial(param);
         

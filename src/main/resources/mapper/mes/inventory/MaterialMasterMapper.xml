@@ -16,8 +16,7 @@
 			MTL_CLT_CODE,           
 			MTL_TYPE_CODE,           
 			MTL_USE_YN,           
-			MTL_COMMENTS,           
-			MTL_SUPP_CODE           
+			MTL_COMMENTS           
 		FROM                           
 			MATERIALS
 		WHERE
@@ -39,12 +38,11 @@
 			MTL_CLT_CODE,           
 			MTL_TYPE_CODE,           
 			MTL_USE_YN,           
-			MTL_COMMENTS,           
-			MTL_SUPP_CODE           
+			MTL_COMMENTS           
 		FROM                           
 			MATERIALS
 		WHERE
-			MTL_CODE = #{mtlCode}
+			MTL_CODE = #{MTL_CODE}
 		ORDER BY
 			MTL_NO DESC
 		
@@ -53,6 +51,7 @@
 	</select>
 	
 	<!-- 원자재 기준정보 등록(INSERT) -->
+	<!--프론트에서 바로 데이터를 받기에 카멜대신 대문자 스네이크 써야함-->
 	<insert id="insertMaterials" parameterType="map">
 		INSERT INTO MATERIALS(
 			MTL_NO,                    
@@ -65,20 +64,19 @@
 			MTL_CLT_CODE,           
 			MTL_TYPE_CODE,           
 			MTL_USE_YN,           
-			MTL_COMMENTS,           
-			MTL_SUPP_CODE
+			MTL_COMMENTS           
 		) VALUES (
-			#{mtlNo},
-			#{mtlCode},
-			#{mtlName},
-			#{mtlStandard},
-			#{mtlUnit},
-			#{mtlBasePrice},
-			#{mtlPrcType},
-			#{mtlCltCode},
-			#{mtlTypeCode},
-			#{mtlUseYn},
-			#{mtlComments}
+			MATERIALS_SEQ.NEXTVAL,
+			#{MTL_CODE},
+			#{MTL_NAME},
+			#{MTL_STANDARD},
+			#{MTL_UNIT},
+			#{MTL_BASE_PRICE},
+			#{MTL_PRC_TYPE},
+			#{MTL_CLT_CODE},
+			#{MTL_TYPE_CODE},
+			#{MTL_USE_YN},
+			#{MTL_COMMENTS}
 		)
 	</insert>		
 
@@ -86,19 +84,18 @@
 	<update id="updateMaterials" parameterType="map">
 		UPDATE MATERIALS
 		SET
-			MTL_NO =         #{mtlNo},             
-			MTL_CODE =       #{mtlCode},             
-			MTL_NAME =       #{mtlName},           
-			MTL_STANDARD =   #{mtlStandard},           
-			MTL_UNIT =       #{mtlUnit},           
-			MTL_BASE_PRICE = #{mtlBasePrice},          
-			MTL_PRC_TYPE =   #{mtlPrcType},        
-			MTL_CLT_CODE =   #{mtlCltCode},        
-			MTL_TYPE_CODE =  #{mtlTypeCode},         
-			MTL_USE_YN =     #{mtlUseYn},      
-			MTL_COMMENTS =   #{mtlComments}        
+			MTL_CODE =       #{MTL_CODE},             
+			MTL_NAME =       #{MTL_NAME},           
+			MTL_STANDARD =   #{MTL_STANDARD},           
+			MTL_UNIT =       #{MTL_UNIT},           
+			MTL_BASE_PRICE = #{MTL_BASE_PRICE},          
+			MTL_PRC_TYPE =   #{MTL_PRC_TYPE},        
+			MTL_CLT_CODE =   #{MTL_CLT_CODE},        
+			MTL_TYPE_CODE =  #{MTL_TYPE_CODE},         
+			MTL_USE_YN =     #{MTL_USE_YN},      
+			MTL_COMMENTS =   #{MTL_COMMENTS}        
 		WHERE
-			MTL_CODE = #{mtlCode}
+			MTL_CODE = #{MTL_CODE}
 	</update>
 	
 	<!-- 원자재 기준정보 삭제(DELETE) -->	
@@ -107,7 +104,7 @@
 		FROM 
 			MATERIALS
 		WHERE
-			MTL_CODE = #{mtlCode}
+			MTL_CODE = #{MTL_CODE}
 	</delete>
     
 </mapper>
