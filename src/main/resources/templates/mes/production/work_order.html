@@ -5,19 +5,7 @@
 	      layout:decorate="~{layouts/layout}">
 <head>
 <meta charset="UTF-8">
-	<!-- 최신 xlsx 스크립트 CDN(엑셀용) -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-	
-	<!-- CSS -->
-	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" />
-	
-	<!-- JS -->
-	<script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
-	<script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
-	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.js"></script>
-	
-	<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
 	
 
 </head>
@@ -50,33 +38,31 @@
 		    </div>
 		    
 		    
-		    <div id="grid" style="height: 400px;"></div>
+		    <div id="grid" style="height: 400px;width:1300px"></div>
 		    
 		    <script th:inline="javascript">
 		    	const gridData = /*[[${orderList}]]*/ [];
 		    	gridData.forEach((list, index) => list.rowNum = index + 1); //row번호
-		    	console.log(gridData);
+		    	//console.log(gridData);
 			    const grid = new tui.Grid({
 			      el: document.getElementById('grid'),
 			      data: gridData,
 			      rowHeaders: ['checkbox'],
-			      scrollX: false,
-			      scrollY: true,
-			      bodyHeight: 300,
 			      columns: [
-			    	{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center'},
-			        { header: '계획코드', name: 'woCode',sortable: true,align: 'center' },
-			        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center'},
-			        { header: '품목', name: 'pdtName' ,align: 'center'},
-			        { header: '수량', name: 'soQty' ,align: 'center'},
-			        { header: '단위', name: 'unit' ,align: 'center' ,formatter: () => 'EA'},
-			        { header: '작업담당자', name: 'empName' ,align: 'center'},
+			    	{ header: '지시번호', name: 'rowNum', sortable: true,align: 'center', width:'80'},
+					{ header: '제조코드', name: 'msCode',sortable: true,align: 'center', width:'150'},
+			        { header: '작업지시코드', name: 'woCode',sortable: true,align: 'center', width:'150'},
+			        { header: '품목코드', name: 'pdtCode',sortable: true,align: 'center' ,width:'150'},
+			        { header: '품목', name: 'pdtName' ,align: 'center', width:'150'},
+			        { header: '수량', name: 'soQty' ,align: 'center',  width:'100'},
+			        { header: '단위', name: 'unit' ,align: 'center' ,formatter: () => 'EA', width:'100'},
+			        { header: '작업담당자', name: 'empName' ,align: 'center', width:'100'},
 // 			        { header: '라인', name: 'lineCode' ,align: 'center'},
-			        { header: '공정', name: 'prcTypeCode' ,align: 'center'},
-			        { header: '공정 상태', name: 'woStatusName' ,align: 'center'},
-			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' },
-			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center'}
-			      ]
+			        { header: '공정', name: 'prcTypeCode' ,align: 'center' ,width:'150'},
+			        { header: '공정 상태', name: 'woStatusName' ,align: 'center',  width:'150'},
+			        { header: '작업 시작일', name: 'woStartDate',sortable: true,align: 'center' ,width:'150' },
+			        { header: '작업 종료일', name: 'woEndDate' ,align: 'center' ,width:'150'}
+			      ],
 			    });
 		    	
 			    grid.on('click', ev => {
@@ -193,8 +179,8 @@
 					    }
 					  }
 					};
-					console.log(workDateList); // 날짜
-					console.log(completeCountList); // 개수
+					//console.log(workDateList); // 날짜
+					//console.log(completeCountList); // 개수
 				  const chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
 				  chart9.render();
 		</script>
@@ -219,13 +205,13 @@
 	                <div id="grid3" ></div>
 					<script th:inline="javascript">
 						const gridData3 = /*[[${planList}]]*/ []; //생산계획 리스트
-						 console.log('모달> 제조계획 >',gridData3);
+						 //console.log('모달> 제조계획 >',gridData3);
 						
 						const grid3 = new tui.Grid({
 						  el: document.getElementById('grid3'),
 						  data: gridData3,
 						  rowHeaders: ['checkbox'],
-						  scrollX: false,
+						  scrollX: true,
 						  scrollY: true,
 						  columns: [
 					        { header: '계획코드', name: 'msCode',sortable: true,align: 'center' },
@@ -275,9 +261,8 @@
 			
 			const data = { ...selectedRows[0] }; //1개 row
 // 			const data = selectedRows
-
 			
-			console.log("보낼 데이터>>>", data);
+			//console.log("보낼 데이터>>>", data);
 			
 			$.ajax({
 				url : "/workOrder/regist",
@@ -286,15 +271,16 @@
 				data: JSON.stringify(data),
 // 				data : {data},
 				success : function (response){
-					alert(response);
 					grid3.removeCheckedRows();
-// 					location.reload();
 
 					$.ajax({
 					    url: "/workOrder/data",
 					    method: "GET",
 					    success: function(newData) {
+							console.log(newData);
 					        grid.resetData(newData);
+							
+							location.reload();
 					    }
 					});
 				},
@@ -325,7 +311,7 @@
 				contentType: "application/json",
 				data: JSON.stringify(data),
 				success : function (response){
-					console.log(response);
+					//console.log(response);
 					 Swal.fire({
 					        title: '작업시작!',
 					        icon: 'success',
