@@ -78,6 +78,12 @@ public interface LotMapper {
 
 	//IPI 테이블에 입력
 	void insertIpi(IpiDTO ipidto);
+
+	//MFG_SCHEDULES 상태 업데이트
+	void updateMfgScdStatus(@Param("woCode") String woCode, @Param("mfgscd") String mfgscd);
+
+	//MFG_PLANS 상태 업데이트
+	void updateMfgPlanStatus(@Param("woCode") String woCode, @Param("mfgPlan") String mfgPlan);
 	
 	//List<LotOrderDTO> getLotOrderPrcType(@Param("todayStr") String todayStr,@Param("type") String type);
 

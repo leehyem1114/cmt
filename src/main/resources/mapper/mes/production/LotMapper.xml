@@ -245,4 +245,30 @@
 		FROM DUAL
 	</insert>
 	
+	<!-- MFG_SCHEDULES 상태 업데이트 -->
+	<update id="updateMfgScdStatus">
+		UPDATE MFG_SCHEDULES 
+		   SET MS_STATUS = #{mfgscd}
+		 WHERE MS_CODE = (
+		SELECT MS_CODE 
+		  FROM WORK_ORDER 
+		 WHERE WO_CODE = #{woCode}
+		 )
+	</update>
+	
+	<!-- MFG_PLAN 상태 업데이트 -->
+	<update id="updateMfgPlanStatus">
+		UPDATE MFG_PLANS
+   		   SET MP_STATUS = #{mfgPlan}
+ 		 WHERE MP_CODE = (
+   		SELECT MP_CODE
+          FROM MFG_SCHEDULES
+         WHERE MS_CODE = (
+        SELECT MS_CODE 
+          FROM WORK_ORDER 
+         WHERE WO_CODE = #{woCode}
+     	)
+    	   AND ROWNUM = 1
+ 		)
+	</update>
 </mapper>

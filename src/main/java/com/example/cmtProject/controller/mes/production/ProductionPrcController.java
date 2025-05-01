@@ -415,6 +415,12 @@ public class ProductionPrcController {
 			checkLast++;
 		}//for(BomInfoDTO b : selectPdtCodeList) {
 		
+		//MFG 상태 업데이트
+		String mfgscd = "제조중";
+		String mfgPlan = "생산중";
+		lotService.updateMfgScdStatus(woCode, mfgscd);
+		lotService.updateMfgPlanStatus(woCode, mfgPlan);
+		
 		//---------------------------------- 하단 그리드 작업 중으로 주석 처리
 		//작업지시에서 받아온 작업 RN으로 변경
 		productionPrcService.updateWoStatus(woCode);
@@ -635,6 +641,13 @@ public class ProductionPrcController {
 		//작업지시서 완료 날짜 업데이트
 		LocalDate today = LocalDate.now(); //2025-04-21
 		lotService.updateWoEndDate(woCode ,String.valueOf(today));
+		
+		//MFG 상태 업데이트
+		String mfgscd = "완료";
+		String mfgPlan = "완료";
+		lotService.updateMfgScdStatus(woCode, mfgscd);
+		lotService.updateMfgPlanStatus(woCode, mfgPlan);
+		
 		
 		//IPI로 완제품 정보 넘기기 - 현재 작업 한거까지의 데이터는 품질로 바로 전송된 상태, 완제품 정보 넘길 필요x
 		
