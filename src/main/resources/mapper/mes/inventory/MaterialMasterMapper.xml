@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.cmtProject.mapper.mes.inventory.ItemMasterMapper">
+<mapper namespace="com.example.cmtProject.mapper.mes.inventory.MaterialMasterMapper">
 
 	<!-- 원자재 기준정보 목록 조회-->
 	<select id="selectMaterials" resultType="map" parameterType="map">
@@ -21,7 +21,7 @@
 		FROM                           
 			MATERIALS
 		WHERE
-			USE_YN = 'Y'
+			MTL_USE_YN = 'Y'
 		ORDER BY
 			MTL_NO DESC
 	</select>
