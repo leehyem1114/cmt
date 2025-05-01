@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.cmtProject.comm.response.ApiResponse;
+import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.service.mes.inventory.MaterialMasterService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/material-info")
+@RequestMapping(PathConstants.API_MATERIAL_INFO_BASE)
 @Slf4j
 public class MaterialMasterRestController {
     
@@ -33,7 +34,7 @@ public class MaterialMasterRestController {
      * @param keyword 검색 키워드 (선택사항)
      * @return 원자재 목록 데이터
      */
-    @GetMapping("/list")
+    @GetMapping(PathConstants.MATERIAL_INFO_LIST)
     public ApiResponse<List<Map<String, Object>>> getMaterialList(
             @RequestParam(name = "keyword", required = false) String keyword) {
         
@@ -57,12 +58,12 @@ public class MaterialMasterRestController {
      * @param mtlCode 원자재 코드
      * @return 원자재 정보
      */
-    @GetMapping("/{mtlCode}")
+    @GetMapping(PathConstants.MATERIAL_INFO_SINGLE)
     public ApiResponse<Map<String, Object>> getMaterial(@PathVariable("mtlCode") String mtlCode) {
         log.info("원자재 정보 단건 조회 요청. 원자재 코드: {}", mtlCode);
         
         Map<String, Object> param = new HashMap<>();
-        param.put("mtlCode", mtlCode);
+        param.put("MTL_CODE", mtlCode);
         
         Map<String, Object> material = mms.materialSingle(param);
         
@@ -98,7 +99,7 @@ public class MaterialMasterRestController {
      * @param requestData 저장할 데이터 목록
      * @return 처리 결과
      */
-    @PostMapping("/batch")
+    @PostMapping(PathConstants.MATERIAL_INFO_BATCH)
     public ApiResponse<Map<String, Object>> saveBatch(@RequestBody List<Map<String, Object>> requestData) {
         log.info("원자재 정보 일괄 저장 요청. 데이터 건수: {}", requestData.size());
         
@@ -117,7 +118,7 @@ public class MaterialMasterRestController {
      * @param mtlCode 원자재 코드
      * @return 처리 결과
      */
-    @DeleteMapping("/{mtlCode}")
+    @DeleteMapping(PathConstants.MATERIAL_INFO_SINGLE)
     public ApiResponse<Void> deleteMaterial(@PathVariable("mtlCode") String mtlCode) {
         log.info("원자재 정보 삭제 요청. 원자재 코드: {}", mtlCode);
         

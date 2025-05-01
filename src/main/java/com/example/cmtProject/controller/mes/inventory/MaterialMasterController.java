@@ -10,12 +10,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.cmtProject.constants.PathConstants;
 import com.example.cmtProject.service.mes.inventory.MaterialMasterService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@RequestMapping("/material-info")
+@RequestMapping(PathConstants.MATERIAL_INFO_BASE)
 @Slf4j
 public class MaterialMasterController {
     
@@ -35,6 +36,6 @@ public class MaterialMasterController {
         
         log.info("원자재 기준정보 조회 결과: {}건", materialList.size());
         
-        return "mes/inventory/materialInfo";
+        return PathConstants.VIEW_MATERIAL_INFO;
     }
 }
