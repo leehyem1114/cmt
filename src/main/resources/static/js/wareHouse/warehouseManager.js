@@ -1,27 +1,28 @@
 /**
- * 창고 관리자 - 창고 정보 관리 모듈
+ * 창고 기준정보 관리 모듈
  * 
- * 단일 데이터 테이블의 CRUD 기능을 담당하는 창고 관리 모듈입니다.
+ * 창고 기준정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 2.0.0
- * @since 2025-04-21
+ * @version 1.0.0
+ * @since 2025-05-01
  */
-const WareHouseManager = (function() {
+const WarehouseManager = (function() {
     // =============================
-    // 모듈 내부 변수 - 필요에 따라 변경하세요
+    // 모듈 내부 변수
     // =============================
 
     // 그리드 인스턴스 참조
-    let wareHouseGrid;
+    let warehouseGrid;
 
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/warehouse/api/warehouses/list',              // 데이터 목록 조회
-        BATCH: '/api/warehouses/batch',                      // 데이터 배치 저장
-        DELETE: (whsNo) => `/api/warehouses/${whsNo}`,       // 데이터 삭제
+        LIST: '/api/warehouse/list',             // 데이터 목록 조회
+        SINGLE: '/api/warehouse/',               // 단건 조회/삭제 시 사용
+        SAVE: '/api/warehouse',                  // 데이터 저장
+        BATCH: '/api/warehouse/batch',           // 데이터 일괄 저장
         EXCEL: {
-            UPLOAD: '/api/warehouses/excel/upload',          // 엑셀 업로드 API URL
-            DOWNLOAD: '/api/warehouses/excel/download'       // 엑셀 다운로드 API URL
+            UPLOAD: '/api/warehouse/excel/upload',    // 엑셀 업로드 API URL
+            DOWNLOAD: '/api/warehouse/excel/download' // 엑셀 다운로드 API URL
         }
     };
 
@@ -35,7 +36,7 @@ const WareHouseManager = (function() {
      */
     async function init() {
         try {
-            console.log('창고 관리자 초기화를 시작합니다.');
+            console.log('창고 기준정보 관리 초기화를 시작합니다.');
 
             // 그리드 초기화
             await initGrid();
@@ -49,10 +50,10 @@ const WareHouseManager = (function() {
             // 엑셀 기능 초기화
             initExcelFeatures();
 
-            console.log('창고 관리자 초기화가 완료되었습니다.');
+            console.log('창고 기준정보 관리 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('초기화 중 오류 발생:', error);
-            await AlertUtil.showError('초기화 오류', '창고 관리자 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '창고 기준정보 관리 초기화 중 오류가 발생했습니다.');
         }
     }
 
@@ -64,15 +65,15 @@ const WareHouseManager = (function() {
         try {
             // UIUtil을 사용하여 이벤트 리스너 등록
             await UIUtil.registerEventListeners({
-                'wareHouseAppendBtn': appendRow,              // 행 추가 버튼
-                'wareHouseSaveBtn': saveData,                 // 데이터 저장 버튼
-                'wareHouseDeleteBtn': deleteRows,             // 데이터 삭제 버튼
-                'wareHouseSearchBtn': searchData              // 데이터 검색 버튼
+                'warehouseAppendBtn': appendRow,              // 행 추가 버튼
+                'warehouseSaveBtn': saveData,                 // 데이터 저장 버튼
+                'warehouseDeleteBtn': deleteRows,             // 데이터 삭제 버튼
+                'warehouseSearchBtn': searchData              // 데이터 검색 버튼
                 // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
             });
 
             // 엔터키 검색 이벤트 등록
-            await UIUtil.bindEnterKeySearch('wareHouseInput', searchData);
+            await UIUtil.bindEnterKeySearch('warehouseInput', searchData);
         } catch (error) {
             console.error('이벤트 리스너 등록 중 오류:', error);
             throw error;
@@ -89,8 +90,8 @@ const WareHouseManager = (function() {
             
             // 그리드 검색 설정
             GridSearchUtil.setupGridSearch({
-                gridId: 'wareHouseGrid',
-                searchInputId: 'wareHouseInput',
+                gridId: 'warehouseGrid',
+                searchInputId: 'warehouseInput',
                 autoSearch: true, // 입력 시 자동 검색
                 beforeSearch: function() {
                     console.log('그리드 검색 시작');
@@ -113,12 +114,12 @@ const WareHouseManager = (function() {
         try {
             console.log('엑셀 기능 초기화');
             
-            // 엑셀 다운로드 버튼 설정 - HTML에 버튼 추가 필요
+            // 엑셀 다운로드 버튼 설정
             ExcelUtil.setupExcelDownloadButton({
-                buttonId: 'wareHouseExcelDownBtn', 
-                gridId: 'wareHouseGrid',
-                fileName: 'warehouse-data.xlsx',
-                sheetName: '창고정보',
+                buttonId: 'warehouseExcelDownBtn', 
+                gridId: 'warehouseGrid',
+                fileName: 'warehouse-info.xlsx',
+                sheetName: '창고기준정보',
                 beforeDownload: function() {
                     console.log('엑셀 다운로드 시작');
                     return true;
@@ -128,22 +129,21 @@ const WareHouseManager = (function() {
                 }
             });
             
-            // 엑셀 업로드 버튼 설정 - HTML에 입력필드와 버튼 추가 필요
+            // 엑셀 업로드 버튼 설정
             ExcelUtil.setupExcelUploadButton({
-                fileInputId: 'wareHouseFileInput', 
-                uploadButtonId: 'wareHouseExcelUpBtn', 
-                gridId: 'wareHouseGrid',
+                fileInputId: 'warehouseFileInput', 
+                uploadButtonId: 'warehouseExcelUpBtn', 
+                gridId: 'warehouseGrid',
                 apiUrl: API_URLS.EXCEL.UPLOAD,
                 headerMapping: {
                     '창고코드': 'WHS_CODE',
                     '창고명': 'WHS_NAME',
-                    '창고 유형': 'WHS_TYPE',
-                    '위치': 'WHS_LOCATION',
-                    '용량': 'WHS_CAPACITY',
-                    '사용 정보': 'WHS_USED',
+                    '창고유형': 'WHS_TYPE',
+                    '창고위치': 'WHS_LOCATION',
+                    '창고용량': 'WHS_CAPACITY',
+                    '현재사용량': 'CURRENT_USAGE',
+                    '사용여부': 'USE_YN',
                     '비고': 'WHS_COMMENTS',
-                    '관리자': 'WHS_MANAGER',
-                    '사용여부': 'IS_ACTIVE'
                 },
                 beforeLoad: function() {
                     console.log('엑셀 업로드 시작');
@@ -153,7 +153,7 @@ const WareHouseManager = (function() {
                     console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
                     if (saveResult) {
                         // 그리드 원본 데이터 업데이트
-                        GridSearchUtil.updateOriginalData('wareHouseGrid', data);
+                        GridSearchUtil.updateOriginalData('warehouseGrid', data);
                     }
                 }
             });
@@ -175,68 +175,82 @@ const WareHouseManager = (function() {
             console.log('그리드 초기화를 시작합니다.');
 
             // DOM 요소 존재 확인
-            const gridElement = document.getElementById('wareHouseGrid');
+            const gridElement = document.getElementById('warehouseGrid');
             if (!gridElement) {
-                throw new Error('wareHouseGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+                throw new Error('warehouseGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
             }
 
             // 서버에서 받은 데이터 활용
-            const gridData = window.wareHouseList || [];
+            const gridData = window.warehouseList || [];
             console.log('초기 데이터:', gridData.length, '건');
 
             // 그리드 생성 - GridUtil 사용
-            wareHouseGrid = GridUtil.registerGrid({
-                id: 'wareHouseGrid',
+            warehouseGrid = GridUtil.registerGrid({
+                id: 'warehouseGrid',
                 columns: [
                     {
                         header: '창고코드',
                         name: 'WHS_CODE',
-                        editor: 'text'
+                        editor: 'text',
+                        sortable: true,
+                        width: 120
                     },
                     {
                         header: '창고명',
                         name: 'WHS_NAME',
-                        editor: 'text'
+                        editor: 'text',
+                        sortable: true,
+                        width: 150
                     },
                     {
-                        header: '창고 유형',
+                        header: '창고유형',
                         name: 'WHS_TYPE',
-                        editor: 'text'
+                        editor: 'text',
+                        sortable: true,
+                        width: 120
                     },
                     {
-                        header: '위치',
+                        header: '창고위치',
                         name: 'WHS_LOCATION',
-                        editor: 'text'
+                        editor: 'text',
+                        sortable: true,
+                        width: 200
                     },
                     {
-                        header: '용량',
+                        header: '창고용량',
                         name: 'WHS_CAPACITY',
-                        editor: 'text'
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
                     },
                     {
-                        header: '사용 정보',
-                        name: 'WHS_USED',
-                        editor: 'text'
+                        header: '현재사용량',
+                        name: 'CURRENT_USAGE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
+                    },
+                    {
+                        header: '사용여부',
+                        name: 'USE_YN',
+                        editor: GridUtil.createYesNoEditor(),
+                        sortable: true,
+                        width: 80
                     },
                     {
                         header: '비고',
                         name: 'WHS_COMMENTS',
-                        editor: 'text'
-                    },
-                    {
-                        header: '관리자',
-                        name: 'WHS_MANAGER',
-                        editor: 'text'
-                    },
-                    {
-                        header: '사용여부',
-                        name: 'IS_ACTIVE',
-                        editor: GridUtil.createYesNoEditor()
+                        editor: 'text',
+                        sortable: true,
+                        width: 200
                     },
                     {
                         header: '타입',
-                        name: 'ROW_TYPE'
-                    } // 조회/추가 구분
+                        name: 'ROW_TYPE',
+                        hidden: true
+                    }
                 ],
                 columnOptions: {
                     resizable: true
@@ -246,31 +260,31 @@ const WareHouseManager = (function() {
                     perPage: 10
                 },
                 data: gridData,
-                draggable: true,
-                displayColumnName: 'SORT_ORDER',
+                draggable: false,
                 hiddenColumns: ['ROW_TYPE'],
                 gridOptions: {
                     rowHeaders: ['rowNum', 'checkbox']
-                }
+                },
+                toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
             });
             
             // 편집 완료 이벤트 처리 - 변경된 행 추적
-            wareHouseGrid.on('editingFinish', function(ev) {
+            warehouseGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
-                const row = wareHouseGrid.getRow(rowKey);
+                const row = warehouseGrid.getRow(rowKey);
                 
                 // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
                 if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
-                    wareHouseGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+                    warehouseGrid.setValue(rowKey, 'ROW_TYPE', 'update');
                     console.log(`행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
                 }
             });
 
-            // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
-            GridUtil.setupKeyColumnControl('wareHouseGrid', 'WHS_CODE');
+            // 키 컬럼 제어 설정 - 기존 데이터의 경우 WHS_CODE 편집 제한
+            GridUtil.setupKeyColumnControl('warehouseGrid', 'WHS_CODE');
             
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
-            GridSearchUtil.updateOriginalData('wareHouseGrid', gridData);
+            GridSearchUtil.updateOriginalData('warehouseGrid', gridData);
 
             console.log('그리드 초기화가 완료되었습니다.');
         } catch (error) {
@@ -293,15 +307,16 @@ const WareHouseManager = (function() {
                 WHS_TYPE: '',
                 WHS_LOCATION: '',
                 WHS_CAPACITY: '',
-                WHS_USED: '',
+                CURRENT_USAGE: '',
+                USE_YN: 'Y',
                 WHS_COMMENTS: '',
-                WHS_MANAGER: '',
-                IS_ACTIVE: 'Y'
+                CREATED_BY: '',
+                UPDATED_BY: ''
                 // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
             };
 
             // 그리드에 새 행 추가
-            await GridUtil.addNewRow('wareHouseGrid', newRowData, {
+            await GridUtil.addNewRow('warehouseGrid', newRowData, {
                 at: 0,
                 focus: true
             });
@@ -317,7 +332,7 @@ const WareHouseManager = (function() {
      */
     async function searchData() {
         try {
-            const keyword = document.getElementById('wareHouseInput').value;
+            const keyword = document.getElementById('warehouseInput').value;
             console.log('데이터 검색 시작. 검색어:', keyword);
 
             // API 호출
@@ -333,12 +348,12 @@ const WareHouseManager = (function() {
             const data = Array.isArray(response) ? response : (response.data || []);
 
             // 그리드 데이터 설정
-            const grid = GridUtil.getGrid('wareHouseGrid');
+            const grid = GridUtil.getGrid('warehouseGrid');
             if (grid) {
                 grid.resetData(data);
                 
                 // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
-                GridSearchUtil.updateOriginalData('wareHouseGrid', data);
+                GridSearchUtil.updateOriginalData('warehouseGrid', data);
             }
 
             console.log('데이터 검색 완료. 결과:', data.length, '건');
@@ -362,16 +377,16 @@ const WareHouseManager = (function() {
         try {
             console.log('데이터 저장 시작');
 
-            const grid = GridUtil.getGrid('wareHouseGrid');
+            const grid = GridUtil.getGrid('warehouseGrid');
             if (!grid) {
-                throw new Error('wareHouseGrid를 찾을 수 없습니다.');
+                throw new Error('warehouseGrid를 찾을 수 없습니다.');
             }
 
             // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
             grid.blur();
 
             // 변경된 데이터 추출
-            const changes = await GridUtil.extractChangedData('wareHouseGrid');
+            const changes = await GridUtil.extractChangedData('warehouseGrid');
             const modifiedData = [...changes.insert, ...changes.update];
 
             if (modifiedData.length === 0) {
@@ -379,52 +394,62 @@ const WareHouseManager = (function() {
                 return false;
             }
 
-            // 저장할 데이터 준비
-            const batchData = modifiedData.map(row => ({
-                whsCode: row.WHS_CODE,
-                whsName: row.WHS_NAME,
-                whsType: row.WHS_TYPE || '',
-                whsLocation: row.WHS_LOCATION || '',
-                whsCapacity: row.WHS_CAPACITY || '',
-                whsUsed: row.WHS_USED || '',
-                whsComments: row.WHS_COMMENTS || '',
-                whsManager: row.WHS_MANAGER || '',
-                isActive: row.IS_ACTIVE,
-                action: row.ROW_TYPE // insert, update, delete
-            }));
-
             // 유효성 검사
-            for (const item of batchData) {
-                if (ValidationUtil.isEmpty(item.whsCode)) {
+            for (const item of modifiedData) {
+                if (ValidationUtil.isEmpty(item.WHS_CODE)) {
                     await AlertUtil.notifyValidationError("유효성 오류", "창고코드는 필수입니다.");
                     return false;
                 }
-                if (ValidationUtil.isEmpty(item.whsName)) {
+                if (ValidationUtil.isEmpty(item.WHS_NAME)) {
                     await AlertUtil.notifyValidationError("유효성 오류", "창고명은 필수입니다.");
                     return false;
                 }
-                if (ValidationUtil.isEmpty(item.isActive)) {
+                if (ValidationUtil.isEmpty(item.USE_YN)) {
                     await AlertUtil.notifyValidationError("유효성 오류", "사용여부는 필수입니다.");
                     return false;
                 }
             }
 
-            // API 호출 처리
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.BATCH, batchData), 
-                {
-                    loadingMessage: '데이터 저장 중...',
-                    successMessage: "데이터가 저장되었습니다.",
-                    errorMessage: "데이터 저장 중 오류가 발생했습니다.",
-                    successCallback: searchData
+            // 저장할 데이터 준비 - 단건 또는 배치 방식 선택
+            if (modifiedData.length === 1) {
+                // 단건 저장
+                const saveData = modifiedData[0];
+                
+                // API 호출
+                const response = await ApiUtil.processRequest(
+                    () => ApiUtil.post(API_URLS.SAVE, saveData), 
+                    {
+                        loadingMessage: '데이터 저장 중...',
+                        successMessage: "데이터가 저장되었습니다.",
+                        errorMessage: "데이터 저장 중 오류가 발생했습니다.",
+                        successCallback: searchData
+                    }
+                );
+                
+                if(response.success){
+                    await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+                    return true;
+                } else {
+                    return false;
                 }
-            );
-            
-            if(response.success){
-                await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
-                return true;
             } else {
-                return false;
+                // 일괄 저장
+                const response = await ApiUtil.processRequest(
+                    () => ApiUtil.post(API_URLS.BATCH, modifiedData), 
+                    {
+                        loadingMessage: '데이터 일괄 저장 중...',
+                        successMessage: "데이터가 일괄 저장되었습니다.",
+                        errorMessage: "데이터 일괄 저장 중 오류가 발생했습니다.",
+                        successCallback: searchData
+                    }
+                );
+                
+                if(response.success){
+                    await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+                    return true;
+                } else {
+                    return false;
+                }
             }
             
         } catch (error) {
@@ -441,7 +466,7 @@ const WareHouseManager = (function() {
     async function deleteRows() {
         try {
             // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('wareHouseGrid');
+            const grid = GridUtil.getGrid('warehouseGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
@@ -449,22 +474,22 @@ const WareHouseManager = (function() {
                 return false;
             }
             
-            // 선택된 데이터 ID 목록 생성
-            const selectedDataIds = [];
+            // 선택된 코드 목록 생성
+            const selectedCodes = [];
             for (const rowKey of selectedRowKeys) {
-                const whsNo = grid.getValue(rowKey, "WHS_NO");
-                if (whsNo) selectedDataIds.push(whsNo);
+                const whsCode = grid.getValue(rowKey, "WHS_CODE");
+                if (whsCode) selectedCodes.push(whsCode);
             }
             
-            if (selectedDataIds.length === 0) {
-                await AlertUtil.showWarning('알림', '유효한 창고번호를 찾을 수 없습니다.');
+            if (selectedCodes.length === 0) {
+                await AlertUtil.showWarning('알림', '유효한 창고코드를 찾을 수 없습니다.');
                 return false;
             }
             
             // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
-            const result = await GridUtil.deleteSelectedRows('wareHouseGrid', {
+            const result = await GridUtil.deleteSelectedRows('warehouseGrid', {
                 confirmTitle: "삭제 확인",
-                confirmMessage: "선택한 항목을 삭제하시겠습니까?",
+                confirmMessage: "선택한 창고 정보를 삭제하시겠습니까?",
                 onBeforeDelete: async () => {
                     // 삭제 전 처리 - 여기서 true 반환해야 삭제 진행
                     return true;
@@ -473,8 +498,8 @@ const WareHouseManager = (function() {
                     // 삭제 API 호출 및 처리
                     try {
                         // 삭제 요청 생성
-                        const deleteRequests = selectedDataIds.map(whsNo => 
-                            async () => ApiUtil.del(API_URLS.DELETE(whsNo))
+                        const deleteRequests = selectedCodes.map(whsCode => 
+                            async () => ApiUtil.del(API_URLS.SINGLE + whsCode)
                         );
                         
                         // 일괄 삭제 요청 실행
@@ -483,13 +508,13 @@ const WareHouseManager = (function() {
                         }, '데이터 삭제 중...');
                         
                         // 삭제 성공 메시지
-                        await AlertUtil.notifyDeleteSuccess('삭제 완료', '데이터가 삭제되었습니다.');
+                        await AlertUtil.notifyDeleteSuccess('삭제 완료', '창고 정보가 삭제되었습니다.');
                         
                         // 목록 갱신
                         await searchData();
                     } catch (apiError) {
                         console.error('삭제 API 호출 중 오류:', apiError);
-                        await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 API 오류가 발생했습니다.');
+                        await AlertUtil.notifyDeleteError('삭제 실패', '창고 정보 삭제 중 API 오류가 발생했습니다.');
                     }
                 }
             });
@@ -513,7 +538,7 @@ const WareHouseManager = (function() {
      * @returns {Object} 그리드 인스턴스
      */
     function getGrid() {
-        return wareHouseGrid;
+        return warehouseGrid;
     }
 
     /**
@@ -522,7 +547,7 @@ const WareHouseManager = (function() {
      */
     async function saveSearchCondition() {
         try {
-            const searchCondition = document.getElementById('wareHouseInput')?.value || '';
+            const searchCondition = document.getElementById('warehouseInput')?.value || '';
 
             localStorage.setItem('warehouseSearchCondition', searchCondition);
             console.log('검색 조건이 저장되었습니다.');
@@ -552,7 +577,7 @@ const WareHouseManager = (function() {
             }
 
             // 검색 조건 설정
-            const searchInput = document.getElementById('wareHouseInput');
+            const searchInput = document.getElementById('warehouseInput');
             if (searchInput) {
                 searchInput.value = savedCondition;
             }
@@ -575,11 +600,11 @@ const WareHouseManager = (function() {
      */
     function performLocalSearch() {
         try {
-            const keyword = document.getElementById('wareHouseInput').value.toLowerCase();
+            const keyword = document.getElementById('warehouseInput').value.toLowerCase();
             
             // 원본 데이터 가져오기
-            GridSearchUtil.resetToOriginalData('wareHouseGrid');
-            const grid = GridUtil.getGrid('wareHouseGrid');
+            GridSearchUtil.resetToOriginalData('warehouseGrid');
+            const grid = GridUtil.getGrid('warehouseGrid');
             const originalData = grid.getData();
             
             // 필터링
@@ -627,17 +652,17 @@ const WareHouseManager = (function() {
 // =============================
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // 창고 관리자 초기화
-        await WareHouseManager.init();
+        // 창고 기준정보 관리 초기화
+        await WarehouseManager.init();
 
         // 저장된 검색 조건 로드 (필요 시 활성화)
-        // await WareHouseManager.loadSearchCondition();
+        // await WarehouseManager.loadSearchCondition();
     } catch (error) {
         console.error('초기화 중 오류 발생:', error);
         if (window.AlertUtil) {
-            await AlertUtil.showError('초기화 오류', '창고 관리자 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '창고 기준정보 관리 초기화 중 오류가 발생했습니다.');
         } else {
-            alert('창고 관리자 초기화 중 오류가 발생했습니다.');
+            alert('창고 기준정보 관리 초기화 중 오류가 발생했습니다.');
         }
     }
 });
