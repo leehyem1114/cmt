@@ -103,47 +103,48 @@
 			<div id="myChart6"></div>
 			
 			<script type="text/javascript" th:inline="javascript">
-				let processNameList = /*[[${processNameList}]]*/ [];
-				if (!processNameList) {
-				  processNameList = [];
-				}
-	
-				let incompleteCountList = /*[[${incompleteCountList}]]*/ [];
-				if (!incompleteCountList) {
-				  incompleteCountList = [];
-				}
-				const data6 = {
-				  categories: processNameList,
-				  series: [
-				    {
-				      name: '미완료 건수',
-				      data: incompleteCountList
-				    }
-				  ]
-				};
-	
-				if (processNameList.length == 0) {
-					  // 미완료 공정이 없을 때
-					  document.getElementById('myChart6').innerHTML = '<span> - 현재 미완료 공정이 없습니다 <i class="fa-regular fa-face-smile-beam"></i></span>';
-					} else {
-					  const data6 = {
-					    categories: processNameList,
-					    series: [
-					      {
-					        name: '미완료 건수',
-					        data: incompleteCountList
-					      }
-					    ]
-					  };
-	
-				toastui.Chart.barChart({
-				  el: document.getElementById('myChart6'),
-				  data: data6,
-				  options: options6
-				});
-			}
+			  let processNameList = /*[[${processNameList}]]*/ [];
+			  let incompleteCountList = /*[[${incompleteCountList}]]*/ [];
 
-				</script>
+			  const data6 = {
+			    categories: processNameList,
+			    series: [
+			      {
+			        name: '미완료 건수',
+			        data: incompleteCountList
+			      }
+			    ]
+			  };
+
+			  const options6 = {
+			    chart: {
+			      width: 600,
+			      height: 400,
+			    },
+			    yAxis: {
+			      title: '건수',
+			      min: 0
+			    },
+			    xAxis: {
+			      title: '공정명',
+			      categories: processNameList
+			    },
+			    series: {
+			      showLabel: true
+			    }
+			  };
+
+			  if (processNameList.length === 0) {
+			    document.getElementById('myChart6').innerHTML = '<span> - 현재 미완료 공정이 없습니다 <i class="fa-regular fa-face-smile-beam"></i></span>';
+			  } else {
+			    toastui.Chart.barChart({
+			      el: document.getElementById('myChart6'),
+			      data: data6,
+			      options: options6
+			    });
+			  }
+			</script>
+		  	
 				
 		  	
 		    <div class="card-header">

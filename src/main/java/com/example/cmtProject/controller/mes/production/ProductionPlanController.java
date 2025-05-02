@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.annotation.RequestScope;
 
 import com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO;
+import com.example.cmtProject.dto.mes.production.LotDTO;
 import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.service.mes.production.WorkOrderService;
 
@@ -37,9 +38,8 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		//orderMapper.selectPlanList();
 		model.addAttribute("planList",planList);
 		
+		//일주일 공정완료 그래프
 		List<WorkOrderDTO> stats = orderService.getCompleteStatsLast7Days();
-
-
 		List<String> workDateList = stats.stream()
 		    .map(WorkOrderDTO::getWorkDate)
 		    .collect(Collectors.toList());
@@ -50,6 +50,21 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 
 	    model.addAttribute("workDateList", workDateList);
 	    model.addAttribute("completeCountList", completeCountList);
+	    
+	    //오늘 하루 미완료 공정 그래프
+	    List<LotDTO> incompleteStats = orderService.getIncompleteTop5Today();
+
+	    List<String> processNameList = incompleteStats.stream()
+	        .map(LotDTO::getProcessName)
+	        .collect(Collectors.toList());
+
+	    List<Integer> incompleteCountList = incompleteStats.stream()
+	        .map(LotDTO::getIncompleteCount)
+	        .collect(Collectors.toList());
+
+	    model.addAttribute("processNameList", processNameList);
+	    model.addAttribute("incompleteCountList", incompleteCountList);
+
 	    
 		return"mes/production/work_order";
 	}
