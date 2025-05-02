@@ -351,10 +351,11 @@
             	},
             	{ 
                   header: 'LOT', 
-              	  name: 'chileLotCode', 
+              	  name: 'childLotCode', 
               	  sortable: true, 
               	  filter: 'text', 
-              	  align: "center"
+              	  align: "center",
+              	  width: 200,
               	},
             	{
            		  header: '작업 상태',
@@ -450,7 +451,7 @@
             	},
             	{ 
               	  header: '공정 검사 수량', 
-              	  name: 'receivedQty', 
+              	  name: 'woQty', 
               	  sortable: true, 
               	  filter: 'text',
               	  width: 100,
@@ -818,7 +819,7 @@
 	    		    ${makeDetailItem('공정 코드', rowData.woCode)}
 	    	        ${makeDetailItem('공정 검사 코드', rowData.ipiCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
-	    	        ${makeDetailItem('공정 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
+	    	        ${makeDetailItem('공정 검사 수량', `${rowData.woQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', `${safe(rowData.empName)} ${safe(rowData.empId)}`)}
 	    	        ${makeDetailItem('완제품', rowData.pdtName)}
 	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.ipiMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
