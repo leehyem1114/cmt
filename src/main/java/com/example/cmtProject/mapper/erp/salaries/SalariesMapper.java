@@ -68,5 +68,8 @@ public interface SalariesMapper {
 
 	// 연간 급여 대장
 	List<Map<String, Object>> selectYearlyPayrollList(String payYear);
+
+	// 연간 급여 대장 - 연도 가져오기
+	List<Integer> getYears();
 	
 }

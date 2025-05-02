@@ -136,11 +136,14 @@ public class SalaryService {
 		salMapper.savePaymentDto(pdto);
 	}
 
+	// 연간 급여 대장
 	public List<Map<String, Object>> getYearlyPayrollList(String payYear) {
-		System.out.println();
 		return salMapper.selectYearlyPayrollList(payYear);
 	}
-
-
+	
+	// 연간 급여 대장 - 연도 가져오기
+	public List<Integer> getYears() {
+		return salMapper.getYears();
+	}
 
 }

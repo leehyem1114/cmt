@@ -565,4 +565,11 @@
 	    ORDER BY payMonth
 	</select>
 	
+	<!-- 연간 급여대장 - 연도 가져오기 -->
+	<select id="getYears" resultType="int">
+	    SELECT DISTINCT TO_NUMBER(TO_CHAR(PAY_DATE, 'YYYY')) AS year
+        FROM PAYMENTS
+        ORDER BY year DESC
+	</select>
+	
 </mapper>

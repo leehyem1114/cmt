@@ -142,9 +142,9 @@
                                 
                                 <!-- 오른쪽: CRUD 버튼 -->
                                 <div class="button-group">
-                                	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal">생산 계획 등록</button>
-                                    <button type="button" id="mpSaveBtn" class="btn btn-outline-success">저장</button>
-                                    <button type="button" id="mpDeleteBtn" class="btn btn-outline-danger" onclick="deleteMp()">삭제</button>
+                                	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgPlanModal" sec:authorize="hasRole('ROLE_ADMIN')">생산 계획 등록</button>
+                                    <button type="button" id="mpSaveBtn" class="btn btn-outline-success" sec:authorize="hasRole('ROLE_ADMIN')">저장</button>
+                                    <button type="button" id="mpDeleteBtn" class="btn btn-outline-danger" onclick="deleteMp()" sec:authorize="hasRole('ROLE_ADMIN')">삭제</button>
                                 </div>
                             </div>
                         </div>

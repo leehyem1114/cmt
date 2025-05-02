@@ -148,8 +148,8 @@
 
 								<!-- 오른쪽: CRUD 버튼 -->
 								<div class="button-group">
-									<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgScheduleModal">제조 계획 등록</button>
-									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger" onclick="deleteMs()">삭제</button>
+									<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mfgScheduleModal" sec:authorize="hasRole('ROLE_ADMIN')">제조 계획 등록</button>
+									<button type="button" id="msDeleteBtn" class="btn btn-outline-danger" onclick="deleteMs()" sec:authorize="hasRole('ROLE_ADMIN')">삭제</button>
 								</div>
 							</div>
 						</div>
@@ -165,7 +165,7 @@
 								<!-- 왼쪽: 검색 및 엑셀 관련 -->
 								<div class="search-file-group2">
 									<!-- 엑셀 파일 입력 및 버튼 -->
-									<button type="button" id="ExcelDownBtn" class="btn btn-excel">
+									<button type="button" id="ExcelDownBtn" class="btn btn-excel" sec:authorize="hasRole('ROLE_ADMIN')">
 										<i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
 									</button>
 								</div>
@@ -524,7 +524,7 @@
 				},
 				columns: [
 					{
-						header: '상품계획코드',
+						header: '생산계획코드',
 						name: 'mpCode',
 						sortable: true,
 						align: "center"
@@ -572,7 +572,7 @@
 						align: "center"
 					},
 					{
-						header: '생산 시작 예정일',
+						header: '생산시작예정일',
 						name: 'mpStartDate',
 						sortable: true,
 						align: "center",
@@ -584,7 +584,7 @@
 						}
 					},
 					{
-						header: '생산 완료 예정일',
+						header: '생산완료예정일',
 						name: 'mpEndDate', 
 						sortable: true,
 						align: "center",
