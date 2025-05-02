@@ -145,21 +145,21 @@
     </select>
     
 	<!-- 검수 정보 조회 -->
-	<select id="getInspectionInfo" resultType="map" parameterType="long">
-	    SELECT
-	        IQ.IQC_NO AS INSP_NO,          <!-- 검수 번호 -->
-	        IQ.RECEIPT_NO,                  <!-- 입고 번호 -->
-	        IQ.IQC_START_TIME AS INSP_DATE,  <!-- 검수 일자 -->
-	        IQ.RECEIVED_QTY AS INSP_QTY,    <!-- 검수 수량 -->
-	        IQ.RECEIVED_QTY AS PASS_QTY,    <!-- 합격 수량 -->
-	        IQ.RECEIVED_QTY AS FAIL_QTY,    <!-- 불합격 수량 -->
-	        IQ.EMP_NAME AS INSPECTOR,   <!-- 검수자 -->
-	        IQ.IQC_INSPECTION_RESULT AS INSP_RESULT  <!-- 검수 결과 -->
-	    FROM
-	        IQC IQ
-	    WHERE
-	        IQ.RECEIPT_NO = #{receiptNo}
-	</select>
+    <select id="getInspectionInfo" resultType="map" parameterType="long">
+        SELECT
+            IQ.IQC_NO AS INSP_NO,                   <!-- 검수 번호 -->
+            IQ.RECEIPT_NO,                          <!-- 입고 번호 -->
+            IQ.IQC_START_TIME AS INSP_DATE,         <!-- 검수 일자 -->
+            IQ.RECEIVED_QTY AS INSP_QTY,            <!-- 검수 수량 -->
+            IQ.RECEIVED_QTY AS PASS_QTY,            <!-- 합격 수량 -->
+            IQ.RECEIVED_QTY AS FAIL_QTY,            <!-- 불합격 수량 -->
+            IQ.EMP_NAME AS INSPECTOR,               <!-- 검수자 -->
+            IQ.IQC_INSPECTION_RESULT AS INSP_RESULT <!-- 검수 결과 -->
+        FROM
+            IQC IQ
+        WHERE
+            IQ.RECEIPT_NO = #{receiptNo}
+    </select>
     
     <!-- LOT 정보 조회 -->
     <select id="getLotInfo" resultType="map" parameterType="long">
