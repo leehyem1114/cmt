@@ -237,11 +237,11 @@ public class MaterialReceiptService {
 	 * @param receiptNo 입고 번호
 	 * @return 검수 정보
 	 */
-//	public Map<String, Object> getInspectionInfo(Long receiptNo) {
-//	    log.info("검수 정보 조회 서비스 호출. 입고번호: {}", receiptNo);
-//	    
-//	    return mRmapper.getInspectionInfo(receiptNo);
-//	}
+	public Map<String, Object> getInspectionInfo(Long receiptNo) {
+	    log.info("검수 정보 조회 서비스 호출. 입고번호: {}", receiptNo);
+	    
+	    return mRmapper.getInspectionInfo(receiptNo);
+	}
 	
 	/**
 	 * 입고 확정 처리

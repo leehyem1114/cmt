@@ -158,4 +158,42 @@ public class MaterialReceiptRestController {
             return ApiResponse.error(result.get("message").toString(), result);
         }
     }
+    
+    /**
+     * 검수 정보 조회 API
+     * 
+     * @param receiptNo 입고 번호
+     * @return 검수 정보
+     */
+    @GetMapping(PathConstants.INSPECTION + "/{receiptNo}")
+    public ApiResponse<Map<String, Object>> getInspectionInfo(@PathVariable("receiptCode") Long receiptNo) {
+        log.info("검수 정보 조회 요청. 입고번호: {}", receiptNo);
+        
+        try {
+            Map<String, Object> inspectionInfo = mrs.getInspectionInfo(receiptNo);
+            
+            if (inspectionInfo == null) {
+                // 검수 정보가 없는 경우, '검사 합격' 상태의 검수 정보를 임시로 생성합니다.
+                // 이는 현재 클라이언트가 '검사 합격' 상태인 항목도 검수 API를 호출하기 때문에
+                // 필요한 임시 조치
+                Map<String, Object> tempInfo = new HashMap<>();
+                
+                // 기본 정보 설정
+                //tempInfo.put("INSP_NO", iqcNo); // 검수 번호(임시)
+                tempInfo.put("RECEIPT_NO", receiptNo); // 입고 번호
+                tempInfo.put("INSP_RESULT", "PASS"); // 검수 결과: 합격
+                tempInfo.put("INSP_DATE", new java.util.Date()); // 현재 날짜
+                
+                log.info("검수 정보 없음. 임시 검수 정보 반환: {}", tempInfo);
+                return ApiResponse.success(tempInfo);
+            }
+            
+            log.info("검수 정보 조회 결과: {}", inspectionInfo);
+            return ApiResponse.success(inspectionInfo);
+            
+        } catch (Exception e) {
+            log.error("검수 정보 조회 중 오류 발생: {}", e.getMessage(), e);
+            return ApiResponse.error("검수 정보 조회 중 오류가 발생했습니다: " + e.getMessage(), null);
+        }
+    }
 }

@@ -48,8 +48,8 @@ public class ProductsIssueService {
 	private static final String STATUS_INSPECTING = "검수중";
 	private static final String STATUS_COMPLETED = "출고완료";
 	private static final String STATUS_CANCELED = "취소";
-	private static final String STATUS_INSPECT_PASSED = "검사합격";
-	private static final String STATUS_INSPECT_FAILED = "검사불합격";
+	private static final String STATUS_INSPECT_PASSED = "검사 합격";
+	private static final String STATUS_INSPECT_FAILED = "검사 불합격";
 	
 	/**
 	 * 출고 목록 조회
