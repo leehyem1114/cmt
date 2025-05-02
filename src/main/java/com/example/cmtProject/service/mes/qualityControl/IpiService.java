@@ -15,7 +15,6 @@ import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
-import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
 import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
 
 import jakarta.transaction.Transactional;
@@ -86,10 +85,12 @@ public class IpiService {
 		ipiDTO.setIpiEndTime(LocalDateTime.now());
 		ipiMapper.updateIpiInspectionStatusComplete(ipiDTO);
 		
-        String code = ipiDTO.getWoCode();
         Map<String, Object> params = new HashMap<>();
-        params.put("woCode", code);
-//        ium.updateWoStatus(params);
+        params.put("pdtName", ipiDTO.getPdtName());
+        params.put("pdtCode", ipiDTO.getPdtCode());
+        params.put("woQty", ipiDTO.getWoQty());
+        params.put("childLotCode", ipiDTO.getChildLotCode());
+
 
 	}
 

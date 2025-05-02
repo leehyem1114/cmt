@@ -40,5 +40,14 @@ public interface InventoryUpdateMapper {
      * @return 업데이트된 행 수
      */
     public int updateProductAllocatedQty(Map<String, Object> params);
+
+    /**
+     * IpiService 에 updateIpiInspectionStatusComplete 메서드에 추가해주세요
+     * params.put("pdtName", ipiDTO.getPdtName()); -  반제품 및 완제품 이름
+        params.put("pdtCode", ipiDTO.getPdtCode()); - 반제품 및 완제품 코드
+        params.put("woQty", ipiDTO.getWoQty()); - 개수
+        params.put("childLotCode", ipiDTO.getChildLotCode()); - LOT 넘버
+
+     */
     
 }
