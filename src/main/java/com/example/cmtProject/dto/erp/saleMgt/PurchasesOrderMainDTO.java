@@ -54,7 +54,7 @@ public class PurchasesOrderMainDTO {
 	private String statusCode;
 	private String statusName;
 	
-	
+	//새로 전부 만든 필드
 	private String poUseYn;
 	private String poVisible;
 	private String qtyUnit;

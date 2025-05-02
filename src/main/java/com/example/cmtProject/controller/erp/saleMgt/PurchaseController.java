@@ -82,8 +82,6 @@ public class PurchaseController {
 		mtlCode = mtlCode.replaceAll("\"", ""); //따옴표 삭제
 		String mtlName = purchasesOrderRepository.findByMtlName(mtlCode);
  
-		System.out.println("mtlName:" + mtlName);
-		
 		return mtlName;
 	}
 	
@@ -155,9 +153,7 @@ public class PurchaseController {
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		purchasesOrder.setPoNo(null);
-		log.info("purchasesOrder:"+purchasesOrder);
-		purchasesOrder.setPoVisible("Y");
-		log.info("purchasesOrder:"+purchasesOrder);
+		purchasesOrder.setPoUseYn("Y");
 		purchasesOrderRepository.save(purchasesOrder);
 		purchasesOrderRepository.flush();
 
@@ -188,17 +184,13 @@ public class PurchaseController {
 		TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
 		*/
 		
-		System.out.println("poEditDto:" + poEditDto); //soEditDto:SalesOrderEditDTO(soNo=445, columnName=empId, value=911114)
-		
 		//main으로부터 empNo가 아니라 empId를 받아오기 때문에 empId를 변경한 경우 empNo를 찾아와서 SALES_ORDER테이블에서 변경(SALES_ORDER 테이블에 empNo가 있음)
 		if(poEditDto.getColumnName().equals("empId")) {
 			
 			//empId에 해당하는 empNo를 가져오기 - JPA이용
 			Long empNo = purchasesOrderRepository.findEmpNoByEmpId(poEditDto.getValue());
 			
-			System.out.println("empNo:" + empNo+" ,poNo:" + poEditDto.getPoNo());
 			//sono를 통해 empno를 업데이트한다
-			
 			purchasesOrderRepository.updateEmpNo(empNo, poEditDto.getPoNo());
 			
 		}else {
@@ -213,14 +205,11 @@ public class PurchaseController {
 	//발주 메인 화면에서 검색 버튼 클릭시 비동기 처리부분
 	@GetMapping("/searchForm")
 	@ResponseBody
-	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
 	public List<PurchasesOrderMainDTO> searchForm(@ModelAttribute PurchasesOrderSearchDTO searchDto) {
 		
-		System.out.println("searchDto:"+searchDto);
+		System.out.println("searchDto:"+ searchDto);
 		
 		List<PurchasesOrderMainDTO> mainDtoList = purchasesOrderService.poMainSearch(searchDto);
-		System.out.println("mainDtoList:"+ mainDtoList);
-		
 		return mainDtoList;
 	}
 	
@@ -229,8 +218,6 @@ public class PurchaseController {
 	@PostMapping("/delItems")
 	public String deleteItems(@RequestBody List<Map<String, Object>> data) {
 		
-//			System.out.println("data:" + data);
-		
 		List<Integer> poNoList = new ArrayList<>();
 		
 		for(Map<String, Object> list : data) {
@@ -238,8 +225,6 @@ public class PurchaseController {
 			Integer poNoTemp = (Integer)list.get("poNo");
 			poNoList.add(poNoTemp);
 		}
-		
-		System.out.println(poNoList);
 		
 		String visibleType = "N";
 		purchasesOrderRepository.updatePoVisibleByPoNo(visibleType, poNoList);
