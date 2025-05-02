@@ -126,16 +126,16 @@
 	            <input type="date" th:field="*{poDate}">
 	        </div>
 	         <div class="form-group date-container">
-	            <label>예상 출하일자 *</label>
-	            <input type="date" th:field="*{rcvDate}">
+	            <label>예상 입고일자 *</label>
+	            <input type="date" th:field="*{mtlRcvDate}">
 	        </div>
 			<div class="form-group">
 	            <label>수량 *</label>
-	            <input type="text" placeholder="숫자입력" value="" th:field="*{poQuantity}">
+	            <input type="text" placeholder="숫자입력" value="" th:field="*{poQty}">
 	        </div>
 			<div class="form-group">
 				<label>출고단가 *</label>
-				<input type="text" placeholder="숫자입력" th:field="*{mtlReceivingPrice}">
+				<input type="text" placeholder="숫자입력" th:field="*{mtlRcvPrice}">
 	        </div>
 			<div class="form-group">
 				<label>진행 상태 *</label>
