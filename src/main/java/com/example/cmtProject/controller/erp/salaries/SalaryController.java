@@ -354,6 +354,7 @@ public class SalaryController {
 	public String getPayroll(Model model) {
 		List<PaymentDTO> payrollSummaryList = salaryService.getMonthlyPayrollSummaryList();
 		model.addAttribute("payrollSummaryList", payrollSummaryList);
+		
 		return "erp/salaries/payroll";
 	}
 	
@@ -365,10 +366,6 @@ public class SalaryController {
 		
 		Map<String, Object> result = new HashMap<>();
 		result.put("deptList", salaryService.getMonthlyDeptPayrollList(payMonth)); // 급여 현황
-		System.out.println("SDSFSDDSDF"+salaryService.getMonthlyDeptPayrollList(payMonth));
-		
-		System.out.println(salaryService.getMonthlyPayrollTotalList(payMonth));
-		
 		result.put("payTotal", salaryService.getMonthlyPayrollTotalList(payMonth)); // 전 직원 급여 합계
 
 	    return result;
@@ -378,11 +375,15 @@ public class SalaryController {
 	@PostMapping("/payroll/yearly")
 	@ResponseBody
 	public Map<String, Object> getPayrollYearly(@RequestParam("payYear") String payYear) {
+		// 연간 급여대장
 		List<Map<String, Object>> resultList = salaryService.getYearlyPayrollList(payYear);
-		Map<String, Object> result = new HashMap<>();
+		// 연도 리스트
+		List<Integer> yearList = salaryService.getYears();
 		
+		Map<String, Object> result = new HashMap<>();
 	    result.put("DATA", resultList);
-		System.out.println("adsfasdfadsfd" + resultList);
+	    result.put("YEARS", yearList);
+	    
 		return result;
 	}
 

@@ -15,6 +15,67 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>CMT</title>
+<style>
+    /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
+    .top-input-group {
+        display: flex; /* 플렉스박스로 배치 */
+        align-items: flex-start; /* 위쪽 정렬 */
+        justify-content: space-between; /* 좌우 여백 최대 */
+        flex-wrap: wrap; /* 요소가 넘칠 경우 줄바꿈 */
+        gap: 10px; /* 요소 간 간격 */
+        margin-bottom: 15px; /* 하단 여백 */
+    }
+    
+    /* 검색 및 파일 관련 그룹: 가로 배치, 줄바꿈 가능 */
+    .search-file-group {
+        display: flex;
+        align-items: center; /* 수직 정렬 */
+        gap: 8px; /* 요소 간 여백 */
+        flex-wrap: wrap; /* 줄바꿈 허용 */
+        flex: 1 1 auto; /* 공간을 적절히 차지하도록 설정 */
+        min-width: 500px; /* 최소 너비 확보 (줄바꿈 방지) */
+    }
+    
+    /* 일반 입력창 스타일: 최대 너비 설정, 반응형 대응 */
+    .form-control {
+        max-width: 200px; /* 최대 너비 제한 */
+        flex: 0 1 auto; /* 내용에 따라 너비 조절 */
+        margin-bottom: 16px;
+    }
+    
+    /* 테이블 전체 스타일 */
+    .table {
+        table-layout: fixed; /* 열 너비 고정 */
+        width: 100%; /* 부모 너비에 맞춤 */
+    }
+    
+    /* 첫 번째 열(선택 체크박스)의 너비와 정렬 */
+    th:first-child,
+    td:first-child {
+        width: 40px;
+        text-align: center;
+    }
+
+    /* TOAST UI Grid의 비활성 셀 스타일 */
+    .tui-grid-cell-disabled {
+        background-color: #fff !important;
+        color: #212529 !important;
+    }
+    
+    /* 반응형: 화면이 좁을 때의 처리 */
+    @media (max-width: 768px) {
+        .top-input-group {
+            flex-direction: column; /* 세로로 배치 */
+            align-items: flex-start; /* 왼쪽 정렬 */
+        }
+
+        .search-file-group,
+        .button-group {
+            width: 100%; /* 전체 너비 사용 */
+            margin-bottom: 10px; /* 하단 여백 */
+        }
+    }
+</style>	
 </head>
 <body>
 	<div layout:fragment="content">
@@ -39,21 +100,26 @@
 				<div class="tab-content" id="documentTabContent">
 					<!-- 월별 급여대장 탭 -->
 					<div class="tab-pane fade show active" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
-						<!--<div style="margin-bottom: 10px; display: flex; align-items: center;">
-							<select class="form-select" id="monthlySelect" style="width: 200px;">
-								<option value="">월 선택</option>
-							</select>
-						</div>-->
+						<div class="search-file-group">
+							<input type="text" class="form-control" id="searchInput" 
+	                               placeholder="월별 급여대장 검색">
+						</div>
+						
+						<!-- 월별 급여대장 그리드 -->		
 						<div id="monthlyGrid" style="width: 100%;"></div>
+						
 					</div>
 					<!-- 연간 급여대장 탭 -->
 					<div class="tab-pane fade" id="yearly" role="tabpanel" aria-labelledby="yearly-tab">
-						<div style="margin-bottom: 10px; display: flex; align-items: center;"><!-- 
+						<div style="margin-bottom: 16px; display: flex; align-items: center;">
 							<select class="form-select" id="yearlySelect" style="width: 200px;">
 						    	<option value="">연도 선택</option>
-							</select> -->
+							</select>
 						</div>
+						
+					<!-- 연간 급여대장 그리드 -->	
 		    		<div id="yearlyGrid" style="width: 100%; height: 500px;"></div>
+		    		
 		    	</div>
 				</div>
 			</div>
@@ -479,7 +545,6 @@
 	        const monthKey = getMonthKey(month);
 	        gridData.forEach(row => {
 	            const value = parseFloat(monthData[row.category]) || 0;
-	            console.log("카테고리:", row.category, "→ 매칭값:", monthData[row.category]);
 	            row[monthKey] += value;
 	            row.totalPayAmount += value;
 	        });
@@ -498,9 +563,7 @@
 
 	  return keys[month - 1];
 	}
-	
-	
-	
+		
 	// 연간 급여대장 그리드
 	const baseColumns = [
 	  {
@@ -515,8 +578,9 @@
 	const monthColumns = Array.from({ length: 12 }, (_, i) => ({
 	  header: `${i + 1}월분`,
 	  name: getMonthKey(i + 1),
-	  align: 'center',
-	  sortable: true
+	  align: 'right',
+	  sortable: true,
+	  formatter: ({ value }) => `${formatNumber(value || 0)}`
 	}));
 	
 	// 합계 컬럼
@@ -530,7 +594,7 @@
 	// 최종 컬럼 조합
 	const yearlyColumns = [...baseColumns, ...monthColumns, totalColumn];
 	
-	// 사용 예
+	// 그리드 부분
 	const yearlyGrid = new tui.Grid({
 	  el: document.getElementById('yearlyGrid'),
 	  data: [], // 초기 데이터
@@ -543,30 +607,87 @@
 	  columns: yearlyColumns
 	});
 	
+	// 연간 급여대장
+	document.getElementById('yearlySelect').addEventListener('change', function () {
+	  const year = this.value;
+
+	  $.ajax({
+	    url: '/salaries/payroll/yearly',
+	    type: 'POST',
+	    data: { payYear: year },
+	    dataType: 'json',
+	    success: function (res) {
+	      const data = res.data || res.DATA;
+	      
+	      if (Array.isArray(data)) {
+	        yearlyData(data);
+	        yearlyGrid.refreshLayout();
+	      } else {
+	        Swal.fire({
+				icon: "warning",
+				title: "데이터 없음"
+			});
+	      }
+	    },
+	    error: function () {
+	      Swal.fire({
+				icon: "error",
+				title: "연간 급여 대장 조회 실패"
+			});
+	    }
+	  });
+	});
+	
+	// 연간 급여대장 - 연도별 조회	
 	$('#yearly-tab').on('click', function (e) {
-	    e.preventDefault(); // ← 이거 꼭 넣어야 함!
+	    e.preventDefault();
 	    
 	    $.ajax({
 	        url: '/salaries/payroll/yearly',
 	        type: 'POST',
-	        data: { payYear: '2025' },
+	        data: { payYear: new Date().getFullYear() },
 	        dataType: 'json',
 	        success: function(res) {
 	            const data = res.data || res.DATA;
-	            console.log("응답 데이터:", data);
+	            const years = res.years || res.YEARS;
+	            
+	         	// 셀렉트 박스에 연도 추가
+	            const select = document.getElementById('yearlySelect');
+	            select.innerHTML = '<option value="">연도 선택</option>'; // 초기화
+	            
+	            if (Array.isArray(years)) {
+	                years.forEach(year => {
+	                    const opt = document.createElement('option');
+	                    opt.value = year;
+	                    opt.textContent = year;
+	                    
+	                    if (year === new Date().getFullYear()) {
+	                        opt.selected = true; // 현재 연도 자동 선택
+	                    }
+	                    select.appendChild(opt);
+	                });
+	            }
+	            
 	            if (Array.isArray(data)) {
 	                yearlyData(data);
 	                
-	            console.log("4444444444444444444444444444",data);
 	            } else {
-	                Swal.fire({ icon: 'warning', title: '데이터 없음' });
+	                Swal.fire({
+	    				icon: "warning",
+	    				title: "데이터 없음"
+	    			});
 	            }
 	        },
 	        error: function() {
-	            Swal.fire({ icon: 'error', title: '연간 급여 대장 조회 실패' });
+	            Swal.fire({
+    				icon: "error",
+    				title: "연간 급여 대장 조회 실패"
+    			});
 	        }
 	    });
 	});
+	
+	
 	// 탭 전환 시 레이아웃 강제 리렌더링
 	document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tabBtn => {
 	    tabBtn.addEventListener('shown.bs.tab', function (e) {
@@ -579,6 +700,27 @@
 	        }
 	    });
 	});
+	
+	
+  	// grid 데이터 원본 저장
+  	const originalData = grid.getData();
+
+  	document.getElementById('searchInput').addEventListener('input', function (e) {
+  	  const keyword = e.target.value.toLowerCase();
+
+  	  // 원본 데이터를 기준으로 필터링
+  	  const filtered = originalData.filter(row => {
+  	    return Object.values(row).some(val => {
+  	      if (val == null) return false;
+  	      return String(val).toLowerCase().includes(keyword);
+  	    });
+  	  });
+
+  	  // 필터링된 데이터로 그리드 업데이트
+  	  grid.resetData(filtered);
+  	});
+
+	
 	</script>
 	<!-- 그리드 끝 -->
 	</div>
