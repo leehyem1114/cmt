@@ -91,7 +91,7 @@
 	<select id="getLot" resultType="map">
 		SELECT 
 			WO_CODE,
-			CHILE_PDT_CODE,
+			CHILD_PDT_CODE,
 			WO_QTY
 		FROM
 			LOT

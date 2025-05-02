@@ -20,6 +20,7 @@ public class IpiDTO {
 	}
 	
 	private Long ipiNo;                // 출고 검사 NO
+	private Long lotNo;                // 출고 검사 NO	
     private String ipiCode;           // 출고 검사 코드   
     private String empId;             // 사용자 ID
     private String empName;             // 사용자 ID
