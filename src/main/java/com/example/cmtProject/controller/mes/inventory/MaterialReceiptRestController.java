@@ -166,30 +166,32 @@ public class MaterialReceiptRestController {
      * @return 검수 정보
      */
     @GetMapping(PathConstants.INSPECTION + "/{receiptNo}")
-    public ApiResponse<Map<String, Object>> getInspectionInfo(@PathVariable("receiptCode") Long receiptNo) {
+    public ApiResponse<Map<String, Object>> getInspectionInfo(@PathVariable("receiptNo") Long receiptNo) {
         log.info("검수 정보 조회 요청. 입고번호: {}", receiptNo);
         
         try {
             Map<String, Object> inspectionInfo = mrs.getInspectionInfo(receiptNo);
             
+            // 응답 형식 수정 - ByteArrayInputStream 오류 방지
+            Map<String, Object> responseData = new HashMap<>();
+            
             if (inspectionInfo == null) {
                 // 검수 정보가 없는 경우, '검사 합격' 상태의 검수 정보를 임시로 생성합니다.
-                // 이는 현재 클라이언트가 '검사 합격' 상태인 항목도 검수 API를 호출하기 때문에
-                // 필요한 임시 조치
-                Map<String, Object> tempInfo = new HashMap<>();
+                responseData.put("RECEIPT_NO", receiptNo);
+                responseData.put("INSP_RESULT", "PASS"); // 검수 결과: 합격
+                responseData.put("INSP_DATE", java.time.LocalDateTime.now().toString()); // 현재 날짜
+                responseData.put("hasInspection", false);
                 
-                // 기본 정보 설정
-                //tempInfo.put("INSP_NO", iqcNo); // 검수 번호(임시)
-                tempInfo.put("RECEIPT_NO", receiptNo); // 입고 번호
-                tempInfo.put("INSP_RESULT", "PASS"); // 검수 결과: 합격
-                tempInfo.put("INSP_DATE", new java.util.Date()); // 현재 날짜
+                log.info("검수 정보 없음. 임시 검수 정보 반환: {}", responseData);
+            } else {
+                // 검수 정보가 있는 경우, 응답 객체에 복사
+                responseData.putAll(inspectionInfo);
+                responseData.put("hasInspection", true);
                 
-                log.info("검수 정보 없음. 임시 검수 정보 반환: {}", tempInfo);
-                return ApiResponse.success(tempInfo);
+                log.info("검수 정보 조회 결과: {}", responseData);
             }
             
-            log.info("검수 정보 조회 결과: {}", inspectionInfo);
-            return ApiResponse.success(inspectionInfo);
+            return ApiResponse.success(responseData);
             
         } catch (Exception e) {
             log.error("검수 정보 조회 중 오류 발생: {}", e.getMessage(), e);
