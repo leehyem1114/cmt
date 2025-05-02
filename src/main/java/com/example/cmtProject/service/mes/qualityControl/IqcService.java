@@ -66,6 +66,7 @@ public class IqcService {
 	@Transactional
 	public void insertIqcInspection(Map<String, Object> updateMap) {
 		List<Map<String, Object>> result = iqcMapper.getMaterialReceipts(updateMap);
+		System.out.println("#########################################################" + updateMap);
 		
 		for (Map<String, Object> row : result) {
 			row.put("receiptNo", row.get("RECEIPT_NO"));
