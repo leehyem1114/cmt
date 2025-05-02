@@ -112,6 +112,10 @@ public class IpiController {
     	ipiDTO.setIpiCode(payload.get("ipiCode"));
         String status = payload.get("status");
         ipiDTO.setWoCode(payload.get("woCode"));
+        ipiDTO.setPdtCode(payload.get("pdtCode"));
+        ipiDTO.setPdtName(payload.get("pdtName"));
+        ipiDTO.setWoQty(payload.get("woQty"));
+        ipiDTO.setChildLotCode(payload.get("childLotCode"));
 
         // TODO: 상태에 따라 분기 처리
         if ("검사중".equals(status)) {

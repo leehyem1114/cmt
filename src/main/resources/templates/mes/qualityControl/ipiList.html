@@ -450,6 +450,15 @@
                	  align: "center",
             	},
             	{ 
+               	  header: '완제품 CODE', 
+               	  name: 'pdtCode', 
+               	  sortable: true, 
+               	  filter: 'text',
+                  width: 200,
+               	  align: "center",
+               	  hidden: true 
+            	},
+            	{ 
               	  header: '공정 검사 수량', 
               	  name: 'woQty', 
               	  sortable: true, 
@@ -732,7 +741,7 @@
 	 }
 
 	 // 상태 변경 서버 요청
-	 function updateStatus(ipiCode, newStatus, successMsg, woCode) {
+	 function updateStatus(ipiCode, newStatus, successMsg, woCode, pdtCode, pdtName, woQty, childLotCode) {
 	   fetch('/ipi/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },

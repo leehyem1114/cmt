@@ -33,6 +33,9 @@ public class Iqc {
     @Column(name = "IQC_CODE", nullable = false)
     private String iqcCode;
     
+    @Column(name = "RECEIPT_NO")
+    private String receiptNo;
+    
     @Column(name = "RECEIPT_CODE")
     private String receiptCode;
 
