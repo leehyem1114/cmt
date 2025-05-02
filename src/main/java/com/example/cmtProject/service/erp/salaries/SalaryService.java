@@ -99,4 +99,9 @@ public class SalaryService {
 		return salMapper.getYears();
 	}
 
+	// 미지급자 조회
+	public List<PayEmpListDTO> findUnpaidEmployees(String payMonth) {
+		return salMapper.findUnpaidEmployees(payMonth);
+	}
+
 }

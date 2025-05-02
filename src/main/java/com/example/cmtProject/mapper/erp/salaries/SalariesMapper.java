@@ -61,5 +61,8 @@ public interface SalariesMapper {
 
 	// 연간 급여 대장 - 연도 가져오기
 	List<Integer> getYears();
+
+	// 미지급자 조회
+	List<PayEmpListDTO> findUnpaidEmployees(String payMonth);
 	
 }
