@@ -81,7 +81,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
 	@Transactional
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
-	@Query("UPDATE SalesOrder s SET s.soVisible = :visibleType WHERE s.soNo IN :soNoList")
+	@Query("UPDATE SalesOrder s SET s.soVisible = :visibleType, s.soUseYn = :visibleType WHERE s.soNo IN :soNoList")
 	void updateSoVisibleBySoNo(@Param("visibleType") String visibleType, @Param("soNoList") List<Integer> soNoList);
 }
 

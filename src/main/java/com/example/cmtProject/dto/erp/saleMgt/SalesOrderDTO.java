@@ -30,8 +30,8 @@ public class SalesOrderDTO {
 	private String whsCode;  //창고코드
 	private String pdtCode;  //제품코드
 	private String cltCode;	 //고객코드
-	private Integer soQuantity;  //수량
-	private Integer pdtShippingPrice; //출고단가
+	private Integer soQty;  //수량
+	private Integer pdtPrice; //출고단가
 	private Integer soValue;  //공급가액
 	private String soStatus; //종결여부
 	private String soComments;  //비고

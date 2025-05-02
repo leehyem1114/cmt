@@ -28,10 +28,10 @@ public class SalesOrderStatus {
 	@Id
 	@Column(name = "STATUS_CODE")
 	private String statusCode;
-	
+
 	@Column(name = "STATUS_NAME")
 	private String statusName;
-	
+
 	@Column(name = "STATUS_COMMENT")
 	private String statusComment;
 }
