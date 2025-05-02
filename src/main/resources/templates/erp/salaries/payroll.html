@@ -6,14 +6,13 @@
 	   	  layout:decorate="~{layouts/layout}">
 <head>
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
-	<!-- 그리드 -->
-<!-- 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
-	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" /> -->
-
 	<!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- xlsx.js (필수 의존성) -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>-->
+	<!-- 최신 xlsx 스크립트 CDN -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 	<title>CMT</title>
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
@@ -41,6 +40,19 @@
         max-width: 200px; /* 최대 너비 제한 */
         flex: 0 1 auto; /* 내용에 따라 너비 조절 */
         margin-bottom: 16px;
+    }
+    
+    /* 엑셀 업로드/다운로드 버튼 스타일 */
+    .btn-excel {
+        background-color: #1D6F42; /* 녹색 배경 */
+        color: white; /* 흰색 텍스트 */
+        white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+    }
+
+    /* 엑셀 버튼 호버 시 스타일 */
+    .btn-excel:hover {
+        background-color: #15562F; /* 더 어두운 녹색 */
+        color: white;
     }
     
     /* 테이블 전체 스타일 */
@@ -81,7 +93,7 @@
 	<div layout:fragment="content">
 		<h3>급여 대장</h3>
 		
-		<!-- 문서함 탭 영역 -->
+		<!-- 급여 대장 탭 영역 -->
 		<div class="card">
 			<div class="card-header">
 				<ul class="nav nav-tabs" id="payrollTab" role="tablist">
@@ -97,9 +109,10 @@
 			</div>
 			<div class="card-body">
 				<!-- 탭 컨텐츠 영역 -->
-				<div class="tab-content" id="documentTabContent">
+				<div class="tab-content" id="payrollTabContent">
 					<!-- 월별 급여대장 탭 -->
 					<div class="tab-pane fade show active" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
+						<!-- 검색 관련 -->
 						<div class="search-file-group">
 							<input type="text" class="form-control" id="searchInput" 
 	                               placeholder="월별 급여대장 검색">
@@ -111,12 +124,19 @@
 					</div>
 					<!-- 연간 급여대장 탭 -->
 					<div class="tab-pane fade" id="yearly" role="tabpanel" aria-labelledby="yearly-tab">
-						<div style="margin-bottom: 16px; display: flex; align-items: center;">
-							<select class="form-select" id="yearlySelect" style="width: 200px;">
-						    	<option value="">연도 선택</option>
-							</select>
-						</div>
+						<!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
+						<div class="top-input-group">
+							<div class="search-file-group">
+								<select class="form-select" id="yearlySelect" style="width: 200px;">
+							    	<option value="">연도 선택</option>
+								</select>
+							</div>
 						
+							<!-- 엑셀 파일 입력 및 버튼 -->
+                        	<button type="button" id="ExcelDownBtn" class="btn btn-excel">
+                        		<i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
+                        	</button>
+						</div>
 					<!-- 연간 급여대장 그리드 -->	
 		    		<div id="yearlyGrid" style="width: 100%; height: 500px;"></div>
 		    		
@@ -155,7 +175,6 @@
 	const grid = new tui.Grid({
 		el: document.getElementById('monthlyGrid'),
 		data: /*[[${payrollSummaryList}]]*/[],
-		rowHeaders: ['checkbox'],
 		columns: [
 			{
 				header: '지급월',
@@ -508,14 +527,14 @@
         PAYBASIC: '기본급',
         PAYBONUSOVERTIME: '야근수당',
         PAYBONUSHOLIDAY: '명절수당',
-        TOTALBONUSAMOUNT: '수당총액',
+        TOTALBONUSAMOUNT: '총수당액',
         PAYTAXPENSION: '국민연금',
         PAYTAXHEALTH: '건강보험',
         PAYTAXCARE: '장기요양보험',
         PAYTAXEMPLOYMENT: '고용보험',
         PAYTAXINCOME: '소득세',
         PAYTAXRESIDENCE: '주민세',
-        TOTALTAXAMOUNT: '총공제금액',
+        TOTALTAXAMOUNT: '총공제액',
         TOTALPAYAMOUNT: '실지급액'
     };
     
@@ -702,6 +721,38 @@
 	});
 	
 	
+    //그리드 -> 엑셀 파일로 다운로드
+	document.getElementById('ExcelDownBtn').addEventListener('click', function () {
+	    
+		//현재 그리드 데이터 가져오기
+		const gridData = yearlyGrid.getData();
+		
+		//현재 그리드의 컬럼 값 가져오기
+	    const columns = yearlyGrid.getColumns();
+
+		//컬럼을 header와 name으로 분리
+	    const header = columns.map(col => col.header);
+	    const keys = columns.map(col => col.name);
+
+		//header만큼 배열 생성
+	    const exportData = [header];
+
+		//row값을 데이터에 저장
+	    gridData.forEach(row => {
+	        const rowData = keys.map(key => row[key]);
+	        exportData.push(rowData);
+	    });
+
+		//CDN 이용
+	    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+	    const workbook = XLSX.utils.book_new();
+
+	    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+	    XLSX.writeFile(workbook, 'YEARLY-PAYROLL-grid-data.xlsx');
+	});
+	
+	
+	
   	// grid 데이터 원본 저장
   	const originalData = grid.getData();
 
@@ -719,6 +770,22 @@
   	  // 필터링된 데이터로 그리드 업데이트
   	  grid.resetData(filtered);
   	});
+  	
+  	function applyFilter() {
+		  const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+		  let filtered = originalData;
+
+		  if (keyword) {
+		    filtered = filtered.filter(row =>
+		      Object.values(row).some(val =>
+		        val != null && String(val).toLowerCase().includes(keyword)
+		      )
+		    );
+		  }
+
+		  grid.resetData(filtered);
+		}
 
 	
 	</script>
