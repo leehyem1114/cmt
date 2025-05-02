@@ -89,6 +89,7 @@
 	<select id="getMaterialReceipts" resultType="map" parameterType="map">
 		SELECT 
 			RECEIPT_CODE,
+			RECEIPT_NO,
 			MTL_CODE,
 			RECEIVED_QTY,
 			WAREHOUSE_CODE

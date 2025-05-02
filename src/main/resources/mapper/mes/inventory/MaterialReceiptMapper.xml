@@ -145,7 +145,7 @@
     </select>
     
 	<!-- 검수 정보 조회 -->
-	<select id="getInspectionInfo" resultType="map" parameterType="string">
+	<select id="getInspectionInfo" resultType="map" parameterType="long">
 	    SELECT
 	        IQ.IQC_NO AS INSP_NO,          <!-- 검수 번호 -->
 	        IQ.RECEIPT_NO,                  <!-- 입고 번호 -->
