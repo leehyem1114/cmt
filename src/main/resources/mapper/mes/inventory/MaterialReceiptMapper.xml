@@ -144,25 +144,22 @@
         FROM MATERIAL_RECEIPT
     </select>
     
-    <!-- 검수 정보 조회 -->
-    <select id="getInspectionInfo" resultType="map" parameterType="long">
-        SELECT
-            MI.INSP_NO,
-            MI.RECEIPT_NO,
-            MI.INSP_DATE,
-            MI.INSP_QTY,
-            MI.PASS_QTY,
-            MI.FAIL_QTY,
-            MI.INSPECTOR,
-            MI.INSP_RESULT,
-            MI.INSP_COMMENTS,
-            MI.CREATED_BY,
-            MI.CREATED_DATE
-        FROM
-            MATERIAL_INSPECTION MI
-        WHERE
-            MI.RECEIPT_NO = #{receiptNo}
-    </select>
+	<!-- 검수 정보 조회 -->
+	<select id="getInspectionInfo" resultType="map" parameterType="string">
+	    SELECT
+	        IQ.IQC_NO AS INSP_NO,          <!-- 검수 번호 -->
+	        IQ.RECEIPT_NO,                  <!-- 입고 번호 -->
+	        IQ.IQC_START_TIME AS INSP_DATE,  <!-- 검수 일자 -->
+	        IQ.RECEIVED_QTY AS INSP_QTY,    <!-- 검수 수량 -->
+	        IQ.RECEIVED_QTY AS PASS_QTY,    <!-- 합격 수량 -->
+	        IQ.RECEIVED_QTY AS FAIL_QTY,    <!-- 불합격 수량 -->
+	        IQ.EMP_NAME AS INSPECTOR,   <!-- 검수자 -->
+	        IQ.IQC_INSPECTION_RESULT AS INSP_RESULT  <!-- 검수 결과 -->
+	    FROM
+	        IQC IQ
+	    WHERE
+	        IQ.RECEIPT_NO = #{receiptNo}
+	</select>
     
     <!-- LOT 정보 조회 -->
     <select id="getLotInfo" resultType="map" parameterType="long">

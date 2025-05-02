@@ -20,19 +20,19 @@ const ProductsIssueManager = (function() {
     
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/api/productsIssue/list',               // 출고 목록 조회
-        DETAIL: (issueNo) => `/api/productsIssue/detail/${issueNo}`,  // 상세 정보 조회
-        HISTORY: (issueNo) => `/api/productsIssue/history/${issueNo}`,  // 이력 정보 조회
-        REQUEST: '/api/productsIssue/request',         // 출고 요청
-        REQUEST_BATCH: '/api/productsIssue/request-batch', // 다건 출고 요청
-        INSPECTION: '/api/productsIssue/inspection',   // 검수 등록 API
-        INSPECTION_BATCH: '/api/productsIssue/inspection-batch', // 다건 검수 등록 API
-        PROCESS: '/api/productsIssue/process',         // 출고 처리
-        PROCESS_BATCH: '/api/productsIssue/process-batch', // 다건 출고 처리
-        CANCEL: '/api/productsIssue/cancel',           // 출고 취소
-        SALES_ORDER: '/api/productsIssue/sales-orders',  // 수주 목록 조회 API
+        LIST: '/api/productsissue/list',               // 출고 목록 조회
+        DETAIL: (issueNo) => `/api/productsissue/detail/${issueNo}`,  // 상세 정보 조회
+        HISTORY: (issueNo) => `/api/productsissue/history/${issueNo}`,  // 이력 정보 조회
+        REQUEST: '/api/productsissue/request',         // 출고 요청
+        REQUEST_BATCH: '/api/productsissue/request-batch', // 다건 출고 요청
+        INSPECTION: '/api/productsissue/inspection',   // 검수 등록 API
+        INSPECTION_BATCH: '/api/productsissue/inspection-batch', // 다건 검수 등록 API
+        PROCESS: '/api/productsissue/process',         // 출고 처리
+        PROCESS_BATCH: '/api/productsissue/process-batch', // 다건 출고 처리
+        CANCEL: '/api/productsissue/cancel',           // 출고 취소
+        SALES_ORDER: '/api/productsissue/sales-orders',  // 수주 목록 조회 API
         EXCEL: {
-            DOWNLOAD: '/api/productsIssue/excel/download'  // 엑셀 다운로드 API URL
+            DOWNLOAD: '/api/productsissue/excel/download'  // 엑셀 다운로드 API URL
         }
     };
     
@@ -748,7 +748,7 @@ function displayDetailInfo(detailData) {
             });
             
             await UIUtil.toggleLoading(false);
-            
+			
             if (!response.success) {
                 throw new Error('수주 목록을 가져오는데 실패했습니다: ' + response.message);
             }
@@ -778,6 +778,7 @@ function displayDetailInfo(detailData) {
             await AlertUtil.showError('조회 오류', '수주 목록을 불러오는데 실패했습니다.');
             return false;
         }
+		
     }
     
     /**
