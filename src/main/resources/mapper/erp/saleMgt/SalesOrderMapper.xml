@@ -13,8 +13,8 @@
         <result property="soCode" column="SO_CODE"/>
         <result property="soDate" column="SO_DATE"/>
         <result property="shipDate" column="SHIP_DATE"/>
-        <result property="soQuantity" column="SO_QUANTITY"/>
-        <result property="pdtShippingPrice" column="PDT_SHIPPING_PRICE"/>
+        <result property="soQty" column="SO_QTY"/>
+        <result property="pdtPrice" column="PDT_PRICE"/>
         <result property="soValue" column="SO_VALUE"/>
         <result property="soStatus" column="SO_STATUS"/>
         <result property="soComments" column="SO_COMMENTS"/>
@@ -48,8 +48,8 @@
     <!-- 수주 메인 SELECT 쿼리 -->
     <select id="soMainSelect" resultMap="SalesOrderResultMap">
         SELECT 
-            SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QUANTITY,
-            SO.PDT_SHIPPING_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
+            SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QTY,
+            SO.PDT_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
             C.CLT_NO, C.CLT_CODE, C.CLT_NAME,
             P.PDT_NO, P.PDT_CODE, P.PDT_NAME,
             W.WHS_NO, W.WHS_CODE, W.WHS_NAME,
@@ -71,10 +71,10 @@
     UPDATE SALES_ORDER 
     <set>
         <if test="columnName == 'soDate'">
-                SO_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
+                SO_DATE = TO_DATE(#{value}, 'YY-MM-DD')
         </if>
         <if test="columnName == 'shipDate'">
-            SHIP_DATE = TO_DATE(#{value}, 'YYYY-MM-DD')
+            SHIP_DATE = TO_DATE(#{value}, 'YY-MM-DD')
         </if>
         <if test="columnName == 'whsCode'">
             WHS_CODE = #{value}
@@ -85,11 +85,11 @@
         <if test="columnName == 'cltCode'">
             CLT_CODE = #{value}
         </if>
-        <if test="columnName == 'soQuantity'">
-            SO_QUANTITY = CAST(#{value} AS NUMBER)
+        <if test="columnName == 'soQty'">
+            SO_QTY = #{value}
         </if>
-        <if test="columnName == 'pdtShippingPrice'">
-            PDT_SHIPPING_PRICE = CAST(#{value} AS NUMBER)
+        <if test="columnName == 'pdtPrice'">
+            PDT_PRICE = #{value}
         </if>
         <if test="columnName == 'soStatus'">
             SO_STATUS = #{value}
@@ -101,8 +101,8 @@
 	<!-- 수주 메인에서 검색-->
 	<select id="soMainSearch" resultMap="SalesOrderResultMap">
     SELECT 
-            SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QUANTITY,
-            SO.PDT_SHIPPING_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
+            SO.SO_NO, SO.SO_CODE, SO.SO_DATE, SO.SHIP_DATE, SO.SO_QTY,
+            SO.PDT_PRICE, SO.SO_VALUE, SO.SO_STATUS, SO.SO_COMMENTS,
             C.CLT_NO, C.CLT_CODE, C.CLT_NAME,
             P.PDT_NO, P.PDT_CODE, P.PDT_NAME,
             W.WHS_NO, W.WHS_CODE, W.WHS_NAME,
@@ -133,14 +133,17 @@
             AND SO.SO_STATUS = #{soStatus}
         </if>
         <if test="dateType == 'soDate' and startDate != null and endDate != null">
-		  AND SO.SO_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
-		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+		  AND SO.SO_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YY-MM-DD')
+		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YY-MM-DD')
 		</if>
 		<if test="dateType == 'shipDate' and startDate != null and endDate != null">
-		  AND SO.SHIP_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
-		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+		  AND SO.SHIP_DATE BETWEEN TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YY-MM-DD')
+		                     AND TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YY-MM-DD')
 		</if>
     </where>
     ORDER BY SO.SO_NO DESC
-</select>
+	</select>
+	
+	
+	
 </mapper>

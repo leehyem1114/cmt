@@ -48,6 +48,10 @@ public class SalesOrder {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate shipDate;  //출하일자
 	
+	@Column(name = "SO_DUE_DATE")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+	private LocalDate soDueDate;  //출하일자
+	
 	/*
 	 * @ManyToOne
 	 * @JoinColumn(name = "EMP_NO")
@@ -81,11 +85,11 @@ public class SalesOrder {
 	@Column(name = "CLT_CODE")
 	private String cltCode;
 	
-	@Column(name = "SO_QUANTITY")
-	private Integer soQuantity;  //수량
+	@Column(name = "SO_QTY")
+	private String soQty;  //수량
 	
-	@Column(name = "PDT_SHIPPING_PRICE")
-	private Integer pdtShippingPrice; //출고단가
+	@Column(name = "PDT_PRICE")
+	private String pdtPrice; //출고단가
 	
 	@Column(name = "SO_VALUE")
 	private Integer soValue;  //공급가액
@@ -97,7 +101,13 @@ public class SalesOrder {
 	private String soComments;  //비고
 	
 	@Column(name = "SO_VISIBLE")
-	private String soVisible;
+	private String soVisible = "Y";
+	
+	@Column(name = "SO_USE_YN")
+	private String soUseYn = "Y";
+	
+	@Column(name = "QTY_UNIT")
+	private String qtyUnit = "UNC001";
 }
 
 /*
