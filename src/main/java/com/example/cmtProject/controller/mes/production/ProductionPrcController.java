@@ -541,8 +541,11 @@ public class ProductionPrcController {
 		IpiDTO ipidto = new IpiDTO();
 		// UNIT_QTY, WO_CODE, WO_QTY, PDT_TYPE)
 		//IPI_NO 입력
-		Long ipiNo = lotService.getIpiNo();
-		ipidto.setIpiNo(ipiNo + 1);
+		//Long ipiNo = lotService.getIpiNo();
+		//ipidto.setIpiNo(ipiNo + 1);
+		
+		//LOT_NO
+		ipidto.setLotNo(Long.valueOf(lotUpdateDTO.getLotNo()));
 		
 		//childLotCode
 		ipidto.setChildLotCode(lotUpdateDTO.getChildLotCode());
