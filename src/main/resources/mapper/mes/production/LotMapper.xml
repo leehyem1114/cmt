@@ -233,6 +233,7 @@
 		    ,PDT_TYPE
 		    ,UNIT_QTY
 		    ,IPI_VISIABLE
+		    ,IPI_CODE
 		)
 		SELECT
 			#{lotNo}
@@ -246,6 +247,7 @@
 		    ,#{pdtType}
 		    ,'개'
 		    ,'Y'
+		    ,#{ipiCode}
 		FROM DUAL
 	</insert>
 	

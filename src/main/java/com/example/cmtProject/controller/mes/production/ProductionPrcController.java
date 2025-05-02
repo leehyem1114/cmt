@@ -31,8 +31,10 @@ import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
+import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
 import com.example.cmtProject.service.mes.production.LotService;
 import com.example.cmtProject.service.mes.production.ProductionPrcService;
+import com.example.cmtProject.service.mes.qualityControl.IpiService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -112,6 +114,13 @@ public class ProductionPrcController {
 	
 	@Autowired
 	private LotService lotService;
+	
+	@Autowired
+	private IpiService ipiService;
+	
+	
+	@Autowired
+	private IpiMapper ipiMapper;
 	
 	//공정 현황 메인 페이지
 	@GetMapping("/productionPrc")
@@ -572,6 +581,8 @@ public class ProductionPrcController {
 		//wo_qty
 		ipidto.setWoQty(lotUpdateDTO.getBomQty());
 		
+		ipidto.setIpiCode(generateIpiCode());
+		
 		//UPDATE
 		lotService.insertIpi(ipidto);
 		
@@ -580,6 +591,15 @@ public class ProductionPrcController {
 		//log.info("/jobCmpl의 selectLotOrigin:" + selectLotOrigin);
 		
 		return selectLotOrigin;
+	}
+	
+	// IPI 코드 생성
+	private String generateIpiCode() {
+		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		int maxSeq = ipiMapper.getMaxIpiCodeSeq(datePart);
+		int nextSeq = maxSeq + 1;
+		String seqStr = String.format("%03d", nextSeq);
+		return "IPI-" + datePart + "-" + seqStr;
 	}
 	
 	//SAVE_PRC테이블에 데이터 입력(위에 jobCmpl 작업 실행 내부에서 연달아 실행)
