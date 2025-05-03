@@ -75,6 +75,35 @@ public class WarehouseMasterRestController {
     }
     
     /**
+     * 창고별 위치 목록 조회 API
+     * 
+     * @param whsCode 창고 코드
+     * @param keyword 검색 키워드 (선택)
+     * @return 위치 목록 데이터
+     */
+    @GetMapping("/locations/{whsCode}")
+    public ApiResponse<List<Map<String, Object>>> getLocationList(
+            @PathVariable("whsCode") String whsCode,
+            @RequestParam(name = "keyword", required = false) String keyword) {
+        
+        Map<String, Object> findMap = new HashMap<>();
+        findMap.put("whsCode", whsCode);
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            findMap.put("keyword", keyword);
+        }
+        
+        log.info("위치 목록 조회 요청. 창고 코드: {}, 검색어: {}", whsCode, keyword);
+        
+        // WarehouseMasterService에 위치 조회 메서드 추가 필요
+        List<Map<String, Object>> locations = wms.warehouseLocationList(findMap);
+        
+        log.info("위치 목록 조회 결과: {}건", locations.size());
+        
+        return ApiResponse.success(locations);
+    }
+    
+    /**
      * 창고 정보 단건 저장 API (등록/수정)
      * 
      * @param warehouseData 창고 정보

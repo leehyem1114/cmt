@@ -226,4 +226,19 @@
         WHERE 
             RECEIPT_NO = #{receiptNo}
     </update>
+    
+    <!-- 입고 상태 및 창고/위치 정보 업데이트 -->
+	<update id="updateReceiptStatusAndLocation" parameterType="map">
+	    UPDATE 
+	        MATERIAL_RECEIPT
+	    SET 
+	        RECEIPT_STATUS = #{receiptStatus},
+	        WAREHOUSE_CODE = #{warehouseCode},
+	        LOCATION_CODE = #{locationCode},
+	        UPDATED_BY = #{updatedBy},
+	        UPDATED_DATE = SYSDATE
+	    WHERE 
+	        RECEIPT_NO = #{receiptNo}
+	</update>
+    
 </mapper>

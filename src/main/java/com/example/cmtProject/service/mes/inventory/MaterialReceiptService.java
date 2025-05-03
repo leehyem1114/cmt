@@ -303,6 +303,9 @@ public class MaterialReceiptService {
 	            return resultMap;
 	        }
 	        
+	        // 위치 지정 입고 여부 확인
+	        boolean withLocation = params.containsKey("withLocation") && (Boolean) params.get("withLocation");
+	        
 	        List<String> failedItems = new ArrayList<>();
 	        
 	        LocalDate now = LocalDate.now();
@@ -342,7 +345,6 @@ public class MaterialReceiptService {
 	                String currentStatus = (String) receiptDetail.get("RECEIPT_STATUS");
 	                
 	                log.info("입고확정 검사 - 입고번호: {}, 현재상태: {}", receiptNo, currentStatus);
-	                
 	                // 상태 또는 검수 결과 확인 - 주석 처리
 	                /*
 	                boolean isValidForConfirmation = false;
@@ -371,14 +373,28 @@ public class MaterialReceiptService {
 	                    continue;
 	                }
 	                */
+	                int result = 0;
 	                
-	                // 1. 입고 상태 업데이트
-	                Map<String, Object> updateMap = new HashMap<>();
-	                updateMap.put("receiptNo", receiptNo);
-	                updateMap.put("receiptStatus", MesStatusConstants.RECEIPT_STATUS_COMPLETED);
-	                updateMap.put("updatedBy", userId);
-	                
-	                int result = mRmapper.updateReceiptStatus(updateMap);
+	                // 위치 지정 여부에 따라 처리
+	                if (withLocation) {
+	                    // 위치 지정 입고 - 창고/위치 코드 업데이트
+	                    Map<String, Object> updateMap = new HashMap<>();
+	                    updateMap.put("receiptNo", receiptNo);
+	                    updateMap.put("receiptStatus", MesStatusConstants.RECEIPT_STATUS_COMPLETED);
+	                    updateMap.put("warehouseCode", item.get("warehouseCode"));
+	                    updateMap.put("locationCode", item.get("locationCode"));
+	                    updateMap.put("updatedBy", userId);
+	                    
+	                    result = mRmapper.updateReceiptStatusAndLocation(updateMap);
+	                } else {
+	                    // 기본 입고 - 상태만 업데이트
+	                    Map<String, Object> updateMap = new HashMap<>();
+	                    updateMap.put("receiptNo", receiptNo);
+	                    updateMap.put("receiptStatus", MesStatusConstants.RECEIPT_STATUS_COMPLETED);
+	                    updateMap.put("updatedBy", userId);
+	                    
+	                    result = mRmapper.updateReceiptStatus(updateMap);
+	                }
 	                
 	                if (result > 0) {
 	                    updateCount++;
@@ -387,7 +403,16 @@ public class MaterialReceiptService {
 	                    Map<String, Object> historyMap = new HashMap<>();
 	                    historyMap.put("receiptNo", receiptNo);
 	                    historyMap.put("actionType", "입고확정");
-	                    historyMap.put("actionDescription", "입고 확정 처리됨");
+	                    
+	                    if (withLocation) {
+	                        // 위치 지정 입고인 경우 이력에 창고/위치 정보 포함
+	                        historyMap.put("actionDescription", 
+	                            "입고 확정 처리됨 (창고: " + item.get("warehouseCode") + 
+	                            ", 위치: " + item.get("locationCode") + ")");
+	                    } else {
+	                        historyMap.put("actionDescription", "입고 확정 처리됨");
+	                    }
+	                    
 	                    historyMap.put("actionUser", userId);
 	                    historyMap.put("createdBy", userId);
 	                    
@@ -396,8 +421,16 @@ public class MaterialReceiptService {
 	                    // 3. 재고 정보 업데이트 - 실제 입고 수량만큼 재고 증가
 	                    Map<String, Object> inventoryParams = new HashMap<>();
 	                    inventoryParams.put("mtlCode", receiptDetail.get("MTL_CODE"));
-	                    inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
-	                    inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
+	                    
+	                    // 창고/위치 정보 설정
+	                    if (withLocation) {
+	                        inventoryParams.put("warehouseCode", item.get("warehouseCode"));
+	                        inventoryParams.put("locationCode", item.get("locationCode"));
+	                    } else {
+	                        inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
+	                        inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
+	                    }
+	                    
 	                    inventoryParams.put("receivedQty", receiptDetail.get("RECEIVED_QTY"));
 	                    inventoryParams.put("updatedBy", userId);
 	                    

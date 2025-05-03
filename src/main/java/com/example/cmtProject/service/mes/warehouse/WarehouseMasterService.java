@@ -208,4 +208,14 @@ public class WarehouseMasterService {
         
         return resultMap;
     }
+    
+    /**
+     * 창고별 위치 목록 조회
+     * @param param 검색 조건 (whsCode 필수)
+     * @return 위치 목록
+     */
+    public List<Map<String, Object>> warehouseLocationList(Map<String, Object> param) {
+        log.info("창고별 위치 목록 조회 서비스 호출. 파라미터: {}", param);
+        return warehouseMapper.selectWarehouseLocations(param);
+    }
 }

@@ -3,8 +3,8 @@
  * 
  * 원자재 입고정보의 조회, 확정, 검수 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 3.0.0
- * @since 2025-04-24
+ * @version 3.1.0
+ * @since 2025-05-03
  */
 const MaterialReceiptManager = (function() {
     // =============================
@@ -28,6 +28,8 @@ const MaterialReceiptManager = (function() {
         INSPECTION: `/api/materialreceipt/inspection`, // 검수 등록
         INSPECTION_INFO: (receiptNo) => `/api/materialreceipt/inspection/${receiptNo}`, // 검수 정보 조회
         CONFIRM: '/api/materialreceipt/confirm', // 입고 확정
+        WAREHOUSES: '/api/warehouse/list', // 창고 목록 조회
+        LOCATIONS: (whsCode) => `/api/warehouse/locations/${whsCode}`, // 위치 목록 조회
         EXCEL: {
             DOWNLOAD: '/api/materialreceipt/excel/download' // 엑셀 다운로드 API URL
         }
@@ -82,14 +84,24 @@ const MaterialReceiptManager = (function() {
         try {
             // UIUtil을 사용하여 이벤트 리스너 등록 - 버튼 이벤트
             await UIUtil.registerEventListeners({
-                'mReceiptConfirmBtn': confirmReceipt, // 입고확정 버튼
+                'mReceiptConfirmBtn': confirmReceipt, // 기본 입고확정 버튼
+                'mReceiptConfirmWithLocationBtn': openConfirmWithLocationModal, // 위치지정 입고확정 버튼
                 'mReceiptInspectionBtn': openInspectionModal, // 검수등록 버튼
                 'mReceiptSearchBtn': searchData, // 데이터 검색 버튼
-                'mReceiptTestBtn': processPurchaseToReceipt // 발주입고 테스트 버튼
+                'mReceiptTestBtn': processPurchaseToReceipt, // 발주입고 테스트 버튼
+                'confirmReceiptBtn': processConfirmWithLocation // 모달 내 확정 버튼
             });
 
             // 엔터키 검색 이벤트 등록
             await UIUtil.bindEnterKeySearch('mReceiptInput', searchData);
+
+            // 창고 선택 이벤트 추가
+            const warehouseSelect = document.getElementById('warehouseSelect');
+            if (warehouseSelect) {
+                warehouseSelect.addEventListener('change', function() {
+                    loadLocationData(this.value);
+                });
+            }
 
             // 탭 이벤트 등록 - 이력정보 탭
             const historyTab = document.getElementById('history-tab');
@@ -396,8 +408,6 @@ const MaterialReceiptManager = (function() {
         document.getElementById('warehouseInfo').textContent =
             `${detailData.WAREHOUSE_CODE || ''} / ${detailData.LOCATION_CODE || ''}`;
         document.getElementById('receiver').textContent = detailData.RECEIVER || '';
-
-        // 이력 정보는 탭 선택 시 별도 로드
     }
 
     /**
@@ -558,6 +568,102 @@ const MaterialReceiptManager = (function() {
     }
 
     /**
+     * 창고 데이터 초기화 함수
+     * 창고 목록을 가져와 드롭다운에 표시합니다.
+     */
+    async function initWarehouseData() {
+        try {
+            await UIUtil.toggleLoading(true, '창고 정보를 불러오는 중...');
+
+            const response = await ApiUtil.get(API_URLS.WAREHOUSES);
+
+            await UIUtil.toggleLoading(false);
+
+            if (!response || !response.success) {
+                throw new Error('창고 정보를 가져오는데 실패했습니다.');
+            }
+
+            const warehouses = response.data || [];
+
+            // 창고 선택 드롭다운 구성
+            const warehouseSelect = document.getElementById('warehouseSelect');
+            if (warehouseSelect) {
+                // 기본 옵션
+                warehouseSelect.innerHTML = '<option value="">창고를 선택하세요</option>';
+
+                // 창고 목록 추가
+                warehouses.forEach(warehouse => {
+                    const option = document.createElement('option');
+                    option.value = warehouse.WHS_CODE;
+                    option.textContent = `${warehouse.WHS_CODE} - ${warehouse.WHS_NAME}`;
+                    warehouseSelect.appendChild(option);
+                });
+            }
+
+            return true;
+        } catch (error) {
+            console.error('창고 데이터 초기화 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            return false;
+        }
+    }
+
+    /**
+     * 위치 데이터 로드 함수
+     * 선택한 창고의 위치 목록을 가져와 드롭다운에 표시합니다.
+     * 
+     * @param {string} warehouseCode - 창고 코드
+     */
+    async function loadLocationData(warehouseCode) {
+        try {
+            if (!warehouseCode) {
+                const locationSelect = document.getElementById('locationSelect');
+                if (locationSelect) {
+                    locationSelect.innerHTML = '<option value="">위치를 선택하세요</option>';
+                    locationSelect.disabled = true;
+                }
+                return false;
+            }
+
+            await UIUtil.toggleLoading(true, '위치 정보를 불러오는 중...');
+
+            const response = await ApiUtil.get(API_URLS.LOCATIONS(warehouseCode));
+
+            await UIUtil.toggleLoading(false);
+
+            if (!response || !response.success) {
+                throw new Error('위치 정보를 가져오는데 실패했습니다.');
+            }
+
+            const locations = response.data || [];
+
+            // 위치 선택 드롭다운 구성
+            const locationSelect = document.getElementById('locationSelect');
+            if (locationSelect) {
+                // 기본 옵션
+                locationSelect.innerHTML = '<option value="">위치를 선택하세요</option>';
+
+                // 위치 목록 추가
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location.LOC_CODE;
+                    option.textContent = `${location.LOC_CODE} - ${location.LOC_NAME}`;
+                    locationSelect.appendChild(option);
+                });
+
+                // 드롭다운 활성화
+                locationSelect.disabled = false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('위치 데이터 로드 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            return false;
+        }
+    }
+
+    /**
      * 발주입고 테스트 함수 - 미입고 발주 정보로 입고정보 생성
      */
     async function processPurchaseToReceipt() {
@@ -606,8 +712,8 @@ const MaterialReceiptManager = (function() {
     }
 
     /**
-     * 입고 확정 함수 - 검수 완료된 항목만 처리
-     * 선택된 입고 정보를 확정 처리합니다.
+     * 기본 입고 확정 함수
+     * 기존 로직을 사용하여 입고 확정 처리합니다.
      */
     async function confirmReceipt() {
         try {
@@ -703,7 +809,7 @@ const MaterialReceiptManager = (function() {
                 return false;
             }
 
-            // API 호출 처리 - 검수 정보 조회 과정 제거하고 바로 입고 확정 API 호출
+            // API 호출 처리
             const response = await ApiUtil.processRequest(
                 () => ApiUtil.post(API_URLS.CONFIRM, {
                     items: validItems
@@ -725,6 +831,207 @@ const MaterialReceiptManager = (function() {
         } catch (error) {
             console.error('입고 확정 처리 오류:', error);
             await AlertUtil.showError('처리 오류', '입고 확정 처리 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+
+    /**
+     * 위치지정 입고확정 모달 열기 함수
+     * 위치지정 입고확정을 위한 모달창을 엽니다.
+     */
+    async function openConfirmWithLocationModal() {
+        try {
+            // 선택된 행 ID 확인
+            const grid = GridUtil.getGrid('mReceiptGrid');
+            const selectedRowKeys = grid.getCheckedRowKeys();
+
+            if (selectedRowKeys.length === 0) {
+                await AlertUtil.showWarning('알림', '확정할 입고 항목을 선택해주세요.');
+                return false;
+            }
+
+            // 선택된 입고 정보 수집 및 유효성 검증
+            const validItems = [];
+            const invalidItems = [];
+
+            for (const rowKey of selectedRowKeys) {
+                const receiptData = grid.getRow(rowKey);
+
+                // 이미 확정된 항목 제외
+                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
+                    invalidItems.push({
+                        code: receiptData.RECEIPT_CODE,
+                        reason: '이미 입고 완료된 항목'
+                    });
+                    continue;
+                }
+
+                // 취소된 항목 제외
+                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
+                    invalidItems.push({
+                        code: receiptData.RECEIPT_CODE,
+                        reason: '취소된 항목'
+                    });
+                    continue;
+                }
+
+                // 프론트엔드에서 검수 상태 확인 - 검사 합격 상태만 처리 가능
+                if (receiptData.RECEIPT_STATUS !== RECEIPT_STATUS.INSPECT_PASSED) {
+                    invalidItems.push({
+                        code: receiptData.RECEIPT_CODE,
+                        reason: '검사 합격 상태가 아닌 항목'
+                    });
+                    continue;
+                }
+
+                validItems.push(receiptData);
+            }
+
+            if (validItems.length === 0) {
+                // 선택된 모든 항목이 유효하지 않은 경우
+                let errorMessage = '다음 이유로 입고 확정할 수 없습니다:\n\n';
+                invalidItems.forEach(item => {
+                    errorMessage += `- ${item.code}: ${item.reason}\n`;
+                });
+
+                await AlertUtil.showWarning('알림', errorMessage);
+                return false;
+            }
+
+            // 일부 항목이 유효하지 않은 경우
+            if (invalidItems.length > 0) {
+                let warningMessage = '다음 항목은 입고 확정이 불가능합니다:\n\n';
+                invalidItems.forEach(item => {
+                    warningMessage += `- ${item.code}: ${item.reason}\n`;
+                });
+
+                warningMessage += '\n유효한 항목만 확정 처리하시겠습니까?';
+
+                const confirmed = await AlertUtil.showConfirm({
+                    title: "위치지정 입고확정",
+                    text: warningMessage,
+                    icon: "warning"
+                });
+
+                if (!confirmed) {
+                    return false;
+                }
+            }
+
+            // 모달에 확정할 항목 목록 표시
+            const confirmItemsBody = document.getElementById('confirmItemsBody');
+            if (confirmItemsBody) {
+                let html = '';
+                validItems.forEach(item => {
+                    html += `
+                        <tr data-receipt-no="${item.RECEIPT_NO}">
+                            <td>${item.RECEIPT_CODE}</td>
+                            <td>${item.MTL_CODE}</td>
+                            <td>${item.MTL_NAME || '-'}</td>
+                            <td>${item.RECEIVED_QTY}</td>
+                            <td><span class="badge badge-inspectPass">${item.RECEIPT_STATUS}</span></td>
+                        </tr>
+                    `;
+                });
+                confirmItemsBody.innerHTML = html;
+            }
+
+            // 창고 정보 초기화
+            await initWarehouseData();
+
+            // 모달 표시
+            const modal = new bootstrap.Modal(document.getElementById('confirmWithLocationModal'));
+            modal.show();
+
+            return true;
+        } catch (error) {
+            console.error('위치지정 입고확정 모달 열기 오류:', error);
+            await AlertUtil.showError('처리 오류', '위치지정 입고확정 처리 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+
+    /**
+     * 위치지정 입고확정 처리 함수
+     * 모달에서 입력된 창고/위치 정보로 입고를 확정합니다.
+     */
+    async function processConfirmWithLocation() {
+        try {
+            // 창고/위치 선택 값 확인
+            const warehouseCode = document.getElementById('warehouseSelect').value;
+            const locationCode = document.getElementById('locationSelect').value;
+
+            if (!warehouseCode) {
+                await AlertUtil.showWarning('알림', '창고를 선택해주세요.');
+                return false;
+            }
+
+            if (!locationCode) {
+                await AlertUtil.showWarning('알림', '위치를 선택해주세요.');
+                return false;
+            }
+
+            // 확정할 항목 수집
+            const confirmItems = [];
+            const rows = document.querySelectorAll('#confirmItemsBody tr');
+
+            for (const row of rows) {
+                const receiptNo = row.getAttribute('data-receipt-no');
+                if (receiptNo) {
+                    confirmItems.push({
+                        receiptNo: receiptNo,
+                        warehouseCode: warehouseCode,
+                        locationCode: locationCode,
+                        receiptStatus: RECEIPT_STATUS.COMPLETED
+                    });
+                }
+            }
+
+            if (confirmItems.length === 0) {
+                await AlertUtil.showWarning('알림', '확정할 항목이 없습니다.');
+                return false;
+            }
+
+            // 확인 대화상자 표시
+            const confirmed = await AlertUtil.showConfirm({
+                title: "입고 확정",
+                text: `선택한 ${confirmItems.length}개 항목을 입고 확정 처리하시겠습니까?\n\n창고: ${warehouseCode}\n위치: ${locationCode}`,
+                icon: "question"
+            });
+
+            if (!confirmed) {
+                return false;
+            }
+
+            // API 호출 처리
+            const response = await ApiUtil.processRequest(
+                () => ApiUtil.post(API_URLS.CONFIRM, {
+                    items: confirmItems,
+                    withLocation: true
+                }), {
+                    loadingMessage: '입고 확정 처리 중...',
+                    successMessage: `${confirmItems.length}개 항목이 입고 확정되었습니다.`,
+                    errorMessage: "입고 확정 처리 중 오류가 발생했습니다.",
+                    successCallback: async () => {
+                        // 모달 닫기
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmWithLocationModal'));
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // 목록 갱신
+                        await searchData();
+
+                        // 상세 정보 영역 숨기기
+                        hideDetailSection();
+                    }
+                }
+            );
+
+            return response.success;
+        } catch (error) {
+            console.error('위치지정 입고확정 처리 오류:', error);
+            await AlertUtil.showError('처리 오류', '위치지정 입고확정 처리 중 오류가 발생했습니다.');
             return false;
         }
     }
@@ -780,7 +1087,11 @@ const MaterialReceiptManager = (function() {
                 }
 
                 // 유효한 항목은 별도 목록에 추가
-                validItems.push(receiptData);
+                validItems.push({
+                    receiptNo: receiptData.RECEIPT_NO,
+                    receiptCode: receiptData.RECEIPT_CODE,
+                    receiptStatus: RECEIPT_STATUS.INSPECTING
+                });
             }
 
             // 유효하지 않은 항목이 있는 경우 알림
@@ -813,18 +1124,7 @@ const MaterialReceiptManager = (function() {
             }
 
             // 검수 항목 확인 대화상자
-            let confirmMessage = `선택한 ${validItems.length}개 항목을 검수 등록하시겠습니까?\n\n`;
-
-            // 최대 5개 항목만 표시 (너무 많으면 UI가 복잡해짐)
-            const displayItems = validItems.slice(0, 5);
-            displayItems.forEach(item => {
-                confirmMessage += `- ${item.RECEIPT_CODE}: ${item.MTL_NAME} (${item.RECEIVED_QTY})\n`;
-            });
-
-            // 표시되지 않은 항목이 있는 경우 추가 메시지
-            if (validItems.length > 5) {
-                confirmMessage += `\n외 ${validItems.length - 5}개 항목`;
-            }
+            let confirmMessage = `선택한 ${validItems.length}개 항목을 검수 등록하시겠습니까?`;
 
             const confirmed = await AlertUtil.showConfirm({
                 title: "검수 등록",
@@ -837,16 +1137,10 @@ const MaterialReceiptManager = (function() {
             }
 
             // 검수 등록 API 호출 (다건 처리)
-            const inspectionItems = validItems.map(item => ({
-                receiptNo: item.RECEIPT_NO,
-                receiptCode: item.RECEIPT_CODE,
-                receiptStatus: RECEIPT_STATUS.INSPECTING,
-            }));
-
             // API 호출 처리
             const response = await ApiUtil.processRequest(
                 () => ApiUtil.post(API_URLS.INSPECTION, {
-                    items: inspectionItems
+                    items: validItems
                 }), {
                     loadingMessage: '검수 등록 중...',
                     successMessage: `${validItems.length}개 항목의 검수 등록이 완료되었습니다. 검수 담당자가 검사를 진행합니다.`,
@@ -908,24 +1202,6 @@ const MaterialReceiptManager = (function() {
     }
 
     /**
-     * 검수 결과 텍스트 변환 함수
-     * 
-     * @param {string} resultCode - 검수 결과 코드
-     * @returns {string} 검수 결과 표시 텍스트
-     */
-    function getInspectionResultText(resultCode) {
-        if (!resultCode) return '-';
-
-        const resultMap = {
-            'PASS': '<span class="badge badge-completed">합격</span>',
-            'CONDITIONAL_PASS': '<span class="badge badge-inspecting">조건부 합격</span>',
-            'FAIL': '<span class="badge badge-canceled">불합격</span>'
-        };
-
-        return resultMap[resultCode] || resultCode;
-    }
-
-    /**
      * 그리드 인스턴스 반환 함수
      * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
      * 
@@ -944,7 +1220,8 @@ const MaterialReceiptManager = (function() {
 
         // 데이터 관련 함수
         searchData, // 데이터 검색
-        confirmReceipt, // 입고 확정
+        confirmReceipt, // 기본 입고확정
+        openConfirmWithLocationModal, // 위치지정 입고확정 모달 열기
         openInspectionModal, // 검수 등록 모달 
         loadHistoryData, // 이력 정보 로드
         processPurchaseToReceipt, // 발주입고 테스트 - 추가
