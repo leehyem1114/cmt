@@ -205,13 +205,27 @@ const ProductsManager = (function() {
                         sortable: true,
                         width: 150
                     },
-                    {
-                        header: '제품규격',
-                        name: 'PDT_SPECIFICATION',
-                        editor: 'text',
-                        sortable: true,
-                        width: 150
-                    },
+					{
+				       header: '창고코드',
+				       name: 'DEFAULT_WAREHOUSE_CODE',
+				       editor: 'text',
+				       sortable: true,
+				       width: 150
+				    },
+					{
+				       header: '위치 코드',
+				       name: 'DEFAULT_LOCATION_CODE',
+				       editor: 'text',
+				       sortable: true,
+				       width: 150
+					},
+//                    {
+//                        header: '제품규격',
+//                        name: 'PDT_SPECIFICATION',
+//                        editor: 'text',
+//                        sortable: true,
+//                        width: 150
+//                    },
                     {
                         header: '제품유형',
                         name: 'PDT_TYPE',

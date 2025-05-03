@@ -84,8 +84,6 @@ public class ProductsIssueService {
 	    Map<String, Object> resultMap = new HashMap<>();
 	    
 	    try {
-	        log.info("수주 정보 기반 출고 요청 생성 시작: {}", soData);
-	        
 	        // 필수 파라미터 검증
 	        if (soData == null || !soData.containsKey("SO_CODE") || !soData.containsKey("PDT_CODE") 
 	                || !soData.containsKey("SO_QTY")) {
@@ -112,15 +110,15 @@ public class ProductsIssueService {
 	        issueMap.put("lotNo", "LOT-" + nowStr.replace("-", "") + "-" + soData.get("SO_CODE"));
 	        issueMap.put("requestDate", nowStr);
 	        issueMap.put("issueDate", null); // 출고일은 아직 미정
-	        issueMap.put("issueStatus", STATUS_WAITING);
+	        issueMap.put("issueStatus", "출고대기");
 	        issueMap.put("warehouseCode", soData.get("WHS_CODE"));
-	        issueMap.put("issuer", userId); // SecurityUtil 사용
-	        issueMap.put("createdBy", userId); // SecurityUtil 사용
-	        issueMap.put("updatedBy", userId); // SecurityUtil 사용
+	        issueMap.put("issuer", userId);
+	        issueMap.put("createdBy", userId);
+	        issueMap.put("updatedBy", userId);
 	        issueMap.put("createdDate", nowStr);
 	        issueMap.put("updatedDate", nowStr);
-	        
-	        log.info("출고 요청 정보 생성: {}", issueMap);
+	        // 수주코드 추가
+	        issueMap.put("soCode", soData.get("SO_CODE"));
 	        
 	        // 출고 정보 저장
 	        int result = pImapper.insertProductsIssue(issueMap);
@@ -134,24 +132,20 @@ public class ProductsIssueService {
 	            historyMap.put("issueNo", issueNo);
 	            historyMap.put("actionType", "출고요청");
 	            historyMap.put("actionDescription", "수주번호 " + soData.get("SO_CODE") + "의 출고 요청 등록");
-	            historyMap.put("actionUser", userId); // SecurityUtil 사용
-	            historyMap.put("createdBy", userId); // SecurityUtil 사용
+	            historyMap.put("actionUser", userId);
+	            historyMap.put("createdBy", userId);
 	            
 	            pIhmapper.insertHistory(historyMap);
 	            
 	            resultMap.put("success", true);
 	            resultMap.put("message", "출고 요청이 등록되었습니다.");
 	            resultMap.put("issueNo", issueNo);
-	            
-	            log.info("출고 요청 등록 성공: 출고번호={}", issueNo);
 	        } else {
 	            resultMap.put("success", false);
 	            resultMap.put("message", "출고 요청 등록에 실패했습니다.");
-	            log.warn("출고 요청 등록 실패");
 	        }
 	        
 	    } catch (Exception e) {
-	        log.error("출고 요청 등록 중 오류 발생: {}", e.getMessage(), e);
 	        resultMap.put("success", false);
 	        resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
 	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
