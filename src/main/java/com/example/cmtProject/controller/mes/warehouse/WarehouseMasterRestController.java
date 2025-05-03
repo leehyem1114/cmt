@@ -95,7 +95,6 @@ public class WarehouseMasterRestController {
         
         log.info("위치 목록 조회 요청. 창고 코드: {}, 검색어: {}", whsCode, keyword);
         
-        // WarehouseMasterService에 위치 조회 메서드 추가 필요
         List<Map<String, Object>> locations = wms.warehouseLocationList(findMap);
         
         log.info("위치 목록 조회 결과: {}건", locations.size());
@@ -155,6 +154,66 @@ public class WarehouseMasterRestController {
         param.put("WHS_CODE", whsCode);
         
         Map<String, Object> result = wms.deleteWarehouse(param);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), null);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), null);
+        }
+    }
+    
+    /**
+     * 위치정보 저장 API
+     * 
+     * @param locationData 위치정보 데이터
+     * @return 처리 결과
+     */
+    @PostMapping("/location")
+    public ApiResponse<Map<String, Object>> saveLocation(@RequestBody Map<String, Object> locationData) {
+        log.info("위치정보 저장 요청. 데이터: {}", locationData);
+        
+        Map<String, Object> result = wms.saveLocation(locationData);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), result);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 위치정보 일괄 저장 API
+     * 
+     * @param requestData 저장할 위치정보 목록
+     * @return 처리 결과
+     */
+    @PostMapping("/location/batch")
+    public ApiResponse<Map<String, Object>> saveLocationBatch(@RequestBody List<Map<String, Object>> requestData) {
+        log.info("위치정보 일괄 저장 요청. 데이터 건수: {}", requestData.size());
+        
+        Map<String, Object> result = wms.saveLocationBatch(requestData);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), result);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 위치정보 삭제 API
+     * 
+     * @param locCode 위치 코드
+     * @return 처리 결과
+     */
+    @DeleteMapping("/location/{locCode}")
+    public ApiResponse<Void> deleteLocation(@PathVariable("locCode") String locCode) {
+        log.info("위치정보 삭제 요청. 위치 코드: {}", locCode);
+        
+        Map<String, Object> param = new HashMap<>();
+        param.put("LOC_CODE", locCode);
+        
+        Map<String, Object> result = wms.deleteLocation(param);
         
         if ((Boolean) result.get("success")) {
             return ApiResponse.success(result.get("message").toString(), null);

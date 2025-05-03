@@ -134,5 +134,82 @@
 	    </if>
 	    ORDER BY LOC_CODE ASC
 	</select>
+	
+	<!-- 위치정보 단건 조회 -->
+	<select id="selectSingleLocation" parameterType="map" resultType="map">
+	    SELECT
+	        LOC_NO,
+	        WHS_CODE,
+	        LOC_CODE,
+	        LOC_NAME,
+	        LOC_TYPE,
+	        CAPACITY,
+	        CURRENT_USAGE,
+	        USE_YN,
+	        CREATED_BY,
+	        UPDATED_BY,
+	        CREATED_DATE,
+	        UPDATED_DATE
+	    FROM
+	        WAREHOUSE_LOCATION
+	    WHERE
+	        LOC_CODE = #{LOC_CODE}
+	</select>
+	
+	<!-- 위치정보 등록 -->
+	<insert id="insertLocation" parameterType="map">
+	    INSERT INTO WAREHOUSE_LOCATION (
+	        LOC_NO,
+	        WHS_CODE,
+	        LOC_CODE,
+	        LOC_NAME,
+	        LOC_TYPE,
+	        CAPACITY,
+	        CURRENT_USAGE,
+	        USE_YN,
+	        CREATED_BY,
+	        UPDATED_BY,
+	        CREATED_DATE,
+	        UPDATED_DATE
+	    ) VALUES (
+	        SEQ_WAREHOUSE_LOCATION.NEXTVAL,
+	        #{WHS_CODE},
+	        #{LOC_CODE},
+	        #{LOC_NAME},
+	        #{LOC_TYPE, jdbcType=VARCHAR},
+	        #{CAPACITY, jdbcType=VARCHAR},
+	        #{CURRENT_USAGE, jdbcType=VARCHAR},
+	        #{USE_YN, jdbcType=VARCHAR},
+	        #{createdBy, jdbcType=VARCHAR},
+	        #{updatedBy, jdbcType=VARCHAR},
+	        SYSDATE,
+	        NULL
+	    )
+	</insert>
+
+	<!-- 위치정보 수정 -->
+	<update id="updateLocation" parameterType="map">
+	    UPDATE WAREHOUSE_LOCATION
+	    SET
+	        LOC_NAME = #{LOC_NAME},
+	        LOC_TYPE = #{LOC_TYPE, jdbcType=VARCHAR},
+	        WHS_CODE = #{WHS_CODE},
+	        CAPACITY = #{CAPACITY, jdbcType=VARCHAR},
+	        CURRENT_USAGE = #{CURRENT_USAGE, jdbcType=VARCHAR},
+	        USE_YN = #{USE_YN, jdbcType=VARCHAR},
+	        UPDATED_BY = #{updatedBy, jdbcType=VARCHAR},
+	        UPDATED_DATE = SYSDATE
+	    WHERE
+	        LOC_CODE = #{LOC_CODE}
+	</update>
+	
+	<!-- 위치정보 삭제 -->
+	<delete id="deleteLocation" parameterType="map">
+	    DELETE FROM WAREHOUSE_LOCATION
+	    WHERE
+	        LOC_CODE = #{LOC_CODE}
+	</delete>
+	
+	
     
 </mapper>
