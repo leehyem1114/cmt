@@ -392,37 +392,6 @@
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
     <th:block layout:fragment="script">
-		<script>
-		// 발주입고 테스트 버튼 이벤트 처리
-		$(document).ready(function() {
-		    // 발주입고 테스트 버튼 클릭 이벤트
-		    $('#mReceiptTestBtn').on('click', function() {
-		        // 입고 처리 AJAX 요청
-		        $.ajax({
-		            url: '/api/materialreceipt/register-all',
-		            type: 'POST',
-		            success: function(response) {
-		                console.log("응답 결과:", response);
-		                
-		                if (response.statusCode === 'SUCCESS') {
-		                    const result = response.data;
-		                    alert('요청이 완료되었습니다. ' + result.message);
-		                    
-		                    // 그리드 데이터 갱신을 위한 API 호출
-		                    location.reload(); // 간단하게 페이지 새로고침
-		                } else {
-		                    alert('서버 오류가 발생했습니다: ' + response.message);
-		                }
-		            },
-		            error: function(xhr, status, error) {
-		                console.error('AJAX 오류:', error);
-		                alert('서버 요청 실패: ' + error);
-		            } 
-		        });
-		    });
-		});
-			
-		</script>
         <script th:inline="javascript">
             // Thymeleaf 데이터를 전역 변수로 설정
             window.mReceipt = /*[[${mReceipt}]]*/[];
