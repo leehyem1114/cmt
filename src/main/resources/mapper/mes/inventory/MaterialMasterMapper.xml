@@ -16,7 +16,9 @@
 			MTL_CLT_CODE,           
 			MTL_TYPE_CODE,           
 			MTL_USE_YN,           
-			MTL_COMMENTS           
+			MTL_COMMENTS,
+			DEFAULT_WAREHOUSE_CODE,
+        	DEFAULT_LOCATION_CODE           
 		FROM                           
 			MATERIALS
 		WHERE
@@ -38,7 +40,9 @@
 			MTL_CLT_CODE,           
 			MTL_TYPE_CODE,           
 			MTL_USE_YN,           
-			MTL_COMMENTS           
+			MTL_COMMENTS,
+			DEFAULT_WAREHOUSE_CODE,
+        	DEFAULT_LOCATION_CODE         
 		FROM                           
 			MATERIALS
 		WHERE
@@ -64,7 +68,9 @@
 			MTL_CLT_CODE,           
 			MTL_TYPE_CODE,           
 			MTL_USE_YN,           
-			MTL_COMMENTS           
+			MTL_COMMENTS,
+			DEFAULT_WAREHOUSE_CODE,
+			DEFAULT_LOCATION_CODE      
 		) VALUES (
 			MATERIALS_SEQ.NEXTVAL,
 			#{MTL_CODE},
@@ -76,7 +82,9 @@
 			#{MTL_CLT_CODE},
 			#{MTL_TYPE_CODE},
 			#{MTL_USE_YN},
-			#{MTL_COMMENTS}
+			#{MTL_COMMENTS},
+			#{DEFAULT_WAREHOUSE_CODE},
+            #{DEFAULT_LOCATION_CODE}
 		)
 	</insert>		
 
@@ -93,7 +101,9 @@
 			MTL_CLT_CODE =   #{MTL_CLT_CODE},        
 			MTL_TYPE_CODE =  #{MTL_TYPE_CODE},         
 			MTL_USE_YN =     #{MTL_USE_YN},      
-			MTL_COMMENTS =   #{MTL_COMMENTS}        
+			MTL_COMMENTS =   #{MTL_COMMENTS},
+			DEFAULT_WAREHOUSE_CODE = #{DEFAULT_WAREHOUSE_CODE},
+			DEFAULT_LOCATION_CODE = #{DEFAULT_LOCATION_CODE}       
 		WHERE
 			MTL_CODE = #{MTL_CODE}
 	</update>

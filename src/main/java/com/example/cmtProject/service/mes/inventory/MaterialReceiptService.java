@@ -13,6 +13,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.constants.MesStatusConstants;
 import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
+import com.example.cmtProject.mapper.mes.inventory.MaterialMasterMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
@@ -40,6 +41,9 @@ public class MaterialReceiptService {
 	
 	@Autowired
 	private MaterialReceiptStockMapper mRsmapper;
+	
+	@Autowired
+	private MaterialMasterMapper mmmapper;
 	
 	@Autowired
 	private IqcService iqcService;
@@ -75,36 +79,57 @@ public class MaterialReceiptService {
 	public Map<String, Object> createReceiptFromPurchaseOrder() {
 	    Map<String, Object> resultMap = new HashMap<>();
 	    int insertCount = 0;
-	    
+
 	    try {
 	        log.info("발주 정보 기반 입고 등록 시작");
-	        
+
 	        // 미입고 상태인 발주 목록 조회
 	        Map<String, Object> findMap = new HashMap<>();
 	        List<Map<String, Object>> purchaseOrders = mRmapper.puchasesList(findMap);
-	        
 	        log.info("조회된 발주 목록 수: {}", purchaseOrders.size());
-	        
+
 	        LocalDate now = LocalDate.now();
 	        String nowStr = now.toString();
-	        
+
 	        // 현재 사용자 ID 가져오기
 	        String userId = SecurityUtil.getUserId();
-	        
+
 	        for (Map<String, Object> po : purchaseOrders) {
 	            try {
+	                // 자재 코드로 기준정보 조회
+	                String mtlCode = (String) po.get("MTL_CODE");
+	                
+	                // 파라미터 맵 생성 - MTL_CODE 키 사용
+	                Map<String, Object> param = new HashMap<>();
+	                param.put("MTL_CODE", mtlCode);
+	                
+	                // 기준정보 조회
+	                Map<String, Object> materialInfo = mmmapper.selectSingleMaterials(param);
+	                
+	                // 창고/위치 정보 결정 - 기준정보의 값을 그대로 사용
+	                String warehouseCode = null;
+	                String locationCode = null;
+	                
+	                // 기준정보에서 창고/위치 코드 가져오기
+	                if (materialInfo != null) {
+	                    warehouseCode = (String) materialInfo.get("DEFAULT_WAREHOUSE_CODE");
+	                    locationCode = (String) materialInfo.get("DEFAULT_LOCATION_CODE");
+	                }
+	                
+	                log.info("자재 [{}]의 기준정보 창고/위치 코드: {}/{}", mtlCode, warehouseCode, locationCode);
+	                
 	                // 입고 정보 맵 생성
 	                Map<String, Object> receiptMap = new HashMap<>();
 	                
 	                // 필수 파라미터 설정
 	                receiptMap.put("receiptCode", "RC" + System.currentTimeMillis() % 10000);
 	                receiptMap.put("poCode", po.get("PO_CODE"));
-	                receiptMap.put("mtlCode", po.get("MTL_CODE"));
+	                receiptMap.put("mtlCode", mtlCode);
 	                receiptMap.put("receivedQty", po.get("PO_QTY"));
 	                receiptMap.put("lotNo", "LOT-" + nowStr.replace("-", "") + "-" + insertCount);
 	                receiptMap.put("receiptStatus", "입고대기");
-	                receiptMap.put("warehouseCode", po.get("WHS_CODE"));
-	                receiptMap.put("locationCode", "LOC-DEFAULT");
+	                receiptMap.put("warehouseCode", warehouseCode);
+	                receiptMap.put("locationCode", locationCode);
 	                receiptMap.put("receiver", userId);
 	                receiptMap.put("createdBy", userId);
 	                receiptMap.put("updatedBy", userId);
