@@ -205,6 +205,20 @@ const MaterialManager = (function() {
                         width: 150
                     },
                     {
+                        header: '창고코드',
+                        name: 'DEFAULT_WAREHOUSE_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 150
+                    },
+                    {
+                        header: '위치 코드',
+                        name: 'DEFAULT_LOCATION_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 150
+                    },
+                    {
                         header: '규격',
                         name: 'MTL_STANDARD',
                         editor: 'text',

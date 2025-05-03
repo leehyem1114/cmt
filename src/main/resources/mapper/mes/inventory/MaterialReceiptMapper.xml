@@ -32,7 +32,7 @@
 	</select>
 	
 	<!--입고 정보 INSERT-->
-	<insert id="insertMaterialReceipt">
+	<insert id="insertMaterialReceipt" parameterType="map">
         INSERT INTO MATERIAL_RECEIPT (
             RECEIPT_NO, <!-- 입고 번호 -->
             RECEIPT_CODE, <!-- 입고 코드 -->
@@ -41,8 +41,8 @@
             RECEIVED_QTY, <!-- 입고수량 -->
             RECEIPT_DATE, <!-- 입고일 -->
             RECEIPT_STATUS, <!-- 입고상태 -->
-<!--            WAREHOUSE_CODE,  창고 코드 -->
-<!--            LOCATION_CODE,  위치 코드 -->
+            WAREHOUSE_CODE,  <!--창고 코드--> 
+            LOCATION_CODE,  <!--위치 코드--> 
             RECEIVER, <!-- 입고 담당자 -->
             CREATED_BY, <!-- 생성자 -->
             UPDATED_BY, <!-- 수정자 -->
@@ -56,8 +56,8 @@
             #{receivedQty}, 
             #{receiptDate, jdbcType=DATE},
             #{receiptStatus},
-<!--            #{warehouseCode, jdbcType=VARCHAR}, -->
-<!--            #{locationCode jdbcType=VARCHAR},-->
+            #{warehouseCode, jdbcType=VARCHAR}, 
+            #{locationCode, jdbcType=VARCHAR},
             #{receiver},
             #{createdBy},
             #{updatedBy}, 
