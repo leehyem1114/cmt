@@ -15,7 +15,7 @@ import com.example.cmtProject.mapper.erp.salaries.SalariesMapper;
 import com.example.cmtProject.repository.erp.salaries.SalaryRepository;
 
 @Service
-public class SalaryService {
+public class SalaryService { // 급여 관리 Service
 	@Autowired
 	private SalaryRepository salRepository;
 	@Autowired
@@ -26,39 +26,18 @@ public class SalaryService {
 		return salMapper.getPayList(empId);
 	}
 	
-	// 야근 수당 계산
-	public List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO) {
-		return salMapper.getOverTimes(paymentDTO);
-	}
-	
-	// 월별 급여 대장 간략 조회
-	public List<PaymentDTO> getMonthlyPayrollSummaryList() {
-		return salMapper.getMonthlyPayrollSummaryList();
-	}
-	
-	// 월별 급여 대장 - 급여 현황
-	public List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth) {
-		List<PaymentDTO> result = salMapper.getMonthlyDeptPayrollList(payMonth);
-		
-		return result;
-	}
-	
-	// 월별 급여 대장 - 전 직원 급여 합계
-	public Map<String, Object> getMonthlyPayrollTotalList(String payMonth) {
-		return salMapper.getMonthlyPayrollTotalList(payMonth);
-	}
+	/*
+	 * 야근 수당 계산
+	 * public List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO) {
+	 * return salMapper.getOverTimes(paymentDTO); }
+	 */
 
-	// 직급별 기본급 계산
+	// 직급별 기본급 조회
 	public List<PayBasicDTO> getPayBasic() {
 		return salMapper.getPayBasic();
 	}	
 
-	// 개인 지급내역
-	public PaymentDTO getEmpPayment(String empId) {
-		return salMapper.selectEmpPayment(empId);
-	}
-
-	// 사원 정보
+	// 사원 정보 조회
 	public List<PayEmpListDTO> getEmpInfo(List<String> empNoList) {
 		return salMapper.getEmpInfo(empNoList);
 	}
@@ -88,6 +67,28 @@ public class SalaryService {
 	 * public void savePaymentDto(PaymentTempDTO pdto) {
 	 * salMapper.savePaymentDto(pdto); }
 	 */
+	
+	// 미지급자 조회
+	public List<PayEmpListDTO> findUnpaidEmployees(String payMonth) {
+		return salMapper.findUnpaidEmployees(payMonth);
+	}
+	
+	// 월별 급여 대장 간략 조회
+	public List<PaymentDTO> getMonthlyPayrollSummaryList() {
+		return salMapper.getMonthlyPayrollSummaryList();
+	}
+	
+	// 월별 급여 대장 - 급여 현황
+	public List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth) {
+		List<PaymentDTO> result = salMapper.getMonthlyDeptPayrollList(payMonth);
+		
+		return result;
+	}
+	
+	// 월별 급여 대장 - 전 직원 급여 합계
+	public Map<String, Object> getMonthlyPayrollTotalList(String payMonth) {
+		return salMapper.getMonthlyPayrollTotalList(payMonth);
+	}
 
 	// 연간 급여 대장
 	public List<Map<String, Object>> getYearlyPayrollList(String payYear) {
@@ -98,10 +99,13 @@ public class SalaryService {
 	public List<Integer> getYears() {
 		return salMapper.getYears();
 	}
-
-	// 미지급자 조회
-	public List<PayEmpListDTO> findUnpaidEmployees(String payMonth) {
-		return salMapper.findUnpaidEmployees(payMonth);
+	
+	
+	// ---------------------------------------------------
+	
+	// 개인 지급내역
+	public PaymentDTO getEmpPayment(String empId) {
+		return salMapper.selectEmpPayment(empId);
 	}
 
 }

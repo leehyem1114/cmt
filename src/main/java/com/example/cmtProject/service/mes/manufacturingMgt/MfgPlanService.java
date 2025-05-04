@@ -41,8 +41,8 @@ public class MfgPlanService { // 생산 계획 Service
 
 	// 생산 계획 삭제 (숨김 처리)
 	@Transactional
-	public void isVisiableToFalse(List<Long> mpNos) {
-		mfgPlanMapper.isVisiableToFalse(mpNos);
+	public void isVisibleToFalse(List<Long> mpNos) {
+		mfgPlanMapper.isVisibleToFalse(mpNos);
 	}	
 
 }

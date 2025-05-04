@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "MFG_SCHEDULES_DETAIL")
 @NoArgsConstructor
 @AllArgsConstructor
-public class MfgScheduleDetail { // 제조 계획 상세
+public class MfgScheduleDetail { // 제조 계획 상세 Entity
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

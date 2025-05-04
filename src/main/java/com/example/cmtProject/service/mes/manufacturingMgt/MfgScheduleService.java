@@ -55,8 +55,8 @@ public class MfgScheduleService { // 제조 계획 Service
 	}
 
 	// 제조 계획 삭제 (숨김 처리)
-	public void isVisiableToFalse(List<Long> msNos) {
-		mfgScheduleMapper.isVisiableToFalse(msNos);
+	public void isVisibleToFalse(List<Long> msNos) {
+		mfgScheduleMapper.isVisibleToFalse(msNos);
 	}
 
 }
