@@ -42,13 +42,22 @@
     </select>
     
     <!-- 입고별 재고 차감 -->
-    <update id="deductStock" parameterType="java.util.Map">
-        UPDATE MATERIAL_RECEIPT_STOCK
-        SET 
-            REMAINING_QTY = TO_CHAR(TO_NUMBER(REMAINING_QTY) - TO_NUMBER(#{deductQty})),
-            UPDATED_BY = #{updatedBy},
-            UPDATED_DATE = SYSDATE
-        WHERE 
-            RECEIPT_STOCK_NO = #{receiptStockNo}
-    </update>
+<!--    <update id="deductStock" parameterType="java.util.Map">-->
+<!--        UPDATE MATERIAL_RECEIPT_STOCK-->
+<!--        SET -->
+<!--            REMAINING_QTY = TO_CHAR(TO_NUMBER(REMAINING_QTY) - TO_NUMBER(#{deductQty})),-->
+<!--            UPDATED_BY = #{updatedBy},-->
+<!--            UPDATED_DATE = SYSDATE-->
+<!--        WHERE -->
+<!--            RECEIPT_STOCK_NO = #{receiptStockNo}-->
+<!--    </update>-->
+    
+	<update id="deductStock">
+	    UPDATE MATERIAL_RECEIPT_STOCK
+	    SET REMAINING_QTY = TO_CHAR(TO_NUMBER(REMAINING_QTY) - TO_NUMBER(#{deductQty})),
+	        UPDATED_BY = #{updatedBy},
+	        UPDATED_DATE = SYSDATE
+	    WHERE RECEIPT_STOCK_NO = #{receiptStockNo}
+	        AND TO_NUMBER(REMAINING_QTY) >= TO_NUMBER(#{deductQty})
+	</update>
 </mapper>

@@ -53,4 +53,6 @@ public interface MaterialInventoryMapper {
      * @return 처리 건수
      */
     public int updateInventory(Map<String, Object> params);
+    
+    
 }

@@ -24,4 +24,5 @@ public interface MaterialReceiptHistoryMapper {
      * @return 이력 목록
      */
     public List<Map<String, Object>> getHistoryByReceiptNo(Long receiptNo);
+    
 }
