@@ -382,6 +382,37 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 발주입고처리 모달 -->
+        <div class="modal fade" id="purchaseToReceiptModal" tabindex="-1" aria-labelledby="purchaseToReceiptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="purchaseToReceiptModalLabel">발주입고처리</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 미입고 상태의 발주를 입고대기 상태로 등록합니다.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="purchaseOrderGrid" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="processPurchaseOrderBtn">입고처리</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 
