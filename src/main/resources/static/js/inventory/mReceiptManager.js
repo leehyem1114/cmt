@@ -258,52 +258,74 @@ const MaterialReceiptManager = (function() {
     /**
      * 발주입고처리 실행
      */
-    async function processPurchaseOrderBtn() {
-        try {
-            console.log('발주입고처리 실행');
+	async function processPurchaseOrderBtn() {
+	    try {
+	        console.log('발주입고처리 실행');
 
-            // 확인 대화상자
-            const confirmed = await AlertUtil.showConfirm({
-                title: '발주입고처리',
-                text: '모든 미입고 발주 정보를 입고 대기 상태로 등록하시겠습니까?',
-                icon: 'question'
-            });
+	        // 발주 상세 그리드에서 선택된 항목 확인
+	        if (!purchaseOrderGrid) {
+	            await AlertUtil.showWarning('알림', '발주 그리드가 초기화되지 않았습니다.');
+	            return false;
+	        }
 
-            if (!confirmed) {
-                return false;
-            }
+	        const checkedRows = purchaseOrderGrid.getCheckedRows();
 
-            // API 호출
-            await UIUtil.toggleLoading(true, '발주입고 처리 중...');
+	        if (checkedRows.length === 0) {
+	            await AlertUtil.showWarning('알림', '입고 등록할 발주를 선택해주세요.');
+	            return false;
+	        }
 
-            const response = await ApiUtil.post(API_URLS.PURCHASE_PROCESS);
+	        // 처리할 요청 목록 구성
+	        const requestItems = checkedRows.map(row => ({
+	            PO_CODE: row.PO_CODE,
+	            MTL_CODE: row.MTL_CODE,
+	            PO_QTY: row.PO_QTY
+	        }));
 
-            await UIUtil.toggleLoading(false);
+	        // 입고 등록 처리
+	        const confirmed = await AlertUtil.showConfirm({
+	            title: '발주입고처리',
+	            text: `선택한 ${requestItems.length}건의 발주에 대해 입고 등록하시겠습니까?`,
+	            icon: 'question'
+	        });
 
-            if (!response.success) {
-                throw new Error('발주입고처리에 실패했습니다: ' + response.message);
-            }
+	        if (!confirmed) {
+	            return false;
+	        }
 
-            // 성공 처리
-            await AlertUtil.showSuccess('발주입고 완료', response.message || '발주 정보를 입고 대기 상태로 등록했습니다.');
+	        // API 호출
+	        await UIUtil.toggleLoading(true, '발주입고 처리 중...');
 
-            // 모달 닫기
-            const modal = bootstrap.Modal.getInstance(document.getElementById('purchaseToReceiptModal'));
-            if (modal) {
-                modal.hide();
-            }
+	        const response = await ApiUtil.post(API_URLS.PURCHASE_PROCESS, {
+	            items: requestItems  // 선택된 발주 정보 전송
+	        });
 
-            // 입고 그리드 갱신
-            await searchData();
+	        await UIUtil.toggleLoading(false);
 
-            return true;
-        } catch (error) {
-            console.error('발주입고처리 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('처리 오류', '발주입고처리 중 오류가 발생했습니다: ' + error.message);
-            return false;
-        }
-    }
+	        if (!response.success) {
+	            throw new Error('발주입고처리에 실패했습니다: ' + response.message);
+	        }
+
+	        // 성공 처리
+	        await AlertUtil.showSuccess('발주입고 완료', response.message || '선택한 발주 정보를 입고 대기 상태로 등록했습니다.');
+
+	        // 모달 닫기
+	        const modal = bootstrap.Modal.getInstance(document.getElementById('purchaseToReceiptModal'));
+	        if (modal) {
+	            modal.hide();
+	        }
+
+	        // 입고 그리드 갱신
+	        await searchData();
+
+	        return true;
+	    } catch (error) {
+	        console.error('발주입고처리 중 오류:', error);
+	        await UIUtil.toggleLoading(false);
+	        await AlertUtil.showError('처리 오류', '발주입고처리 중 오류가 발생했습니다: ' + error.message);
+	        return false;
+	    }
+	}
 
     // =============================
     // 그리드 관련 함수
@@ -850,129 +872,134 @@ const MaterialReceiptManager = (function() {
         }
     }
 
-    /**
-     * 기본 입고 확정 함수
-     * 기존 로직을 사용하여 입고 확정 처리합니다.
-     */
-    async function confirmReceipt() {
-        try {
-            // 선택된 행 ID 확인
-            const grid = GridUtil.getGrid('mReceiptGrid');
-            const selectedRowKeys = grid.getCheckedRowKeys();
+	/**
+	 * 기본 입고 확정 함수
+	 * 기존 로직을 사용하여 입고 확정 처리합니다.
+	 */
+	async function confirmReceipt() {
+	    try {
+	        // 선택된 행 ID 확인
+	        const grid = GridUtil.getGrid('mReceiptGrid');
+	        const selectedRowKeys = grid.getCheckedRowKeys();
 
-            if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '확정할 입고 항목을 선택해주세요.');
-                return false;
-            }
+	        if (selectedRowKeys.length === 0) {
+	            await AlertUtil.showWarning('알림', '확정할 입고 항목을 선택해주세요.');
+	            return false;
+	        }
 
-            // 선택된 입고 정보 수집 및 유효성 검증
-            const validItems = [];
-            const invalidItems = [];
+	        // 선택된 입고 정보 수집 및 유효성 검증
+	        const validItems = [];
+	        const invalidItems = [];
 
-            for (const rowKey of selectedRowKeys) {
-                const receiptData = grid.getRow(rowKey);
+	        for (const rowKey of selectedRowKeys) {
+	            const receiptData = grid.getRow(rowKey);
 
-                // 이미 확정된 항목 제외
-                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
-                    invalidItems.push({
-                        code: receiptData.RECEIPT_CODE,
-                        reason: '이미 입고 완료된 항목'
-                    });
-                    continue;
-                }
+	            // 이미 확정된 항목 제외
+	            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.COMPLETED) {
+	                invalidItems.push({
+	                    code: receiptData.RECEIPT_CODE,
+	                    reason: '이미 입고 완료된 항목'
+	                });
+	                continue;
+	            }
 
-                // 취소된 항목 제외
-                if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
-                    invalidItems.push({
-                        code: receiptData.RECEIPT_CODE,
-                        reason: '취소된 항목'
-                    });
-                    continue;
-                }
+	            // 취소된 항목 제외
+	            if (receiptData.RECEIPT_STATUS === RECEIPT_STATUS.CANCELED) {
+	                invalidItems.push({
+	                    code: receiptData.RECEIPT_CODE,
+	                    reason: '취소된 항목'
+	                });
+	                continue;
+	            }
 
-                // 프론트엔드에서 검수 상태 확인 - 검사 합격 상태만 처리 가능
-                if (receiptData.RECEIPT_STATUS !== RECEIPT_STATUS.INSPECT_PASSED) {
-                    invalidItems.push({
-                        code: receiptData.RECEIPT_CODE,
-                        reason: '검사 합격 상태가 아닌 항목'
-                    });
-                    continue;
-                }
+	            // 프론트엔드에서 검수 상태 확인 - 검사 합격 상태만 처리 가능
+	            if (receiptData.RECEIPT_STATUS !== RECEIPT_STATUS.INSPECT_PASSED) {
+	                invalidItems.push({
+	                    code: receiptData.RECEIPT_CODE,
+	                    reason: '검사 합격 상태가 아닌 항목'
+	                });
+	                continue;
+	            }
 
-                validItems.push({
-                    receiptNo: receiptData.RECEIPT_NO,
-                    receiptCode: receiptData.RECEIPT_CODE,
-                    receiptStatus: RECEIPT_STATUS.COMPLETED,
-                });
-            }
+	            validItems.push({
+	                receiptNo: receiptData.RECEIPT_NO,
+	                receiptCode: receiptData.RECEIPT_CODE,
+	                receiptStatus: RECEIPT_STATUS.COMPLETED,
+	            });
+	        }
 
-            if (validItems.length === 0) {
-                // 선택된 모든 항목이 유효하지 않은 경우
-                let errorMessage = '다음 이유로 입고 확정할 수 없습니다:\n\n';
-                invalidItems.forEach(item => {
-                    errorMessage += `- ${item.code}: ${item.reason}\n`;
-                });
+	        if (validItems.length === 0) {
+	            // 선택된 모든 항목이 유효하지 않은 경우
+	            let errorMessage = '다음 이유로 입고 확정할 수 없습니다:\n\n';
+	            invalidItems.forEach(item => {
+	                errorMessage += `- ${item.code}: ${item.reason}\n`;
+	            });
 
-                await AlertUtil.showWarning('알림', errorMessage);
-                return false;
-            }
+	            await AlertUtil.showWarning('알림', errorMessage);
+	            return false;
+	        }
 
-            // 일부 항목이 유효하지 않은 경우
-            if (invalidItems.length > 0) {
-                let warningMessage = '다음 항목은 입고 확정이 불가능합니다:\n\n';
-                invalidItems.forEach(item => {
-                    warningMessage += `- ${item.code}: ${item.reason}\n`;
-                });
+	        // 일부 항목이 유효하지 않은 경우
+	        if (invalidItems.length > 0) {
+	            let warningMessage = '다음 항목은 입고 확정이 불가능합니다:\n\n';
+	            invalidItems.forEach(item => {
+	                warningMessage += `- ${item.code}: ${item.reason}\n`;
+	            });
 
-                warningMessage += '\n유효한 항목만 확정 처리하시겠습니까?';
+	            warningMessage += '\n유효한 항목만 확정 처리하시겠습니까?';
 
-                const confirmed = await AlertUtil.showConfirm({
-                    title: "입고 확정",
-                    text: warningMessage,
-                    icon: "warning"
-                });
+	            const confirmed = await AlertUtil.showConfirm({
+	                title: "입고 확정",
+	                text: warningMessage,
+	                icon: "warning"
+	            });
 
-                if (!confirmed) {
-                    return false;
-                }
-            }
+	            if (!confirmed) {
+	                return false;
+	            }
+	        }
 
-            // 확인 대화상자 표시
-            const confirmed = await AlertUtil.showConfirm({
-                title: "입고 확정",
-                text: `선택한 ${validItems.length}개 항목을 입고 확정 처리하시겠습니까?`,
-                icon: "question"
-            });
+	        // 확인 대화상자 표시
+	        const confirmed = await AlertUtil.showConfirm({
+	            title: "입고 확정",
+	            text: `선택한 ${validItems.length}개 항목을 입고 확정 처리하시겠습니까?`,
+	            icon: "question"
+	        });
 
-            if (!confirmed) {
-                return false;
-            }
+	        if (!confirmed) {
+	            return false;
+	        }
 
-            // API 호출 처리
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.CONFIRM, {
-                    items: validItems
-                }), {
-                    loadingMessage: '입고 확정 처리 중...',
-                    successMessage: `${validItems.length}개 항목이 입고 확정되었습니다.`,
-                    errorMessage: "입고 확정 처리 중 오류가 발생했습니다.",
-                    successCallback: async () => {
-                        // 목록 갱신
-                        await searchData();
+	        // API 호출 처리
+	        await UIUtil.toggleLoading(true, '입고 확정 처리 중...');
+	        
+	        const response = await ApiUtil.post(API_URLS.CONFIRM, {
+	            items: validItems
+	        });
+	        
+	        await UIUtil.toggleLoading(false);
 
-                        // 상세 정보 영역 숨기기
-                        hideDetailSection();
-                    }
-                }
-            );
+	        if (!response.success) {
+	            throw new Error(response.message || '입고 확정 처리에 실패했습니다.');
+	        }
 
-            return response.success;
-        } catch (error) {
-            console.error('입고 확정 처리 오류:', error);
-            await AlertUtil.showError('처리 오류', '입고 확정 처리 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
+	        // 성공 알림 추가
+//	        await AlertUtil.showSuccess('입고 확정 완료', response.message || `${validItems.length}개 항목이 입고 확정되었습니다.`);
+	        await AlertUtil.showSuccess('입고 확정 완료', response.data?.message || `${validItems.length}개 항목이 입고 확정되었습니다.`);
+	        // 목록 갱신
+	        await searchData();
+
+	        // 상세 정보 영역 숨기기
+	        hideDetailSection();
+
+	        return true;
+	    } catch (error) {
+	        console.error('입고 확정 처리 오류:', error);
+	        await UIUtil.toggleLoading(false);
+	        await AlertUtil.showError('처리 오류', '입고 확정 처리 중 오류가 발생했습니다.');
+	        return false;
+	    }
+	}
 
     /**
      * 위치지정 입고확정 모달 열기 함수

@@ -95,15 +95,16 @@ public class MaterialReceiptRestController {
     }
     
     /**
-     * 미입고 발주 정보 전체 입고등록 처리 API
+     * 선택된 발주 정보를 입고대기로 등록 처리 API
      * 
+     * @param requestData 선택된 발주 정보 목록
      * @return 처리 결과
      */
     @PostMapping("/register-all")
-    public ApiResponse<Map<String, Object>> registerAllFromPurchaseOrders() {
-        log.info("발주 정보 기반 입고 등록 요청");
-        Map<String, Object> result = mrs.createReceiptFromPurchaseOrder();
-        log.info("발주 정보 기반 입고 등록 결과: {}", result);
+    public ApiResponse<Map<String, Object>> registerFromPurchaseOrders(@RequestBody Map<String, Object> requestData) {
+        log.info("선택된 발주 정보 기반 입고 등록 요청");
+        Map<String, Object> result = mrs.createReceiptFromPurchaseOrder(requestData);
+        log.info("선택된 발주 정보 기반 입고 등록 결과: {}", result);
         
         if ((Boolean) result.get("success")) {
             return ApiResponse.success(result);
@@ -146,7 +147,7 @@ public class MaterialReceiptRestController {
         
         if ((Boolean) result.get("success")) {
             log.info("입고 확정 처리 성공: {}", result.get("message"));
-            return ApiResponse.success(result);
+            return ApiResponse.success(result.get("message").toString(), result);
         } else {
             log.warn("입고 확정 처리 실패: {}", result.get("message"));
             return ApiResponse.error(result.get("message").toString(), result);
