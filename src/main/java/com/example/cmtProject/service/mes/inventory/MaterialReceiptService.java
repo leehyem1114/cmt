@@ -71,22 +71,30 @@ public class MaterialReceiptService {
 	}
 
 	/**
-	 * 발주 정보 바탕으로 입고정보 생성
+	 * 선택된 발주 정보를 기반으로 입고대기 등록
 	 * 
+	 * @param params 선택된 발주 정보 목록을 포함하는 파라미터
 	 * @return 처리 결과
 	 */
 	@Transactional
-	public Map<String, Object> createReceiptFromPurchaseOrder() {
+	public Map<String, Object> createReceiptFromPurchaseOrder(Map<String, Object> params) {
 	    Map<String, Object> resultMap = new HashMap<>();
 	    int insertCount = 0;
 
 	    try {
-	        log.info("발주 정보 기반 입고 등록 시작");
+	        log.info("선택된 발주 정보 기반 입고 등록 시작");
 
-	        // 미입고 상태인 발주 목록 조회
-	        Map<String, Object> findMap = new HashMap<>();
-	        List<Map<String, Object>> purchaseOrders = mRmapper.puchasesList(findMap);
-	        log.info("조회된 발주 목록 수: {}", purchaseOrders.size());
+	        // 선택된 발주 목록 가져오기
+	        @SuppressWarnings("unchecked")
+	        List<Map<String, Object>> selectedOrders = (List<Map<String, Object>>) params.get("items");
+	        
+	        if (selectedOrders == null || selectedOrders.isEmpty()) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "선택된 발주 정보가 없습니다.");
+	            return resultMap;
+	        }
+
+	        log.info("선택된 발주 목록 수: {}", selectedOrders.size());
 
 	        LocalDate now = LocalDate.now();
 	        String nowStr = now.toString();
@@ -94,23 +102,20 @@ public class MaterialReceiptService {
 	        // 현재 사용자 ID 가져오기
 	        String userId = SecurityUtil.getUserId();
 
-	        for (Map<String, Object> po : purchaseOrders) {
+	        for (Map<String, Object> po : selectedOrders) {
 	            try {
 	                // 자재 코드로 기준정보 조회
 	                String mtlCode = (String) po.get("MTL_CODE");
 	                
-	                // 파라미터 맵 생성 - MTL_CODE 키 사용
 	                Map<String, Object> param = new HashMap<>();
 	                param.put("MTL_CODE", mtlCode);
 	                
-	                // 기준정보 조회
 	                Map<String, Object> materialInfo = mmmapper.selectSingleMaterials(param);
 	                
-	                // 창고/위치 정보 결정 - 기준정보의 값을 그대로 사용
+	                // 창고/위치 정보 결정
 	                String warehouseCode = null;
 	                String locationCode = null;
 	                
-	                // 기준정보에서 창고/위치 코드 가져오기
 	                if (materialInfo != null) {
 	                    warehouseCode = (String) materialInfo.get("DEFAULT_WAREHOUSE_CODE");
 	                    locationCode = (String) materialInfo.get("DEFAULT_LOCATION_CODE");
@@ -121,7 +126,6 @@ public class MaterialReceiptService {
 	                // 입고 정보 맵 생성
 	                Map<String, Object> receiptMap = new HashMap<>();
 	                
-	                // 필수 파라미터 설정
 	                receiptMap.put("receiptCode", "RC" + System.currentTimeMillis() % 10000);
 	                receiptMap.put("poCode", po.get("PO_CODE"));
 	                receiptMap.put("mtlCode", mtlCode);
@@ -149,7 +153,7 @@ public class MaterialReceiptService {
 	                    Map<String, Object> historyMap = new HashMap<>();
 	                    historyMap.put("receiptNo", receiptNo);
 	                    historyMap.put("actionType", "입고등록");
-	                    historyMap.put("actionDescription", "발주번호 " + po.get("PO_CODE") + "의 자동 입고 등록");
+	                    historyMap.put("actionDescription", "발주번호 " + po.get("PO_CODE") + "의 선택적 입고 등록");
 	                    historyMap.put("actionUser", userId);
 	                    historyMap.put("createdBy", userId);
 	                    
