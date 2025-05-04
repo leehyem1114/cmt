@@ -3,7 +3,7 @@
  * 
  * 원자재 입고정보의 조회, 확정, 검수 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 3.1.0
+ * @version 3.1.1
  * @since 2025-05-03
  */
 const MaterialReceiptManager = (function() {
@@ -13,6 +13,7 @@ const MaterialReceiptManager = (function() {
 
     // 그리드 인스턴스 참조
     let mReceiptGrid;
+    let purchaseOrderGrid;
 
     // 현재 선택된 입고정보
     let selectedReceipt = null;
@@ -30,6 +31,8 @@ const MaterialReceiptManager = (function() {
         CONFIRM: '/api/materialreceipt/confirm', // 입고 확정
         WAREHOUSES: '/api/warehouse/list', // 창고 목록 조회
         LOCATIONS: (whsCode) => `/api/warehouse/locations/${whsCode}`, // 위치 목록 조회
+        PURCHASE_ORDERS: '/api/materialreceipt/purchase-orders', // 미입고 발주 목록 조회
+        PURCHASE_PROCESS: '/api/materialreceipt/register-all', // 발주입고처리
         EXCEL: {
             DOWNLOAD: '/api/materialreceipt/excel/download' // 엑셀 다운로드 API URL
         }
@@ -69,6 +72,9 @@ const MaterialReceiptManager = (function() {
             // 엑셀 기능 초기화
             initExcelFeatures();
 
+            // 발주 그리드 초기화
+            initPurchaseOrderGrid();
+
             console.log('원자재 입고관리 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('초기화 중 오류 발생:', error);
@@ -88,8 +94,9 @@ const MaterialReceiptManager = (function() {
                 'mReceiptConfirmWithLocationBtn': openConfirmWithLocationModal, // 위치지정 입고확정 버튼
                 'mReceiptInspectionBtn': openInspectionModal, // 검수등록 버튼
                 'mReceiptSearchBtn': searchData, // 데이터 검색 버튼
-                'mReceiptTestBtn': processPurchaseToReceipt, // 발주입고 테스트 버튼
-                'confirmReceiptBtn': processConfirmWithLocation // 모달 내 확정 버튼
+                'mReceiptTestBtn': openPurchaseProcessModal, // 발주입고 처리 모달 버튼
+                'confirmReceiptBtn': processConfirmWithLocation, // 모달 내 확정 버튼
+                'processPurchaseOrderBtn': processPurchaseOrderBtn // 발주입고처리 버튼
             });
 
             // 엔터키 검색 이벤트 등록
@@ -119,58 +126,182 @@ const MaterialReceiptManager = (function() {
     }
 
     /**
-     * 그리드 검색 초기화 함수
-     * GridSearchUtil을 사용하여 그리드 검색 기능을 설정합니다.
+     * 발주 그리드 초기화 함수
+     * 발주입고처리 모달에서 사용할 발주 그리드를 초기화합니다.
      */
-    function initGridSearch() {
+    function initPurchaseOrderGrid() {
         try {
-            console.log('그리드 검색 초기화');
+            console.log('발주 그리드 초기화');
 
-            // 그리드 검색 설정
-            GridSearchUtil.setupGridSearch({
-                gridId: 'mReceiptGrid',
-                searchInputId: 'mReceiptInput',
-                autoSearch: true, // 입력 시 자동 검색
-                beforeSearch: function() {
-                    console.log('그리드 검색 시작');
-                    return true;
+            // DOM 요소 확인
+            const gridElement = document.getElementById('purchaseOrderGrid');
+            if (!gridElement) {
+                console.warn('purchaseOrderGrid 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 그리드 생성
+            purchaseOrderGrid = GridUtil.registerGrid({
+                id: 'purchaseOrderGrid',
+                columns: [{
+                        header: '발주 코드',
+                        name: 'PO_CODE',
+                        sortable: true
+                    },
+                    {
+                        header: '원자재 코드',
+                        name: 'MTL_CODE',
+                        sortable: true
+                    },
+                    {
+                        header: '주문 수량',
+                        name: 'PO_QTY',
+                        sortable: true
+                    },
+                    {
+                        header: '발주일',
+                        name: 'PO_DATE',
+                        sortable: true,
+                        formatter: function(obj) {
+                            if (!obj.value) return '-';
+                            return formatDate(obj.value);
+                        }
+                    },
+                    {
+                        header: '창고 코드',
+                        name: 'WHS_CODE',
+                        sortable: true
+                    },
+                    {
+                        header: '상태',
+                        name: 'PO_STATUS',
+                        sortable: true
+                    }
+                ],
+                data: [],
+                pageOptions: {
+                    useClient: true,
+                    perPage: 5
                 },
-                afterSearch: function(filteredData) {
-                    console.log('그리드 검색 완료, 결과:', filteredData.length, '건');
-
-                    // 상세 정보 영역 초기화
-                    hideDetailSection();
+                gridOptions: {
+                    rowHeaders: ['checkbox']
                 }
             });
+
+            console.log('발주 그리드 초기화 완료');
         } catch (error) {
-            console.error('그리드 검색 초기화 중 오류:', error);
+            console.error('발주 그리드 초기화 중 오류:', error);
         }
     }
 
     /**
-     * 엑셀 기능 초기화 함수
-     * ExcelUtil을 사용하여 엑셀 다운로드 기능을 설정합니다.
+     * 발주입고처리 모달 열기
      */
-    function initExcelFeatures() {
+    async function openPurchaseProcessModal() {
         try {
-            console.log('엑셀 기능 초기화');
+            console.log('발주입고처리 모달 열기');
 
-            // 엑셀 다운로드 버튼 설정
-            ExcelUtil.setupExcelDownloadButton({
-                buttonId: 'mReceiptExcelDownBtn',
-                gridId: 'mReceiptGrid',
-                fileName: 'material-receipt-data.xlsx',
-                sheetName: '원자재입고정보',
-                beforeDownload: function() {
-                    console.log('엑셀 다운로드 시작');
-                    return true;
-                },
-                afterDownload: function() {
-                    console.log('엑셀 다운로드 완료');
-                }
-            });
+            // 모달 표시
+            const modal = new bootstrap.Modal(document.getElementById('purchaseToReceiptModal'));
+            modal.show();
+
+            // 미입고 발주 목록 로드
+            await loadPurchaseOrders();
+
+            return true;
         } catch (error) {
-            console.error('엑셀 기능 초기화 중 오류:', error);
+            console.error('발주입고처리 모달 열기 중 오류:', error);
+            await AlertUtil.showError('오류', '발주입고처리 모달을 열 수 없습니다.');
+            return false;
+        }
+    }
+
+    /**
+     * 미입고 발주 목록 로드
+     */
+    async function loadPurchaseOrders() {
+        try {
+            console.log('미입고 발주 목록 로드');
+            await UIUtil.toggleLoading(true, '발주 정보를 불러오는 중...');
+
+            // API 호출 - 미입고 발주 목록 조회
+            const response = await ApiUtil.get(API_URLS.PURCHASE_ORDERS);
+
+            await UIUtil.toggleLoading(false);
+
+            if (!response.success) {
+                throw new Error('발주 목록을 가져오는데 실패했습니다: ' + response.message);
+            }
+
+            const purchaseOrders = response.data || [];
+
+            // 그리드에 데이터 표시
+            if (purchaseOrderGrid) {
+                purchaseOrderGrid.resetData(purchaseOrders);
+
+                // 그리드가 제대로 표시되지 않는 문제 해결을 위한 딜레이 후 레이아웃 갱신
+                setTimeout(() => {
+                    purchaseOrderGrid.refreshLayout();
+                }, 100);
+            }
+
+            console.log('발주 목록 로드 완료:', purchaseOrders.length, '건');
+            return true;
+        } catch (error) {
+            console.error('발주 목록 로드 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            await AlertUtil.showError('조회 오류', '발주 목록을 불러오는데 실패했습니다.');
+            return false;
+        }
+    }
+
+    /**
+     * 발주입고처리 실행
+     */
+    async function processPurchaseOrderBtn() {
+        try {
+            console.log('발주입고처리 실행');
+
+            // 확인 대화상자
+            const confirmed = await AlertUtil.showConfirm({
+                title: '발주입고처리',
+                text: '모든 미입고 발주 정보를 입고 대기 상태로 등록하시겠습니까?',
+                icon: 'question'
+            });
+
+            if (!confirmed) {
+                return false;
+            }
+
+            // API 호출
+            await UIUtil.toggleLoading(true, '발주입고 처리 중...');
+
+            const response = await ApiUtil.post(API_URLS.PURCHASE_PROCESS);
+
+            await UIUtil.toggleLoading(false);
+
+            if (!response.success) {
+                throw new Error('발주입고처리에 실패했습니다: ' + response.message);
+            }
+
+            // 성공 처리
+            await AlertUtil.showSuccess('발주입고 완료', response.message || '발주 정보를 입고 대기 상태로 등록했습니다.');
+
+            // 모달 닫기
+            const modal = bootstrap.Modal.getInstance(document.getElementById('purchaseToReceiptModal'));
+            if (modal) {
+                modal.hide();
+            }
+
+            // 입고 그리드 갱신
+            await searchData();
+
+            return true;
+        } catch (error) {
+            console.error('발주입고처리 중 오류:', error);
+            await UIUtil.toggleLoading(false);
+            await AlertUtil.showError('처리 오류', '발주입고처리 중 오류가 발생했습니다: ' + error.message);
+            return false;
         }
     }
 
@@ -321,6 +452,62 @@ const MaterialReceiptManager = (function() {
         }
     }
 
+    /**
+     * 그리드 검색 초기화 함수
+     * GridSearchUtil을 사용하여 그리드 검색 기능을 설정합니다.
+     */
+    function initGridSearch() {
+        try {
+            console.log('그리드 검색 초기화');
+
+            // 그리드 검색 설정
+            GridSearchUtil.setupGridSearch({
+                gridId: 'mReceiptGrid',
+                searchInputId: 'mReceiptInput',
+                autoSearch: true, // 입력 시 자동 검색
+                beforeSearch: function() {
+                    console.log('그리드 검색 시작');
+                    return true;
+                },
+                afterSearch: function(filteredData) {
+                    console.log('그리드 검색 완료, 결과:', filteredData.length, '건');
+
+                    // 상세 정보 영역 초기화
+                    hideDetailSection();
+                }
+            });
+        } catch (error) {
+            console.error('그리드 검색 초기화 중 오류:', error);
+        }
+    }
+
+    /**
+     * 엑셀 기능 초기화 함수
+     * ExcelUtil을 사용하여 엑셀 다운로드 기능을 설정합니다.
+     */
+    function initExcelFeatures() {
+        try {
+            console.log('엑셀 기능 초기화');
+
+            // 엑셀 다운로드 버튼 설정
+            ExcelUtil.setupExcelDownloadButton({
+                buttonId: 'mReceiptExcelDownBtn',
+                gridId: 'mReceiptGrid',
+                fileName: 'material-receipt-data.xlsx',
+                sheetName: '원자재입고정보',
+                beforeDownload: function() {
+                    console.log('엑셀 다운로드 시작');
+                    return true;
+                },
+                afterDownload: function() {
+                    console.log('엑셀 다운로드 완료');
+                }
+            });
+        } catch (error) {
+            console.error('엑셀 기능 초기화 중 오류:', error);
+        }
+    }
+
     // =============================
     // 상세 정보 관련 함수
     // =============================
@@ -464,10 +651,10 @@ const MaterialReceiptManager = (function() {
 
         if (!historyData || historyData.length === 0) {
             historyInfoBody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center">이력 정보가 없습니다.</td>
-                </tr>
-            `;
+               <tr>
+                   <td colspan="4" class="text-center">이력 정보가 없습니다.</td>
+               </tr>
+           `;
             return;
         }
 
@@ -475,13 +662,13 @@ const MaterialReceiptManager = (function() {
         let html = '';
         historyData.forEach(history => {
             html += `
-                <tr>
-                    <td>${formatDateTime(history.ACTION_DATE)}</td>
-                    <td>${history.ACTION_TYPE || ''}</td>
-                    <td>${history.ACTION_DESCRIPTION || ''}</td>
-                    <td>${history.ACTION_USER || ''}</td>
-                </tr>
-            `;
+               <tr>
+                   <td>${formatDateTime(history.ACTION_DATE)}</td>
+                   <td>${history.ACTION_TYPE || ''}</td>
+                   <td>${history.ACTION_DESCRIPTION || ''}</td>
+                   <td>${history.ACTION_USER || ''}</td>
+               </tr>
+           `;
         });
 
         historyInfoBody.innerHTML = html;
@@ -659,54 +846,6 @@ const MaterialReceiptManager = (function() {
         } catch (error) {
             console.error('위치 데이터 로드 중 오류:', error);
             await UIUtil.toggleLoading(false);
-            return false;
-        }
-    }
-
-    /**
-     * 발주입고 테스트 함수 - 미입고 발주 정보로 입고정보 생성
-     */
-    async function processPurchaseToReceipt() {
-        try {
-            console.log('발주입고 테스트 시작');
-
-            // 확인 대화상자 표시
-            const confirmed = await AlertUtil.showConfirm({
-                title: '발주입고 테스트',
-                text: '모든 미입고 발주 정보를 입고 대기 상태로 등록하시겠습니까?',
-                icon: 'question'
-            });
-
-            if (!confirmed) {
-                return false;
-            }
-
-            // API 호출
-            await UIUtil.toggleLoading(true, '발주입고 처리 중...');
-
-            // ApiUtil을 사용하여 API 호출
-            const response = await ApiUtil.post('/api/materialreceipt/register-all');
-
-            await UIUtil.toggleLoading(false);
-
-            // 응답 구조에 맞게 처리
-            if (response.success || response.statusCode === 'SUCCESS') {
-                // 성공 처리
-                const message = response.message || (response.data ? response.data.message : '발주 정보를 입고 대기 상태로 등록했습니다.');
-                await AlertUtil.showSuccess('발주입고 완료', message);
-
-                // 그리드 데이터 갱신
-                await searchData();
-
-                return true;
-            } else {
-                // 실패 처리
-                throw new Error('발주입고 처리에 실패했습니다: ' + (response.message || '알 수 없는 오류'));
-            }
-        } catch (error) {
-            console.error('발주입고 처리 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('처리 오류', '발주입고 처리 중 오류가 발생했습니다: ' + error.message);
             return false;
         }
     }
@@ -924,14 +1063,14 @@ const MaterialReceiptManager = (function() {
                 let html = '';
                 validItems.forEach(item => {
                     html += `
-                        <tr data-receipt-no="${item.RECEIPT_NO}">
-                            <td>${item.RECEIPT_CODE}</td>
-                            <td>${item.MTL_CODE}</td>
-                            <td>${item.MTL_NAME || '-'}</td>
-                            <td>${item.RECEIVED_QTY}</td>
-                            <td><span class="badge badge-inspectPass">${item.RECEIPT_STATUS}</span></td>
-                        </tr>
-                    `;
+                       <tr data-receipt-no="${item.RECEIPT_NO}">
+                           <td>${item.RECEIPT_CODE}</td>
+                           <td>${item.MTL_CODE}</td>
+                           <td>${item.MTL_NAME || '-'}</td>
+                           <td>${item.RECEIVED_QTY}</td>
+                           <td><span class="badge badge-inspectPass">${item.RECEIPT_STATUS}</span></td>
+                       </tr>
+                   `;
                 });
                 confirmItemsBody.innerHTML = html;
             }
@@ -1224,7 +1363,8 @@ const MaterialReceiptManager = (function() {
         openConfirmWithLocationModal, // 위치지정 입고확정 모달 열기
         openInspectionModal, // 검수 등록 모달 
         loadHistoryData, // 이력 정보 로드
-        processPurchaseToReceipt, // 발주입고 테스트 - 추가
+        openPurchaseProcessModal, // 발주입고처리 모달 열기
+        processPurchaseOrderBtn, // 발주입고처리 실행
 
         // 유틸리티 함수
         getGrid, // 그리드 인스턴스 반환

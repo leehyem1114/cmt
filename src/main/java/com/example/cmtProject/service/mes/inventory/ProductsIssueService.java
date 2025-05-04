@@ -15,6 +15,7 @@ import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
 import com.example.cmtProject.service.mes.qualityControl.FqcService;
 import com.example.cmtProject.util.SecurityUtil;
 
@@ -39,6 +40,9 @@ public class ProductsIssueService {
 	
 	@Autowired
 	private ProductsIssueStockMapper pIsmapper;
+	
+	@Autowired
+	private ProductsMasterMapper pmmapper;
 	
 	@Autowired
 	private FqcService fqcService;
@@ -99,6 +103,23 @@ public class ProductsIssueService {
 	        // 현재 사용자 ID 가져오기
 	        String userId = SecurityUtil.getUserId();
 	        
+	        // 제품코드로 기준정보 조회
+	        String pdtCode = (String) soData.get("PDT_CODE");
+	        Map<String, Object> param = new HashMap<>();
+	        param.put("PDT_CODE", pdtCode);
+	        
+	        Map<String, Object> productInfo = pmmapper.selectSingleProducts(param);
+	        
+	        // 창고/위치 정보 결정 - 기준정보의 값을 그대로 사용
+	        String warehouseCode = null;
+	        String locationCode = null;
+	        
+	        // 기준정보에서 창고/위치 코드 가져오기
+	        if (productInfo != null) {
+	            warehouseCode = (String) productInfo.get("DEFAULT_WAREHOUSE_CODE");
+	            locationCode = (String) productInfo.get("DEFAULT_LOCATION_CODE");
+	        }
+	        
 	        // 출고 정보 맵 생성
 	        Map<String, Object> issueMap = new HashMap<>();
 	        
@@ -111,7 +132,8 @@ public class ProductsIssueService {
 	        issueMap.put("requestDate", nowStr);
 	        issueMap.put("issueDate", null); // 출고일은 아직 미정
 	        issueMap.put("issueStatus", "출고대기");
-	        issueMap.put("warehouseCode", soData.get("WHS_CODE"));
+	        issueMap.put("warehouseCode", warehouseCode);
+	        issueMap.put("locationCode", locationCode);  
 	        issueMap.put("issuer", userId);
 	        issueMap.put("createdBy", userId);
 	        issueMap.put("updatedBy", userId);

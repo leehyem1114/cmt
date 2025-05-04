@@ -4,7 +4,7 @@
 <mapper namespace="com.example.cmtProject.mapper.mes.inventory.ProductsIssueMapper">
 	
 	<!--제품 출고정보 INSERT-->
-	<insert id="insertProductsIssue">
+	<insert id="insertProductsIssue" parameterType="map">
         INSERT INTO PRODUCTS_ISSUE (
             ISSUE_NO, <!-- 출고 번호 -->
             ISSUE_CODE, <!-- 출고 코드 -->

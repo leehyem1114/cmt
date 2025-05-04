@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -94,7 +95,7 @@ public class MaterialReceiptRestController {
     }
     
     /**
-     * 발주 정보를 바탕으로 입고 정보 생성 API
+     * 미입고 발주 정보 전체 입고등록 처리 API
      * 
      * @return 처리 결과
      */
@@ -108,6 +109,25 @@ public class MaterialReceiptRestController {
             return ApiResponse.success(result);
         } else {
             return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 미입고 발주 목록 조회 API
+     */
+    @GetMapping("/purchase-orders")
+    public ApiResponse<List<Map<String, Object>>> getPurchaseOrders() {
+        log.info("미입고 발주 목록 조회 요청");
+        
+        try {
+            Map<String, Object> findMap = new HashMap<>();
+            List<Map<String, Object>> purchaseOrders = mrs.puchasesList(findMap);
+            
+            log.info("미입고 발주 목록 조회 결과: {}건", purchaseOrders.size());
+            return ApiResponse.success(purchaseOrders);
+        } catch (Exception e) {
+            log.error("미입고 발주 목록 조회 중 오류 발생: {}", e.getMessage(), e);
+            return ApiResponse.error("발주 목록을 조회할 수 없습니다.", null);
         }
     }
     
