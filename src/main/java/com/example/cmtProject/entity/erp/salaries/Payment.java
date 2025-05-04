@@ -25,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Payment { // 급여 지급 이력 Entity
+public class Payment { // 급여 지급 내역 Entity
 
     @Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY)

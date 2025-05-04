@@ -81,13 +81,13 @@ public class MfgScheduleController { // 제조 계획 Controller
 	}
 	
 	// 제조 계획 삭제 (숨김 처리)
-    @PostMapping("/mfgScheduleDelete")
+    @PostMapping("/delete")
     @ResponseBody
     public ResponseEntity<String> deleteMsPlan(@RequestBody Map<String, List<Long>> data) {
         List<Long> msNos = data.get("msNos");
 
         // 삭제 로직 실행
-        mfgScheduleService.isVisiableToFalse(msNos);
+        mfgScheduleService.isVisibleToFalse(msNos);
 
         return ResponseEntity.ok("success");
     }

@@ -11,10 +11,11 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class PayCmmCodeDetailDTO {
+public class PayCmmCodeDetailDTO { // 공통코드 -> 수당 / 공제 DTO
 	
-	private String cmnDetailCode;
-	private String cmnCode;
-	private String cmnDetailValue;
-	private String cmnDetailValue2;
+	private String cmnDetailCode;     // 상세 코드
+	private String cmnCode;			  // 공통 코드
+	private String cmnDetailValue;	  // 상세 코드 값
+	private String cmnDetailValue2;	  // 상세 코드 값 2
+	
 }

@@ -13,21 +13,20 @@ import com.example.cmtProject.dto.erp.salaries.PayEmpListDTO;
 import com.example.cmtProject.dto.erp.salaries.PaymentDTO;
 
 @Mapper
-public interface SalariesMapper {
+public interface SalariesMapper { // 급여 관리 Mapper
 	
-	// 급여 지급 내역
+	// 급여 지급 내역 조회
 	List<PaymentDTO> getPayList(@Param("empId") String empId);
 	
-	// 야근 수당 계산
-	List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO);
+	/*
+	 * 야근 수당 계산
+	 * List<PaymentDTO> getOverTimes(PaymentDTO paymentDTO);
+	 */
 	
-	// 개인 지급내역
-	PaymentDTO selectEmpPayment(String empId);
-
-	// 직급별 기본급
+	// 직급별 기본급 조회
 	List<PayBasicDTO> getPayBasic();
 
-	// 사원 정보
+	// 사원 정보 조회
 	List<PayEmpListDTO> getEmpInfo(@Param("empNoList") List<String> empNoList);
 
 	// 급여 지급일 조회
@@ -47,6 +46,9 @@ public interface SalariesMapper {
 	 * void savePaymentDto(PaymentTempDTO pdto);
 	 */
 	
+	// 미지급자 조회
+	List<PayEmpListDTO> findUnpaidEmployees(String payMonth);
+	
 	// 월별 급여 대장 간략 조회
 	List<PaymentDTO> getMonthlyPayrollSummaryList();
 
@@ -61,8 +63,11 @@ public interface SalariesMapper {
 
 	// 연간 급여 대장 - 연도 가져오기
 	List<Integer> getYears();
-
-	// 미지급자 조회
-	List<PayEmpListDTO> findUnpaidEmployees(String payMonth);
+	
+	
+	// ---------------------------------------------------
+	
+	// 개인 지급내역
+	PaymentDTO selectEmpPayment(String empId);
 	
 }
