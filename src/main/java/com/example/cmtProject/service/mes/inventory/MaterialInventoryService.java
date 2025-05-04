@@ -1,5 +1,6 @@
 package com.example.cmtProject.service.mes.inventory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +127,7 @@ public class MaterialInventoryService {
             log.info("FIFO 차감 대상 입고재고 조회: {}건", stockList.size());
             
             double remainingToConsume = Double.parseDouble(consumptionQty);
+            List<Map<String, Object>> consumptionDetails = new ArrayList<>(); // 확장용
             
             // 3. FIFO로 재고 차감
             for (Map<String, Object> stock : stockList) {
@@ -148,6 +150,15 @@ public class MaterialInventoryService {
                 
                 rSmapper.deductStock(deductParams);
                 
+                // 차감 상세 정보 저장 (확장용)
+                Map<String, Object> consumptionDetail = new HashMap<>();
+                consumptionDetail.put("receiptNo", stock.get("RECEIPT_NO"));
+                consumptionDetail.put("receiptDate", stock.get("RECEIPT_DATE"));
+                consumptionDetail.put("consumedQty", qtyToDeduct);
+                consumptionDetail.put("remainingQty", remainingQty - qtyToDeduct);
+                consumptionDetail.put("timestamp", java.time.LocalDateTime.now().toString());
+                consumptionDetails.add(consumptionDetail);
+                
                 // 차감할 남은 수량 갱신
                 remainingToConsume -= qtyToDeduct;
             }
@@ -164,6 +175,7 @@ public class MaterialInventoryService {
             
             resultMap.put("success", true);
             resultMap.put("message", "재고가 FIFO 원칙에 따라 성공적으로 차감되었습니다.");
+            resultMap.put("consumptionDetails", consumptionDetails); // 확장용
             
         } catch (Exception e) {
             log.error("FIFO 재고 차감 중 오류 발생: " + e.getMessage(), e);
@@ -173,5 +185,96 @@ public class MaterialInventoryService {
         }
         
         return resultMap;
+    }
+    
+    /**
+     * FIFO 상세 정보 조회
+     */
+    public Map<String, Object> getFIFODetail(String mtlCode) {
+        Map<String, Object> result = new HashMap<>();
+        
+        // 전체 재고 정보
+        Map<String, Object> inventory = mImapper.getInventoryByMtlCode(mtlCode);
+        
+        // 입고별 재고 목록 (FIFO 순서)
+        List<Map<String, Object>> stockList = rSmapper.getStocksByMtlCodeOrderByDate(mtlCode);
+        
+        // FIFO 순번 및 상태 추가
+        int order = 1;
+        for (Map<String, Object> stock : stockList) {
+            stock.put("FIFO_ORDER", order++);
+            double remaining = Double.parseDouble((String) stock.get("REMAINING_QTY"));
+            stock.put("STATUS", remaining > 0 ? (order == 1 ? "사용중" : "대기") : "소진");
+            
+            // 확장 가능성: 필요한 경우 추가 정보 계산
+            if (inventory != null && order == 1 && remaining > 0) {
+                double currentQty = Double.parseDouble((String) inventory.get("CURRENT_QTY"));
+                double allocatedQty = Double.parseDouble((String) inventory.get("ALLOCATED_QTY"));
+                stock.put("CONSUMPTION_AVAILABLE", currentQty - allocatedQty);
+            }
+        }
+        
+        result.put("inventory", inventory);
+        result.put("stockList", stockList);
+        
+        return result;
+    }
+
+    /**
+     * FIFO 소모 이력 조회
+     */
+    public List<Map<String, Object>> getFIFOHistory(String mtlCode) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        // 현재는 MATERIAL_RECEIPT_STOCK에서 소진된 항목 조회
+        List<Map<String, Object>> stockList = rSmapper.getStocksByMtlCodeOrderByDate(mtlCode);
+        
+        for (Map<String, Object> stock : stockList) {
+            double remaining = Double.parseDouble((String) stock.get("REMAINING_QTY"));
+            if (remaining == 0) {
+                Map<String, Object> history = new HashMap<>();
+                history.put("RECEIPT_NO", stock.get("RECEIPT_NO"));
+                history.put("RECEIPT_DATE", stock.get("RECEIPT_DATE"));
+                history.put("UPDATED_DATE", stock.get("UPDATED_DATE"));
+                history.put("ACTION_TYPE", "소진 완료");
+                history.put("ACTION_DESCRIPTION", "FIFO 방식으로 전체 소진됨");
+                history.put("UPDATED_BY", stock.get("UPDATED_BY"));
+                result.add(history);
+            } else {
+                // 확장 가능성: 부분 소모 이력 추적 로직 추가 공간 현재는 시간이없어서...
+                // TODO: 부분 소모 이력 테이블 연동 시 이 부분에 추가
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * FIFO 상태 통계 조회 (확장용)
+     */
+    public Map<String, Object> getFIFOStatistics(String mtlCode) {
+        Map<String, Object> stats = new HashMap<>();
+        
+        List<Map<String, Object>> stockList = rSmapper.getStocksByMtlCodeOrderByDate(mtlCode);
+        
+        int activeCount = 0;
+        int waitingCount = 0;
+        int consumedCount = 0;
+        
+        for (Map<String, Object> stock : stockList) {
+            double remaining = Double.parseDouble((String) stock.get("REMAINING_QTY"));
+            if (remaining > 0) {
+                if (activeCount == 0) activeCount++;
+                else waitingCount++;
+            } else {
+                consumedCount++;
+            }
+        }
+        
+        stats.put("activeCount", activeCount);
+        stats.put("waitingCount", waitingCount);
+        stats.put("consumedCount", consumedCount);
+        
+        return stats;
     }
 }

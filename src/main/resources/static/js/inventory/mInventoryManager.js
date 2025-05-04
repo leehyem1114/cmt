@@ -2,8 +2,9 @@
  * 원자재 재고관리 - 재고 정보 관리 모듈
  * 
  * 원자재 재고 정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
+ * FIFO 기능이 추가되었습니다.
  * 
- * @version 2.2.0
+ * @version 2.3.0
  * @since 2025-04-25
  */
 const MaterialInventoryManager = (function() {
@@ -16,11 +17,13 @@ const MaterialInventoryManager = (function() {
 
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/api/materialInventory/list',            // 데이터 목록 조회
-        SAVE: '/api/materialInventory/save',            // 데이터 저장
-        DELETE: '/api/materialInventory/delete',        // 데이터 삭제
+        LIST: '/api/materialInventory/list', // 데이터 목록 조회
+        SAVE: '/api/materialInventory/save', // 데이터 저장
+        DELETE: '/api/materialInventory/delete', // 데이터 삭제
+        FIFO: '/api/inventory/fifo', // FIFO 상세 조회
+        FIFO_HISTORY: '/api/materialInventory/fifo-history', // FIFO 이력 조회
         EXCEL: {
-            UPLOAD: '/api/materialInventory/excel/upload',  // 엑셀 업로드 API URL
+            UPLOAD: '/api/materialInventory/excel/upload', // 엑셀 업로드 API URL
             DOWNLOAD: '/api/materialInventory/excel/download' // 엑셀 다운로드 API URL
         }
     };
@@ -42,10 +45,10 @@ const MaterialInventoryManager = (function() {
 
             // 이벤트 리스너 등록
             await registerEvents();
-            
+
             // 그리드 검색 초기화
             initGridSearch();
-            
+
             // 엑셀 기능 초기화
             initExcelFeatures();
 
@@ -64,10 +67,10 @@ const MaterialInventoryManager = (function() {
         try {
             // UIUtil을 사용하여 이벤트 리스너 등록
             await UIUtil.registerEventListeners({
-                'mInventoryAppendBtn': appendRow,              // 행 추가 버튼
-                'mInventorySaveBtn': saveData,                 // 데이터 저장 버튼
-                'mInventoryDeleteBtn': deleteRows,             // 데이터 삭제 버튼
-                'mInventorySearchBtn': searchData              // 데이터 검색 버튼
+                'mInventoryAppendBtn': appendRow, // 행 추가 버튼
+                'mInventorySaveBtn': saveData, // 데이터 저장 버튼
+                'mInventoryDeleteBtn': deleteRows, // 데이터 삭제 버튼
+                'mInventorySearchBtn': searchData // 데이터 검색 버튼
                 // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
             });
 
@@ -78,7 +81,7 @@ const MaterialInventoryManager = (function() {
             throw error;
         }
     }
-    
+
     /**
      * 그리드 검색 초기화 함수
      * GridSearchUtil을 사용하여 그리드 검색 기능을 설정합니다.
@@ -86,7 +89,7 @@ const MaterialInventoryManager = (function() {
     function initGridSearch() {
         try {
             console.log('그리드 검색 초기화');
-            
+
             // 그리드 검색 설정
             GridSearchUtil.setupGridSearch({
                 gridId: 'mInventoryGrid',
@@ -104,7 +107,7 @@ const MaterialInventoryManager = (function() {
             console.error('그리드 검색 초기화 중 오류:', error);
         }
     }
-    
+
     /**
      * 엑셀 기능 초기화 함수
      * ExcelUtil을 사용하여 엑셀 다운로드/업로드 기능을 설정합니다.
@@ -112,10 +115,10 @@ const MaterialInventoryManager = (function() {
     function initExcelFeatures() {
         try {
             console.log('엑셀 기능 초기화');
-            
+
             // 엑셀 다운로드 버튼 설정 - HTML에 버튼 추가 필요
             ExcelUtil.setupExcelDownloadButton({
-                buttonId: 'mInventoryExcelDownBtn', 
+                buttonId: 'mInventoryExcelDownBtn',
                 gridId: 'mInventoryGrid',
                 fileName: 'material-inventory-data.xlsx',
                 sheetName: '원자재재고정보',
@@ -127,11 +130,11 @@ const MaterialInventoryManager = (function() {
                     console.log('엑셀 다운로드 완료');
                 }
             });
-            
+
             // 엑셀 업로드 버튼 설정 - HTML에 입력필드와 버튼 추가 필요
             ExcelUtil.setupExcelUploadButton({
-                fileInputId: 'mInventoryFileInput', 
-                uploadButtonId: 'mInventoryExcelUpBtn', 
+                fileInputId: 'mInventoryFileInput',
+                uploadButtonId: 'mInventoryExcelUpBtn',
                 gridId: 'mInventoryGrid',
                 apiUrl: API_URLS.EXCEL.UPLOAD,
                 headerMapping: {
@@ -184,8 +187,7 @@ const MaterialInventoryManager = (function() {
             // 그리드 생성 - GridUtil 사용
             mInventoryGrid = GridUtil.registerGrid({
                 id: 'mInventoryGrid',
-                columns: [
-                    {
+                columns: [{
                         header: '자재코드',
                         name: 'MTL_CODE',
                         editor: false,
@@ -229,10 +231,12 @@ const MaterialInventoryManager = (function() {
                         editor: false, // 트리거로 자동 계산됨
                         sortable: true,
                         align: 'right',
-                        formatter: function({ value }) {
-                          const isLow = parseInt(value) <= 100;
-                          const style = isLow ? 'color:red; font-weight:bold;' : 'color:black;';
-                          return `<span style="${style}">${value}</span>`;
+                        formatter: function({
+                            value
+                        }) {
+                            const isLow = parseInt(value) <= 100;
+                            const style = isLow ? 'color:red; font-weight:bold;' : 'color:black;';
+                            return `<span style="${style}">${value}</span>`;
                         }
                     },
                     {
@@ -240,10 +244,23 @@ const MaterialInventoryManager = (function() {
                         name: 'LAST_MOVEMENT_DATE',
                         editor: false,
                         sortable: true,
-                        formatter: function({ value }) {
+                        formatter: function({
+                            value
+                        }) {
                             if (!value) return '';
                             const date = new Date(value);
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        }
+                    },
+                    {
+                        header: 'FIFO',
+                        name: 'fifoAction',
+                        width: 100,
+                        align: 'center',
+                        formatter: function({
+                            row
+                        }) {
+                            return `<button class="btn btn-outline-primary btn-sm fifo-btn" onclick="MaterialInventoryManager.showFIFODetail('${row.MTL_CODE}')">상세</button>`;
                         }
                     },
                     {
@@ -267,12 +284,12 @@ const MaterialInventoryManager = (function() {
                 },
                 toggleRowCheckedOnClick: false // 행 클릭 시 체크박스 토글 기능 활성화
             });
-            
+
             // 편집 완료 이벤트 처리 - 변경된 행 추적
             mInventoryGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
                 const row = mInventoryGrid.getRow(rowKey);
-                
+
                 // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
                 if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
                     mInventoryGrid.setValue(rowKey, 'ROW_TYPE', 'update');
@@ -282,7 +299,7 @@ const MaterialInventoryManager = (function() {
 
             // 키 컬럼 제어 설정 - PK 컬럼 편집 제어
             GridUtil.setupKeyColumnControl('mInventoryGrid', 'MTL_CODE');
-            
+
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
             GridSearchUtil.updateOriginalData('mInventoryGrid', gridData);
 
@@ -293,10 +310,199 @@ const MaterialInventoryManager = (function() {
         }
     }
 
+    // =============================
+    // FIFO 관련 함수
+    // =============================
+
     /**
-     * 데이터 행 추가 함수
-     * 그리드에 새로운 행을 추가합니다.
+     * FIFO 상세 정보 표시
      */
+    async function showFIFODetail(mtlCode) {
+        try {
+            document.getElementById('selectedMtlCode').textContent = mtlCode;
+
+            // FIFO 상세 정보 조회
+            const response = await ApiUtil.get(`${API_URLS.FIFO}/${mtlCode}`);
+
+            if (response.success) {
+                displayFIFODetail(response.data);
+                document.getElementById('fifoDetailSection').style.display = 'block';
+                document.getElementById('fifoDetailSection').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            } else {
+                await AlertUtil.showError('FIFO 조회 실패', 'FIFO 정보 조회에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('FIFO 정보 조회 오류:', error);
+            await AlertUtil.showError('오류', 'FIFO 정보 조회 중 오류가 발생했습니다.');
+        }
+    }
+
+    /**
+     * FIFO 상세 정보 표시
+     */
+    function displayFIFODetail(data) {
+        // FIFO 큐 시각화
+        const queueVisual = document.getElementById('queueVisual');
+        queueVisual.innerHTML = '';
+
+        if (data.stockList && data.stockList.length > 0) {
+            data.stockList.forEach((stock, index) => {
+                const remaining = parseFloat(stock.REMAINING_QTY);
+                const isActive = stock.STATUS === '사용중';
+                const isNext = !isActive && remaining > 0 && index === 1;
+
+                const queueItem = document.createElement('div');
+                queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
+
+                queueItem.innerHTML = `
+                    <div class="queue-number">${stock.FIFO_ORDER}순위</div>
+                    <div class="queue-date">${formatDate(stock.RECEIPT_DATE)}</div>
+                    <div class="queue-progress">
+                        <div>입고번호: ${stock.RECEIPT_NO}</div>
+                        <small class="text-muted">남은수량: ${Number(remaining).toLocaleString()}</small>
+                        <div class="progress-bar-custom">
+                            <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
+                                 style="width: ${remaining > 0 ? '100%' : '0%'};"></div>
+                        </div>
+                    </div>
+                    <div style="color: ${isActive ? '#0d6efd' : isNext ? '#ffc107' : '#6c757d'};">
+                        ${stock.STATUS}
+                    </div>
+                `;
+
+                queueVisual.appendChild(queueItem);
+            });
+        }
+
+        // 상세 테이블 표시
+        const tableBody = document.getElementById('fifoDetailTableBody');
+        tableBody.innerHTML = '';
+
+        if (data.stockList && data.stockList.length > 0) {
+            data.stockList.forEach(stock => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${stock.FIFO_ORDER}</td>
+                    <td>${formatDate(stock.RECEIPT_DATE)}</td>
+                    <td>${stock.RECEIPT_NO}</td>
+                    <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
+                    <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
+                    <td>
+                        <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    }
+
+    /**
+     * FIFO 이력 로드
+     */
+    async function loadFIFOHistory(mtlCode) {
+        try {
+            const response = await ApiUtil.get(`${API_URLS.FIFO_HISTORY}/${mtlCode}`);
+
+            if (response.success) {
+                displayFIFOHistory(response.data);
+            } else {
+                await AlertUtil.showError('이력 조회 실패', 'FIFO 이력 조회에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('FIFO 이력 조회 오류:', error);
+            await AlertUtil.showError('오류', 'FIFO 이력 조회 중 오류가 발생했습니다.');
+        }
+    }
+
+    /**
+     * FIFO 이력 표시
+     */
+    function displayFIFOHistory(historyData) {
+        const tableBody = document.getElementById('fifoHistoryTableBody');
+        tableBody.innerHTML = '';
+
+        if (historyData && historyData.length > 0) {
+            historyData.forEach(history => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDateTime(history.UPDATED_DATE)}</td>
+                    <td>${history.ACTION_TYPE}</td>
+                    <td>${history.ACTION_DESCRIPTION}</td>
+                    <td>${history.UPDATED_BY || '-'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">이력 정보가 없습니다.</td></tr>';
+        }
+    }
+
+    /**
+     * 탭 전환
+     */
+    function switchTab(tabName) {
+        // 탭 버튼 상태 변경
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        // 탭 콘텐츠 표시
+        document.getElementById('queueTab').style.display = tabName === 'queue' ? 'block' : 'none';
+        document.getElementById('historyTab').style.display = tabName === 'history' ? 'block' : 'none';
+
+        // 이력 탭으로 전환 시 데이터 로드
+        if (tabName === 'history') {
+            const mtlCode = document.getElementById('selectedMtlCode').textContent;
+            loadFIFOHistory(mtlCode);
+        }
+    }
+
+    // =============================
+    // 유틸리티 함수
+    // =============================
+
+    /**
+     * 날짜 포맷팅
+     */
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    }
+
+    /**
+     * 날짜시간 포맷팅
+     */
+    function formatDateTime(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleString('ko-KR');
+    }
+
+    /**
+     * 상태별 배지 색상 반환
+     */
+    function getBadgeColor(status) {
+        switch (status) {
+            case '사용중':
+                return 'primary';
+            case '대기':
+                return 'warning';
+            case '소진':
+                return 'secondary';
+            default:
+                return 'light';
+        }
+    }
+
+    // =============================
+    // 기존 CRUD 처리 함수들...
+    // =============================
+
+    // 기존 함수들 유지 (데이터 행 추가, 검색, 저장, 삭제 등)
     async function appendRow() {
         try {
             console.log('행 추가');
@@ -324,10 +530,6 @@ const MaterialInventoryManager = (function() {
         }
     }
 
-    /**
-     * 데이터 검색 함수
-     * 검색어를 이용하여 데이터를 검색하고 그리드에 결과를 표시합니다.
-     */
     async function searchData() {
         try {
             const keyword = document.getElementById('mInventoryInput').value;
@@ -335,8 +537,7 @@ const MaterialInventoryManager = (function() {
 
             // API 호출
             const response = await ApiUtil.getWithLoading(
-                API_URLS.LIST, 
-                {
+                API_URLS.LIST, {
                     keyword: keyword
                 },
                 '데이터 검색 중...'
@@ -349,7 +550,7 @@ const MaterialInventoryManager = (function() {
             const grid = GridUtil.getGrid('mInventoryGrid');
             if (grid) {
                 grid.resetData(data);
-                
+
                 // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
                 GridSearchUtil.updateOriginalData('mInventoryGrid', data);
             }
@@ -363,14 +564,6 @@ const MaterialInventoryManager = (function() {
         }
     }
 
-    // =============================
-    // CRUD 처리 함수
-    // =============================
-
-    /**
-     * 데이터 저장 함수
-     * 그리드의 변경된 데이터를 저장합니다.
-     */
     async function saveData() {
         try {
             console.log('데이터 저장 시작');
@@ -410,7 +603,7 @@ const MaterialInventoryManager = (function() {
                     await AlertUtil.notifyValidationError("유효성 오류", "할당수량은 필수입니다.");
                     return false;
                 }
-                
+
                 // 숫자 형식 검증
                 if (isNaN(parseFloat(item.CURRENT_QTY))) {
                     await AlertUtil.notifyValidationError("유효성 오류", "현재수량은 숫자 형식이어야 합니다.");
@@ -424,22 +617,21 @@ const MaterialInventoryManager = (function() {
 
             // API 호출 처리
             const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.SAVE, modifiedData), 
-                {
+                () => ApiUtil.post(API_URLS.SAVE, modifiedData), {
                     loadingMessage: '데이터 저장 중...',
                     successMessage: "데이터가 저장되었습니다.",
                     errorMessage: "데이터 저장 중 오류가 발생했습니다.",
                     successCallback: searchData
                 }
             );
-            
-            if(response.success){
+
+            if (response.success) {
                 await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
                 return true;
             } else {
                 return false;
             }
-            
+
         } catch (error) {
             console.error('데이터 저장 오류:', error);
             await AlertUtil.notifySaveError("저장 실패", "데이터 저장 중 오류가 발생했습니다.");
@@ -447,37 +639,33 @@ const MaterialInventoryManager = (function() {
         }
     }
 
-    /**
-     * 데이터 삭제 함수
-     * 선택된 행을 삭제합니다.
-     */
     async function deleteRows() {
         try {
             // 선택된 행 ID 확인
             const grid = GridUtil.getGrid('mInventoryGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
-            
+
             if (selectedRowKeys.length === 0) {
                 await AlertUtil.showWarning('알림', '삭제할 항목을 선택해주세요.');
                 return false;
             }
-            
+
             // 선택된 데이터 ID 목록 생성
             const selectedDataIds = [];
             for (const rowKey of selectedRowKeys) {
                 const invNo = grid.getValue(rowKey, "INV_NO");
                 const mtlCode = grid.getValue(rowKey, "MTL_CODE");
-                
+
                 // INV_NO가 없으면 MTL_CODE로 식별
                 const identifier = invNo || mtlCode;
                 if (identifier) selectedDataIds.push(identifier);
             }
-            
+
             if (selectedDataIds.length === 0) {
                 await AlertUtil.showWarning('알림', '유효한 재고번호 또는 자재코드를 찾을 수 없습니다.');
                 return false;
             }
-            
+
             // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
             const result = await GridUtil.deleteSelectedRows('mInventoryGrid', {
                 confirmTitle: "삭제 확인",
@@ -491,12 +679,14 @@ const MaterialInventoryManager = (function() {
                     try {
                         // 일괄 삭제 요청 생성 - 한 번에 모든 데이터 삭제
                         await ApiUtil.withLoading(async () => {
-                            await ApiUtil.post(API_URLS.DELETE, { ids: selectedDataIds });
+                            await ApiUtil.post(API_URLS.DELETE, {
+                                ids: selectedDataIds
+                            });
                         }, '데이터 삭제 중...');
-                        
+
                         // 삭제 성공 메시지
                         await AlertUtil.notifyDeleteSuccess('삭제 완료', '데이터가 삭제되었습니다.');
-                        
+
                         // 목록 갱신
                         await searchData();
                     } catch (apiError) {
@@ -505,151 +695,134 @@ const MaterialInventoryManager = (function() {
                     }
                 }
             });
-            
-			return result;
-			        } catch (error) {
-			            console.error('데이터 삭제 오류:', error);
-			            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
-			            return false;
-			        }
-			    }
 
-			    // =============================
-			    // 유틸리티 함수
-			    // =============================
+            return result;
+        } catch (error) {
+            console.error('데이터 삭제 오류:', error);
+            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
 
-			    /**
-			     * 그리드 인스턴스 반환 함수
-			     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
-			     * 
-			     * @returns {Object} 그리드 인스턴스
-			     */
-			    function getGrid() {
-			        return mInventoryGrid;
-			    }
+    function getGrid() {
+        return mInventoryGrid;
+    }
 
-			    /**
-			     * 검색 조건 저장 함수
-			     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
-			     */
-			    async function saveSearchCondition() {
-			        try {
-			            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
+    async function saveSearchCondition() {
+        try {
+            const searchCondition = document.getElementById('mInventoryInput')?.value || '';
 
-			            localStorage.setItem('materialInventorySearchCondition', searchCondition);
-			            console.log('검색 조건이 저장되었습니다.');
+            localStorage.setItem('materialInventorySearchCondition', searchCondition);
+            console.log('검색 조건이 저장되었습니다.');
 
-			            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
-			            return true;
-			        } catch (error) {
-			            console.error('검색 조건 저장 오류:', error);
-			            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
-			            return false;
-			        }
-			    }
 
-			    /**
-			     * 저장된 검색 조건 로드 함수
-			     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
-			     * 
-			     * @returns {boolean} 로드 성공 여부
-			     */
-			    async function loadSearchCondition() {
-			        try {
-			            const savedCondition = localStorage.getItem('materialInventorySearchCondition');
 
-			            if (!savedCondition) {
-			                console.log('저장된 검색 조건이 없습니다.');
-			                return false;
-			            }
+            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
+            return true;
+        } catch (error) {
+            console.error('검색 조건 저장 오류:', error);
+            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
 
-			            // 검색 조건 설정
-			            const searchInput = document.getElementById('mInventoryInput');
-			            if (searchInput) {
-			                searchInput.value = savedCondition;
-			            }
+    async function loadSearchCondition() {
+        try {
+            const savedCondition = localStorage.getItem('materialInventorySearchCondition');
 
-			            // 검색 실행
-			            await searchData();
+            if (!savedCondition) {
+                console.log('저장된 검색 조건이 없습니다.');
+                return false;
+            }
 
-			            console.log('검색 조건이 로드되었습니다.');
-			            return true;
-			        } catch (error) {
-			            console.error('검색 조건 로드 오류:', error);
-			            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
-			            return false;
-			        }
-			    }
-			    
-			    /**
-			     * 로컬 검색 함수
-			     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
-			     */
-			    function performLocalSearch() {
-			        try {
-			            const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
-			            
-			            // 원본 데이터 가져오기
-			            GridSearchUtil.resetToOriginalData('mInventoryGrid');
-			            const grid = GridUtil.getGrid('mInventoryGrid');
-			            const originalData = grid.getData();
-			            
-			            // 필터링
-			            const filtered = originalData.filter(row => {
-			                return Object.values(row).some(val => {
-			                    if (val == null) return false;
-			                    return String(val).toLowerCase().includes(keyword);
-			                });
-			            });
-			            
-			            // 그리드 업데이트
-			            grid.resetData(filtered);
-			            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
-			            
-			            return filtered;
-			        } catch (error) {
-			            console.error('로컬 검색 중 오류:', error);
-			            return [];
-			        }
-			    }
+            // 검색 조건 설정
+            const searchInput = document.getElementById('mInventoryInput');
+            if (searchInput) {
+                searchInput.value = savedCondition;
+            }
 
-			    // =============================
-			    // 공개 API - 외부에서 접근 가능한 메서드
-			    // =============================
-			    return {
-			        // 초기화 및 기본 기능
-			        init,           // 모듈 초기화
+            // 검색 실행
+            await searchData();
 
-			        // 데이터 관련 함수
-			        searchData,     // 데이터 검색
-			        appendRow,      // 행 추가
-			        saveData,       // 데이터 저장
-			        deleteRows,     // 데이터 삭제
+            console.log('검색 조건이 로드되었습니다.');
+            return true;
+        } catch (error) {
+            console.error('검색 조건 로드 오류:', error);
+            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
 
-			        // 유틸리티 함수
-			        getGrid,               // 그리드 인스턴스 반환
-			        saveSearchCondition,   // 검색 조건 저장
-			        loadSearchCondition,   // 저장된 검색 조건 로드
-			        performLocalSearch     // 로컬 검색 실행
-			    };
-			})();
+    function performLocalSearch() {
+        try {
+            const keyword = document.getElementById('mInventoryInput').value.toLowerCase();
 
-			// =============================
-			// DOM 로드 시 초기화
-			// =============================
-			document.addEventListener('DOMContentLoaded', async function() {
-			    try {
-			        // 원자재 재고관리 초기화
-			        await MaterialInventoryManager.init();
+            // 원본 데이터 가져오기
+            GridSearchUtil.resetToOriginalData('mInventoryGrid');
+            const grid = GridUtil.getGrid('mInventoryGrid');
+            const originalData = grid.getData();
 
-			        // 저장된 검색 조건 로드 (필요 시 활성화)
-			        // await MaterialInventoryManager.loadSearchCondition();
-			    } catch (error) {
-			        console.error('초기화 중 오류 발생:', error);
-			        if (window.AlertUtil) {
-			            await AlertUtil.showError('초기화 오류', '원자재 재고관리 초기화 중 오류가 발생했습니다.');
-			        } else {
-			            alert('원자재 재고관리 초기화 중 오류가 발생했습니다.');
-			        }
-			    }
-			});
+            // 필터링
+            const filtered = originalData.filter(row => {
+                return Object.values(row).some(val => {
+                    if (val == null) return false;
+                    return String(val).toLowerCase().includes(keyword);
+                });
+            });
+
+            // 그리드 업데이트
+            grid.resetData(filtered);
+            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
+
+            return filtered;
+        } catch (error) {
+            console.error('로컬 검색 중 오류:', error);
+            return [];
+        }
+    }
+
+    // =============================
+    // 공개 API - 외부에서 접근 가능한 메서드
+    // =============================
+    return {
+        // 초기화 및 기본 기능
+        init, // 모듈 초기화
+
+        // 데이터 관련 함수
+        searchData, // 데이터 검색
+        appendRow, // 행 추가
+        saveData, // 데이터 저장
+        deleteRows, // 데이터 삭제
+
+        // FIFO 관련 함수
+        showFIFODetail, // FIFO 상세 정보 표시
+        loadFIFOHistory, // FIFO 이력 조회
+        switchTab, // FIFO 탭 전환
+
+        // 유틸리티 함수
+        getGrid, // 그리드 인스턴스 반환
+        saveSearchCondition, // 검색 조건 저장
+        loadSearchCondition, // 저장된 검색 조건 로드
+        performLocalSearch // 로컬 검색 실행
+    };
+})();
+
+// =============================
+// DOM 로드 시 초기화
+// =============================
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // 원자재 재고관리 초기화
+        await MaterialInventoryManager.init();
+
+        // 저장된 검색 조건 로드 (필요 시 활성화)
+        // await MaterialInventoryManager.loadSearchCondition();
+    } catch (error) {
+        console.error('초기화 중 오류 발생:', error);
+        if (window.AlertUtil) {
+            await AlertUtil.showError('초기화 오류', '원자재 재고관리 초기화 중 오류가 발생했습니다.');
+        } else {
+            alert('원자재 재고관리 초기화 중 오류가 발생했습니다.');
+        }
+    }
+});

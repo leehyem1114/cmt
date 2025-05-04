@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -97,4 +98,26 @@ public class MaterialInventoryRestController {
             return ApiResponse.error(result.get("message").toString(), result);
         }
     }
+    
+    /**
+     * FIFO 재고 상세 정보 조회 API
+     */
+    @GetMapping("/fifo/{mtlCode}")
+    public ApiResponse<Map<String, Object>> getFIFODetail(@PathVariable("mtlCode") String mtlCode) {
+        log.info("FIFO 재고 상세 조회 요청: {}", mtlCode);
+        Map<String, Object> fifoDetail = mis.getFIFODetail(mtlCode);
+        return ApiResponse.success(fifoDetail);
+    }
+
+    /**
+     * FIFO 이력 조회 API
+     */
+    @GetMapping("/fifo-history/{mtlCode}")
+    public ApiResponse<List<Map<String, Object>>> getFIFOHistory(@PathVariable("mtlCode") String mtlCode) {
+        log.info("FIFO 이력 조회 요청: {}", mtlCode);
+        List<Map<String, Object>> history = mis.getFIFOHistory(mtlCode);
+        return ApiResponse.success(history);
+    }
+    
+    
 }
