@@ -96,9 +96,9 @@ public class ProductsInventoryService {
 	
 	/**
      * FIFO 방식으로 재고 차감
-     * 가장 오래된 입고분부터 순차적으로 재고를 차감합니다.
+     * 가장 오래된 출고분부터 순차적으로 재고를 차감합니다.
      * 
-     * @param params 차감 정보 (pdtCode, consumptionQty, updatedBy 포함)
+     * @param params 차감 정보 (pdtCode, consumptionQty, consumptionType, soCode/woCode, updatedBy 포함)
      * @return 처리 결과
      */
 	@Transactional
@@ -109,10 +109,17 @@ public class ProductsInventoryService {
 	        String pdtCode = (String) params.get("pdtCode");
 	        String consumptionQty = (String) params.get("consumptionQty");
 	        
+	        // 소비 타입 확인 (PRODUCTION/SHIPMENT)
+	        String consumptionType = (String) params.getOrDefault("consumptionType", "PRODUCTION");
+	        String soCode = (String) params.get("soCode");    // 출하용
+	        String woCode = (String) params.get("woCode");    // 반제품 재투입용
+	        String lotNo = (String) params.get("lotNo");
+	        
 	        // 현재 사용자 ID 가져오기
 	        String userId = SecurityUtil.getUserId();
 	        
-	        log.info("FIFO 재고 차감 시작: 제품코드={}, 차감수량={}", pdtCode, consumptionQty);
+	        log.info("FIFO 재고 차감 시작: 제품코드={}, 차감수량={}, 유형={}", 
+	            pdtCode, consumptionQty, consumptionType);
 	        
 	        // 1. 해당 제품의 총 재고 확인
 	        Map<String, Object> inventoryInfo = pImapper.getInventoryByPdtCode(pdtCode);
@@ -127,9 +134,8 @@ public class ProductsInventoryService {
 	            return resultMap;
 	        }
 	        
-	        // 2. 가장 오래된 입고분부터 차례로 조회 (FIFO)
-	        List<Map<String, Object>> stockList = 
-	                pIsmapper.getStocksForFIFO(pdtCode);
+	        // 2. 가장 오래된 출고분부터 차례로 조회 (FIFO)
+	        List<Map<String, Object>> stockList = pIsmapper.getStocksForFIFO(pdtCode);
 	        
 	        log.info("FIFO 차감 대상 출고재고 조회: {}건", stockList.size());
 	        
@@ -156,6 +162,26 @@ public class ProductsInventoryService {
 	            
 	            pIsmapper.deductStock(deductParams);
 	            
+	            // FIFO 이력 저장
+	            Map<String, Object> historyParams = new HashMap<>();
+	            historyParams.put("issueStockNo", stockNo);
+	            historyParams.put("pdtCode", pdtCode);
+	            historyParams.put("consumedQty", String.valueOf(qtyToDeduct));
+	            historyParams.put("consumptionType", consumptionType);
+	            
+	            // 소비 타입에 따라 적절한 코드 설정
+	            if ("SHIPMENT".equals(consumptionType)) {
+	                historyParams.put("soCode", soCode);
+	            } else if ("PRODUCTION".equals(consumptionType)) {
+	                historyParams.put("woCode", woCode);
+	                historyParams.put("lotNo", lotNo);
+	            }
+	            
+	            historyParams.put("consumedBy", userId);
+	            historyParams.put("consumedDate", java.time.LocalDate.now().toString());
+	            
+	            pIsmapper.insertFIFOHistory(historyParams);
+	            
 	            // 차감할 남은 수량 갱신
 	            remainingToConsume -= qtyToDeduct;
 	        }
@@ -181,5 +207,58 @@ public class ProductsInventoryService {
 	    }
 	    
 	    return resultMap;
+	}
+	
+	/**
+	 * FIFO 상세 정보 조회
+	 */
+	public Map<String, Object> getFIFODetail(String pdtCode) {
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    // 전체 재고 정보
+	    Map<String, Object> inventory = pImapper.getInventoryByPdtCode(pdtCode);
+	    
+	    // 출고별 재고 목록 (FIFO 순서)
+	    List<Map<String, Object>> stockList = pIsmapper.getStocksForFIFO(pdtCode);
+	    
+	    // FIFO 순번 및 상태 추가
+	    int order = 1;
+	    boolean foundActive = false;
+	    
+	    for (Map<String, Object> stock : stockList) {
+	        stock.put("FIFO_ORDER", order++);
+	        
+	        long issuedQty = Long.parseLong((String) stock.get("ISSUED_QTY"));
+	        
+	        // 상태 결정 로직
+	        if (issuedQty <= 0) {
+	            stock.put("STATUS", "소진");
+	        } else if (!foundActive) {
+	            stock.put("STATUS", "사용중");
+	            foundActive = true;
+	        } else {
+	            stock.put("STATUS", "대기");
+	        }
+	    }
+	    
+	    result.put("INVENTORY", inventory);
+	    result.put("STOCK_LIST", stockList);
+	    
+	    return result;
+	}
+
+	/**
+	 * FIFO 이력 조회
+	 */
+	public List<Map<String, Object>> getFIFOHistory(String pdtCode) {
+	    log.info("FIFO 이력 조회 서비스 호출. 제품코드: {}", pdtCode);
+	    
+	    List<Map<String, Object>> historyList = pIsmapper.getFIFOHistory(pdtCode);
+	    
+	    if (historyList == null) {
+	        return new java.util.ArrayList<>();
+	    }
+	    
+	    return historyList;
 	}
 }
