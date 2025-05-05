@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Mapper
 @Repository
 public interface MaterialReceiptStockMapper {
-	
+    
     /**
      * 입고별 재고 정보 저장
      * 
@@ -34,4 +34,12 @@ public interface MaterialReceiptStockMapper {
      * @return 처리 건수
      */
     public int deductStock(Map<String, Object> params);
+    
+    /**
+     * 자재의 총 가용 재고 조회
+     * 
+     * @param mtlCode 자재 코드
+     * @return 총 가용 재고
+     */
+    public Double getTotalAvailableStock(@Param("mtlCode") String mtlCode);
 }

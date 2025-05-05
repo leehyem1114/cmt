@@ -353,11 +353,24 @@ const MaterialInventoryManager = (function() {
 	        console.log('API 응답:', response);
 
 	        if (response.success) {
+	            // 응답 데이터 구조 확인을 위해 로그 추가 - 대문자 필드명 사용
+	            console.log('response.data.INVENTORY:', response.data.INVENTORY);
+	            console.log('response.data.STOCK_LIST:', response.data.STOCK_LIST);
+	            
 	            displayFIFODetail(response.data);
-	            document.getElementById('fifoDetailSection').style.display = 'block';
-	            document.getElementById('fifoDetailSection').scrollIntoView({
-	                behavior: 'smooth'
-	            });
+	            
+	            // FIFO 상세 영역 표시
+	            const fifoDetailSection = document.getElementById('fifoDetailSection');
+	            if (fifoDetailSection) {
+	                fifoDetailSection.style.display = 'block';
+	                console.log('fifoDetailSection 표시됨');
+	                // 스크롤 이동
+	                fifoDetailSection.scrollIntoView({
+	                    behavior: 'smooth'
+	                });
+	            } else {
+	                console.error('fifoDetailSection 요소를 찾을 수 없음');
+	            }
 	        } else {
 	            console.log('FIFO 조회 실패:', response);
 	            await AlertUtil.showError('FIFO 조회 실패', 'FIFO 정보 조회에 실패했습니다.');
@@ -369,64 +382,86 @@ const MaterialInventoryManager = (function() {
 	    }
 	}
 
+
     /**
      * FIFO 상세 정보 표시
      */
-    function displayFIFODetail(data) {
-        // FIFO 큐 시각화
-        const queueVisual = document.getElementById('queueVisual');
-        queueVisual.innerHTML = '';
+	function displayFIFODetail(data) {
+	    console.log('displayFIFODetail 실행됨, data:', data);
+	    
+	    // FIFO 큐 시각화
+	    const queueVisual = document.getElementById('queueVisual');
+	    if (!queueVisual) {
+	        console.error('queueVisual 요소를 찾을 수 없음');
+	        return;
+	    }
+	    queueVisual.innerHTML = '';
 
-        if (data.stockList && data.stockList.length > 0) {
-            data.stockList.forEach((stock, index) => {
-                const remaining = parseFloat(stock.REMAINING_QTY);
-                const isActive = stock.STATUS === '사용중';
-                const isNext = !isActive && remaining > 0 && index === 1;
+	    // 필드명이 대문자인 것을 확인 - STOCK_LIST 사용
+	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+	        console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
+	        data.STOCK_LIST.forEach((stock, index) => {
+	            // 데이터 확인을 위한 로깅
+	            console.log(`Stock ${index}:`, stock);
+	            
+	            const remaining = parseFloat(stock.REMAINING_QTY);
+	            const isActive = stock.STATUS === '사용중';
+	            const isNext = !isActive && remaining > 0 && index === 1;
 
-                const queueItem = document.createElement('div');
-                queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
+	            const queueItem = document.createElement('div');
+	            queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
 
-                queueItem.innerHTML = `
-                    <div class="queue-number">${stock.FIFO_ORDER}순위</div>
-                    <div class="queue-date">${formatDate(stock.RECEIPT_DATE)}</div>
-                    <div class="queue-progress">
-                        <div>입고번호: ${stock.RECEIPT_NO}</div>
-                        <small class="text-muted">남은수량: ${Number(remaining).toLocaleString()}</small>
-                        <div class="progress-bar-custom">
-                            <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
-                                 style="width: ${remaining > 0 ? '100%' : '0%'};"></div>
-                        </div>
-                    </div>
-                    <div style="color: ${isActive ? '#0d6efd' : isNext ? '#ffc107' : '#6c757d'};">
-                        ${stock.STATUS}
-                    </div>
-                `;
+	            queueItem.innerHTML = `
+	                <div class="queue-number">${stock.FIFO_ORDER}순위</div>
+	                <div class="queue-date">${formatDate(stock.RECEIPT_DATE)}</div>
+	                <div class="queue-progress">
+	                    <div>입고번호: ${stock.RECEIPT_NO}</div>
+	                    <small class="text-muted">남은수량: ${Number(remaining).toLocaleString()}</small>
+	                    <div class="progress-bar-custom">
+	                        <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
+	                             style="width: ${remaining > 0 ? '100%' : '0%'};"></div>
+	                    </div>
+	                </div>
+	                <div style="color: ${isActive ? '#0d6efd' : isNext ? '#ffc107' : '#6c757d'};">
+	                    ${stock.STATUS}
+	                </div>
+	            `;
 
-                queueVisual.appendChild(queueItem);
-            });
-        }
+	            queueVisual.appendChild(queueItem);
+	        });
+	        console.log('queueVisual 업데이트 완료');
+	    } else {
+	        console.log('STOCK_LIST가 없거나 비어있음');
+	    }
 
-        // 상세 테이블 표시
-        const tableBody = document.getElementById('fifoDetailTableBody');
-        tableBody.innerHTML = '';
+	    // 상세 테이블 표시
+	    const tableBody = document.getElementById('fifoDetailTableBody');
+	    if (!tableBody) {
+	        console.error('fifoDetailTableBody 요소를 찾을 수 없음');
+	        return;
+	    }
+	    tableBody.innerHTML = '';
 
-        if (data.stockList && data.stockList.length > 0) {
-            data.stockList.forEach(stock => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${stock.FIFO_ORDER}</td>
-                    <td>${formatDate(stock.RECEIPT_DATE)}</td>
-                    <td>${stock.RECEIPT_NO}</td>
-                    <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
-                    <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
-                    <td>
-                        <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-    }
+	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+	        data.STOCK_LIST.forEach(stock => {
+	            const row = document.createElement('tr');
+	            row.innerHTML = `
+	                <td>${stock.FIFO_ORDER}</td>
+	                <td>${formatDate(stock.RECEIPT_DATE)}</td>
+	                <td>${stock.RECEIPT_NO}</td>
+	                <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
+	                <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
+	                <td>
+	                    <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
+	                </td>
+	            `;
+	            tableBody.appendChild(row);
+	        });
+	        console.log('테이블 업데이트 완료');
+	    } else {
+	        console.log('테이블에 표시할 데이터가 없음');
+	    }
+	}
 
     /**
      * FIFO 이력 로드
