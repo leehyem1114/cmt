@@ -9,6 +9,17 @@ public class PathConstants {
     // ======================================================================
     // 기본 경로 (Base URI) - 모듈별 컨트롤러의 루트 URL 경로
     // ======================================================================
+	
+	
+    /** FIFO 경로 */
+    public static final String FIFO = "/fifo";
+    
+    /** FIFO 이력 경로 */
+    public static final String FIFO_HISTORY = "/fifo-history";
+    
+    
+    
+    
     /** 전자결재 모듈 기본 경로 */
     public static final String APPROVAL_BASE = "/eapproval";
     

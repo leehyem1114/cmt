@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,12 +54,17 @@ public class ProductsInventoryRestController {
      * 제품 재고 차감 API (FIFO 적용)
      * 출고에서 사용된 제품의 재고를 FIFO 방식으로 차감합니다.
      * 
-     * @param params 차감 정보 (pdtCode: 제품코드, consumptionQty: 소비량, updatedBy: 처리자)
+     * @param params 차감 정보 (pdtCode: 제품코드, consumptionQty: 소비량, consumptionType: 소비유형, updatedBy: 처리자)
      * @return 처리 결과
      */
     @PostMapping(PathConstants.CONSUME)
     public ApiResponse<Map<String, Object>> consumeProduct(@RequestBody Map<String, Object> params) {
         log.info("제품 재고 차감 요청: {}", params);
+        
+        // 소비 타입이 지정되지 않은 경우 기본값 설정
+        if (!params.containsKey("consumptionType")) {
+            params.put("consumptionType", "PRODUCTION");
+        }
         
         Map<String, Object> result = pis.consumeProductFIFO(params);
         
@@ -91,5 +97,27 @@ public class ProductsInventoryRestController {
             log.warn("재고 정보 저장 실패: {}", result.get("message"));
             return ApiResponse.error(result.get("message").toString(), result);
         }
+    }
+    
+    /**
+     * FIFO 상세 정보 표시
+     */
+    @GetMapping(PathConstants.FIFO + "/{pdtCode}")
+    public ApiResponse<Map<String, Object>> getFIFODetail(@PathVariable("pdtCode") String pdtCode) {
+        log.info("FIFO 상세 조회: {}", pdtCode);
+        
+        Map<String, Object> result = pis.getFIFODetail(pdtCode);
+        return ApiResponse.success(result);
+    }
+    
+    /**
+     * FIFO 이력 조회 API
+     */
+    @GetMapping(PathConstants.FIFO_HISTORY + "/{pdtCode}")
+    public ApiResponse<List<Map<String, Object>>> getFIFOHistory(@PathVariable("pdtCode") String pdtCode) {
+        log.info("FIFO 이력 조회: {}", pdtCode);
+        
+        List<Map<String, Object>> historyList = pis.getFIFOHistory(pdtCode);
+        return ApiResponse.success(historyList);
     }
 }
