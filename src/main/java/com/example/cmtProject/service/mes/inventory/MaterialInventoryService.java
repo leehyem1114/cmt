@@ -2,6 +2,7 @@ package com.example.cmtProject.service.mes.inventory;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
+import com.example.cmtProject.mapper.mes.inventory.MaterialMasterMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
@@ -26,6 +28,9 @@ public class MaterialInventoryService {
     
     @Autowired
     private MaterialReceiptStockMapper rSmapper;
+
+    @Autowired
+    private MaterialMasterMapper mMmapper;
     
     /**
      * 재고 목록 조회
@@ -270,5 +275,149 @@ public class MaterialInventoryService {
         stats.put("consumedCount", consumedCount);
         
         return stats;
+    }
+    
+    /**
+     * 기본 재고 정보 자동 생성
+     * 아직 재고 정보가 없는 원자재에 대해서만 기본 재고 정보 생성
+     */
+    @Transactional
+    public Map<String, Object> generateInitialInventoryData() {
+        Map<String, Object> resultMap = new HashMap<>();
+        int createdCount = 0;
+        List<String> failedItems = new ArrayList<>();
+        
+        try {
+            log.info("미등록 원자재에 대한 기본 재고 데이터 생성 시작");
+            
+            // 모든 원자재 조회 (사용 중인 것만)
+            Map<String, Object> params = new HashMap<>();
+            List<Map<String, Object>> materialList = mMmapper.selectMaterials(params);
+            
+            // 현재 로그인한 사용자 정보
+            String userId = SecurityUtil.getUserId();
+            
+            for (Map<String, Object> material : materialList) {
+                try {
+                    String mtlCode = (String) material.get("MTL_CODE");
+                    
+                    // 이미 재고 정보가 존재하는지 확인
+                    Map<String, Object> existingInventory = mImapper.getInventoryByMtlCode(mtlCode);
+                    
+                    if (existingInventory == null) {
+                        Map<String, Object> inventoryData = new HashMap<>();
+                        inventoryData.put("MTL_CODE", mtlCode);
+                        inventoryData.put("WAREHOUSE_CODE", material.get("DEFAULT_WAREHOUSE_CODE"));
+                        inventoryData.put("LOCATION_CODE", material.get("DEFAULT_LOCATION_CODE"));
+                        inventoryData.put("CURRENT_QTY", "0");
+                        inventoryData.put("ALLOCATED_QTY", "0");
+                        // AVAILABLE_QTY는 트리거에 의해 자동 계산됨
+                        inventoryData.put("LAST_MOVEMENT_DATE", new Date());
+                        inventoryData.put("SAFETY_STOCK_ALERT", "N");
+                        inventoryData.put("CREATED_BY", userId);
+                        
+                        int result = mImapper.insertInventory(inventoryData);
+                        
+                        if (result > 0) {
+                            createdCount++;
+                            log.info("원자재 {}에 대한 기본 재고 정보 생성 성공", mtlCode);
+                        } else {
+                            failedItems.add(mtlCode);
+                            log.warn("원자재 {}에 대한 기본 재고 정보 생성 실패", mtlCode);
+                        }
+                    } else {
+                        log.info("원자재 {}는 이미 재고 정보가 존재합니다.", mtlCode);
+                    }
+                } catch (Exception e) {
+                    String mtlCode = (String) material.get("MTL_CODE");
+                    failedItems.add(mtlCode);
+                    log.error("원자재 {} 재고 정보 생성 중 오류: {}", mtlCode, e.getMessage());
+                }
+            }
+            
+            resultMap.put("success", true);
+            resultMap.put("message", createdCount + "개의 원자재에 대한 기본 재고 정보가 생성되었습니다.");
+            resultMap.put("createdCount", createdCount);
+            resultMap.put("failedItems", failedItems);
+            
+            log.info("원자재 기본 재고 데이터 생성 완료: {}개 생성, {}개 실패", 
+                    createdCount, failedItems.size());
+            
+        } catch (Exception e) {
+            log.error("재고 데이터 생성 중 오류 발생: {}", e.getMessage(), e);
+            resultMap.put("success", false);
+            resultMap.put("message", "재고 데이터 생성 중 오류 발생: " + e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        
+        return resultMap;
+    }
+
+    /**
+     * 개별 원자재에 대한 기본 재고 데이터 생성
+     * 기존 재고 정보가 없는 경우에만 생성
+     */
+    @Transactional
+    public Map<String, Object> generateMaterialInventory(String mtlCode) {
+        Map<String, Object> resultMap = new HashMap<>();
+        
+        try {
+            log.info("원자재 {}에 대한 기본 재고 데이터 생성 시작", mtlCode);
+            
+            // 원자재 정보 조회
+            Map<String, Object> param = new HashMap<>();
+            param.put("MTL_CODE", mtlCode);
+            Map<String, Object> material = mMmapper.selectSingleMaterials(param);
+            
+            if (material == null) {
+                resultMap.put("success", false);
+                resultMap.put("message", "원자재 정보를 찾을 수 없습니다: " + mtlCode);
+                return resultMap;
+            }
+            
+            // 이미 재고 정보가 존재하는지 확인
+            Map<String, Object> existingInventory = mImapper.getInventoryByMtlCode(mtlCode);
+            
+            if (existingInventory != null) {
+                resultMap.put("success", false);
+                resultMap.put("message", "이미 재고 정보가 존재합니다: " + mtlCode);
+                return resultMap;
+            }
+            
+            // 현재 로그인한 사용자 정보
+            String userId = SecurityUtil.getUserId();
+            
+            // 재고 정보 생성
+            Map<String, Object> inventoryData = new HashMap<>();
+            inventoryData.put("MTL_CODE", mtlCode);
+            inventoryData.put("WAREHOUSE_CODE", material.get("DEFAULT_WAREHOUSE_CODE"));
+            inventoryData.put("LOCATION_CODE", material.get("DEFAULT_LOCATION_CODE"));
+            inventoryData.put("CURRENT_QTY", "0");
+            inventoryData.put("ALLOCATED_QTY", "0");
+            // AVAILABLE_QTY는 트리거에 의해 자동 계산됨
+            inventoryData.put("LAST_MOVEMENT_DATE", new Date());
+            inventoryData.put("SAFETY_STOCK_ALERT", "N");
+            inventoryData.put("CREATED_BY", userId);
+            
+            int result = mImapper.insertInventory(inventoryData);
+            
+            if (result > 0) {
+                resultMap.put("success", true);
+                resultMap.put("message", "재고 정보가 생성되었습니다: " + mtlCode);
+                log.info("원자재 {}에 대한 기본 재고 정보 생성 성공", mtlCode);
+            } else {
+                resultMap.put("success", false);
+                resultMap.put("message", "재고 정보 생성에 실패했습니다: " + mtlCode);
+                log.warn("원자재 {}에 대한 기본 재고 정보 생성 실패", mtlCode);
+            }
+            
+        } catch (Exception e) {
+            log.error("재고 데이터 생성 중 오류 발생: {}", e.getMessage(), e);
+            resultMap.put("success", false);
+            resultMap.put("message", "재고 데이터 생성 중 오류 발생: " + e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        
+        return resultMap;
     }
 }

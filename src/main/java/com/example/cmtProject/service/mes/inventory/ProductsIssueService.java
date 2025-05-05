@@ -810,8 +810,8 @@ public class ProductsIssueService {
 		            return resultMap;
 		        }
 		        
-		        // 허용된 상태 확인 (수주확정, 출하계획 등만 처리 가능)
-		        List<String> allowedStatus = List.of("SO_CONFIRMED", "SO_PLANNED", "SO_COMPLETED");
+		        // 허용된 상태 확인 (수주확정)
+		        List<String> allowedStatus = List.of("SO_CONFIRMED");
 		        boolean validStatus = false;
 		        
 		        for (String allowedState : allowedStatus) {

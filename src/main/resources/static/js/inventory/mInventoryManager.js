@@ -1,7 +1,7 @@
 /**
  * 원자재 재고관리 - 재고 정보 관리 모듈
  * 
- * 원자재 재고 정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
+ * 원자재 재고 정보의 조회 기능을 담당하는 관리 모듈입니다.
  * FIFO 기능이 추가되었습니다.
  * 
  * @version 2.3.0
@@ -16,17 +16,18 @@ const MaterialInventoryManager = (function() {
     let mInventoryGrid;
 
     // API URL 상수 정의
-	const API_URLS = {
-	    LIST: '/api/materialinventory/list', // 
-	    SAVE: '/api/materialinventory/save', // /api/materialInventory에서 변경  
-	    DELETE: '/api/materialinventory/delete', // /api/materialInventory에서 변경
-	    FIFO: '/api/materialinventory/fifo', // 이건 맞음
-	    FIFO_HISTORY: '/api/materialinventory/fifo-history', // 이것도 맞음
-	    EXCEL: {
-	        UPLOAD: '/api/materialinventory/excel/upload', // /api/materialInventory에서 변경
-	        DOWNLOAD: '/api/materialinventory/excel/download' // /api/materialInventory에서 변경 
-	    }
-	};
+    const API_URLS = {
+        LIST: '/api/materialinventory/list', // 
+        SAVE: '/api/materialinventory/save', // /api/materialInventory에서 변경  
+        DELETE: '/api/materialinventory/delete', // /api/materialInventory에서 변경
+        FIFO: '/api/materialinventory/fifo', // 이건 맞음
+        FIFO_HISTORY: '/api/materialinventory/fifo-history', // 이것도 맞음
+        GENERATE_DATA: '/api/materialinventory/generate-data', // 기본 재고 데이터 생성 API 추가
+        EXCEL: {
+            UPLOAD: '/api/materialinventory/excel/upload', // /api/materialInventory에서 변경
+            DOWNLOAD: '/api/materialinventory/excel/download' // /api/materialInventory에서 변경 
+        }
+    };
 
     // =============================
     // 초기화 및 이벤트 처리 함수
@@ -70,7 +71,8 @@ const MaterialInventoryManager = (function() {
                 'mInventoryAppendBtn': appendRow, // 행 추가 버튼
                 'mInventorySaveBtn': saveData, // 데이터 저장 버튼
                 'mInventoryDeleteBtn': deleteRows, // 데이터 삭제 버튼
-                'mInventorySearchBtn': searchData // 데이터 검색 버튼
+                'mInventorySearchBtn': searchData, // 데이터 검색 버튼
+                'mInventoryGenerateBtn': generateInventoryData // 기본 재고 생성 버튼 (추가)
                 // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
             });
 
@@ -252,19 +254,21 @@ const MaterialInventoryManager = (function() {
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                         }
                     },
-					{
-					    header: 'FIFO',
-					    name: 'fifoAction',
-					    width: 100,
-					    align: 'center',
-					    formatter: function({row}) {
-					        const mtlCode = row.MTL_CODE;
-					        return `<button class="btn btn-outline-primary btn-sm fifo-btn" 
+                    {
+                        header: 'FIFO',
+                        name: 'fifoAction',
+                        width: 100,
+                        align: 'center',
+                        formatter: function({
+                            row
+                        }) {
+                            const mtlCode = row.MTL_CODE;
+                            return `<button class="btn btn-outline-primary btn-sm fifo-btn" 
 					                data-mtl-code="${mtlCode}">
 					                상세
 					             </button>`;
-					    }
-					},
+                        }
+                    },
                     {
                         header: '타입',
                         name: 'ROW_TYPE',
@@ -290,19 +294,21 @@ const MaterialInventoryManager = (function() {
             // FIFO 버튼 클릭 이벤트 처리
             mInventoryGrid.on('click', function(ev) {
                 console.log('그리드 클릭 이벤트:', ev);
-                
+
                 // 다양한 방식으로 event 객체 접근 시도
                 const event = ev.nativeEvent || ev.originalEvent || ev.event || ev;
                 console.log('event 객체:', event);
-                
+
                 const targetElement = event.target || event.srcElement;
                 console.log('targetElement:', targetElement);
-                
+
                 if (targetElement && targetElement.classList.contains('fifo-btn')) {
-                    const { rowKey } = ev;
+                    const {
+                        rowKey
+                    } = ev;
                     const row = mInventoryGrid.getRow(rowKey);
                     const mtlCode = row.MTL_CODE;
-                    
+
                     console.log('FIFO 버튼 클릭됨:', mtlCode);
                     MaterialInventoryManager.showFIFODetail(mtlCode);
                 }
@@ -340,78 +346,78 @@ const MaterialInventoryManager = (function() {
     /**
      * FIFO 상세 정보 표시
      */
-	async function showFIFODetail(mtlCode) {
-	    console.log('showFIFODetail 호출됨:', mtlCode);
-	    console.log('API URL:', `${API_URLS.FIFO}/${mtlCode}`);
-	    
-	    try {
-	        document.getElementById('selectedMtlCode').textContent = mtlCode;
-	        console.log('selectedMtlCode 설정 완료');
+    async function showFIFODetail(mtlCode) {
+        console.log('showFIFODetail 호출됨:', mtlCode);
+        console.log('API URL:', `${API_URLS.FIFO}/${mtlCode}`);
 
-	        // FIFO 상세 정보 조회
-	        const response = await ApiUtil.get(`${API_URLS.FIFO}/${mtlCode}`);
-	        console.log('API 응답:', response);
+        try {
+            document.getElementById('selectedMtlCode').textContent = mtlCode;
+            console.log('selectedMtlCode 설정 완료');
 
-	        if (response.success) {
-	            // 응답 데이터 구조 확인을 위해 로그 추가 - 대문자 필드명 사용
-	            console.log('response.data.INVENTORY:', response.data.INVENTORY);
-	            console.log('response.data.STOCK_LIST:', response.data.STOCK_LIST);
-	            
-	            displayFIFODetail(response.data);
-	            
-	            // FIFO 상세 영역 표시
-	            const fifoDetailSection = document.getElementById('fifoDetailSection');
-	            if (fifoDetailSection) {
-	                fifoDetailSection.style.display = 'block';
-	                console.log('fifoDetailSection 표시됨');
-	                // 스크롤 이동
-	                fifoDetailSection.scrollIntoView({
-	                    behavior: 'smooth'
-	                });
-	            } else {
-	                console.error('fifoDetailSection 요소를 찾을 수 없음');
-	            }
-	        } else {
-	            console.log('FIFO 조회 실패:', response);
-	            await AlertUtil.showError('FIFO 조회 실패', 'FIFO 정보 조회에 실패했습니다.');
-	        }
-	    } catch (error) {
-	        console.error('showFIFODetail 에러 상세:', error);
-	        console.error('Error stack:', error.stack);
-	        await AlertUtil.showError('오류', 'FIFO 정보 조회 중 오류가 발생했습니다.');
-	    }
-	}
+            // FIFO 상세 정보 조회
+            const response = await ApiUtil.get(`${API_URLS.FIFO}/${mtlCode}`);
+            console.log('API 응답:', response);
+
+            if (response.success) {
+                // 응답 데이터 구조 확인을 위해 로그 추가 - 대문자 필드명 사용
+                console.log('response.data.INVENTORY:', response.data.INVENTORY);
+                console.log('response.data.STOCK_LIST:', response.data.STOCK_LIST);
+
+                displayFIFODetail(response.data);
+
+                // FIFO 상세 영역 표시
+                const fifoDetailSection = document.getElementById('fifoDetailSection');
+                if (fifoDetailSection) {
+                    fifoDetailSection.style.display = 'block';
+                    console.log('fifoDetailSection 표시됨');
+                    // 스크롤 이동
+                    fifoDetailSection.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                } else {
+                    console.error('fifoDetailSection 요소를 찾을 수 없음');
+                }
+            } else {
+                console.log('FIFO 조회 실패:', response);
+                await AlertUtil.showError('FIFO 조회 실패', 'FIFO 정보 조회에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('showFIFODetail 에러 상세:', error);
+            console.error('Error stack:', error.stack);
+            await AlertUtil.showError('오류', 'FIFO 정보 조회 중 오류가 발생했습니다.');
+        }
+    }
 
 
     /**
      * FIFO 상세 정보 표시
      */
-	function displayFIFODetail(data) {
-	    console.log('displayFIFODetail 실행됨, data:', data);
-	    
-	    // FIFO 큐 시각화
-	    const queueVisual = document.getElementById('queueVisual');
-	    if (!queueVisual) {
-	        console.error('queueVisual 요소를 찾을 수 없음');
-	        return;
-	    }
-	    queueVisual.innerHTML = '';
+    function displayFIFODetail(data) {
+        console.log('displayFIFODetail 실행됨, data:', data);
 
-	    // 필드명이 대문자인 것을 확인 - STOCK_LIST 사용
-	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
-	        console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
-	        data.STOCK_LIST.forEach((stock, index) => {
-	            // 데이터 확인을 위한 로깅
-	            console.log(`Stock ${index}:`, stock);
-	            
-	            const remaining = parseFloat(stock.REMAINING_QTY);
-	            const isActive = stock.STATUS === '사용중';
-	            const isNext = !isActive && remaining > 0 && index === 1;
+        // FIFO 큐 시각화
+        const queueVisual = document.getElementById('queueVisual');
+        if (!queueVisual) {
+            console.error('queueVisual 요소를 찾을 수 없음');
+            return;
+        }
+        queueVisual.innerHTML = '';
 
-	            const queueItem = document.createElement('div');
-	            queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
+        // 필드명이 대문자인 것을 확인 - STOCK_LIST 사용
+        if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+            console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
+            data.STOCK_LIST.forEach((stock, index) => {
+                // 데이터 확인을 위한 로깅
+                console.log(`Stock ${index}:`, stock);
 
-	            queueItem.innerHTML = `
+                const remaining = parseFloat(stock.REMAINING_QTY);
+                const isActive = stock.STATUS === '사용중';
+                const isNext = !isActive && remaining > 0 && index === 1;
+
+                const queueItem = document.createElement('div');
+                queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
+
+                queueItem.innerHTML = `
 	                <div class="queue-number">${stock.FIFO_ORDER}순위</div>
 	                <div class="queue-date">${formatDate(stock.RECEIPT_DATE)}</div>
 	                <div class="queue-progress">
@@ -427,25 +433,25 @@ const MaterialInventoryManager = (function() {
 	                </div>
 	            `;
 
-	            queueVisual.appendChild(queueItem);
-	        });
-	        console.log('queueVisual 업데이트 완료');
-	    } else {
-	        console.log('STOCK_LIST가 없거나 비어있음');
-	    }
+                queueVisual.appendChild(queueItem);
+            });
+            console.log('queueVisual 업데이트 완료');
+        } else {
+            console.log('STOCK_LIST가 없거나 비어있음');
+        }
 
-	    // 상세 테이블 표시
-	    const tableBody = document.getElementById('fifoDetailTableBody');
-	    if (!tableBody) {
-	        console.error('fifoDetailTableBody 요소를 찾을 수 없음');
-	        return;
-	    }
-	    tableBody.innerHTML = '';
+        // 상세 테이블 표시
+        const tableBody = document.getElementById('fifoDetailTableBody');
+        if (!tableBody) {
+            console.error('fifoDetailTableBody 요소를 찾을 수 없음');
+            return;
+        }
+        tableBody.innerHTML = '';
 
-	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
-	        data.STOCK_LIST.forEach(stock => {
-	            const row = document.createElement('tr');
-	            row.innerHTML = `
+        if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+            data.STOCK_LIST.forEach(stock => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
 	                <td>${stock.FIFO_ORDER}</td>
 	                <td>${formatDate(stock.RECEIPT_DATE)}</td>
 	                <td>${stock.RECEIPT_NO}</td>
@@ -455,13 +461,13 @@ const MaterialInventoryManager = (function() {
 	                    <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
 	                </td>
 	            `;
-	            tableBody.appendChild(row);
-	        });
-	        console.log('테이블 업데이트 완료');
-	    } else {
-	        console.log('테이블에 표시할 데이터가 없음');
-	    }
-	}
+                tableBody.appendChild(row);
+            });
+            console.log('테이블 업데이트 완료');
+        } else {
+            console.log('테이블에 표시할 데이터가 없음');
+        }
+    }
 
     /**
      * FIFO 이력 로드
@@ -847,6 +853,54 @@ const MaterialInventoryManager = (function() {
     }
 
     // =============================
+    // 기본 재고 데이터 생성 함수 추가
+    // =============================
+
+    /**
+     * 기본 재고 데이터 생성 함수
+     * 아직 재고 정보가 없는 원자재에 대한 기본 재고 데이터를 생성합니다.
+     */
+    async function generateInventoryData() {
+        try {
+            // 확인 대화상자 표시
+            const confirmed = await AlertUtil.showConfirm(
+                '기본 재고 데이터 생성 확인',
+                '아직 재고 정보가 없는 원자재에 대한 기본 재고 데이터를 생성하시겠습니까?\n(이미 재고 정보가 있는 원자재는 영향 없음)'
+            );
+
+            if (!confirmed) return false;
+
+            // API 호출
+            const response = await ApiUtil.processRequest(
+                () => ApiUtil.post(API_URLS.GENERATE_DATA), {
+                    loadingMessage: '재고 데이터 생성 중...',
+                    successMessage: "기본 재고 데이터 생성이 완료되었습니다.",
+                    errorMessage: "재고 데이터 생성 중 오류가 발생했습니다.",
+                    successCallback: searchData // 생성 후 목록 새로고침
+                }
+            );
+
+            if (response.success) {
+                // 상세 결과 표시
+                const created = response.data.createdCount || 0;
+                const failed = (response.data.failedItems || []).length;
+
+                await AlertUtil.showSuccess(
+                    '기본 재고 생성 완료',
+                    `${created}개 원자재의 기본 재고 정보가 생성되었습니다.${failed > 0 ? ` (${failed}개 실패)` : ''}`
+                );
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error('재고 데이터 생성 중 오류:', error);
+            await AlertUtil.showError('생성 오류', '재고 데이터 생성 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+
+    // =============================
     // 공개 API - 외부에서 접근 가능한 메서드
     // =============================
     return {
@@ -863,6 +917,9 @@ const MaterialInventoryManager = (function() {
         showFIFODetail, // FIFO 상세 정보 표시
         loadFIFOHistory, // FIFO 이력 조회
         switchTab, // FIFO 탭 전환
+
+        // 기본 재고 데이터 생성 함수
+        generateInventoryData, // 새로 추가된 기능
 
         // 유틸리티 함수
         getGrid, // 그리드 인스턴스 반환

@@ -17,17 +17,19 @@ import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
 import com.example.cmtProject.service.mes.inventory.InventoryUpdateService;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 
 @Service
 public class IpiService {
+
 	
 	@Autowired
 	private IpiMapper ipiMapper;
 	
 	@Autowired
 	private InventoryUpdateService ius;
+
 
 	// 모든 입고 검사 목록
 	public List<IpiDTO> getAllIpi() {
@@ -91,12 +93,17 @@ public class IpiService {
 		
         Map<String, Object> params = new HashMap<>();
         params.put("pdtName", ipiDTO.getPdtName());
-        params.put("pdtCode", ipiDTO.getPdtCode());
+        //params.put("pdtCode", ipiDTO.getPdtCode());
+        params.put("pdtCode", "WIP002");
         params.put("woQty", ipiDTO.getWoQty());
         params.put("childLotCode", ipiDTO.getChildLotCode());
-        
+        params.put("IpiInspectionResult", ipiDTO.getIpiInspectionResult());
+        System.out.println("3333333333333"+ipiDTO.getIpiInspectionResult());
+        System.out.println("4444444444444"+ipiDTO);
+        ius.receiveProductionItem(params);
         // 검수 결과가 합격인 경우만 입고 처리
         if ("합격".equals(ipiDTO.getIpiInspectionResult())) {
+        	System.out.println("****************************************************************8");
             ius.receiveProductionItem(params);
         }
 
