@@ -73,34 +73,97 @@
             AND TO_NUMBER(ISSUED_QTY) >= TO_NUMBER(#{deductQty})
     </update>
     
+    <!-- FIFO 이력 조회 -->
+    <select id="getFIFOHistory" parameterType="string" resultType="java.util.Map">
+        SELECT 
+            H.HISTORY_NO,
+            H.ISSUE_STOCK_NO,
+            H.PDT_CODE,
+            H.CONSUMED_QTY,
+            H.LOT_NO,
+            H.SO_CODE,
+            H.WO_CODE,
+            H.CONSUMPTION_TYPE,
+            H.CONSUMED_DATE AS UPDATED_DATE, 
+            H.CONSUMED_BY AS UPDATED_BY,      
+            CASE H.CONSUMPTION_TYPE
+                WHEN 'PRODUCTION' THEN '생산투입'
+                WHEN 'SHIPMENT' THEN '출하'
+                ELSE '소비'
+            END AS ACTION_TYPE,           
+            CASE 
+                WHEN H.CONSUMPTION_TYPE = 'PRODUCTION' THEN 
+                    '작업지시(' || H.WO_CODE || ')의 ' || H.LOT_NO || '에서 ' || H.CONSUMED_QTY || 'EA 투입'
+                WHEN H.CONSUMPTION_TYPE = 'SHIPMENT' THEN 
+                    '수주(' || H.SO_CODE || ')로 ' || H.CONSUMED_QTY || 'EA 출하'
+                ELSE 
+                    H.CONSUMED_QTY || 'EA 소비'
+            END AS ACTION_DESCRIPTION
+        FROM 
+            PRODUCTS_FIFO_HISTORY H
+        WHERE 
+            H.PDT_CODE = #{pdtCode}
+        ORDER BY 
+            H.CONSUMED_DATE DESC
+    </select>
+
+    <!-- FIFO 이력 저장 -->
+    <insert id="insertFIFOHistory" parameterType="java.util.Map">
+        INSERT INTO PRODUCTS_FIFO_HISTORY (
+            HISTORY_NO,
+            ISSUE_STOCK_NO,
+            PDT_CODE,
+            CONSUMED_QTY,
+            LOT_NO,
+            SO_CODE,
+            WO_CODE,
+            CONSUMPTION_TYPE,
+            CONSUMED_DATE,
+            CONSUMED_BY,
+            CREATED_DATE
+        ) VALUES (
+            SEQ_PRODUCTS_FIFO_HISTORY.NEXTVAL,
+            #{issueStockNo},
+            #{pdtCode},
+            #{consumedQty},
+            #{lotNo, jdbcType=VARCHAR},
+            #{soCode, jdbcType=VARCHAR},
+            #{woCode, jdbcType=VARCHAR},
+            #{consumptionType},
+            TO_DATE(#{consumedDate}, 'YYYY-MM-DD'),
+            #{consumedBy},
+            SYSDATE
+        )
+    </insert>
+    
     <!-- 다음 출고 번호 조회 -->
     <select id="getNextIssueNo" resultType="java.lang.Long">
         SELECT SEQ_PRODUCTS_ISSUE.NEXTVAL FROM DUAL
     </select>
     
     <!-- 생산 입고 번호 생성 -->
-	<select id="generateProductionReceiptCode" resultType="string">
-	    SELECT 'PR-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || 
-	           LPAD(NVL(MAX(TO_NUMBER(SUBSTR(PI.ISSUE_CODE, 14))), 0) + 1, 4, '0')
-	    FROM PRODUCTS_ISSUE PI
-	    WHERE PI.ISSUE_CODE LIKE 'PR-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-%'
-	</select>
-	
-	<!-- 제품별 생산 입고 이력 조회 (FIFO 관리용) -->
-	<select id="getProductionReceiptsForFIFO" parameterType="string" resultType="java.util.Map">
-	    SELECT
-	        PIST.ISSUE_STOCK_NO,
-	        PIST.ISSUE_NO,
-	        PIST.PDT_CODE,
-	        PIST.ISSUED_QTY,
-	        PIST.ISSUE_DATE,
-	        PIST.LOT_NO
-	    FROM
-	        PRODUCTS_ISSUE_STOCK PIST
-	    WHERE
-	        PIST.PDT_CODE = #{pdtCode}
-	        AND TO_NUMBER(PIST.ISSUED_QTY) > 0
-	    ORDER BY
-	        PIST.ISSUE_DATE ASC, PIST.ISSUE_STOCK_NO ASC
-	</select>
+    <select id="generateProductionReceiptCode" resultType="string">
+        SELECT 'PR-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || 
+               LPAD(NVL(MAX(TO_NUMBER(SUBSTR(PI.ISSUE_CODE, 14))), 0) + 1, 4, '0')
+        FROM PRODUCTS_ISSUE PI
+        WHERE PI.ISSUE_CODE LIKE 'PR-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-%'
+    </select>
+    
+    <!-- 제품별 생산 입고 이력 조회 (FIFO 관리용) -->
+    <select id="getProductionReceiptsForFIFO" parameterType="string" resultType="java.util.Map">
+        SELECT
+            PIST.ISSUE_STOCK_NO,
+            PIST.ISSUE_NO,
+            PIST.PDT_CODE,
+            PIST.ISSUED_QTY,
+            PIST.ISSUE_DATE,
+            PIST.LOT_NO
+        FROM
+            PRODUCTS_ISSUE_STOCK PIST
+        WHERE
+            PIST.PDT_CODE = #{pdtCode}
+            AND TO_NUMBER(PIST.ISSUED_QTY) > 0
+        ORDER BY
+            PIST.ISSUE_DATE ASC, PIST.ISSUE_STOCK_NO ASC
+    </select>
 </mapper>

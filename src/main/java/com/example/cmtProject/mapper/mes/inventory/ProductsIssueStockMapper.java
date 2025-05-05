@@ -41,6 +41,16 @@ public interface ProductsIssueStockMapper {
     public int deductStock(Map<String, Object> params);
     
     /**
+     * FIFO 이력 저장
+     */
+    public int insertFIFOHistory(Map<String, Object> params);
+    
+    /**
+     * FIFO 이력 조회
+     */
+    public List<Map<String, Object>> getFIFOHistory(@Param("pdtCode") String pdtCode);
+    
+    /**
      * 다음 출고 번호 조회
      */
     public Long getNextIssueNo();
