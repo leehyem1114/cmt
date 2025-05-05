@@ -118,6 +118,41 @@ public class MaterialInventoryRestController {
         List<Map<String, Object>> history = mis.getFIFOHistory(mtlCode);
         return ApiResponse.success(history);
     }
-    
+    /**
+     * 기본 재고 데이터 자동 생성 API
+     * 아직 재고 정보가 없는 원자재에 대해서만 기본 재고 정보 생성
+     */
+    @PostMapping("/generate-data")
+    public ApiResponse<Map<String, Object>> generateInventoryData() {
+        log.info("미등록 원자재 재고 데이터 자동 생성 요청");
+        
+        Map<String, Object> result = mis.generateInitialInventoryData();
+        
+        if ((Boolean) result.get("success")) {
+            log.info("원자재 재고 데이터 생성 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("원자재 재고 데이터 생성 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 특정 원자재에 대한 기본 재고 데이터 생성 API
+     */
+    @PostMapping("/generate-data/{mtlCode}")
+    public ApiResponse<Map<String, Object>> generateInventoryForMaterial(@PathVariable("mtlCode") String mtlCode) {
+        log.info("원자재 {} 재고 데이터 생성 요청", mtlCode);
+        
+        Map<String, Object> result = mis.generateMaterialInventory(mtlCode);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("원자재 {} 재고 데이터 생성 성공", mtlCode);
+            return ApiResponse.success(result);
+        } else {
+            log.warn("원자재 {} 재고 데이터 생성 실패: {}", mtlCode, result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
     
 }

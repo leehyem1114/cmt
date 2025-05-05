@@ -1,5 +1,6 @@
 package com.example.cmtProject.service.mes.inventory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,9 @@ public class ProductsInventoryService {
 	
 	@Autowired
 	private ProductsIssueStockMapper pIsmapper;
+	
+	@Autowired
+	private ProductsMasterMapper productsMasterMapper;
 	
 	/**
 	 * 재고 목록 조회
@@ -260,5 +265,151 @@ public class ProductsInventoryService {
 	    }
 	    
 	    return historyList;
+	}
+	
+	/**
+	 * 제품 기본 재고 정보 자동 생성
+	 * 아직 재고 정보가 없는 제품에 대해서만 기본 재고 정보 생성
+	 */
+	@Transactional
+	public Map<String, Object> generateInitialInventoryData() {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    int createdCount = 0;
+	    List<String> failedItems = new ArrayList<>();
+	    
+	    try {
+	        log.info("미등록 제품에 대한 기본 재고 데이터 생성 시작");
+	        
+	        // 모든 제품 조회 (사용 중인 것만)
+	        Map<String, Object> params = new HashMap<>();
+	        List<Map<String, Object>> productsList = productsMasterMapper.selectProducts(params);
+	        
+	        // 현재 로그인한 사용자 정보
+	        String userId = SecurityUtil.getUserId();
+	        
+	        for (Map<String, Object> product : productsList) {
+	            try {
+	                String pdtCode = (String) product.get("PDT_CODE");
+	                
+	                // 이미 재고 정보가 존재하는지 확인
+	                Map<String, Object> existingInventory = pImapper.getInventoryByPdtCode(pdtCode);
+	                
+	                if (existingInventory == null) {
+	                    Map<String, Object> inventoryData = new HashMap<>();
+	                    inventoryData.put("PDT_NO", product.get("PDT_NO"));
+	                    inventoryData.put("PDT_CODE", pdtCode);
+	                    inventoryData.put("WAREHOUSE_CODE", product.get("DEFAULT_WAREHOUSE_CODE"));
+	                    inventoryData.put("LOCATION_CODE", product.get("DEFAULT_LOCATION_CODE"));
+	                    inventoryData.put("CURRENT_QTY", "0");
+	                    inventoryData.put("ALLOCATED_QTY", "0");
+	                    inventoryData.put("AVAILABLE_QTY", "0"); // 트리거에 의해 자동 계산됨
+	                    inventoryData.put("LAST_MOVEMENT_DATE", new java.util.Date());
+	                    inventoryData.put("SAFETY_STOCK_ALERT", "N");
+	                    inventoryData.put("CREATED_BY", userId);
+	                    
+	                    int result = pImapper.insertInventory(inventoryData);
+	                    
+	                    if (result > 0) {
+	                        createdCount++;
+	                        log.info("제품 {}에 대한 기본 재고 정보 생성 성공", pdtCode);
+	                    } else {
+	                        failedItems.add(pdtCode);
+	                        log.warn("제품 {}에 대한 기본 재고 정보 생성 실패", pdtCode);
+	                    }
+	                } else {
+	                    log.info("제품 {}는 이미 재고 정보가 존재합니다.", pdtCode);
+	                }
+	            } catch (Exception e) {
+	                String pdtCode = (String) product.get("PDT_CODE");
+	                failedItems.add(pdtCode);
+	                log.error("제품 {} 재고 정보 생성 중 오류: {}", pdtCode, e.getMessage());
+	            }
+	        }
+	        
+	        resultMap.put("success", true);
+	        resultMap.put("message", createdCount + "개의 제품에 대한 기본 재고 정보가 생성되었습니다.");
+	        resultMap.put("createdCount", createdCount);
+	        resultMap.put("failedItems", failedItems);
+	        
+	        log.info("제품 기본 재고 데이터 생성 완료: {}개 생성, {}개 실패", 
+	                createdCount, failedItems.size());
+	        
+	    } catch (Exception e) {
+	        log.error("제품 재고 데이터 생성 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "재고 데이터 생성 중 오류 발생: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
+
+	/**
+	 * 개별 제품에 대한 기본 재고 데이터 생성
+	 * 기존 재고 정보가 없는 경우에만 생성
+	 */
+	@Transactional
+	public Map<String, Object> generateProductInventory(String pdtCode) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    
+	    try {
+	        log.info("제품 {}에 대한 기본 재고 데이터 생성 시작", pdtCode);
+	        
+	        // 제품 정보 조회
+	        Map<String, Object> param = new HashMap<>();
+	        param.put("PDT_CODE", pdtCode);
+	        Map<String, Object> product = productsMasterMapper.selectSingleProducts(param);
+	        
+	        if (product == null) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "제품 정보를 찾을 수 없습니다: " + pdtCode);
+	            return resultMap;
+	        }
+	        
+	        // 이미 재고 정보가 존재하는지 확인
+	        Map<String, Object> existingInventory = pImapper.getInventoryByPdtCode(pdtCode);
+	        
+	        if (existingInventory != null) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "이미 재고 정보가 존재합니다: " + pdtCode);
+	            return resultMap;
+	        }
+	        
+	        // 현재 로그인한 사용자 정보
+	        String userId = SecurityUtil.getUserId();
+	        
+	        // 재고 정보 생성
+	        Map<String, Object> inventoryData = new HashMap<>();
+	        inventoryData.put("PDT_NO", product.get("PDT_NO"));
+	        inventoryData.put("PDT_CODE", pdtCode);
+	        inventoryData.put("WAREHOUSE_CODE", product.get("DEFAULT_WAREHOUSE_CODE"));
+	        inventoryData.put("LOCATION_CODE", product.get("DEFAULT_LOCATION_CODE"));
+	        inventoryData.put("CURRENT_QTY", "0");
+	        inventoryData.put("ALLOCATED_QTY", "0");
+	        inventoryData.put("AVAILABLE_QTY", "0"); // 트리거에 의해 자동 계산됨
+	        inventoryData.put("LAST_MOVEMENT_DATE", new java.util.Date());
+	        inventoryData.put("SAFETY_STOCK_ALERT", "N");
+	        inventoryData.put("CREATED_BY", userId);
+	        
+	        int result = pImapper.insertInventory(inventoryData);
+	        
+	        if (result > 0) {
+	            resultMap.put("success", true);
+	            resultMap.put("message", "재고 정보가 생성되었습니다: " + pdtCode);
+	            log.info("제품 {}에 대한 기본 재고 정보 생성 성공", pdtCode);
+	        } else {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "재고 정보 생성에 실패했습니다: " + pdtCode);
+	            log.warn("제품 {}에 대한 기본 재고 정보 생성 실패", pdtCode);
+	        }
+	        
+	    } catch (Exception e) {
+	        log.error("제품 재고 데이터 생성 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "재고 데이터 생성 중 오류 발생: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
 	}
 }

@@ -21,6 +21,9 @@ public class MaterialMasterService {
 	@Autowired
 	private MaterialMasterMapper materialMapper;
 	
+	@Autowired
+	private MaterialInventoryService materialInventoryService;
+	
 	/**
 	 * 원자재 기준정보 목록 조회
 	 * @param param 검색 조건
@@ -66,7 +69,7 @@ public class MaterialMasterService {
 			
 			// 존재하면 수정, 없으면 등록
 			if (existingData != null) {
-				log.info("원자재 정보 수정: {}", params.get("mtlCode"));
+				log.info("원자재 정보 수정: {}", params.get("MTL_CODE"));
 				result = materialMapper.updateMaterials(params);
 				
 				if (result > 0) {
@@ -77,7 +80,7 @@ public class MaterialMasterService {
 					resultMap.put("message", "원자재 정보 수정에 실패했습니다.");
 				}
 			} else {
-				log.info("원자재 정보 등록: {}", params.get("mtlCode"));
+				log.info("원자재 정보 등록: {}", params.get("MTL_CODE"));
 				// 생성자 정보 설정
                 params.put("createdBy", userId);
                 
@@ -86,6 +89,10 @@ public class MaterialMasterService {
 				if (result > 0) {
 					resultMap.put("success", true);
 					resultMap.put("message", "원자재 정보가 등록되었습니다.");
+					
+					// 새 원자재인 경우 재고 정보도 자동 생성
+                    String mtlCode = (String) params.get("MTL_CODE");
+                    materialInventoryService.generateMaterialInventory(mtlCode);
 				} else {
 					resultMap.put("success", false);
 					resultMap.put("message", "원자재 정보 등록에 실패했습니다.");

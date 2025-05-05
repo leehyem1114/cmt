@@ -67,7 +67,8 @@ const ProductsInventoryManager = (function() {
         try {
             // UIUtil을 사용하여 이벤트 리스너 등록
             await UIUtil.registerEventListeners({
-                'pInventorySearchBtn': searchData
+                'pInventorySearchBtn': searchData,
+				'pInventoryGenerateBtn': generateInventoryData // 기본 재고 생성 버튼 (추가)
             });
 
             // 엔터키 검색 이벤트 등록
@@ -539,6 +540,47 @@ const ProductsInventoryManager = (function() {
             throw error;
         }
     }
+	
+	// 기본 재고 데이터 생성 함수 
+	async function generateInventoryData() {
+	    try {
+	        // 확인 대화상자 표시
+	        const confirmed = await AlertUtil.showConfirm(
+	            '기본 재고 데이터 생성 확인',
+	            '아직 재고 정보가 없는 제품에 대한 기본 재고 데이터를 생성하시겠습니까?\n(이미 재고 정보가 있는 제품은 영향 없음)'
+	        );
+	        
+	        if (!confirmed) return false;
+	        
+	        // API 호출
+	        const response = await ApiUtil.processRequest(
+	            () => ApiUtil.post('/api/productsinventory/generate-data'), {
+	                loadingMessage: '재고 데이터 생성 중...',
+	                successMessage: "기본 재고 데이터 생성이 완료되었습니다.",
+	                errorMessage: "재고 데이터 생성 중 오류가 발생했습니다.",
+	                successCallback: searchData // 생성 후 목록 새로고침
+	            }
+	        );
+	        
+	        if (response.success) {
+	            // 상세 결과 표시
+	            const created = response.data.createdCount || 0;
+	            const failed = (response.data.failedItems || []).length;
+	            
+	            await AlertUtil.showSuccess(
+	                '기본 재고 생성 완료', 
+	                `${created}개 제품의 기본 재고 정보가 생성되었습니다.${failed > 0 ? ` (${failed}개 실패)` : ''}`
+	            );
+	            return true;
+	        } else {
+	            return false;
+	        }
+	    } catch (error) {
+	        console.error('재고 데이터 생성 중 오류:', error);
+	        await AlertUtil.showError('생성 오류', '재고 데이터 생성 중 오류가 발생했습니다.');
+	        return false;
+	    }
+	}
 
     /**
      * 그리드 인스턴스 반환 함수
@@ -554,6 +596,7 @@ const ProductsInventoryManager = (function() {
         // 초기화 및 기본 기능
         init,
         searchData,
+		generateInventoryData,
         getGrid,
         showFIFODetail,
         loadFIFOHistory,

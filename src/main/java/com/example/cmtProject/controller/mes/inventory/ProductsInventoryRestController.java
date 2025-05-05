@@ -120,4 +120,40 @@ public class ProductsInventoryRestController {
         List<Map<String, Object>> historyList = pis.getFIFOHistory(pdtCode);
         return ApiResponse.success(historyList);
     }
+    /**
+     * 제품 기본 재고 데이터 자동 생성 API
+     * 아직 재고 정보가 없는 제품에 대해서만 기본 재고 정보 생성
+     */
+    @PostMapping("/generate-data")
+    public ApiResponse<Map<String, Object>> generateInventoryData() {
+        log.info("미등록 제품 재고 데이터 자동 생성 요청");
+        
+        Map<String, Object> result = pis.generateInitialInventoryData();
+        
+        if ((Boolean) result.get("success")) {
+            log.info("제품 재고 데이터 생성 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("제품 재고 데이터 생성 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 특정 제품에 대한 기본 재고 데이터 생성 API
+     */
+    @PostMapping("/generate-data/{pdtCode}")
+    public ApiResponse<Map<String, Object>> generateInventoryForProduct(@PathVariable("pdtCode") String pdtCode) {
+        log.info("제품 {} 재고 데이터 생성 요청", pdtCode);
+        
+        Map<String, Object> result = pis.generateProductInventory(pdtCode);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("제품 {} 재고 데이터 생성 성공", pdtCode);
+            return ApiResponse.success(result);
+        } else {
+            log.warn("제품 {} 재고 데이터 생성 실패: {}", pdtCode, result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
 }
