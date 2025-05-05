@@ -112,6 +112,16 @@ public class MaterialReceiptService {
 	                
 	                Map<String, Object> materialInfo = mmmapper.selectSingleMaterials(param);
 	                
+	                // 디버깅 로그 추가
+	                log.info("========= DEBUG 시작 =========");
+	                log.info("발주 정보: {}", po);  // 발주 전체 정보 확인
+	                log.info("자재코드: {}", mtlCode);
+	                log.info("조회된 기준정보: {}", materialInfo);
+	                
+	                // 발주에서 직접 위치 정보가 오는지 확인
+	                log.info("발주에서 가져온 창고코드: {}", po.get("WHS_CODE"));
+	                log.info("발주에서 가져온 위치코드: {}", po.get("LOCATION_CODE"));
+	                
 	                // 창고/위치 정보 결정
 	                String warehouseCode = null;
 	                String locationCode = null;
@@ -119,9 +129,16 @@ public class MaterialReceiptService {
 	                if (materialInfo != null) {
 	                    warehouseCode = (String) materialInfo.get("DEFAULT_WAREHOUSE_CODE");
 	                    locationCode = (String) materialInfo.get("DEFAULT_LOCATION_CODE");
+	                    
+	                    log.info("기준정보에서 가져온 창고코드: {}", warehouseCode);
+	                    log.info("기준정보에서 가져온 위치코드: {}", locationCode);
+	                } else {
+	                    log.warn("자재 기준정보를 찾을 수 없음: {}", mtlCode);
 	                }
 	                
-	                log.info("자재 [{}]의 기준정보 창고/위치 코드: {}/{}", mtlCode, warehouseCode, locationCode);
+	                // 최종적으로 사용되는 값 확인
+	                log.info("최종 저장할 창고코드: {}", warehouseCode);
+	                log.info("최종 저장할 위치코드: {}", locationCode);
 	                
 	                // 입고 정보 맵 생성
 	                Map<String, Object> receiptMap = new HashMap<>();
@@ -141,6 +158,7 @@ public class MaterialReceiptService {
 	                receiptMap.put("updatedDate", nowStr);
 	                
 	                log.info("입고 정보 생성: {}", receiptMap);
+	                log.info("========= DEBUG 끝 =========");
 	                
 	                // 입고 정보 저장
 	                int result = mRmapper.insertMaterialReceipt(receiptMap);
@@ -148,6 +166,12 @@ public class MaterialReceiptService {
 	                if (result > 0) {
 	                    // 입고 번호 조회
 	                    Long receiptNo = mRmapper.getLastReceiptNo();
+	                    
+	                    // 실제로 DB에 어떻게 저장되었는지 다시 조회해서 확인
+	                    Map<String, Object> savedReceipt = mRmapper.getReceiptDetail(receiptNo);
+	                    log.info("실제 저장된 데이터: {}", savedReceipt);
+	                    log.info("저장 전: locationCode={}, 저장 후: locationCode={}", 
+	                        receiptMap.get("locationCode"), savedReceipt.get("LOCATION_CODE"));
 	                    
 	                    // 입고 이력 저장
 	                    Map<String, Object> historyMap = new HashMap<>();
@@ -431,8 +455,22 @@ public class MaterialReceiptService {
 	                        inventoryParams.put("warehouseCode", item.get("warehouseCode"));
 	                        inventoryParams.put("locationCode", item.get("locationCode"));
 	                    } else {
-	                        inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
-	                        inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
+	                        // 위치 지정 입고가 아닌 경우 기준정보에서 창고/위치 가져오기
+	                        Map<String, Object> param = new HashMap<>();
+	                        param.put("MTL_CODE", receiptDetail.get("MTL_CODE"));
+	                        Map<String, Object> materialInfo = mmmapper.selectSingleMaterials(param);
+	                        
+	                        if (materialInfo != null) {
+	                            String warehouseCode = (String) materialInfo.get("DEFAULT_WAREHOUSE_CODE");
+	                            String locationCode = (String) materialInfo.get("DEFAULT_LOCATION_CODE");
+	                            
+	                            inventoryParams.put("warehouseCode", warehouseCode);
+	                            inventoryParams.put("locationCode", locationCode);
+	                        } else {
+	                            // 기본값 설정 - RECEIPT_DETAIL에서 가져오기
+	                            inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
+	                            inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
+	                        }
 	                    }
 	                    
 	                    inventoryParams.put("receivedQty", receiptDetail.get("RECEIVED_QTY"));
