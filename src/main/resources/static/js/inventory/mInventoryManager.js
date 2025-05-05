@@ -17,14 +17,14 @@ const MaterialInventoryManager = (function() {
 
     // API URL 상수 정의
 	const API_URLS = {
-	    LIST: '/api/materialinventory/list', // 
-	    SAVE: '/api/materialinventory/save', // /api/materialInventory에서 변경  
-	    DELETE: '/api/materialinventory/delete', // /api/materialInventory에서 변경
-	    FIFO: '/api/materialinventory/fifo', // 이건 맞음
-	    FIFO_HISTORY: '/api/materialinventory/fifo-history', // 이것도 맞음
+	    LIST: '/api/materialinventory/list',  
+	    SAVE: '/api/materialinventory/save', 
+	    DELETE: '/api/materialinventory/delete', 
+	    FIFO: '/api/materialinventory/fifo', 
+	    FIFO_HISTORY: '/api/materialinventory/fifo-history', 
 	    EXCEL: {
-	        UPLOAD: '/api/materialinventory/excel/upload', // /api/materialInventory에서 변경
-	        DOWNLOAD: '/api/materialinventory/excel/download' // /api/materialInventory에서 변경 
+	        UPLOAD: '/api/materialinventory/excel/upload', 
+	        DOWNLOAD: '/api/materialinventory/excel/download'  
 	    }
 	};
 
