@@ -81,7 +81,7 @@
             UPDATE SET 
                 a.CURRENT_QTY = TO_CHAR(TO_NUMBER(a.CURRENT_QTY) + TO_NUMBER(b.RECEIVED_QTY)),
                 a.LAST_MOVEMENT_DATE = SYSDATE,
-                a.UPDATED_BY = #{updatedBy},
+                a.UPDATED_BY = #{updatedBy, jdbcType=VARCHAR},
                 a.UPDATED_DATE = SYSDATE
         WHEN NOT MATCHED THEN
             INSERT (
@@ -105,7 +105,7 @@
                 '0', 
                 b.RECEIVED_QTY,
                 SYSDATE, 
-                #{updatedBy}, 
+                #{updatedBy, jdbcType=VARCHAR}, 
                 SYSDATE
             )
     </update>
@@ -150,7 +150,7 @@
             #{LOT_NO, jdbcType=VARCHAR},
             SYSDATE,
             #{SAFETY_STOCK_ALERT, jdbcType=VARCHAR},
-            #{updatedBy},
+            #{updatedBy, jdbcType=VARCHAR},
             SYSDATE
         )
     </insert>

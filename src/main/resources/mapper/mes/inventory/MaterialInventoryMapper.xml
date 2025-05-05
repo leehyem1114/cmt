@@ -144,7 +144,7 @@
             #{LOT_NO, jdbcType=VARCHAR},
             SYSDATE,
             #{SAFETY_STOCK_ALERT, jdbcType=VARCHAR},
-            #{updatedBy},
+            #{updatedBy, jdbcType=VARCHAR},
             SYSDATE
         )
     </insert>
