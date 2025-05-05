@@ -13,33 +13,31 @@ public interface MaterialReceiptStockMapper {
     
     /**
      * 입고별 재고 정보 저장
-     * 
-     * @param params 재고 정보 (receiptNo, mtlCode, remainingQty, receiptDate, createdBy 포함)
-     * @return 처리 건수
      */
     public int insertStock(Map<String, Object> params);
     
     /**
      * 자재코드별 입고 재고 목록 조회 (입고일 순)
-     * 
-     * @param mtlCode 자재 코드
-     * @return 입고별 재고 목록
      */
     public List<Map<String, Object>> getStocksByMtlCodeOrderByDate(@Param("mtlCode") String mtlCode);
     
     /**
      * 입고별 재고 차감
-     * 
-     * @param params 차감 정보 (receiptStockNo, deductQty, updatedBy 포함)
-     * @return 처리 건수
      */
     public int deductStock(Map<String, Object> params);
     
     /**
      * 자재의 총 가용 재고 조회
-     * 
-     * @param mtlCode 자재 코드
-     * @return 총 가용 재고
      */
     public Long getTotalAvailableStock(@Param("mtlCode") String mtlCode);
+    
+    /**
+     * FIFO 이력 저장
+     */
+    public int insertFIFOHistory(Map<String, Object> params);
+    
+    /**
+     * FIFO 이력 조회
+     */
+    public List<Map<String, Object>> getFIFOHistory(@Param("mtlCode") String mtlCode);
 }

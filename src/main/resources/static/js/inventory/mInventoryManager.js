@@ -449,7 +449,7 @@ const MaterialInventoryManager = (function() {
 	                <td>${stock.FIFO_ORDER}</td>
 	                <td>${formatDate(stock.RECEIPT_DATE)}</td>
 	                <td>${stock.RECEIPT_NO}</td>
-	                <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
+	                <td>${Number(stock.ORIGINAL_QTY).toLocaleString()}</td>
 	                <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
 	                <td>
 	                    <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>

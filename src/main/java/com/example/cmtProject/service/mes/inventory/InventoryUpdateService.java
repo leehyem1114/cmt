@@ -48,14 +48,16 @@ public class InventoryUpdateService {
     public void completeProduction(Map<String, Object> lotInfo) {
         String parentCode = (String) lotInfo.get("parentPdtCode");
         String bomQty = (String) lotInfo.get("bomQty");
+        String childLotCode = (String) lotInfo.get("childLotCode");
+        String woCode = (String) lotInfo.get("woCode");  // woCode 받기
         String userId = SecurityUtil.getUserId();
         
-        log.info("생산완료 처리 시작 - LOT: {}, 부모코드: {}, 수량: {}", 
-            lotInfo.get("childLotCode"), parentCode, bomQty);
+        log.info("생산완료 처리 시작 - LOT: {}, 부모코드: {}, 수량: {}, 작업지시: {}", 
+            childLotCode, parentCode, bomQty, woCode);
         
         // 부모 항목의 재고 차감 (FIFO)
         if (parentCode.startsWith("MTL")) {
-            deductMaterialFIFO(parentCode, Long.parseLong(bomQty), userId);
+            deductMaterialFIFO(parentCode, Long.parseLong(bomQty), userId, childLotCode, woCode);
         } else {
             deductProductFIFO(parentCode, Long.parseLong(bomQty), userId);
         }
@@ -64,7 +66,7 @@ public class InventoryUpdateService {
     /**
      * 원자재 FIFO 차감
      */
-    private void deductMaterialFIFO(String mtlCode, long qty, String userId) {
+    private void deductMaterialFIFO(String mtlCode, long qty, String userId, String lotNo, String woCode) {
         long remainingToDeduct = qty;
         long totalDeducted = 0;
         
@@ -105,6 +107,18 @@ public class InventoryUpdateService {
             deductParams.put("updatedBy", userId);
             
             mrsmapper.deductStock(deductParams);
+            
+            // FIFO 이력 저장
+            Map<String, Object> historyParams = new HashMap<>();
+            historyParams.put("receiptStockNo", stockNo);
+            historyParams.put("mtlCode", mtlCode);
+            historyParams.put("consumedQty", String.valueOf(qtyToDeduct));
+            historyParams.put("lotNo", lotNo);
+            historyParams.put("woCode", woCode);
+            historyParams.put("consumedBy", userId);
+            historyParams.put("consumedDate", LocalDate.now().toString());
+            
+            mrsmapper.insertFIFOHistory(historyParams);
             
             totalDeducted += qtyToDeduct;
             remainingToDeduct -= qtyToDeduct;
