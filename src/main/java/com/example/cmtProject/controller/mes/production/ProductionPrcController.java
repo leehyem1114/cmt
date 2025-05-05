@@ -540,6 +540,7 @@ public class ProductionPrcController {
 	    lotInfo.put("bomQty", lotOrigin.getBomQty());
 	    lotInfo.put("childPdtCode", lotUpdateDTO.getChildPdtCode());
 	    lotInfo.put("childLotCode", lotUpdateDTO.getChildLotCode());
+	    lotInfo.put("woCode", lotUpdateDTO.getWoCode()));
 	    
 	    ius.completeProduction(lotInfo);
 	    // 생산완료 재고 차감 처리 
