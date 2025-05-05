@@ -77,4 +77,30 @@
     <select id="getNextIssueNo" resultType="java.lang.Long">
         SELECT SEQ_PRODUCTS_ISSUE.NEXTVAL FROM DUAL
     </select>
+    
+    <!-- 생산 입고 번호 생성 -->
+	<select id="generateProductionReceiptCode" resultType="string">
+	    SELECT 'PR-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || 
+	           LPAD(NVL(MAX(TO_NUMBER(SUBSTR(PI.ISSUE_CODE, 14))), 0) + 1, 4, '0')
+	    FROM PRODUCTS_ISSUE PI
+	    WHERE PI.ISSUE_CODE LIKE 'PR-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-%'
+	</select>
+	
+	<!-- 제품별 생산 입고 이력 조회 (FIFO 관리용) -->
+	<select id="getProductionReceiptsForFIFO" parameterType="string" resultType="java.util.Map">
+	    SELECT
+	        PIST.ISSUE_STOCK_NO,
+	        PIST.ISSUE_NO,
+	        PIST.PDT_CODE,
+	        PIST.ISSUED_QTY,
+	        PIST.ISSUE_DATE,
+	        PIST.LOT_NO
+	    FROM
+	        PRODUCTS_ISSUE_STOCK PIST
+	    WHERE
+	        PIST.PDT_CODE = #{pdtCode}
+	        AND TO_NUMBER(PIST.ISSUED_QTY) > 0
+	    ORDER BY
+	        PIST.ISSUE_DATE ASC, PIST.ISSUE_STOCK_NO ASC
+	</select>
 </mapper>

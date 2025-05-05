@@ -101,87 +101,85 @@ public class ProductsInventoryService {
      * @param params 차감 정보 (pdtCode, consumptionQty, updatedBy 포함)
      * @return 처리 결과
      */
-    @Transactional
-    public Map<String, Object> consumeProductFIFO(Map<String, Object> params) {
-        Map<String, Object> resultMap = new HashMap<>();
-        
-        try {
-            String pdtCode = (String) params.get("pdtCode");
-            String consumptionQty = (String) params.get("consumptionQty");
-            
-            // 현재 사용자 ID 가져오기
-            String userId = SecurityUtil.getUserId();
-            
-            log.info("FIFO 재고 차감 시작: 제품코드={}, 차감수량={}", pdtCode, consumptionQty);
-            
-            // 1. 해당 제품의 총 재고 확인
-            Map<String, Object> inventoryInfo = pImapper.getInventoryByPdtCode(pdtCode);
-            
-            if (inventoryInfo == null || 
-                Double.parseDouble((String) inventoryInfo.get("CURRENT_QTY")) < Double.parseDouble(consumptionQty)) {
-                log.warn("재고 부족: 요청={}, 현재재고={}", 
-                    consumptionQty, 
-                    inventoryInfo != null ? inventoryInfo.get("CURRENT_QTY") : "0");
-                resultMap.put("success", false);
-                resultMap.put("message", "재고가 부족합니다.");
-                return resultMap;
-            }
-            
-            // 2. 가장 오래된 입고분부터 차례로 조회 (FIFO)
-            List<Map<String, Object>> stockList = 
-                    pIsmapper.getStocksForFIFO(pdtCode);
-            
-            log.info("FIFO 차감 대상 출고재고 조회: {}건", stockList.size());
-            
-            double remainingToConsume = Double.parseDouble(consumptionQty);
-            
-            // 3. FIFO로 재고 차감
-            for (Map<String, Object> stock : stockList) {
-                if (remainingToConsume <= 0) break;
-                
-                Long stockNo = Long.valueOf(stock.get("ISSUE_STOCK_NO").toString());
-                double remainingQty = Double.parseDouble((String) stock.get("ISSUED_QTY"));
-                
-                // 차감할 수량 결정
-                double qtyToDeduct = Math.min(remainingQty, remainingToConsume);
-                
-                log.debug("출고분 차감: 출고재고번호={}, 차감수량={}, 남은수량={}",
-                    stockNo, qtyToDeduct, remainingQty - qtyToDeduct);
-                
-                // 출고별 재고 차감 처리 (실제 구현 필요, 여기서는 예시만 표시)
-                /*
-                Map<String, Object> deductParams = new HashMap<>();
-                deductParams.put("issueStockNo", stockNo);
-                deductParams.put("deductQty", String.valueOf(qtyToDeduct));
-                deductParams.put("updatedBy", userId);
-                
-                // pIsmapper.deductStock(deductParams); // 실제 구현 필요
-                */
-                
-                // 차감할 남은 수량 갱신
-                remainingToConsume -= qtyToDeduct;
-            }
-            
-            // 4. 총 재고에서도 차감
-            Map<String, Object> inventoryParams = new HashMap<>();
-            inventoryParams.put("pdtCode", pdtCode);
-            inventoryParams.put("consumptionQty", consumptionQty);
-            inventoryParams.put("updatedBy", userId);
-            
-            pImapper.deductInventory(inventoryParams);
-            
-            log.info("FIFO 재고 차감 완료: 제품코드={}, 차감수량={}", pdtCode, consumptionQty);
-            
-            resultMap.put("success", true);
-            resultMap.put("message", "재고가 FIFO 원칙에 따라 성공적으로 차감되었습니다.");
-            
-        } catch (Exception e) {
-            log.error("FIFO 재고 차감 중 오류 발생: " + e.getMessage(), e);
-            resultMap.put("success", false);
-            resultMap.put("message", "재고 차감 중 오류가 발생했습니다: " + e.getMessage());
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        }
-        
-        return resultMap;
-    }
+	@Transactional
+	public Map<String, Object> consumeProductFIFO(Map<String, Object> params) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    
+	    try {
+	        String pdtCode = (String) params.get("pdtCode");
+	        String consumptionQty = (String) params.get("consumptionQty");
+	        
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
+	        log.info("FIFO 재고 차감 시작: 제품코드={}, 차감수량={}", pdtCode, consumptionQty);
+	        
+	        // 1. 해당 제품의 총 재고 확인
+	        Map<String, Object> inventoryInfo = pImapper.getInventoryByPdtCode(pdtCode);
+	        
+	        if (inventoryInfo == null || 
+	            Double.parseDouble((String) inventoryInfo.get("AVAILABLE_QTY")) < Double.parseDouble(consumptionQty)) {
+	            log.warn("재고 부족: 요청={}, 현재재고={}", 
+	                consumptionQty, 
+	                inventoryInfo != null ? inventoryInfo.get("AVAILABLE_QTY") : "0");
+	            resultMap.put("success", false);
+	            resultMap.put("message", "재고가 부족합니다.");
+	            return resultMap;
+	        }
+	        
+	        // 2. 가장 오래된 입고분부터 차례로 조회 (FIFO)
+	        List<Map<String, Object>> stockList = 
+	                pIsmapper.getStocksForFIFO(pdtCode);
+	        
+	        log.info("FIFO 차감 대상 출고재고 조회: {}건", stockList.size());
+	        
+	        double remainingToConsume = Double.parseDouble(consumptionQty);
+	        
+	        // 3. FIFO로 재고 차감
+	        for (Map<String, Object> stock : stockList) {
+	            if (remainingToConsume <= 0) break;
+	            
+	            Long stockNo = Long.valueOf(stock.get("ISSUE_STOCK_NO").toString());
+	            double remainingQty = Double.parseDouble((String) stock.get("ISSUED_QTY"));
+	            
+	            // 차감할 수량 결정
+	            double qtyToDeduct = Math.min(remainingQty, remainingToConsume);
+	            
+	            log.debug("출고분 차감: 출고재고번호={}, 차감수량={}, 남은수량={}",
+	                stockNo, qtyToDeduct, remainingQty - qtyToDeduct);
+	            
+	            // 출고별 재고 차감 처리
+	            Map<String, Object> deductParams = new HashMap<>();
+	            deductParams.put("issueStockNo", stockNo);
+	            deductParams.put("deductQty", String.valueOf(qtyToDeduct));
+	            deductParams.put("updatedBy", userId);
+	            
+	            pIsmapper.deductStock(deductParams);
+	            
+	            // 차감할 남은 수량 갱신
+	            remainingToConsume -= qtyToDeduct;
+	        }
+	        
+	        // 4. 총 재고에서도 차감
+	        Map<String, Object> inventoryParams = new HashMap<>();
+	        inventoryParams.put("pdtCode", pdtCode);
+	        inventoryParams.put("consumptionQty", consumptionQty);
+	        inventoryParams.put("updatedBy", userId);
+	        
+	        pImapper.deductInventory(inventoryParams);
+	        
+	        log.info("FIFO 재고 차감 완료: 제품코드={}, 차감수량={}", pdtCode, consumptionQty);
+	        
+	        resultMap.put("success", true);
+	        resultMap.put("message", "재고가 FIFO 원칙에 따라 성공적으로 차감되었습니다.");
+	        
+	    } catch (Exception e) {
+	        log.error("FIFO 재고 차감 중 오류 발생: " + e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "재고 차감 중 오류가 발생했습니다: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
 }

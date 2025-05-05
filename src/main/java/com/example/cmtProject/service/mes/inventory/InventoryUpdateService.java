@@ -13,6 +13,7 @@ import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,9 @@ public class InventoryUpdateService {
     
     @Autowired
     private ProductsIssueStockMapper productsIssueStockMapper;
+
+    @Autowired
+    private ProductsMasterMapper ProductsMasterMapper;
     
     /**
      * 생산완료 처리 - LOT 상태가 CP로 변경될 때 호출
@@ -175,38 +179,38 @@ public class InventoryUpdateService {
         }
     }
     
-    /**
-     * 생산된 자식 제품 재고 추가   ==> 공정검사 완료후 추가가되어야함
-     */
-    private void addProductToInventory(Map<String, Object> lotInfo, String userId) {
-        String childCode = (String) lotInfo.get("childPdtCode");
-        String childLotCode = (String) lotInfo.get("childLotCode");
-        String woQty = (String) lotInfo.get("bomQty");
-        
-        log.info("생산완료 제품 재고 추가 - 제품코드: {}, LOT: {}, 수량: {}", childCode, childLotCode, woQty);
-        
-        // 재고 증가
-        Map<String, Object> inventoryParams = new HashMap<>();
-        inventoryParams.put("pdtCode", childCode);
-        inventoryParams.put("receivedQty", woQty);
-        // 창고/위치 정보가 없다면 기본값 설정
-        inventoryParams.put("warehouseCode", "W001"); // 기본 창고 코드
-        inventoryParams.put("locationCode", "L001"); // 기본 위치 코드
-        inventoryParams.put("updatedBy", userId);
-        
-        productsInventoryMapper.mergeInventory(inventoryParams);
-        
-        // 생산입고 재고정보 추가 (FIFO 관리용)
-        Map<String, Object> stockParams = new HashMap<>();
-        stockParams.put("issueNo", getNextIssueNo());
-        stockParams.put("pdtCode", childCode);
-        stockParams.put("issuedQty", woQty);
-        stockParams.put("issueDate", new java.util.Date().toString());
-        stockParams.put("lotNo", childLotCode);
-        stockParams.put("createdBy", userId);
-        
-        productsIssueStockMapper.insertStock(stockParams);
-    }
+//    /**
+//     * 생산된 자식 제품 재고 추가   ==> 공정검사 완료후 추가가되어야함
+//     */
+//    private void addProductToInventory(Map<String, Object> lotInfo, String userId) {
+//        String childCode = (String) lotInfo.get("childPdtCode");
+//        String childLotCode = (String) lotInfo.get("childLotCode");
+//        String woQty = (String) lotInfo.get("bomQty");
+//        
+//        log.info("생산완료 제품 재고 추가 - 제품코드: {}, LOT: {}, 수량: {}", childCode, childLotCode, woQty);
+//        
+//        // 재고 증가
+//        Map<String, Object> inventoryParams = new HashMap<>();
+//        inventoryParams.put("pdtCode", childCode);
+//        inventoryParams.put("receivedQty", woQty);
+//        // 창고/위치 정보가 없다면 기본값 설정
+//        inventoryParams.put("warehouseCode", "W001"); // 기본 창고 코드
+//        inventoryParams.put("locationCode", "L001"); // 기본 위치 코드
+//        inventoryParams.put("updatedBy", userId);
+//        
+//        productsInventoryMapper.mergeInventory(inventoryParams);
+//        
+//        // 생산입고 재고정보 추가 (FIFO 관리용)
+//        Map<String, Object> stockParams = new HashMap<>();
+//        stockParams.put("issueNo", getNextIssueNo());
+//        stockParams.put("pdtCode", childCode);
+//        stockParams.put("issuedQty", woQty);
+//        stockParams.put("issueDate", new java.util.Date().toString());
+//        stockParams.put("lotNo", childLotCode);
+//        stockParams.put("createdBy", userId);
+//        
+//        productsIssueStockMapper.insertStock(stockParams);
+//    }
     
     /**
      * 다음 출고 번호 생성 (임시)
@@ -361,5 +365,60 @@ public class InventoryUpdateService {
         if (remainingToAllocate > 0) {
             log.warn("자재 {} 할당 부족: {}만큼 부족", mtlCode, remainingToAllocate);
         }
+    }
+    
+    /**
+     * 생산완료된 제품/반제품 입고 처리
+     */
+    @Transactional
+    public void receiveProductionItem(Map<String, Object> params) {
+        String pdtCode = (String) params.get("pdtCode");
+        String woQty = (String) params.get("woQty");
+        String childLotCode = (String) params.get("childLotCode");
+        String userId = SecurityUtil.getUserId();
+        
+        log.info("생산완료품 입고 처리 - 제품코드: {}, LOT: {}, 수량: {}", pdtCode, childLotCode, woQty);
+        
+        // 1. 제품 기준정보 조회
+        Map<String, Object> productParams = new HashMap<>();
+        productParams.put("PDT_CODE", pdtCode);
+        Map<String, Object> productInfo = ProductsMasterMapper.selectSingleProducts(productParams);
+        
+        // 2. 재고 증가
+        Map<String, Object> inventoryParams = new HashMap<>();
+        inventoryParams.put("pdtCode", pdtCode);
+        inventoryParams.put("receivedQty", woQty);
+        
+        // 창고/위치 정보 설정 - 제품 기준정보의 값만 사용
+        String warehouseCode = (String) productInfo.get("DEFAULT_WAREHOUSE_CODE");
+        String locationCode = (String) productInfo.get("DEFAULT_LOCATION_CODE");
+        
+        inventoryParams.put("warehouseCode", warehouseCode);
+        inventoryParams.put("locationCode", locationCode);
+        inventoryParams.put("updatedBy", userId);
+        
+        productsInventoryMapper.mergeInventory(inventoryParams);
+        
+        // 3. FIFO 관리용 입고 정보 저장
+        saveProductionReceiptForFIFO(pdtCode, woQty, childLotCode, userId);
+        
+        log.info("생산완료품 입고 완료 - 제품: {}, 수량: {}", pdtCode, woQty);
+    }
+
+    /**
+     * FIFO 관리용 생산입고 정보 저장
+     */
+    private void saveProductionReceiptForFIFO(String pdtCode, String woQty, String childLotCode, String userId) {
+        Long issueNo = productsIssueStockMapper.getNextIssueNo();
+        
+        Map<String, Object> stockParams = new HashMap<>();
+        stockParams.put("issueNo", issueNo);
+        stockParams.put("pdtCode", pdtCode);
+        stockParams.put("issuedQty", woQty);
+        stockParams.put("issueDate", java.time.LocalDate.now().toString());
+        stockParams.put("lotNo", childLotCode);
+        stockParams.put("createdBy", userId);
+        
+        productsIssueStockMapper.insertStock(stockParams);
     }
 }

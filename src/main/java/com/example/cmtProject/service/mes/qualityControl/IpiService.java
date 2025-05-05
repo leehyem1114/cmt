@@ -16,6 +16,7 @@ import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
 import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
+import com.example.cmtProject.service.mes.inventory.InventoryUpdateService;
 
 import jakarta.transaction.Transactional;
 
@@ -24,6 +25,9 @@ public class IpiService {
 	
 	@Autowired
 	private IpiMapper ipiMapper;
+	
+	@Autowired
+	private InventoryUpdateService ius;
 
 	// 모든 입고 검사 목록
 	public List<IpiDTO> getAllIpi() {
@@ -90,6 +94,11 @@ public class IpiService {
         params.put("pdtCode", ipiDTO.getPdtCode());
         params.put("woQty", ipiDTO.getWoQty());
         params.put("childLotCode", ipiDTO.getChildLotCode());
+        
+        // 검수 결과가 합격인 경우만 입고 처리
+        if ("합격".equals(ipiDTO.getIpiInspectionResult())) {
+            ius.receiveProductionItem(params);
+        }
 
 
 	}
