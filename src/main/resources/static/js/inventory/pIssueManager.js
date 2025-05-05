@@ -1,50 +1,35 @@
 /**
- * 제품 출고관리 - 출고 정보 관리 모듈
+ * 제품 기준정보 관리 모듈
  * 
- * 제품 출고정보의 조회, 요청, 확정, 취소 기능을 담당하는 관리 모듈입니다.
+ * 제품 기준정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
+ * 창고/위치 드롭다운 기능이 추가되었습니다.
  * 
- * @version 2.1.0
- * @since 2025-04-30
+ * @version 1.3.0
+ * @since 2025-05-05
  */
-const ProductsIssueManager = (function() {
+const ProductsManager = (function() {
     // =============================
-    // 모듈 내부 변수 - 필요에 따라 변경하세요
+    // 모듈 내부 변수
     // =============================
 
     // 그리드 인스턴스 참조
-    let pIssueGrid;
-    let soDetailGrid;
+    let productsGrid;
 
-    // 현재 선택된 출고정보
-    let selectedIssue = null;
+    // 현재 선택된 제품정보
+    let selectedProduct = null;
 
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/api/productsissue/list', // 출고 목록 조회
-        DETAIL: (issueNo) => `/api/productsissue/detail/${issueNo}`, // 상세 정보 조회
-        HISTORY: (issueNo) => `/api/productsissue/history/${issueNo}`, // 이력 정보 조회
-        REQUEST: '/api/productsissue/request', // 출고 요청
-        REQUEST_BATCH: '/api/productsissue/request-batch', // 다건 출고 요청
-        REQUEST_BY_STATUS: '/api/productsissue/request/by-status', // 상태별 출고 요청
-        INSPECTION: '/api/productsissue/inspection', // 검수 등록 API
-        INSPECTION_BATCH: '/api/productsissue/inspection-batch', // 다건 검수 등록 API
-        PROCESS: '/api/productsissue/process', // 출고 처리
-        PROCESS_BATCH: '/api/productsissue/process-batch', // 다건 출고 처리
-        CANCEL: '/api/productsissue/cancel', // 출고 취소
-        SALES_ORDER: '/api/productsissue/sales-orders', // 수주 목록 조회 API
+        LIST: '/api/products-info/list', // 데이터 목록 조회
+        SINGLE: '/api/products-info/', // 단건 조회/삭제 시 사용
+        SAVE: '/api/products-info', // 데이터 저장
+        BATCH: '/api/products-info/batch', // 데이터 일괄 저장
+        WAREHOUSES: '/api/warehouse/list', // 창고 목록 조회
+        LOCATIONS: (whsCode) => `/api/warehouse/locations/${whsCode}`, // 위치 목록 조회
         EXCEL: {
-            DOWNLOAD: '/api/productsissue/excel/download' // 엑셀 다운로드 API URL
+            UPLOAD: '/api/products-info/excel/upload', // 엑셀 업로드 API URL
+            DOWNLOAD: '/api/products-info/excel/download' // 엑셀 다운로드 API URL
         }
-    };
-
-    // 출고 상태 정의
-    const ISSUE_STATUS = {
-        WAITING: '출고대기',
-        INSPECTING: '검수중',
-        INSPECT_PASSED: '검사 합격',
-        INSPECT_FAILED: '검사 불합격',
-        COMPLETED: '출고완료',
-        CANCELED: '취소'
     };
 
     // =============================
@@ -57,10 +42,18 @@ const ProductsIssueManager = (function() {
      */
     async function init() {
         try {
-            console.log('제품 출고관리 초기화를 시작합니다.');
+            console.log('제품 기준정보 관리 초기화를 시작합니다.');
 
             // 그리드 초기화
             await initGrid();
+
+            // 창고 데이터 로드 (필요한 경우)
+            try {
+                await loadWarehouseData();
+            } catch (err) {
+                console.warn('창고 데이터 로드 실패:', err);
+                // 계속 진행 - 이 기능이 없어도 기본 기능은 작동
+            }
 
             // 이벤트 리스너 등록
             await registerEvents();
@@ -71,13 +64,10 @@ const ProductsIssueManager = (function() {
             // 엑셀 기능 초기화
             initExcelFeatures();
 
-            // 모달 초기화
-            initModal();
-
-            console.log('제품 출고관리 초기화가 완료되었습니다.');
+            console.log('제품 기준정보 관리 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('초기화 중 오류 발생:', error);
-            await AlertUtil.showError('초기화 오류', '제품 출고관리 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '제품 기준정보 관리 초기화 중 오류가 발생했습니다.');
         }
     }
 
@@ -87,37 +77,29 @@ const ProductsIssueManager = (function() {
      */
     async function registerEvents() {
         try {
-            // UIUtil을 사용하여 이벤트 리스너 등록 - 버튼 이벤트
+            // UIUtil을 사용하여 이벤트 리스너 등록
             await UIUtil.registerEventListeners({
-                'pIssueRequestBtn': openIssueRequestModal, // 출고 요청 모달 열기
-                'pIssueInspectionBtn': registerInspection, // 검수 등록 버튼 - 추가됨
-                'pIssueConfirmBtn': confirmIssue, // 출고 확정 버튼
-                'pIssueCancelBtn': cancelIssue, // 출고 취소 버튼
-                'pIssueSearchBtn': searchData, // 데이터 검색 버튼
-                'createIssueBtn': createIssueRequest // 출고 요청 생성 버튼
+                'productsAppendBtn': appendRow, // 행 추가 버튼
+                'productsSaveBtn': saveData, // 데이터 저장 버튼
+                'productsDeleteBtn': deleteRows, // 데이터 삭제 버튼
+                'productsSearchBtn': searchData // 데이터 검색 버튼
+                // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
             });
 
             // 엔터키 검색 이벤트 등록
-            await UIUtil.bindEnterKeySearch('pIssueInput', searchData);
+            await UIUtil.bindEnterKeySearch('productsInput', searchData);
 
-            // 탭 이벤트 등록 - 이력정보 탭
-            const historyTab = document.getElementById('history-tab');
-            if (historyTab) {
-                historyTab.addEventListener('shown.bs.tab', function(e) {
-                    if (selectedIssue) {
-                        loadHistoryData(selectedIssue.ISSUE_NO);
+            // 파일 인풋 변경 이벤트 (있는 경우)
+            const fileInput = document.getElementById('productsFileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    const fileName = this.files[0]?.name || '선택된 파일 없음';
+                    const fileNameDisplay = document.getElementById('productsFileName');
+                    if (fileNameDisplay) {
+                        fileNameDisplay.textContent = fileName;
                     }
                 });
             }
-
-            // 상태별 출고 요청 버튼들 이벤트 등록
-            document.querySelectorAll('.issue-by-status').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const status = this.getAttribute('data-status');
-                    createIssueRequestsByStatus(status);
-                });
-            });
         } catch (error) {
             console.error('이벤트 리스너 등록 중 오류:', error);
             throw error;
@@ -134,8 +116,8 @@ const ProductsIssueManager = (function() {
 
             // 그리드 검색 설정
             GridSearchUtil.setupGridSearch({
-                gridId: 'pIssueGrid',
-                searchInputId: 'pIssueInput',
+                gridId: 'productsGrid',
+                searchInputId: 'productsInput',
                 autoSearch: true, // 입력 시 자동 검색
                 beforeSearch: function() {
                     console.log('그리드 검색 시작');
@@ -143,9 +125,6 @@ const ProductsIssueManager = (function() {
                 },
                 afterSearch: function(filteredData) {
                     console.log('그리드 검색 완료, 결과:', filteredData.length, '건');
-
-                    // 상세 정보 영역 초기화
-                    hideDetailSection();
                 }
             });
         } catch (error) {
@@ -155,7 +134,7 @@ const ProductsIssueManager = (function() {
 
     /**
      * 엑셀 기능 초기화 함수
-     * ExcelUtil을 사용하여 엑셀 다운로드 기능을 설정합니다.
+     * ExcelUtil을 사용하여 엑셀 다운로드/업로드 기능을 설정합니다.
      */
     function initExcelFeatures() {
         try {
@@ -163,10 +142,10 @@ const ProductsIssueManager = (function() {
 
             // 엑셀 다운로드 버튼 설정
             ExcelUtil.setupExcelDownloadButton({
-                buttonId: 'pIssueExcelDownBtn',
-                gridId: 'pIssueGrid',
-                fileName: 'products-issue-data.xlsx',
-                sheetName: '제품출고정보',
+                buttonId: 'productsExcelDownBtn',
+                gridId: 'productsGrid',
+                fileName: 'products-info.xlsx',
+                sheetName: '제품기준정보',
                 beforeDownload: function() {
                     console.log('엑셀 다운로드 시작');
                     return true;
@@ -175,42 +154,45 @@ const ProductsIssueManager = (function() {
                     console.log('엑셀 다운로드 완료');
                 }
             });
-        } catch (error) {
-            console.error('엑셀 기능 초기화 중 오류:', error);
-        }
-    }
 
-    /**
-     * 모달 초기화 함수
-     * 모달 다이얼로그 관련 초기화를 수행합니다.
-     */
-    function initModal() {
-        try {
-            console.log('모달 초기화');
-
-            // 모달 닫힐 때 이벤트 - 모달 내용 초기화
-            const issueRequestModal = document.getElementById('issueRequestModal');
-            if (issueRequestModal) {
-                issueRequestModal.addEventListener('hidden.bs.modal', function() {
-                    // 그리드 초기화
-                    if (soDetailGrid) {
-                        soDetailGrid.resetData([]);
-                    }
-                });
-
-                // 모달이 완전히 보여진 후에 그리드를 초기화하도록 이벤트 추가
-                issueRequestModal.addEventListener('shown.bs.modal', function() {
-                    // 그리드가 제대로 보이지 않는 문제 해결을 위한 그리드 갱신
-                    if (soDetailGrid) {
-                        soDetailGrid.refreshLayout();
+            // 엑셀 업로드 버튼 설정
+            const uploadButton = document.getElementById('productsExcelUpBtn');
+            if (uploadButton) {
+                ExcelUtil.setupExcelUploadButton({
+                    fileInputId: 'productsFileInput',
+                    uploadButtonId: 'productsExcelUpBtn',
+                    gridId: 'productsGrid',
+                    apiUrl: API_URLS.EXCEL.UPLOAD,
+                    headerMapping: {
+                        '제품코드': 'PDT_CODE',
+                        '제품명': 'PDT_NAME',
+                        '배송비': 'PDT_SHIPPING_PRICE',
+                        '제품설명': 'PDT_COMMENTS',
+                        '사용여부': 'PDT_USEYN',
+                        '자재유형코드': 'MTL_TYPE_CODE',
+                        '제품중량': 'PDT_WEIGHT',
+                        '중량단위': 'WT_TYPE_CODE',
+                        '제품크기': 'PDT_SIZE',
+                        '리드타입': 'LT_TYPE_CODE',
+                        '제품유형': 'PDT_TYPE',
+                        '창고코드': 'DEFAULT_WAREHOUSE_CODE',
+                        '위치코드': 'DEFAULT_LOCATION_CODE'
+                    },
+                    beforeLoad: function() {
+                        console.log('엑셀 업로드 시작');
+                        return true;
+                    },
+                    afterLoad: function(data, saveResult) {
+                        console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
+                        if (saveResult) {
+                            // 그리드 원본 데이터 업데이트
+                            GridSearchUtil.updateOriginalData('productsGrid', data);
+                        }
                     }
                 });
             }
-
-            // 수주 상세 그리드 초기화
-            initSoDetailGrid();
         } catch (error) {
-            console.error('모달 초기화 중 오류:', error);
+            console.error('엑셀 기능 초기화 중 오류:', error);
         }
     }
 
@@ -227,98 +209,114 @@ const ProductsIssueManager = (function() {
             console.log('그리드 초기화를 시작합니다.');
 
             // DOM 요소 존재 확인
-            const gridElement = document.getElementById('pIssueGrid');
+            const gridElement = document.getElementById('productsGrid');
             if (!gridElement) {
-                throw new Error('pIssueGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+                throw new Error('productsGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
             }
 
             // 서버에서 받은 데이터 활용
-            const gridData = window.pIssueList || [];
-            console.log('초기 데이터:', gridData ? gridData.length : 0, '건');
+            const gridData = window.productsList || [];
+            console.log('초기 데이터:', gridData.length, '건');
+
             // 그리드 생성 - GridUtil 사용
-            pIssueGrid = GridUtil.registerGrid({
-                id: 'pIssueGrid',
+            productsGrid = GridUtil.registerGrid({
+                id: 'productsGrid',
                 columns: [{
-                        header: '출고 코드',
-                        name: 'ISSUE_CODE',
-                        sortable: true
-                    },
-                    {
-                        header: '제품 코드',
+                        header: '제품코드',
                         name: 'PDT_CODE',
-                        sortable: true
+                        editor: 'text',
+                        sortable: true,
+                        width: 120
                     },
                     {
                         header: '제품명',
                         name: 'PDT_NAME',
-                        sortable: true
-                    },
-                    {
-                        header: '요청일',
-                        name: 'REQUEST_DATE',
+                        editor: 'text',
                         sortable: true,
-                        formatter: function(obj) {
-                            if (!obj.value) return '-';
-                            const date = new Date(obj.value);
-                            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                        }
+                        width: 150
                     },
                     {
-                        header: '출고일',
-                        name: 'ISSUE_DATE',
+                        header: '창고코드',
+                        name: 'DEFAULT_WAREHOUSE_CODE',
+                        editor: createWarehouseEditor(),
                         sortable: true,
-                        formatter: function(obj) {
-                            if (!obj.value) return '-';
-                            const date = new Date(obj.value);
-                            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                        }
+                        width: 150
                     },
                     {
-                        header: '요청 수량',
-                        name: 'REQUEST_QTY',
-                        sortable: true
-                    },
-                    {
-                        header: '출고 수량',
-                        name: 'ISSUED_QTY',
-                        sortable: true
-                    },
-                    {
-                        header: '출고 상태',
-                        name: 'ISSUE_STATUS',
+                        header: '위치 코드',
+                        name: 'DEFAULT_LOCATION_CODE',
+                        editor: createLocationEditor(),
                         sortable: true,
-                        formatter: function(obj) {
-                            const status = obj.value || ISSUE_STATUS.WAITING;
-                            let badgeClass = 'badge-waiting';
-
-                            if (status === ISSUE_STATUS.INSPECTING) {
-                                badgeClass = 'badge-inspecting';
-                            } else if (status === ISSUE_STATUS.INSPECT_PASSED) {
-                                badgeClass = 'badge-inspectPass';
-                            } else if (status === ISSUE_STATUS.INSPECT_FAILED) {
-                                badgeClass = 'badge-inspectFail';
-                            } else if (status === ISSUE_STATUS.COMPLETED) {
-                                badgeClass = 'badge-completed';
-                            } else if (status === ISSUE_STATUS.CANCELED) {
-                                badgeClass = 'badge-canceled';
-                            }
-
-                            return `<span class="badge ${badgeClass}">${status}</span>`;
-                        }
+                        width: 150
                     },
                     {
-                        header: '창고 코드',
-                        name: 'WAREHOUSE_CODE',
-                        sortable: true
+                        header: '배송비',
+                        name: 'PDT_SHIPPING_PRICE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
                     },
                     {
-                        header: '담당자',
-                        name: 'ISSUER',
-                        sortable: true
+                        header: '제품설명',
+                        name: 'PDT_COMMENTS',
+                        editor: 'text',
+                        sortable: true,
+                        width: 150
                     },
                     {
-                        header: '출고번호',
-                        name: 'ISSUE_NO',
+                        header: '사용여부',
+                        name: 'PDT_USEYN',
+                        editor: GridUtil.createYesNoEditor(),
+                        sortable: true,
+                        width: 80
+                    },
+                    {
+                        header: '자재유형코드',
+                        name: 'MTL_TYPE_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 120
+                    },
+                    {
+                        header: '제품중량',
+                        name: 'PDT_WEIGHT',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
+                    },
+                    {
+                        header: '중량단위',
+                        name: 'WT_TYPE_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '제품크기',
+                        name: 'PDT_SIZE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '리드타입',
+                        name: 'LT_TYPE_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '제품유형',
+                        name: 'PDT_TYPE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '타입',
+                        name: 'ROW_TYPE',
                         hidden: true
                     }
                 ],
@@ -331,32 +329,69 @@ const ProductsIssueManager = (function() {
                 },
                 data: gridData,
                 draggable: false,
+                hiddenColumns: ['ROW_TYPE'],
                 gridOptions: {
                     rowHeaders: ['rowNum', 'checkbox']
+                },
+                toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
+            });
+
+            // 편집 시작 이벤트 처리 - 드롭다운 데이터 로드
+            productsGrid.on('editingStart', function(ev) {
+                console.log('편집 시작:', ev.columnName, '행:', ev.rowKey);
+
+                if (ev.columnName === 'DEFAULT_LOCATION_CODE') {
+                    const rowKey = ev.rowKey;
+                    const row = productsGrid.getRow(rowKey);
+                    const warehouseCode = row.DEFAULT_WAREHOUSE_CODE;
+
+                    if (warehouseCode) {
+                        updateLocationDropdown(rowKey, warehouseCode);
+                    }
                 }
             });
 
-            // 그리드 데이터 정리 - 빈 상태 값 초기화
-            const rows = pIssueGrid.getData();
-            rows.forEach((row, index) => {
-                if (!row.ISSUE_STATUS) {
-                    pIssueGrid.setValue(row.rowKey, 'ISSUE_STATUS', ISSUE_STATUS.WAITING);
+            // 편집 완료 이벤트 처리 - 변경된 행 추적
+            productsGrid.on('editingFinish', function(ev) {
+                const rowKey = ev.rowKey;
+                const row = productsGrid.getRow(rowKey);
+
+                // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
+                if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
+                    productsGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+                    console.log(`행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
+                }
+
+                // 창고 코드가 변경된 경우 위치 코드 드롭다운 업데이트
+                if (ev.columnName === 'DEFAULT_WAREHOUSE_CODE' && ev.value !== ev.prevValue) {
+                    updateLocationDropdown(rowKey, ev.value);
                 }
             });
 
-            // 행 클릭 이벤트 등록 - 상세 정보 표시
-            GridUtil.onRowClick('pIssueGrid', async function(rowData, rowKey, columnName) {
-                if (!rowData) return;
-
-                // 현재 선택된 출고 정보 저장
-                selectedIssue = rowData;
-
-                // 상세 정보 조회 및 표시
-                await loadIssueDetail(rowData.ISSUE_NO);
-            });
+            // 키 컬럼 제어 설정 - 기존 데이터의 경우 PDT_CODE 편집 제한
+            GridUtil.setupKeyColumnControl('productsGrid', 'PDT_CODE');
 
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
-            GridSearchUtil.updateOriginalData('pIssueGrid', gridData);
+            GridSearchUtil.updateOriginalData('productsGrid', gridData);
+
+            // 행 클릭 이벤트 등록
+            GridUtil.onRowClick('productsGrid', function(rowData, rowKey, columnName) {
+                if (!rowData) return;
+                selectedProduct = rowData;
+            });
+
+            // 초기 데이터에 대해 위치 드롭다운 설정 (지연 로드)
+            setTimeout(() => {
+                const rows = productsGrid.getData();
+                rows.forEach((row, index) => {
+                    if (row.DEFAULT_WAREHOUSE_CODE) {
+                        // 더 짧은 지연 시간으로 설정
+                        setTimeout(() => {
+                            updateLocationDropdown(index, row.DEFAULT_WAREHOUSE_CODE);
+                        }, 50 * index);
+                    }
+                });
+            }, 100);
 
             console.log('그리드 초기화가 완료되었습니다.');
         } catch (error) {
@@ -366,300 +401,72 @@ const ProductsIssueManager = (function() {
     }
 
     /**
-     * 수주 상세 그리드 초기화 함수
-     * 모달 내에서 사용할 수주 상세 그리드를 초기화합니다.
+     * 창고 선택 에디터 생성 함수
+     * 창고 선택을 위한 셀렉트 에디터를 생성합니다.
      */
-    function initSoDetailGrid() {
-        try {
-            console.log('수주 상세 그리드 초기화');
-
-            // DOM 요소 확인
-            const gridElement = document.getElementById('soDetailGrid');
-            if (!gridElement) {
-                console.warn('soDetailGrid 요소를 찾을 수 없습니다.');
-                return;
+    function createWarehouseEditor() {
+        return {
+            type: 'select',
+            options: {
+                listItems: [{
+                    text: '창고를 선택하세요',
+                    value: ''
+                }]
             }
+        };
+    }
 
-            // 그리드 생성
-            soDetailGrid = GridUtil.registerGrid({
-                id: 'soDetailGrid',
-                columns: [{
-                        header: '수주 코드',
-                        name: 'SO_CODE',
-                        sortable: true
-                    },
-                    {
-                        header: '제품 코드',
-                        name: 'PDT_CODE',
-                        sortable: true
-                    },
-                    {
-                        header: '제품명',
-                        name: 'PDT_NAME',
-                        sortable: true
-                    },
-                    {
-                        header: '수주 수량',
-                        name: 'SO_QTY',
-                        sortable: true
-                    },
-                    {
-                        header: '수주일',
-                        name: 'SO_DATE',
-                        sortable: true,
-                        formatter: function(obj) {
-                            if (!obj.value) return '-';
-                            // 날짜 포맷팅
-                            return formatDate(obj.value);
-                        }
-                    },
-                    {
-                        header: '출하일',
-                        name: 'SHIP_DATE',
-                        sortable: true,
-                        formatter: function(obj) {
-                            if (!obj.value) return '-';
-                            // 날짜 포맷팅
-                            return formatDate(obj.value);
-                        }
-                    },
-                    {
-                        header: '납기일',
-                        name: 'SO_DUE_DATE',
-                        sortable: true,
-                        formatter: function(obj) {
-                            if (!obj.value) return '-';
-                            // 날짜 포맷팅
-                            return formatDate(obj.value);
-                        }
-                    },
-                    {
-                        header: '상태',
-                        name: 'SO_STATUS',
-                        sortable: true
-                    },
-                    {
-                        header: '창고 코드',
-                        name: 'WHS_CODE',
-                        sortable: true
-                    }
-                ],
-                data: [],
-                pageOptions: {
-                    useClient: true,
-                    perPage: 5
-                },
-                gridOptions: {
-                    rowHeaders: ['checkbox']
-                }
+    /**
+     * 위치 선택 에디터 생성 함수
+     * 위치 선택을 위한 셀렉트 에디터를 생성합니다.
+     */
+    function createLocationEditor() {
+        return {
+            type: 'select',
+            options: {
+                listItems: [{
+                    text: '위치를 선택하세요',
+                    value: ''
+                }]
+            }
+        };
+    }
+
+    /**
+     * 데이터 행 추가 함수
+     * 그리드에 새로운 행을 추가합니다.
+     */
+    async function appendRow() {
+        try {
+            console.log('행 추가');
+
+            const newRowData = {
+                PDT_CODE: '',
+                PDT_NAME: '',
+                PDT_SHIPPING_PRICE: '',
+                PDT_COMMENTS: '',
+                PDT_USEYN: 'Y',
+                MTL_TYPE_CODE: '',
+                PDT_WEIGHT: '',
+                WT_TYPE_CODE: '',
+                PDT_SIZE: '',
+                LT_TYPE_CODE: '',
+                PDT_TYPE: '',
+                DEFAULT_WAREHOUSE_CODE: '',
+                DEFAULT_LOCATION_CODE: ''
+                // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
+            };
+
+            // 그리드에 새 행 추가
+            await GridUtil.addNewRow('productsGrid', newRowData, {
+                at: 0,
+                focus: true
             });
-
-            console.log('수주 상세 그리드 초기화 완료');
         } catch (error) {
-            console.error('수주 상세 그리드 초기화 중 오류:', error);
+            console.error('행 추가 중 오류:', error);
+            await AlertUtil.showError('행 추가 오류', '행 추가 중 오류가 발생했습니다.');
         }
     }
-
-    // =============================
-    // 상세 정보 관련 함수
-    // =============================
-
-    /**
-     * 출고 상세 정보 로드 함수
-     * 선택된 출고 정보의 상세 내용을 조회하고 표시합니다.
-     * 
-     * @param {number} issueNo - 출고 번호
-     */
-    async function loadIssueDetail(issueNo) {
-        try {
-            // 로딩 표시
-            await UIUtil.toggleLoading(true, '상세 정보를 불러오는 중...');
-
-            // API 호출
-            const response = await ApiUtil.get(API_URLS.DETAIL(issueNo));
-
-            // 로딩 종료
-            await UIUtil.toggleLoading(false);
-
-            if (!response.success) {
-                throw new Error('상세 정보를 가져오는데 실패했습니다: ' + response.message);
-            }
-
-            const detailData = response.data;
-
-            // 상세 정보 표시
-            displayDetailInfo(detailData);
-
-            // 상세 정보 영역 표시
-            showDetailSection();
-
-            return true;
-        } catch (error) {
-            console.error('상세 정보 로드 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-
-            // 오류 알림
-            await AlertUtil.showError('조회 오류', '상세 정보를 불러오는데 실패했습니다.');
-
-            return false;
-        }
-    }
-
-    /**
-     * 상세 정보 표시 함수
-     * 
-     * @param {Object} detailData - 출고 상세 정보 데이터
-     */
-    function displayDetailInfo(detailData) {
-        // 기본 정보 탭 데이터 설정
-        document.getElementById('issueNo').textContent = detailData.ISSUE_NO || '';
-        document.getElementById('issueCode').textContent = detailData.ISSUE_CODE || '';
-        document.getElementById('pdtCode').textContent = detailData.PDT_CODE || '';
-        document.getElementById('pdtName').textContent = detailData.PDT_NAME || '';
-        document.getElementById('requestQty').textContent = detailData.REQUEST_QTY || '';
-
-        // 날짜 포맷팅
-        document.getElementById('requestDate').textContent = formatDate(detailData.REQUEST_DATE);
-        document.getElementById('issueDate').textContent = formatDate(detailData.ISSUE_DATE);
-
-        // 상태에 따라 배지 스타일 적용
-        const status = detailData.ISSUE_STATUS || ISSUE_STATUS.WAITING;
-        let badgeClass = 'badge-waiting';
-
-        if (status === ISSUE_STATUS.INSPECTING) {
-            badgeClass = 'badge-inspecting';
-        } else if (status === ISSUE_STATUS.INSPECT_PASSED) {
-            badgeClass = 'badge-inspectPass';
-        } else if (status === ISSUE_STATUS.INSPECT_FAILED) {
-            badgeClass = 'badge-inspectFail';
-        } else if (status === ISSUE_STATUS.COMPLETED) {
-            badgeClass = 'badge-completed';
-        } else if (status === ISSUE_STATUS.CANCELED) {
-            badgeClass = 'badge-canceled';
-        }
-
-        document.getElementById('issueStatus').innerHTML = `<span class="badge ${badgeClass}">${status}</span>`;
-        document.getElementById('warehouseInfo').textContent = detailData.WAREHOUSE_CODE || '';
-        document.getElementById('issuer').textContent = detailData.ISSUER || '';
-
-        // 이력 정보는 탭 선택 시 별도 로드
-    }
-
-    /**
-     * 이력 정보 로드 함수
-     * 선택된 출고의 이력 정보를 로드하고 표시합니다.
-     * 
-     * @param {number} issueNo - 출고 번호
-     * @returns {Promise<boolean>} 로드 성공 여부
-     */
-    async function loadHistoryData(issueNo) {
-        try {
-            // 로딩 표시
-            await UIUtil.toggleLoading(true, '이력 정보를 불러오는 중...');
-
-            // API 호출
-            const response = await ApiUtil.get(API_URLS.HISTORY(issueNo));
-
-            // 로딩 종료
-            await UIUtil.toggleLoading(false);
-
-            if (!response.success) {
-                throw new Error('이력 정보를 가져오는데 실패했습니다: ' + response.message);
-            }
-
-            const historyData = response.data || [];
-
-            // 이력 정보 표시
-            displayHistoryInfo(historyData);
-
-            return true;
-        } catch (error) {
-            console.error('이력 정보 로드 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-
-            // 오류 시 빈 테이블 표시
-            displayHistoryInfo([]);
-
-            return false;
-        }
-    }
-
-    /**
-     * 이력 정보 표시 함수
-     * 
-     * @param {Array} historyData - 이력 정보 데이터 배열
-     */
-    function displayHistoryInfo(historyData) {
-        const historyInfoBody = document.getElementById('historyInfoBody');
-
-        if (!historyInfoBody) {
-            console.error('이력 정보 테이블 요소를 찾을 수 없습니다.');
-            return;
-        }
-
-        if (!historyData || historyData.length === 0) {
-            historyInfoBody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center">이력 정보가 없습니다.</td>
-                </tr>
-            `;
-            return;
-        }
-
-        // 이력 정보 HTML 구성
-        let html = '';
-        historyData.forEach(history => {
-            html += `
-                <tr>
-                    <td>${formatDateTime(history.ACTION_DATE)}</td>
-                    <td>${history.ACTION_TYPE || ''}</td>
-                    <td>${history.ACTION_DESCRIPTION || ''}</td>
-                    <td>${history.ACTION_USER || ''}</td>
-                </tr>
-            `;
-        });
-
-        historyInfoBody.innerHTML = html;
-    }
-
-    /**
-     * 상세 정보 영역 표시 함수
-     */
-    function showDetailSection() {
-        const detailSection = document.getElementById('detailSection');
-        if (detailSection) {
-            detailSection.style.display = 'block';
-
-            try {
-                // Bootstrap 5 방식으로 첫 번째 탭 활성화
-                const firstTab = document.querySelector('#basic-info-tab');
-                if (firstTab && window.bootstrap) {
-                    const tab = new bootstrap.Tab(firstTab);
-                    tab.show();
-                    console.log('기본 탭이 활성화되었습니다.');
-                }
-            } catch (error) {
-                console.error('탭 초기화 오류:', error);
-            }
-        }
-    }
-
-    /**
-     * 상세 정보 영역 숨김 함수
-     */
-    function hideDetailSection() {
-        const detailSection = document.getElementById('detailSection');
-        if (detailSection) {
-            detailSection.style.display = 'none';
-        }
-
-        // 선택된 출고 정보 초기화
-        selectedIssue = null;
-    }
-
-    // =============================
-    // 업무 처리 함수
-    // =============================
 
     /**
      * 데이터 검색 함수
@@ -667,7 +474,7 @@ const ProductsIssueManager = (function() {
      */
     async function searchData() {
         try {
-            const keyword = document.getElementById('pIssueInput').value;
+            const keyword = document.getElementById('productsInput').value;
             console.log('데이터 검색 시작. 검색어:', keyword);
 
             // API 호출
@@ -682,16 +489,13 @@ const ProductsIssueManager = (function() {
             const data = Array.isArray(response) ? response : (response.data || []);
 
             // 그리드 데이터 설정
-            const grid = GridUtil.getGrid('pIssueGrid');
+            const grid = GridUtil.getGrid('productsGrid');
             if (grid) {
                 grid.resetData(data);
 
                 // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
-                GridSearchUtil.updateOriginalData('pIssueGrid', data);
+                GridSearchUtil.updateOriginalData('productsGrid', data);
             }
-
-            // 상세 정보 영역 숨기기
-            hideDetailSection();
 
             console.log('데이터 검색 완료. 결과:', data.length, '건');
             return data;
@@ -702,546 +506,283 @@ const ProductsIssueManager = (function() {
         }
     }
 
-    /**
-     * 출고 요청 모달 열기 함수
-     */
-    async function openIssueRequestModal() {
-        try {
-            console.log('출고 요청 모달 열기');
-
-            // 모달 표시
-            const modal = new bootstrap.Modal(document.getElementById('issueRequestModal'));
-            modal.show();
-
-            // 모달이 표시된 후 수주 목록 로드
-            await loadAllSalesOrders();
-
-            return true;
-        } catch (error) {
-            console.error('출고 요청 모달 열기 중 오류:', error);
-            await AlertUtil.showError('오류', '출고 요청 모달을 열 수 없습니다.');
-            return false;
-        }
-    }
+    // =============================
+    // CRUD 처리 함수
+    // =============================
 
     /**
-     * 모든 수주 목록 로드 함수
-     * 출고 요청 가능한 모든 수주 목록을 로드하여 그리드에 직접 표시합니다.
+     * 데이터 저장 함수
+     * 그리드의 변경된 데이터를 저장합니다.
      */
-    async function loadAllSalesOrders() {
+    async function saveData() {
         try {
-            console.log('모든 수주 목록 로드');
-            await UIUtil.toggleLoading(true, '수주 정보를 불러오는 중...');
+            console.log('데이터 저장 시작');
 
-            // API 호출 - 수주 목록 조회
-            const response = await ApiUtil.get(API_URLS.SALES_ORDER, {
-                status: 'SO_CONFIRMED,SO_PLANNED,SO_COMPLETED' // 출고 가능한 상태
-            });
-
-            await UIUtil.toggleLoading(false);
-
-            if (!response.success) {
-                throw new Error('수주 목록을 가져오는데 실패했습니다: ' + response.message);
+            const grid = GridUtil.getGrid('productsGrid');
+            if (!grid) {
+                throw new Error('productsGrid를 찾을 수 없습니다.');
             }
 
-            const salesOrders = response.data || [];
+            // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
+            grid.blur();
 
-            // 그리드에 바로 표시
-            if (soDetailGrid) {
-                soDetailGrid.resetData(salesOrders);
+            // 변경된 데이터 추출
+            const changes = await GridUtil.extractChangedData('productsGrid');
+            const modifiedData = [...changes.insert, ...changes.update];
 
-                // 그리드가 제대로 표시되지 않는 문제 해결을 위한 딜레이 후 레이아웃 갱신
-                setTimeout(() => {
-                    soDetailGrid.refreshLayout();
-                }, 100);
-            }
-
-            console.log('수주 목록 로드 완료:', salesOrders.length, '건');
-            return true;
-        } catch (error) {
-            console.error('수주 목록 로드 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('조회 오류', '수주 목록을 불러오는데 실패했습니다.');
-            return false;
-        }
-    }
-
-    /**
-     * 출고 요청 생성 함수
-     * 선택한 수주 정보를 바탕으로 출고 요청을 생성합니다.
-     */
-    async function createIssueRequest() {
-        try {
-            console.log('출고 요청 생성');
-
-            // 수주 상세 그리드에서 선택된 항목 확인
-            if (!soDetailGrid) {
-                await AlertUtil.showWarning('알림', '수주 상세 정보가 로드되지 않았습니다.');
+            if (modifiedData.length === 0) {
+                await AlertUtil.showWarning("알림", "수정된 내용이 없습니다.");
                 return false;
             }
 
-            const checkedRows = soDetailGrid.getCheckedRows();
-
-            if (checkedRows.length === 0) {
-                await AlertUtil.showWarning('알림', '출고 요청할 수주를 선택해주세요.');
-                return false;
+            // 유효성 검사
+            for (const item of modifiedData) {
+                if (ValidationUtil.isEmpty(item.PDT_CODE)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "제품코드는 필수입니다.");
+                    return false;
+                }
+                if (ValidationUtil.isEmpty(item.PDT_NAME)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "제품명은 필수입니다.");
+                    return false;
+                }
+                if (ValidationUtil.isEmpty(item.PDT_USEYN)) {
+                    item.PDT_USEYN = 'Y'; // 기본값 설정
+                }
             }
 
-            // 처리할 요청 목록 구성
-            const requestItems = checkedRows.map(row => ({
-                SO_CODE: row.SO_CODE,
-                PDT_CODE: row.PDT_CODE,
-                SO_QTY: row.SO_QTY,
-                WHS_CODE: row.WHS_CODE
-            }));
+            // 저장할 데이터 준비 - 단건 또는 배치 방식 선택
+            if (modifiedData.length === 1) {
+                // 단건 저장
+                const saveData = modifiedData[0];
 
-            // 출고 요청 처리
-            const confirmed = await AlertUtil.showConfirm({
-                title: '출고 요청 확인',
-                text: `선택한 ${requestItems.length}건의 수주에 대해 출고 요청을 생성하시겠습니까?`,
-                icon: 'question'
-            });
+                // API 호출
+                const response = await ApiUtil.processRequest(
+                    () => ApiUtil.post(API_URLS.SAVE, saveData), {
+                        loadingMessage: '데이터 저장 중...',
+                        successMessage: "데이터가 저장되었습니다.",
+                        errorMessage: "데이터 저장 중 오류가 발생했습니다.",
+                        successCallback: searchData
+                    }
+                );
 
-            if (!confirmed) {
-                return false;
-            }
-
-            // API 호출
-            await UIUtil.toggleLoading(true, '출고 요청 처리 중...');
-
-            let response;
-            if (requestItems.length === 1) {
-                // 단일 항목 처리
-                response = await ApiUtil.post(API_URLS.REQUEST, requestItems[0]);
+                if (response.success) {
+                    await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
-                // 다건 처리
-                response = await ApiUtil.post(API_URLS.REQUEST_BATCH, {
-                    items: requestItems
-                });
+                // 일괄 저장
+                const response = await ApiUtil.processRequest(
+                    () => ApiUtil.post(API_URLS.BATCH, modifiedData), {
+                        loadingMessage: '데이터 일괄 저장 중...',
+                        successMessage: "데이터가 일괄 저장되었습니다.",
+                        errorMessage: "데이터 일괄 저장 중 오류가 발생했습니다.",
+                        successCallback: searchData
+                    }
+                );
+
+                if (response.success) {
+                    await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
-            await UIUtil.toggleLoading(false);
-
-            if (!response.success) {
-                throw new Error('출고 요청에 실패했습니다: ' + response.message);
-            }
-
-            // 성공 처리
-            await AlertUtil.showSuccess('출고 요청 완료', response.message || '출고 요청이 등록되었습니다.');
-
-            // 모달 닫기
-            const modal = bootstrap.Modal.getInstance(document.getElementById('issueRequestModal'));
-            if (modal) {
-                modal.hide();
-            }
-
-            // 목록 갱신
-            await searchData();
-
-            return true;
         } catch (error) {
-            console.error('출고 요청 생성 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('처리 오류', '출고 요청 처리 중 오류가 발생했습니다: ' + error.message);
+            console.error('데이터 저장 오류:', error);
+            await AlertUtil.notifySaveError("저장 실패", "데이터 저장 중 오류가 발생했습니다.");
             return false;
         }
     }
 
     /**
-     * 상태별 출고요청 생성 함수
-     * 
-     * @param {string} status - 수주 상태 코드(쉼표로 구분된 여러 상태 가능)
+     * 데이터 삭제 함수
+     * 선택된 행을 삭제합니다.
      */
-    async function createIssueRequestsByStatus(status) {
+    async function deleteRows() {
         try {
-            console.log('상태별 출고요청 생성 시작. 상태:', status);
+            // 선택된 행 ID 확인
+            const grid = GridUtil.getGrid('productsGrid');
+            const selectedRowKeys = grid.getCheckedRowKeys();
 
-            // 확인 대화상자 표시
-            const statusText = {
-                'SO_CONFIRMED': '확정된',
-                'SO_PLANNED': '계획된',
-                'SO_COMPLETED': '완료된',
-                'SO_CONFIRMED,SO_PLANNED,SO_COMPLETED': '모든 활성'
-            } [status] || '';
+            if (selectedRowKeys.length === 0) {
+                await AlertUtil.showWarning('알림', '삭제할 항목을 선택해주세요.');
+                return false;
+            }
 
-            const confirmed = await AlertUtil.showConfirm({
-                title: '상태별 출고요청',
-                text: `${statusText} 수주에 대해 출고요청을 일괄 생성하시겠습니까?`,
-                icon: 'question'
-            });
+            // 선택된 코드 목록 생성
+            const selectedCodes = [];
+            for (const rowKey of selectedRowKeys) {
+                const pdtCode = grid.getValue(rowKey, "PDT_CODE");
+                if (pdtCode) selectedCodes.push(pdtCode);
+            }
 
-            if (!confirmed) return false;
+            if (selectedCodes.length === 0) {
+                await AlertUtil.showWarning('알림', '유효한 제품코드를 찾을 수 없습니다.');
+                return false;
+            }
 
-            // API 호출
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.REQUEST_BY_STATUS, {
-                    status
-                }), {
-                    loadingMessage: '출고요청 생성 중...',
-                    successMessage: '출고요청이 생성되었습니다.',
-                    errorMessage: '출고요청 생성 중 오류가 발생했습니다.',
-                    successCallback: async () => {
+            // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
+            const result = await GridUtil.deleteSelectedRows('productsGrid', {
+                confirmTitle: "삭제 확인",
+                confirmMessage: "선택한 제품 정보를 삭제하시겠습니까?",
+                onBeforeDelete: async () => {
+                    // 삭제 전 처리 - 여기서 true 반환해야 삭제 진행
+                    return true;
+                },
+                onAfterDelete: async () => {
+                    // 삭제 API 호출 및 처리
+                    try {
+                        // 삭제 요청 생성
+                        const deleteRequests = selectedCodes.map(pdtCode =>
+                            async () => ApiUtil.del(API_URLS.SINGLE + pdtCode)
+                        );
+
+                        // 일괄 삭제 요청 실행
+                        await ApiUtil.withLoading(async () => {
+                            await Promise.all(deleteRequests.map(req => req()));
+                        }, '데이터 삭제 중...');
+
+                        // 삭제 성공 메시지
+                        await AlertUtil.notifyDeleteSuccess('삭제 완료', '제품 정보가 삭제되었습니다.');
+
                         // 목록 갱신
                         await searchData();
+                    } catch (apiError) {
+                        console.error('삭제 API 호출 중 오류:', apiError);
+                        await AlertUtil.notifyDeleteError('삭제 실패', '제품 정보 삭제 중 API 오류가 발생했습니다.');
                     }
                 }
-            );
+            });
 
-            return response.success;
+            return result;
         } catch (error) {
-            console.error('상태별 출고요청 생성 중 오류:', error);
-            await AlertUtil.showError('처리 오류', '출고요청 생성 중 오류가 발생했습니다.');
+            console.error('데이터 삭제 오류:', error);
+            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
             return false;
         }
     }
 
+    // =============================
+    // 드롭다운 관련 함수 (추가된 기능)
+    // =============================
+
     /**
-     * 검수 등록 함수
-     * 선택한 출고 항목의 검수 등록을 처리합니다.
+     * 창고 데이터 로드 및 드롭다운 업데이트
      */
-    async function registerInspection() {
+    async function loadWarehouseData() {
         try {
-            console.log('검수 등록 처리');
+            await UIUtil.toggleLoading(true, '창고 정보를 불러오는 중...');
 
-            // 그리드에서 선택된 행 확인
-            const grid = GridUtil.getGrid('pIssueGrid');
-            if (!grid) {
-                await AlertUtil.showWarning('알림', '그리드가 초기화되지 않았습니다.');
-                return false;
-            }
-
-            const selectedRowKeys = grid.getCheckedRowKeys();
-
-            if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '검수 등록할 항목을 선택해주세요.');
-                return false;
-            }
-
-            // 선택된 항목이 처리 가능한지 확인
-            const validItems = [];
-            const invalidItems = [];
-
-            for (const rowKey of selectedRowKeys) {
-                const row = grid.getRow(rowKey);
-
-                // 출고대기 상태만 검수 처리 가능
-                if (row.ISSUE_STATUS !== ISSUE_STATUS.WAITING) {
-                    invalidItems.push({
-                        code: row.ISSUE_CODE,
-                        status: row.ISSUE_STATUS
-                    });
-                    continue;
-                }
-
-                // 유효한 항목 추가
-                validItems.push({
-                    issueNo: row.ISSUE_NO,
-                    issueCode: row.ISSUE_CODE,
-                    pdtCode: row.PDT_CODE,
-                    updatedBy: 'SYSTEM' // 실제 구현에서는 로그인 사용자 ID로 변경
-                });
-            }
-
-            if (validItems.length === 0) {
-                let message = '선택한 항목 중 검수 등록할 수 있는 항목이 없습니다.\n';
-                message += '출고대기 상태인 항목만 검수 등록할 수 있습니다.\n\n';
-
-                message += '처리할 수 없는 항목:\n';
-                invalidItems.forEach(item => {
-                    message += `- ${item.code}: ${item.status}\n`;
-                });
-
-                await AlertUtil.showWarning('알림', message);
-                return false;
-            }
-
-            // 확인 메시지
-            let confirmMsg = `선택한 ${validItems.length}건의 항목을 검수 등록하시겠습니까?`;
-            if (invalidItems.length > 0) {
-                confirmMsg += `\n(${invalidItems.length}건은 처리할 수 없는 상태입니다.)`;
-            }
-
-            const confirmed = await AlertUtil.showConfirm({
-                title: '검수 등록',
-                text: confirmMsg,
-                icon: 'question'
-            });
-
-            if (!confirmed) {
-                return false;
-            }
-
-            // API 호출
-            await UIUtil.toggleLoading(true, '검수 등록 처리 중...');
-
-            let response;
-            if (validItems.length === 1) {
-                // 단일 항목 처리
-                response = await ApiUtil.post(API_URLS.INSPECTION, validItems[0]);
-            } else {
-                // 다건 처리
-                response = await ApiUtil.post(API_URLS.INSPECTION_BATCH, {
-                    items: validItems
-                });
-            }
+            const response = await ApiUtil.get(API_URLS.WAREHOUSES);
 
             await UIUtil.toggleLoading(false);
 
-            if (!response.success) {
-                throw new Error('검수 등록에 실패했습니다: ' + response.message);
+            if (!response || !response.success) {
+                throw new Error('창고 정보를 가져오는데 실패했습니다.');
             }
 
-            // 성공 처리
-            await AlertUtil.showSuccess(
-                '검수 등록 완료',
-                response.message || `${validItems.length}건의 검수 등록이 완료되었습니다. 검수 담당자가 검사를 진행합니다.`
-            );
+            const warehouses = response.data || [];
 
-            // 목록 갱신
-            await searchData();
+            // 드롭다운 아이템 포맷팅
+            const items = warehouses.map(warehouse => ({
+                value: warehouse.WHS_CODE,
+                text: `${warehouse.WHS_CODE} - ${warehouse.WHS_NAME}`
+            }));
 
-            // 상세 정보 영역 숨기기
-            hideDetailSection();
+            // 빈 옵션 추가
+            items.unshift({
+                value: '',
+                text: '선택하세요'
+            });
+
+            // 그리드 칼럼 에디터 옵션 업데이트
+            const grid = GridUtil.getGrid('productsGrid');
+            if (!grid) return false;
+
+            const column = grid.getColumn('DEFAULT_WAREHOUSE_CODE');
+            if (column && column.editor && column.editor.options) {
+                column.editor.options.listItems = items;
+            }
 
             return true;
         } catch (error) {
-            console.error('검수 등록 처리 중 오류:', error);
+            console.error('창고 데이터 로드 오류:', error);
             await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('처리 오류', '검수 등록 처리 중 오류가 발생했습니다: ' + error.message);
             return false;
         }
     }
 
     /**
-     * 출고 확정 함수
-     * 선택한 출고 요청을 확정하고 재고를 처리합니다.
+     * 위치 데이터 로드 및 드롭다운 업데이트
+     * 
+     * @param {number} rowKey - 행 키
+     * @param {string} warehouseCode - 창고 코드 
      */
-    async function confirmIssue() {
+    async function updateLocationDropdown(rowKey, warehouseCode) {
         try {
-            console.log('출고 확정 처리');
+            const grid = GridUtil.getGrid('productsGrid');
+            if (!grid) return false;
 
-            // 그리드에서 선택된 행 확인
-            const grid = GridUtil.getGrid('pIssueGrid');
-            if (!grid) {
-                await AlertUtil.showWarning('알림', '그리드가 초기화되지 않았습니다.');
-                return false;
-            }
-
-            const selectedRowKeys = grid.getCheckedRowKeys();
-
-            if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '출고 확정할 항목을 선택해주세요.');
-                return false;
-            }
-
-            // 선택된 항목이 처리 가능한지 확인
-            const validItems = [];
-            const invalidItems = [];
-
-            for (const rowKey of selectedRowKeys) {
-                const row = grid.getRow(rowKey);
-
-                // 검사합격 또는 출고대기 상태만 처리 가능
-                if (row.ISSUE_STATUS !== ISSUE_STATUS.INSPECT_PASSED && row.ISSUE_STATUS !== ISSUE_STATUS.WAITING) {
-                    invalidItems.push({
-                        code: row.ISSUE_CODE,
-                        status: row.ISSUE_STATUS
-                    });
-                    continue;
+            if (!warehouseCode) {
+                // 창고 코드가 없으면 위치 드롭다운 비우기
+                const column = grid.getColumn('DEFAULT_LOCATION_CODE');
+                if (column && column.editor && column.editor.options) {
+                    column.editor.options.listItems = [{
+                        text: '위치를 선택하세요',
+                        value: ''
+                    }];
                 }
-
-                // 유효한 항목 추가
-                validItems.push({
-                    issueNo: row.ISSUE_NO,
-                    updatedBy: 'SYSTEM' // 실제 구현에서는 로그인 사용자 ID로 변경
-                });
-            }
-
-            if (validItems.length === 0) {
-                let message = '선택한 항목 중 출고 확정할 수 있는 항목이 없습니다.\n';
-                message += '검사합격 또는 출고대기 상태인 항목만 확정할 수 있습니다.\n\n';
-
-                message += '처리할 수 없는 항목:\n';
-                invalidItems.forEach(item => {
-                    message += `- ${item.code}: ${item.status}\n`;
-                });
-
-                await AlertUtil.showWarning('알림', message);
                 return false;
             }
 
-            // 확인 메시지
-            let confirmMsg = `선택한 ${validItems.length}건의 항목을 출고 확정하시겠습니까?`;
-            if (invalidItems.length > 0) {
-                confirmMsg += `\n(${invalidItems.length}건은 처리할 수 없는 상태입니다.)`;
+            const response = await ApiUtil.get(API_URLS.LOCATIONS(warehouseCode));
+
+            if (!response || !response.success) {
+                throw new Error('위치 정보를 가져오는데 실패했습니다.');
             }
 
-            const confirmed = await AlertUtil.showConfirm({
-                title: '출고 확정',
-                text: confirmMsg,
-                icon: 'question'
+            const locations = response.data || [];
+
+            // 위치 정보가 없으면 종료
+            if (!locations || locations.length === 0) {
+                console.log('위치 정보가 없습니다:', warehouseCode);
+                return false;
+            }
+
+            // 드롭다운 아이템 포맷팅
+            const items = locations.map(location => ({
+                value: location.LOC_CODE,
+                text: `${location.LOC_CODE} - ${location.LOC_NAME}`
+            }));
+
+            // 빈 옵션 추가
+            items.unshift({
+                value: '',
+                text: '위치를 선택하세요'
             });
 
-            if (!confirmed) {
-                return false;
+            // 위치 드롭다운 업데이트
+            const column = grid.getColumn('DEFAULT_LOCATION_CODE');
+            if (column && column.editor && column.editor.options) {
+                column.editor.options.listItems = items;
             }
 
-            // API 호출
-            await UIUtil.toggleLoading(true, '출고 확정 처리 중...');
+            // 기존 값 유지 (중요! 항상 첫 번째 위치로 설정하지 않음)
+            const currentValue = grid.getValue(rowKey, 'DEFAULT_LOCATION_CODE');
 
-            let response;
-            if (validItems.length === 1) {
-                // 단일 항목 처리
-                response = await ApiUtil.post(API_URLS.PROCESS, validItems[0]);
-            } else {
-                // 다건 처리
-                response = await ApiUtil.post(API_URLS.PROCESS_BATCH, {
-                    items: validItems
-                });
+            // 현재 값이 없거나 선택한 창고의 위치 목록에 없는 경우에만 초기화
+            const validLocationCodes = locations.map(loc => loc.LOC_CODE);
+            if (!currentValue || !validLocationCodes.includes(currentValue)) {
+                // 값이 없거나 유효하지 않은 경우 빈 값으로 초기화
+                grid.setValue(rowKey, 'DEFAULT_LOCATION_CODE', '');
             }
-
-            await UIUtil.toggleLoading(false);
-
-            if (!response.success) {
-                throw new Error('출고 확정에 실패했습니다: ' + response.message);
-            }
-
-            // 성공 처리
-            await AlertUtil.showSuccess('출고 확정 완료', response.message || '출고 확정이 완료되었습니다.');
-
-            // 목록 갱신
-            await searchData();
 
             return true;
         } catch (error) {
-            console.error('출고 확정 처리 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('처리 오류', '출고 확정 처리 중 오류가 발생했습니다: ' + error.message);
-            return false;
-        }
-    }
-
-    /**
-     * 출고 취소 함수
-     * 선택한 출고 요청을 취소합니다.
-     */
-    async function cancelIssue() {
-        try {
-            console.log('출고 취소 처리');
-
-            // 그리드에서 선택된 행 확인
-            const grid = GridUtil.getGrid('pIssueGrid');
-            if (!grid) {
-                await AlertUtil.showWarning('알림', '그리드가 초기화되지 않았습니다.');
-                return false;
-            }
-
-            const selectedRowKeys = grid.getCheckedRowKeys();
-
-            if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '취소할 출고 요청 항목을 선택해주세요.');
-                return false;
-            }
-
-            // 선택된 항목이 취소 가능한지 확인
-            const validItems = [];
-            const invalidItems = [];
-
-            for (const rowKey of selectedRowKeys) {
-                const row = grid.getRow(rowKey);
-
-                // 출고대기 상태만 취소 가능
-                if (row.ISSUE_STATUS !== ISSUE_STATUS.WAITING) {
-                    invalidItems.push({
-                        code: row.ISSUE_CODE,
-                        status: row.ISSUE_STATUS
-                    });
-                    continue;
-                }
-
-                // 유효한 항목 추가
-                validItems.push({
-                    issueNo: row.ISSUE_NO,
-                    updatedBy: 'SYSTEM' // 실제 구현에서는 로그인 사용자 ID로 변경
-                });
-            }
-
-            if (validItems.length === 0) {
-                let message = '선택한 항목 중 취소할 수 있는 항목이 없습니다.\n';
-                message += '출고대기 상태인 항목만 취소할 수 있습니다.\n\n';
-
-                message += '처리할 수 없는 항목:\n';
-                invalidItems.forEach(item => {
-                    message += `- ${item.code}: ${item.status}\n`;
-                });
-
-                await AlertUtil.showWarning('알림', message);
-                return false;
-            }
-
-            // 확인 메시지
-            let confirmMsg = `선택한 ${validItems.length}건의 출고 요청을 취소하시겠습니까?`;
-            if (invalidItems.length > 0) {
-                confirmMsg += `\n(${invalidItems.length}건은 취소할 수 없는 상태입니다.)`;
-            }
-
-            const confirmed = await AlertUtil.showConfirm({
-                title: '출고 취소',
-                text: confirmMsg,
-                icon: 'question'
-            });
-
-            if (!confirmed) {
-                return false;
-            }
-
-            // API 호출
-            await UIUtil.toggleLoading(true, '출고 취소 처리 중...');
-
-            // 취소 처리
-            // 1건씩 처리
-            const results = [];
-            for (const item of validItems) {
-                try {
-                    const response = await ApiUtil.post(API_URLS.CANCEL, item);
-                    results.push({
-                        issueNo: item.issueNo,
-                        success: response.success,
-                        message: response.message
-                    });
-                } catch (itemError) {
-                    results.push({
-                        issueNo: item.issueNo,
-                        success: false,
-                        message: itemError.message
-                    });
-                }
-            }
-
-            await UIUtil.toggleLoading(false);
-
-            // 결과 처리
-            const successCount = results.filter(r => r.success).length;
-
-            if (successCount > 0) {
-                let message = `${successCount}건의 출고 요청이 취소되었습니다.`;
-                if (successCount < validItems.length) {
-                    message += `\n(${validItems.length - successCount}건은 취소에 실패했습니다.)`;
-                }
-
-                await AlertUtil.showSuccess('출고 취소 완료', message);
-
-                // 목록 갱신
-                await searchData();
-            } else {
-                await AlertUtil.showError('취소 실패', '모든 항목의 취소가 실패했습니다.');
-            }
-
-            return successCount > 0;
-        } catch (error) {
-            console.error('출고 취소 처리 중 오류:', error);
-            await UIUtil.toggleLoading(false);
-            await AlertUtil.showError('처리 오류', '출고 취소 처리 중 오류가 발생했습니다: ' + error.message);
+            console.error('위치 데이터 로드 오류:', error);
             return false;
         }
     }
@@ -1251,47 +792,98 @@ const ProductsIssueManager = (function() {
     // =============================
 
     /**
-     * 날짜 포맷팅 함수
-     * 
-     * @param {string|Date} date - 날짜 문자열 또는 Date 객체
-     * @returns {string} 포맷팅된 날짜 문자열
-     */
-    function formatDate(date) {
-        if (!date) return '-';
-
-        try {
-            const dateObj = new Date(date);
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-        } catch (error) {
-            return '-';
-        }
-    }
-
-    /**
-     * 날짜/시간 포맷팅 함수
-     * 
-     * @param {string|Date} datetime - 날짜/시간 문자열 또는 Date 객체
-     * @returns {string} 포맷팅된 날짜/시간 문자열
-     */
-    function formatDateTime(datetime) {
-        if (!datetime) return '-';
-
-        try {
-            const dateObj = new Date(datetime);
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-        } catch (error) {
-            return '-';
-        }
-    }
-
-    /**
      * 그리드 인스턴스 반환 함수
      * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
      * 
      * @returns {Object} 그리드 인스턴스
      */
     function getGrid() {
-        return pIssueGrid;
+        return productsGrid;
+    }
+
+    /**
+     * 검색 조건 저장 함수
+     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
+     */
+    async function saveSearchCondition() {
+        try {
+            const searchCondition = document.getElementById('productsInput')?.value || '';
+
+            localStorage.setItem('productsSearchCondition', searchCondition);
+            console.log('검색 조건이 저장되었습니다.');
+
+            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
+            return true;
+        } catch (error) {
+            console.error('검색 조건 저장 오류:', error);
+            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+
+    /**
+     * 저장된 검색 조건 로드 함수
+     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
+     * 
+     * @returns {boolean} 로드 성공 여부
+     */
+    async function loadSearchCondition() {
+        try {
+            const savedCondition = localStorage.getItem('productsSearchCondition');
+
+            if (!savedCondition) {
+                console.log('저장된 검색 조건이 없습니다.');
+                return false;
+            }
+
+            // 검색 조건 설정
+            const searchInput = document.getElementById('productsInput');
+            if (searchInput) {
+                searchInput.value = savedCondition;
+            }
+
+            // 검색 실행
+            await searchData();
+
+            console.log('검색 조건이 로드되었습니다.');
+            return true;
+        } catch (error) {
+            console.error('검색 조건 로드 오류:', error);
+            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+
+    /**
+     * 로컬 검색 함수
+     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
+     */
+    function performLocalSearch() {
+        try {
+            const keyword = document.getElementById('productsInput').value.toLowerCase();
+
+            // 원본 데이터 가져오기
+            GridSearchUtil.resetToOriginalData('productsGrid');
+            const grid = GridUtil.getGrid('productsGrid');
+            const originalData = grid.getData();
+
+            // 필터링
+            const filtered = originalData.filter(row => {
+                return Object.values(row).some(val => {
+                    if (val == null) return false;
+                    return String(val).toLowerCase().includes(keyword);
+                });
+            });
+
+            // 그리드 업데이트
+            grid.resetData(filtered);
+            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
+
+            return filtered;
+        } catch (error) {
+            console.error('로컬 검색 중 오류:', error);
+            return [];
+        }
     }
 
     // =============================
@@ -1303,17 +895,19 @@ const ProductsIssueManager = (function() {
 
         // 데이터 관련 함수
         searchData, // 데이터 검색
-        openIssueRequestModal, // 출고 요청 모달 열기
-        createIssueRequest, // 출고 요청 생성
-        createIssueRequestsByStatus, // 상태별 출고 요청 생성
-        registerInspection, // 검수 등록
-        confirmIssue, // 출고 확정
-        cancelIssue, // 출고 취소
-        loadHistoryData, // 이력 정보 로드
-        loadAllSalesOrders, // 모든 수주 목록 로드
+        appendRow, // 행 추가
+        saveData, // 데이터 저장
+        deleteRows, // 데이터 삭제
+
+        // 드롭다운 관련 함수 (추가된 기능)
+        loadWarehouseData, // 창고 데이터 로드
+        updateLocationDropdown, // 위치 드롭다운 업데이트
 
         // 유틸리티 함수
         getGrid, // 그리드 인스턴스 반환
+        saveSearchCondition, // 검색 조건 저장
+        loadSearchCondition, // 저장된 검색 조건 로드
+        performLocalSearch // 로컬 검색 실행
     };
 })();
 
@@ -1322,14 +916,17 @@ const ProductsIssueManager = (function() {
 // =============================
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // 제품 출고관리 모듈 초기화
-        await ProductsIssueManager.init();
+        // 제품 기준정보 관리 초기화
+        await ProductsManager.init();
+
+        // 저장된 검색 조건 로드 (필요 시 활성화)
+        // await ProductsManager.loadSearchCondition();
     } catch (error) {
         console.error('초기화 중 오류 발생:', error);
         if (window.AlertUtil) {
-            await AlertUtil.showError('초기화 오류', '제품 출고관리 초기화 중 오류가 발생했습니다.');
+            await AlertUtil.showError('초기화 오류', '제품 기준정보 관리 초기화 중 오류가 발생했습니다.');
         } else {
-            alert('제품 출고관리 초기화 중 오류가 발생했습니다.');
+            alert('제품 기준정보 관리 초기화 중 오류가 발생했습니다.');
         }
     }
 });

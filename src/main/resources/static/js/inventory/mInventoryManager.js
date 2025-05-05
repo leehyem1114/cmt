@@ -16,17 +16,17 @@ const MaterialInventoryManager = (function() {
     let mInventoryGrid;
 
     // API URL 상수 정의
-    const API_URLS = {
-        LIST: '/api/materialInventory/list', // 데이터 목록 조회
-        SAVE: '/api/materialInventory/save', // 데이터 저장
-        DELETE: '/api/materialInventory/delete', // 데이터 삭제
-        FIFO: '/api/inventory/fifo', // FIFO 상세 조회
-        FIFO_HISTORY: '/api/materialInventory/fifo-history', // FIFO 이력 조회
-        EXCEL: {
-            UPLOAD: '/api/materialInventory/excel/upload', // 엑셀 업로드 API URL
-            DOWNLOAD: '/api/materialInventory/excel/download' // 엑셀 다운로드 API URL
-        }
-    };
+	const API_URLS = {
+	    LIST: '/api/materialinventory/list', // 
+	    SAVE: '/api/materialinventory/save', // /api/materialInventory에서 변경  
+	    DELETE: '/api/materialinventory/delete', // /api/materialInventory에서 변경
+	    FIFO: '/api/materialinventory/fifo', // 이건 맞음
+	    FIFO_HISTORY: '/api/materialinventory/fifo-history', // 이것도 맞음
+	    EXCEL: {
+	        UPLOAD: '/api/materialinventory/excel/upload', // /api/materialInventory에서 변경
+	        DOWNLOAD: '/api/materialinventory/excel/download' // /api/materialInventory에서 변경 
+	    }
+	};
 
     // =============================
     // 초기화 및 이벤트 처리 함수
@@ -252,17 +252,19 @@ const MaterialInventoryManager = (function() {
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                         }
                     },
-                    {
-                        header: 'FIFO',
-                        name: 'fifoAction',
-                        width: 100,
-                        align: 'center',
-                        formatter: function({
-                            row
-                        }) {
-                            return `<button class="btn btn-outline-primary btn-sm fifo-btn" onclick="MaterialInventoryManager.showFIFODetail('${row.MTL_CODE}')">상세</button>`;
-                        }
-                    },
+					{
+					    header: 'FIFO',
+					    name: 'fifoAction',
+					    width: 100,
+					    align: 'center',
+					    formatter: function({row}) {
+					        const mtlCode = row.MTL_CODE;
+					        return `<button class="btn btn-outline-primary btn-sm fifo-btn" 
+					                data-mtl-code="${mtlCode}">
+					                상세
+					             </button>`;
+					    }
+					},
                     {
                         header: '타입',
                         name: 'ROW_TYPE',
@@ -283,6 +285,27 @@ const MaterialInventoryManager = (function() {
                     rowHeaders: ['rowNum']
                 },
                 toggleRowCheckedOnClick: false // 행 클릭 시 체크박스 토글 기능 활성화
+            });
+
+            // FIFO 버튼 클릭 이벤트 처리
+            mInventoryGrid.on('click', function(ev) {
+                console.log('그리드 클릭 이벤트:', ev);
+                
+                // 다양한 방식으로 event 객체 접근 시도
+                const event = ev.nativeEvent || ev.originalEvent || ev.event || ev;
+                console.log('event 객체:', event);
+                
+                const targetElement = event.target || event.srcElement;
+                console.log('targetElement:', targetElement);
+                
+                if (targetElement && targetElement.classList.contains('fifo-btn')) {
+                    const { rowKey } = ev;
+                    const row = mInventoryGrid.getRow(rowKey);
+                    const mtlCode = row.MTL_CODE;
+                    
+                    console.log('FIFO 버튼 클릭됨:', mtlCode);
+                    MaterialInventoryManager.showFIFODetail(mtlCode);
+                }
             });
 
             // 편집 완료 이벤트 처리 - 변경된 행 추적
@@ -317,27 +340,34 @@ const MaterialInventoryManager = (function() {
     /**
      * FIFO 상세 정보 표시
      */
-    async function showFIFODetail(mtlCode) {
-        try {
-            document.getElementById('selectedMtlCode').textContent = mtlCode;
+	async function showFIFODetail(mtlCode) {
+	    console.log('showFIFODetail 호출됨:', mtlCode);
+	    console.log('API URL:', `${API_URLS.FIFO}/${mtlCode}`);
+	    
+	    try {
+	        document.getElementById('selectedMtlCode').textContent = mtlCode;
+	        console.log('selectedMtlCode 설정 완료');
 
-            // FIFO 상세 정보 조회
-            const response = await ApiUtil.get(`${API_URLS.FIFO}/${mtlCode}`);
+	        // FIFO 상세 정보 조회
+	        const response = await ApiUtil.get(`${API_URLS.FIFO}/${mtlCode}`);
+	        console.log('API 응답:', response);
 
-            if (response.success) {
-                displayFIFODetail(response.data);
-                document.getElementById('fifoDetailSection').style.display = 'block';
-                document.getElementById('fifoDetailSection').scrollIntoView({
-                    behavior: 'smooth'
-                });
-            } else {
-                await AlertUtil.showError('FIFO 조회 실패', 'FIFO 정보 조회에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('FIFO 정보 조회 오류:', error);
-            await AlertUtil.showError('오류', 'FIFO 정보 조회 중 오류가 발생했습니다.');
-        }
-    }
+	        if (response.success) {
+	            displayFIFODetail(response.data);
+	            document.getElementById('fifoDetailSection').style.display = 'block';
+	            document.getElementById('fifoDetailSection').scrollIntoView({
+	                behavior: 'smooth'
+	            });
+	        } else {
+	            console.log('FIFO 조회 실패:', response);
+	            await AlertUtil.showError('FIFO 조회 실패', 'FIFO 정보 조회에 실패했습니다.');
+	        }
+	    } catch (error) {
+	        console.error('showFIFODetail 에러 상세:', error);
+	        console.error('Error stack:', error.stack);
+	        await AlertUtil.showError('오류', 'FIFO 정보 조회 중 오류가 발생했습니다.');
+	    }
+	}
 
     /**
      * FIFO 상세 정보 표시

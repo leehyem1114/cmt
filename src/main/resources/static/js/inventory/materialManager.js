@@ -3,8 +3,8 @@
  * 
  * 원자재 기준정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
  * 
- * @version 1.1.0
- * @since 2025-05-01
+ * @version 1.2.0
+ * @since 2025-05-05
  */
 const MaterialManager = (function() {
     // =============================
@@ -326,6 +326,21 @@ const MaterialManager = (function() {
                 toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
             });
 
+            // 편집 시작 이벤트 처리 - 드롭다운 데이터 로드
+            materialGrid.on('editingStart', function(ev) {
+                console.log('편집 시작:', ev.columnName, '행:', ev.rowKey);
+                
+                if (ev.columnName === 'DEFAULT_LOCATION_CODE') {
+                    const rowKey = ev.rowKey;
+                    const row = materialGrid.getRow(rowKey);
+                    const warehouseCode = row.DEFAULT_WAREHOUSE_CODE;
+                    
+                    if (warehouseCode) {
+                        updateLocationDropdown(rowKey, warehouseCode);
+                    }
+                }
+            });
+
             // 편집 완료 이벤트 처리 - 변경된 행 추적
             materialGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
@@ -342,19 +357,6 @@ const MaterialManager = (function() {
                     updateLocationDropdown(rowKey, ev.value);
                 }
             });
-			
-			materialGrid.on('click', function(ev) {
-			    if (ev.columnName === 'DEFAULT_LOCATION_CODE') {
-			        const rowKey = ev.rowKey;
-			        const row = materialGrid.getRow(rowKey);
-			        const warehouseCode = row.DEFAULT_WAREHOUSE_CODE;
-			        
-			        // 창고코드가 있는 경우에만 위치 드롭다운 업데이트
-			        if (warehouseCode) {
-			            updateLocationDropdown(rowKey, warehouseCode);
-			        }
-			    }
-			});
 
             // 키 컬럼 제어 설정 - 기존 데이터의 경우 MTL_CODE 편집 제한
             GridUtil.setupKeyColumnControl('materialGrid', 'MTL_CODE');
@@ -367,14 +369,19 @@ const MaterialManager = (function() {
                 if (!rowData) return;
                 selectedMaterial = rowData;
             });
-			
-			// 초기 데이터에 대해 위치 드롭다운 설정
-			const rows = materialGrid.getData();
-			rows.forEach((row) => {
-			    if (row.DEFAULT_WAREHOUSE_CODE) {
-			        updateLocationDropdown(row.rowKey, row.DEFAULT_WAREHOUSE_CODE);
-			    }
-			});
+            
+            // 초기 데이터에 대해 위치 드롭다운 설정 (지연 로드)
+            setTimeout(() => {
+                const rows = materialGrid.getData();
+                rows.forEach((row, index) => {
+                    if (row.DEFAULT_WAREHOUSE_CODE) {
+                        // 더 짧은 지연 시간으로 설정
+                        setTimeout(() => {
+                            updateLocationDropdown(index, row.DEFAULT_WAREHOUSE_CODE);
+                        }, 50 * index);
+                    }
+                });
+            }, 100);
 
             console.log('그리드 초기화가 완료되었습니다.');
         } catch (error) {
@@ -398,21 +405,22 @@ const MaterialManager = (function() {
             }
         };
     }
-	/**
-	 * 위치 선택 에디터 생성 함수
-	 * 위치 선택을 위한 셀렉트 에디터를 생성합니다.
-	 */
-	function createLocationEditor() {
-	    return {
-	        type: 'select',
-	        options: {
-	            listItems: [{
-	                text: '위치를 선택하세요',
-	                value: ''
-	            }]
-	        }
-	    };
-	}
+
+    /**
+     * 위치 선택 에디터 생성 함수
+     * 위치 선택을 위한 셀렉트 에디터를 생성합니다.
+     */
+    function createLocationEditor() {
+        return {
+            type: 'select',
+            options: {
+                listItems: [{
+                    text: '위치를 선택하세요',
+                    value: ''
+                }]
+            }
+        };
+    }
 
     /**
      * 데이터 행 추가 함수
@@ -696,79 +704,77 @@ const MaterialManager = (function() {
         }
     }
 
-	/**
-	 * 위치 데이터 로드 및 드롭다운 업데이트
-	 * 
-	 * @param {number} rowKey - 행 키
-	 * @param {string} warehouseCode - 창고 코드 
-	 */
-	async function updateLocationDropdown(rowKey, warehouseCode) {
-	    try {
-	        const grid = GridUtil.getGrid('materialGrid');
-	        if (!grid) return false;
+    /**
+     * 위치 데이터 로드 및 드롭다운 업데이트
+     * 
+     * @param {number} rowKey - 행 키
+     * @param {string} warehouseCode - 창고 코드 
+     */
+    async function updateLocationDropdown(rowKey, warehouseCode) {
+        try {
+            const grid = GridUtil.getGrid('materialGrid');
+            if (!grid) return false;
 
-	        if (!warehouseCode) {
-	            // 창고 코드가 없으면 위치 드롭다운 비우기
-	            // 위치 코드 값도 초기화
-	            grid.setValue(rowKey, 'DEFAULT_LOCATION_CODE', '');
-	            
-	            // 위치 드롭다운 옵션 초기화
-	            const column = grid.getColumn('DEFAULT_LOCATION_CODE');
-	            if (column && column.editor && column.editor.options) {
-	                column.editor.options.listItems = [{
-	                    text: '위치를 선택하세요',
-	                    value: ''
-	                }];
-	            }
-	            return false;
-	        }
+            if (!warehouseCode) {
+                // 창고 코드가 없으면 위치 드롭다운 비우기
+                const column = grid.getColumn('DEFAULT_LOCATION_CODE');
+                if (column && column.editor && column.editor.options) {
+                    column.editor.options.listItems = [{
+                        text: '위치를 선택하세요',
+                        value: ''
+                    }];
+                }
+                return false;
+            }
 
-	        await UIUtil.toggleLoading(true, '위치 정보를 불러오는 중...');
+            const response = await ApiUtil.get(API_URLS.LOCATIONS(warehouseCode));
 
-	        const response = await ApiUtil.get(API_URLS.LOCATIONS(warehouseCode));
+            if (!response || !response.success) {
+                throw new Error('위치 정보를 가져오는데 실패했습니다.');
+            }
 
-	        await UIUtil.toggleLoading(false);
+            const locations = response.data || [];
 
-	        if (!response || !response.success) {
-	            throw new Error('위치 정보를 가져오는데 실패했습니다.');
-	        }
+            // 위치 정보가 없으면 종료
+            if (!locations || locations.length === 0) {
+                console.log('위치 정보가 없습니다:', warehouseCode);
+                return false;
+            }
 
-	        const locations = response.data || [];
+            // 드롭다운 아이템 포맷팅
+            const items = locations.map(location => ({
+                value: location.LOC_CODE,
+                text: `${location.LOC_CODE} - ${location.LOC_NAME}`
+            }));
 
-	        // 위치 정보가 없으면 종료
-	        if (!locations || locations.length === 0) {
-	            console.log('위치 정보가 없습니다:', warehouseCode);
-	            return false;
-	        }
+            // 빈 옵션 추가
+            items.unshift({
+                value: '',
+                text: '위치를 선택하세요'
+            });
 
-	        // 드롭다운 아이템 포맷팅
-	        const items = locations.map(location => ({
-	            value: location.LOC_CODE,
-	            text: `${location.LOC_CODE} - ${location.LOC_NAME}`
-	        }));
+            // 위치 드롭다운 업데이트
+            const column = grid.getColumn('DEFAULT_LOCATION_CODE');
+            if (column && column.editor && column.editor.options) {
+                column.editor.options.listItems = items;
+            }
 
-	        // 빈 옵션 추가
-	        items.unshift({
-	            value: '',
-	            text: '위치를 선택하세요'
-	        });
+            // 기존 값 유지 (중요! 항상 첫 번째 위치로 설정하지 않음)
+            const currentValue = grid.getValue(rowKey, 'DEFAULT_LOCATION_CODE');
+            
+            // 현재 값이 없거나 선택한 창고의 위치 목록에 없는 경우에만 초기화
+            const validLocationCodes = locations.map(loc => loc.LOC_CODE);
+            if (!currentValue || !validLocationCodes.includes(currentValue)) {
+                // 값이 없거나 유효하지 않은 경우 빈 값으로 초기화
+                grid.setValue(rowKey, 'DEFAULT_LOCATION_CODE', '');
+            }
 
-	        // 위치 드롭다운 업데이트
-	        const column = grid.getColumn('DEFAULT_LOCATION_CODE');
-	        if (column && column.editor && column.editor.options) {
-	            column.editor.options.listItems = items;
-	        }
-
-	        // 위치 코드 값 설정 (첫 번째 위치 선택)
-	        grid.setValue(rowKey, 'DEFAULT_LOCATION_CODE', locations[0].LOC_CODE);
-
-	        return true;
-	    } catch (error) {
-	        console.error('위치 데이터 로드 오류:', error);
-	        await UIUtil.toggleLoading(false);
-	        return false;
-	    }
-	}
+            return true;
+        } catch (error) {
+            console.error('위치 데이터 로드 오류:', error);
+            return false;
+        }
+    }
 
     // =============================
     // 유틸리티 함수

@@ -17,7 +17,7 @@
 	        PO_DATE,            <!-- 발주일자 -->
 	        PO_QTY,             <!-- 주문수량 -->
 	        QTY_UNIT,           <!-- 수량단위 -->
-	        WHS_CODE,           <!-- 창고 코드 -->
+<!--	        WHS_CODE,            창고 코드 -->
 	        PO_STATUS,          <!-- 발주 진행 상태 -->
 	        PO_USE_YN
 	    FROM
