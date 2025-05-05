@@ -596,6 +596,10 @@
 	   const rowKey = grid.getData().findIndex(row => row.ipiCode === ipiCode);
 	   const row = grid.getRow(rowKey);
 	   const woCode = row.woCode; // 또는 e.target.dataset.woCode;
+	   const pdtCode = row.pdtCode;
+	   const pdtName = row.pdtName;
+	   const woQty = row.woQty;
+	   const childLotCode = row.childLotCode;
 
 	   // 검사 항목(qcmName) 없는 경우 차단
 	   if (!row.qcmName || row.qcmName.trim() === '') {
@@ -607,12 +611,12 @@
 	     return;
 	   }
 	   
-	   handleStatusClick(ipiCode, status, row, rowKey, woCode); // ✅ 전달
+	   handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode); // ✅ 전달
 
 	 }
 
 	 // [2] 상태 전환 핸들러
-	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode) {
+	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode) {
 	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
@@ -622,7 +626,7 @@
 	       cancelButtonText: '취소'
 	     }).then(result => {
 	       if (result.isConfirmed) {
-	         updateStatus(ipiCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode);
+	         updateStatus(ipiCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode, pdtCode, pdtName, woQty, childLotCode);
 	       }
 	     });
 
@@ -640,7 +644,7 @@
 	       await autoInspect(row, rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
-	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
+	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode, pdtCode, pdtName, woQty, childLotCode);
 	     });
 
 	   } else if (status === '검사완료') {
@@ -745,7 +749,7 @@
 	   fetch('/ipi/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ ipiCode, status: newStatus, woCode })
+	     body: JSON.stringify({ ipiCode, status: newStatus, woCode, pdtCode, pdtName, woQty, childLotCode })
 	   })
 	     .then(res => res.json())
 	     .then(data => {
