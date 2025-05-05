@@ -41,7 +41,12 @@ public interface InventoryUpdateMapper {
      */
     public int updateProductAllocatedQty(Map<String, Object> params);
     
-    
+    /**
+     * 제품 계획재고 차감
+     * @param params pdtCode - 제품 코드, allocatedQty - 할당 수량, updatedBy - 수정자
+     * @return 업데이트된 행 수
+     */
+    public int updateProductAllocatedQtyDeduct(Map<String, Object> params);
     
     /**
      * IpiService 에 updateIpiInspectionStatusComplete 메서드에 추가해주세요

@@ -52,7 +52,7 @@
     </update>
     
     <!-- 자재의 총 가용 재고 조회 -->
-    <select id="getTotalAvailableStock" parameterType="string" resultType="double">
+    <select id="getTotalAvailableStock" parameterType="string" resultType="long">
         SELECT 
             NVL(SUM(TO_NUMBER(REMAINING_QTY)), 0)
         FROM 
