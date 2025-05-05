@@ -116,4 +116,14 @@
                 INVEN.UPDATED_BY = #{updatedBy},
                 INVEN.UPDATED_DATE = SYSDATE
     </update>
+    <!-- 제품 계획재고 차감-->
+	<update id="updateProductAllocatedQtyDeduct" parameterType="java.util.Map">
+	    UPDATE PRODUCTS_INVENTORY
+	    SET 
+	        ALLOCATED_QTY = TO_CHAR(TO_NUMBER(NVL(ALLOCATED_QTY, '0')) + TO_NUMBER(#{allocatedQty})),
+	        UPDATED_BY = #{updatedBy},
+	        UPDATED_DATE = SYSDATE
+	    WHERE 
+	        PDT_CODE = #{pdtCode}
+	</update>
 </mapper>

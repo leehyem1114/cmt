@@ -41,5 +41,5 @@ public interface MaterialReceiptStockMapper {
      * @param mtlCode 자재 코드
      * @return 총 가용 재고
      */
-    public Double getTotalAvailableStock(@Param("mtlCode") String mtlCode);
+    public Long getTotalAvailableStock(@Param("mtlCode") String mtlCode);
 }
