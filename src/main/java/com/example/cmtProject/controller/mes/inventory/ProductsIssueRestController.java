@@ -74,7 +74,7 @@ public class ProductsIssueRestController {
             findMap.put("status", status);
         } else {
             // 기본 상태 - 확정, 계획, 완료 상태
-            findMap.put("status", "SO_CONFIRMED,SO_PLANNED,SO_COMPLETED");
+            findMap.put("status", "SO_CONFIRMED");
         }
         
         log.info("출고 가능한 수주 목록 조회 요청. 검색어: {}, 상태: {}", keyword, findMap.get("status"));

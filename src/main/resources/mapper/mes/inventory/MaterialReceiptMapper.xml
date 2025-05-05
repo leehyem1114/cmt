@@ -23,7 +23,8 @@
 	    FROM
 	        PURCHASES_ORDER p
 	    WHERE 
-	        NOT EXISTS (
+	    	PO_STATUS = 'PO_ORDERED'
+	        AND NOT EXISTS (
 	            SELECT 1 
 	            FROM MATERIAL_RECEIPT m 
 	            WHERE m.PO_CODE = p.PO_CODE
