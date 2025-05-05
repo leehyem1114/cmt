@@ -119,7 +119,6 @@
 	  MTL_CODE, 
 	  RECEIVED_QTY, 
 	  UNIT_QTY,
-	  WHS_CODE,
 	  IQC_VISIABLE
 	)
 	SELECT
@@ -131,7 +130,6 @@
 	  #{mtlCode}, 
 	  #{receivedQty},
 	  '개',
-	  #{whsCode},
 	  'Y'
 	FROM DUAL
 	WHERE NOT EXISTS (
