@@ -32,6 +32,7 @@ import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
 import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
+import com.example.cmtProject.service.mes.inventory.InventoryUpdateService;
 import com.example.cmtProject.service.mes.production.LotService;
 import com.example.cmtProject.service.mes.production.ProductionPrcService;
 import com.example.cmtProject.service.mes.qualityControl.IpiService;
@@ -42,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/production")
 public class ProductionPrcController {
+
 	
 	/*
 	 * - 공정 상황 설명 -
@@ -118,9 +120,12 @@ public class ProductionPrcController {
 	@Autowired
 	private IpiService ipiService;
 	
-	
 	@Autowired
 	private IpiMapper ipiMapper;
+	
+	@Autowired
+	private InventoryUpdateService ius;
+
 	
 	//공정 현황 메인 페이지
 	@GetMapping("/productionPrc")
@@ -529,6 +534,16 @@ public class ProductionPrcController {
 		
 		lotService.updateLotPresentPRC(lotOrigin);
 		
+	    // 생산완료 재고 차감 처리
+	    Map<String, Object> lotInfo = new HashMap<>();
+	    lotInfo.put("parentPdtCode", lotUpdateDTO.getParentPdtCode());
+	    lotInfo.put("bomQty", lotOrigin.getBomQty());
+	    lotInfo.put("childPdtCode", lotUpdateDTO.getChildPdtCode());
+	    lotInfo.put("childLotCode", lotUpdateDTO.getChildLotCode());
+	    
+	    ius.completeProduction(lotInfo);
+	    // 생산완료 재고 차감 처리 
+	    
 		if(!lotUpdateDTO.getNum().equals("0")) { //공정의 끝인지 아닌지 파악
 			
 			//LOT_NO - 1 에 START_TIME 등록

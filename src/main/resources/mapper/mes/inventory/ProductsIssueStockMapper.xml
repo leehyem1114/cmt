@@ -56,7 +56,25 @@
             PRODUCTS_ISSUE_STOCK
         WHERE
             PDT_CODE = #{pdtCode}
+            AND TO_NUMBER(ISSUED_QTY) > 0
         ORDER BY
             ISSUE_DATE ASC, ISSUE_STOCK_NO ASC
+    </select>
+    
+    <!-- 출고별 재고 차감 -->
+    <update id="deductStock" parameterType="java.util.Map">
+        UPDATE PRODUCTS_ISSUE_STOCK
+        SET 
+            ISSUED_QTY = TO_CHAR(TO_NUMBER(ISSUED_QTY) - TO_NUMBER(#{deductQty})),
+            UPDATED_BY = #{updatedBy},
+            UPDATED_DATE = SYSDATE
+        WHERE 
+            ISSUE_STOCK_NO = #{issueStockNo}
+            AND TO_NUMBER(ISSUED_QTY) >= TO_NUMBER(#{deductQty})
+    </update>
+    
+    <!-- 다음 출고 번호 조회 -->
+    <select id="getNextIssueNo" resultType="java.lang.Long">
+        SELECT SEQ_PRODUCTS_ISSUE.NEXTVAL FROM DUAL
     </select>
 </mapper>

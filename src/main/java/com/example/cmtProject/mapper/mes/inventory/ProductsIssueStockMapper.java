@@ -34,4 +34,14 @@ public interface ProductsIssueStockMapper {
      * @return 재고 목록
      */
     public List<Map<String, Object>> getStocksForFIFO(@Param("pdtCode") String pdtCode);
+    
+    /**
+     * 출고별 재고 차감
+     */
+    public int deductStock(Map<String, Object> params);
+    
+    /**
+     * 다음 출고 번호 조회
+     */
+    public Long getNextIssueNo();
 }
