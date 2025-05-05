@@ -24,21 +24,24 @@
         )
     </insert>
     
-    <!-- 자재코드별 입고 재고 목록 조회 (입고일 순) -->
+    <!-- 자재코드별 입고 재고 목록 조회 - 원본 수량 포함 -->
     <select id="getStocksByMtlCodeOrderByDate" parameterType="java.lang.String" resultType="java.util.Map">
         SELECT 
-            RECEIPT_STOCK_NO,
-            RECEIPT_NO,
-            MTL_CODE,
-            REMAINING_QTY,
-            RECEIPT_DATE
+            MRS.RECEIPT_STOCK_NO,
+            MRS.RECEIPT_NO,
+            MRS.MTL_CODE,
+            MR.RECEIVED_QTY AS ORIGINAL_QTY,  -- MATERIAL_RECEIPT에서 원본 수량 가져오기
+            MRS.REMAINING_QTY,
+            MRS.RECEIPT_DATE
         FROM 
-            MATERIAL_RECEIPT_STOCK
+            MATERIAL_RECEIPT_STOCK MRS
+        JOIN 
+            MATERIAL_RECEIPT MR ON MRS.RECEIPT_NO = MR.RECEIPT_NO
         WHERE 
-            MTL_CODE = #{mtlCode}
-            AND TO_NUMBER(REMAINING_QTY) > 0
+            MRS.MTL_CODE = #{mtlCode}
+            AND TO_NUMBER(MRS.REMAINING_QTY) > 0
         ORDER BY 
-            RECEIPT_DATE ASC, RECEIPT_NO ASC
+            MRS.RECEIPT_DATE ASC, MRS.RECEIPT_NO ASC
     </select>
     
     <!-- 입고별 재고 차감 -->
@@ -60,5 +63,51 @@
         WHERE 
             MTL_CODE = #{mtlCode}
             AND TO_NUMBER(REMAINING_QTY) > 0
+    </select>
+    
+    <!-- FIFO 이력 저장 -->
+    <insert id="insertFIFOHistory" parameterType="java.util.Map">
+        INSERT INTO MATERIAL_FIFO_HISTORY (
+            HISTORY_NO,
+            RECEIPT_STOCK_NO,
+            MTL_CODE,
+            CONSUMED_QTY,
+            LOT_NO,
+            WO_CODE,
+            CONSUMED_DATE,
+            CONSUMED_BY,
+            CREATED_DATE
+        ) VALUES (
+            SEQ_MATERIAL_FIFO_HISTORY.NEXTVAL,
+            #{receiptStockNo},
+            #{mtlCode},
+            #{consumedQty},
+            #{lotNo},
+            #{woCode},
+            TO_DATE(#{consumedDate}, 'YYYY-MM-DD'),
+            #{consumedBy},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- FIFO 이력 조회 -->
+    <select id="getFIFOHistory" parameterType="string" resultType="java.util.Map">
+        SELECT 
+            H.HISTORY_NO,
+            H.RECEIPT_STOCK_NO,
+            H.MTL_CODE,
+            H.CONSUMED_QTY,
+            H.LOT_NO,
+            H.WO_CODE,
+            H.CONSUMED_DATE AS UPDATED_DATE, 
+            H.CONSUMED_BY AS UPDATED_BY,      
+            '소비' AS ACTION_TYPE,           
+            CONCAT('LOT-', H.LOT_NO, ' 작업지시(', H.WO_CODE, ')에서 ', H.CONSUMED_QTY, ' 소비') AS ACTION_DESCRIPTION
+        FROM 
+            MATERIAL_FIFO_HISTORY H
+        WHERE 
+            H.MTL_CODE = #{mtlCode}
+        ORDER BY 
+            H.CONSUMED_DATE DESC
     </select>
 </mapper>
