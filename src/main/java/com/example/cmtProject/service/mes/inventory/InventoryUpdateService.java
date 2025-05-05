@@ -74,8 +74,19 @@ public class InventoryUpdateService {
         List<Map<String, Object>> receiptStocks = mrsmapper.getStocksByMtlCodeOrderByDate(mtlCode);
         
         if (receiptStocks == null || receiptStocks.isEmpty()) {
-            log.warn("자재 {}의 입고별 재고가 없습니다.", mtlCode);
-            throw new RuntimeException("자재 " + mtlCode + "의 입고별 재고가 없습니다.");
+            log.warn("자재 {}의 입고별 재고가 없으므로 일반 재고에서 차감합니다.", mtlCode);
+            
+            // 전체 재고에서 바로 차감
+            Map<String, Object> inventoryParams = new HashMap<>();
+            inventoryParams.put("mtlCode", mtlCode);
+            inventoryParams.put("consumptionQty", String.valueOf(qty));
+            inventoryParams.put("updatedBy", userId);
+            
+            materialInventoryMapper.deductInventory(inventoryParams);
+            
+            // 계획재고도 차감
+            deductAllocatedMaterialInventory(mtlCode, qty, userId);
+            return;
         }
         
         for (Map<String, Object> stock : receiptStocks) {
@@ -110,7 +121,7 @@ public class InventoryUpdateService {
         
         materialInventoryMapper.deductInventory(inventoryParams);
         
-        // 계획재고도 차감 (필요한 경우)
+        // 계획재고도 차감
         deductAllocatedMaterialInventory(mtlCode, qty, userId);
         
         if (remainingToDeduct > 0) {
@@ -132,8 +143,19 @@ public class InventoryUpdateService {
         List<Map<String, Object>> productionReceipts = pprsmapper.getStocksForFIFO(pdtCode);
         
         if (productionReceipts == null || productionReceipts.isEmpty()) {
-            log.warn("제품 {}의 생산입고별 재고가 없습니다.", pdtCode);
-            throw new RuntimeException("제품 " + pdtCode + "의 생산입고별 재고가 없습니다.");
+            log.info("제품 {}에 생산입고 이력이 없으므로 일반 재고에서 차감합니다.", pdtCode);
+            
+            // 전체 재고에서 바로 차감
+            Map<String, Object> inventoryParams = new HashMap<>();
+            inventoryParams.put("pdtCode", pdtCode);
+            inventoryParams.put("consumptionQty", String.valueOf(qty));
+            inventoryParams.put("updatedBy", userId);
+            
+            productsInventoryMapper.deductInventory(inventoryParams);
+            
+            // 계획재고도 차감
+            deductAllocatedProductInventory(pdtCode, qty, userId);
+            return;
         }
         
         for (Map<String, Object> receipt : productionReceipts) {
@@ -168,7 +190,7 @@ public class InventoryUpdateService {
         
         productsInventoryMapper.deductInventory(inventoryParams);
         
-        // 계획재고도 차감 (필요한 경우)
+        // 계획재고도 차감
         deductAllocatedProductInventory(pdtCode, qty, userId);
         
         if (remainingToDeduct > 0) {
@@ -203,7 +225,6 @@ public class InventoryUpdateService {
     
     /**
      * 생산계획 대비 자재/제품 할당 수량 업데이트 (FIFO 적용)
-     * @param params soCode - 판매주문 코드, soQty - 주문 수량, updatedBy - 수정자
      */
     @Transactional
     public void updateAllocatedQuantities(Map<String, Object> params) {
@@ -220,16 +241,6 @@ public class InventoryUpdateService {
         List<Map<String, Object>> bomItems = Ium.getBomItems(params);
         log.info("BOM 항목 조회: 총 {}개", bomItems.size());
         
-        // BOM 항목 로깅
-        for (Map<String, Object> item : bomItems) {
-            log.info("아이템: {} (타입: {}, 필요수량: {} * {} = {})", 
-                item.get("PARENT_PDT_CODE"), 
-                item.get("ITEM_TYPE"),
-                item.get("BOM_QTY"), 
-                soQty,
-                Long.parseLong(item.get("BOM_QTY").toString()) * soQty);
-        }
-        
         // 1. 자재 재고 업데이트 (FIFO 방식)
         allocateMaterialsFIFO(bomItems, soQty, userId);
         
@@ -240,9 +251,6 @@ public class InventoryUpdateService {
     
     /**
      * FIFO 방식으로 자재 재고 할당
-     * @param bomItems BOM 항목 목록
-     * @param soQty 주문 수량
-     * @param userId 사용자 ID
      */
     private void allocateMaterialsFIFO(List<Map<String, Object>> bomItems, Long soQty, String userId) {
         for (Map<String, Object> item : bomItems) {
@@ -262,26 +270,24 @@ public class InventoryUpdateService {
     
     /**
      * 단일 자재에 대한 FIFO 할당
-     * @param mtlCode 자재 코드
-     * @param requiredQty 필요 수량
-     * @param userId 사용자 ID
      */
     private void allocateMaterialFIFO(String mtlCode, long requiredQty, String userId) {
         long remainingToAllocate = requiredQty;
         long totalAllocated = 0;
         
-        // 자재의 총 가용 재고 확인
-        Long totalAvailable = mrsmapper.getTotalAvailableStock(mtlCode);
-        if (totalAvailable == null || totalAvailable < requiredQty) {
-            log.warn("자재 {} 가용 재고 부족: 필요={}, 가용={}", 
-                mtlCode, requiredQty, totalAvailable != null ? totalAvailable : 0);
-        }
-        
         // 자재의 입고별 재고 목록 조회 (FIFO 순서)
         List<Map<String, Object>> receiptStocks = mrsmapper.getStocksByMtlCodeOrderByDate(mtlCode);
         
         if (receiptStocks == null || receiptStocks.isEmpty()) {
-            log.warn("자재 {}의 입고별 재고가 없습니다.", mtlCode);
+            log.info("자재 {}에 입고 이력이 없으므로 일반 재고에서 할당합니다.", mtlCode);
+            
+            // 전체 재고의 할당 수량만 업데이트
+            Map<String, Object> updateParams = new HashMap<>();
+            updateParams.put("mtlCode", mtlCode);
+            updateParams.put("allocatedQty", String.valueOf(requiredQty));
+            updateParams.put("updatedBy", userId);
+            
+            Ium.updateMaterialAllocatedQty(updateParams);
             return;
         }
         
