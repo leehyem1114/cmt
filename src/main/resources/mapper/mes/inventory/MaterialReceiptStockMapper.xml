@@ -91,23 +91,24 @@
     </insert>
     
     <!-- FIFO 이력 조회 -->
-    <select id="getFIFOHistory" parameterType="string" resultType="java.util.Map">
-        SELECT 
-            H.HISTORY_NO,
-            H.RECEIPT_STOCK_NO,
-            H.MTL_CODE,
-            H.CONSUMED_QTY,
-            H.LOT_NO,
-            H.WO_CODE,
-            H.CONSUMED_DATE AS UPDATED_DATE, 
-            H.CONSUMED_BY AS UPDATED_BY,      
-            '소비' AS ACTION_TYPE,           
-            CONCAT('LOT-', H.LOT_NO, ' 작업지시(', H.WO_CODE, ')에서 ', H.CONSUMED_QTY, ' 소비') AS ACTION_DESCRIPTION
-        FROM 
-            MATERIAL_FIFO_HISTORY H
-        WHERE 
-            H.MTL_CODE = #{mtlCode}
-        ORDER BY 
-            H.CONSUMED_DATE DESC
-    </select>
+<!-- 오라클에서 concat가 2개의 문자열만 사용가능  ||로변경 -->
+	<select id="getFIFOHistory" parameterType="string" resultType="java.util.Map">
+	    SELECT 
+	        H.HISTORY_NO,
+	        H.RECEIPT_STOCK_NO,
+	        H.MTL_CODE,
+	        H.CONSUMED_QTY,
+	        H.LOT_NO,
+	        H.WO_CODE,
+	        H.CONSUMED_DATE AS UPDATED_DATE, 
+	        H.CONSUMED_BY AS UPDATED_BY,      
+	        '소비' AS ACTION_TYPE,           
+	        ' 작업지시(' || H.WO_CODE || ')의 '||H.LOT_NO ||' 에서  '|| H.CONSUMED_QTY || 'EA 소비' AS ACTION_DESCRIPTION
+	    FROM 
+	        MATERIAL_FIFO_HISTORY H
+	    WHERE 
+	        H.MTL_CODE = #{mtlCode}
+	    ORDER BY 
+	        H.CONSUMED_DATE DESC
+	</select>
 </mapper>
