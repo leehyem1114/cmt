@@ -39,7 +39,7 @@
             	E.EMP_ID = #{empId}
         	</if>
     	</where>
-    	ORDER BY P.PAY_DATE DESC
+    	ORDER BY P.PAY_DATE DESC, E.EMP_NAME ASC
 	</select>  
   
   	<!-- 직급별 기본급 조회 -->
@@ -219,7 +219,8 @@
 	        FROM PAYMENTS
 	        WHERE PAY_DATE BETWEEN TO_DATE(#{payMonth} || '-01', 'YYYY-MM-DD')
             	AND LAST_DAY(TO_DATE(#{payMonth} || '-01', 'YYYY-MM-DD'))
-	    )    	
+	    )   
+	    ORDER BY E.EMP_NAME 	
     </select>
 	
 	<!-- 월별 급여대장 간략 조회 -->
