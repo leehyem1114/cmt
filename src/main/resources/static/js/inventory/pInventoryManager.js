@@ -438,25 +438,31 @@ const ProductsInventoryManager = (function() {
     /**
      * FIFO 이력 표시
      */
-    function displayFIFOHistory(historyData) {
-        const tableBody = document.getElementById('fifoHistoryTableBody');
-        tableBody.innerHTML = '';
+	function displayFIFOHistory(historyData) {
+	    const tableBody = document.getElementById('fifoHistoryTableBody');
+	    tableBody.innerHTML = '';
 
-        if (historyData && historyData.length > 0) {
-            historyData.forEach(history => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDateTime(history.UPDATED_DATE)}</td>
-                    <td>${history.ACTION_TYPE}</td>
-                    <td>${history.ACTION_DESCRIPTION}</td>
-                    <td>${history.UPDATED_BY || '-'}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        } else {
-            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">이력 정보가 없습니다.</td></tr>';
-        }
-    }
+	    if (historyData && historyData.length > 0) {
+	        console.log("FIFO 이력 데이터 있음: ", historyData.length, "건");
+	        
+	        historyData.forEach(history => {
+	            // 디버그용 로그 추가
+	            console.log("이력 데이터:", history);
+	            
+	            const row = document.createElement('tr');
+	            row.innerHTML = `
+	                <td>${formatDateTime(history.UPDATED_DATE)}</td>
+	                <td>${history.ACTION_TYPE || "데이터 없음"}</td>
+	                <td>${history.ACTION_DESCRIPTION || "상세 정보 없음"}</td>
+	                <td>${history.UPDATED_BY || '-'}</td>
+	            `;
+	            tableBody.appendChild(row);
+	        });
+	    } else {
+	        console.log("FIFO 이력 데이터가 없음");
+	        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">이력 정보가 없습니다.</td></tr>';
+	    }
+	}
 
     /**
      * 탭 전환

@@ -85,29 +85,25 @@ public class IpiService {
 		ipiMapper.updateIpiInspectionStatusProcessing(loginUser, ipiDTO);
 	}
 
+	/**
+	 * 검사중에서 검사완료로 업데이트
+	 */
 	@Transactional
-	// 검사중에서 검사완료로 업데이트
 	public void updateIpiInspectionStatusComplete(IpiDTO ipiDTO) {
-		ipiDTO.setIpiEndTime(LocalDateTime.now());
-		ipiMapper.updateIpiInspectionStatusComplete(ipiDTO);
-		
-        Map<String, Object> params = new HashMap<>();
-        params.put("pdtName", ipiDTO.getPdtName());
-        params.put("pdtCode", ipiDTO.getPdtCode());
-       // params.put("pdtCode", "WIP002");
-        params.put("woQty", ipiDTO.getWoQty());
-        params.put("childLotCode", ipiDTO.getChildLotCode());
-        params.put("IpiInspectionResult", ipiDTO.getIpiInspectionResult());
-        System.out.println("3333333333333"+ipiDTO.getIpiInspectionResult());
-        System.out.println("4444444444444"+ipiDTO);
-     //   ius.receiveProductionItem(params);
-        // 검수 결과가 합격인 경우만 입고 처리
-        if ("합격".equals(ipiDTO.getIpiInspectionResult())) {
-        	System.out.println("****************************************************************8");
-            ius.receiveProductionItem(params);
-        }
-
-
+	    ipiDTO.setIpiEndTime(LocalDateTime.now());
+	    ipiMapper.updateIpiInspectionStatusComplete(ipiDTO);
+	    
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("pdtName", ipiDTO.getPdtName());
+	    params.put("pdtCode", ipiDTO.getPdtCode());
+	    params.put("woQty", ipiDTO.getWoQty());
+	    params.put("childLotCode", ipiDTO.getChildLotCode());
+	    params.put("IpiInspectionResult", ipiDTO.getIpiInspectionResult());
+	    
+	    // 검수 결과가 합격인 경우만 입고 처리
+	    if ("합격".equals(ipiDTO.getIpiInspectionResult())) {
+	        ius.receiveProductionItem(params);
+	    }
 	}
 
 	

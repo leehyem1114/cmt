@@ -1,5 +1,6 @@
 package com.example.cmtProject.service.mes.inventory;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptStockMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
@@ -33,6 +35,9 @@ public class ProductsInventoryService {
 	
 	@Autowired
 	private ProductsProductionReceiptStockMapper pprsmapper;
+	
+	@Autowired
+	private ProductsProductionReceiptMapper pprMapper;
 	
 	/**
 	 * 재고 목록 조회
@@ -62,9 +67,9 @@ public class ProductsInventoryService {
 			
 			for (Map<String, Object> item : inventoryList) {
                 // 계산된 가용수량 설정 (가용수량 = 현재수량 - 할당수량)
-                double currentQty = Double.parseDouble(item.get("CURRENT_QTY").toString());
-                double allocatedQty = Double.parseDouble(item.get("ALLOCATED_QTY").toString());
-                double availableQty = currentQty - allocatedQty;
+                long currentQty = Long.parseLong(item.get("CURRENT_QTY").toString());
+                long allocatedQty = Long.parseLong(item.get("ALLOCATED_QTY").toString());
+                long availableQty = currentQty - allocatedQty;
                 
                 // 가용수량 업데이트
                 item.put("AVAILABLE_QTY", String.valueOf(availableQty));
@@ -105,6 +110,10 @@ public class ProductsInventoryService {
 	
 	/**
 	 * FIFO 방식으로 재고 차감 및 이력 기록
+	 * 통합된 재고 차감 메서드 - 모든 재고 차감은 이 메서드를 통해 이루어져야 함
+	 * 
+	 * @param params 차감 파라미터 (pdtCode, consumptionQty, consumptionType, lotNo, woCode, soCode, updatedBy)
+	 * @return 처리 결과
 	 */
 	@Transactional
 	public Map<String, Object> consumeProductFIFO(Map<String, Object> params) {
@@ -112,7 +121,8 @@ public class ProductsInventoryService {
 	    
 	    try {
 	        String pdtCode = (String) params.get("pdtCode");
-	        String consumptionQty = (String) params.get("consumptionQty");
+	        String consumptionQtyStr = (String) params.get("consumptionQty");
+	        long consumptionQty = Long.parseLong(consumptionQtyStr);
 	        
 	        // 소비 타입 확인 (PRODUCTION/SHIPMENT)
 	        String consumptionType = (String) params.getOrDefault("consumptionType", "PRODUCTION");
@@ -121,7 +131,7 @@ public class ProductsInventoryService {
 	        String lotNo = (String) params.get("lotNo");
 	        
 	        // 현재 사용자 ID 가져오기
-	        String userId = SecurityUtil.getUserId();
+	        String userId = (String) params.getOrDefault("updatedBy", SecurityUtil.getUserId());
 	        
 	        log.info("FIFO 재고 차감 시작: 제품코드={}, 차감수량={}, 유형={}", 
 	            pdtCode, consumptionQty, consumptionType);
@@ -130,7 +140,7 @@ public class ProductsInventoryService {
 	        Map<String, Object> inventoryInfo = pImapper.getInventoryByPdtCode(pdtCode);
 	        
 	        if (inventoryInfo == null || 
-	            Double.parseDouble((String) inventoryInfo.get("AVAILABLE_QTY")) < Double.parseDouble(consumptionQty)) {
+	            Long.parseLong((String) inventoryInfo.get("AVAILABLE_QTY")) < consumptionQty) {
 	            log.warn("재고 부족: 요청={}, 현재재고={}", 
 	                consumptionQty, 
 	                inventoryInfo != null ? inventoryInfo.get("AVAILABLE_QTY") : "0");
@@ -144,7 +154,7 @@ public class ProductsInventoryService {
 	        
 	        log.info("FIFO 차감 대상 생산입고재고 조회: {}건", stockList.size());
 	        
-	        double remainingToConsume = Double.parseDouble(consumptionQty);
+	        long remainingToConsume = consumptionQty;
 	        List<Map<String, Object>> consumptionDetails = new ArrayList<>();
 	        
 	        // 3. FIFO로 재고 차감
@@ -152,10 +162,10 @@ public class ProductsInventoryService {
 	            if (remainingToConsume <= 0) break;
 	            
 	            Long stockNo = Long.valueOf(stock.get("PRODUCTION_RECEIPT_STOCK_NO").toString());
-	            double remainingQty = Double.parseDouble((String) stock.get("REMAINING_QTY"));
+	            long remainingQty = Long.parseLong((String) stock.get("REMAINING_QTY"));
 	            
 	            // 차감할 수량 결정
-	            double qtyToDeduct = Math.min(remainingQty, remainingToConsume);
+	            long qtyToDeduct = Math.min(remainingQty, remainingToConsume);
 	            
 	            log.debug("생산입고분 차감: 입고재고번호={}, 차감수량={}, 남은수량={}",
 	                stockNo, qtyToDeduct, remainingQty - qtyToDeduct);
@@ -168,7 +178,7 @@ public class ProductsInventoryService {
 	            
 	            pprsmapper.deductStock(deductParams);
 	            
-	            // FIFO 이력 저장 부분 수정 - 오류 디버깅
+	            // FIFO 이력 저장
 	            try {
 	                Map<String, Object> historyParams = new HashMap<>();
 	                historyParams.put("issueStockNo", stockNo);  // issue_stock_no 대신 production_receipt_stock_no 사용
@@ -176,9 +186,7 @@ public class ProductsInventoryService {
 	                historyParams.put("consumedQty", String.valueOf(qtyToDeduct));
 	                historyParams.put("consumptionType", consumptionType);
 	                
-	                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"+historyParams);
-	                
-	                // 로트번호, 수주코드, 작업지시코드 처리
+	                // 로트번호, 수주코드, 작업지시코드 설정
 	                if (lotNo != null && !lotNo.isEmpty()) {
 	                    historyParams.put("lotNo", lotNo);
 	                }
@@ -191,9 +199,6 @@ public class ProductsInventoryService {
 	                
 	                historyParams.put("consumedBy", userId);
 	                historyParams.put("consumedDate", java.time.LocalDate.now().toString());
-	                
-	                // 이력 저장 전 파라미터 로깅
-	                log.info("FIFO 이력 저장 파라미터: {}", historyParams);
 	                
 	                // 이력 저장 실행
 	                int historyResult = pIsmapper.insertFIFOHistory(historyParams);
@@ -219,7 +224,7 @@ public class ProductsInventoryService {
 	        // 4. 총 재고에서도 차감
 	        Map<String, Object> inventoryParams = new HashMap<>();
 	        inventoryParams.put("pdtCode", pdtCode);
-	        inventoryParams.put("consumptionQty", consumptionQty);
+	        inventoryParams.put("consumptionQty", consumptionQtyStr);
 	        inventoryParams.put("updatedBy", userId);
 	        
 	        pImapper.deductInventory(inventoryParams);
@@ -238,6 +243,35 @@ public class ProductsInventoryService {
 	    }
 	    
 	    return resultMap;
+	}
+	
+	/**
+	 * 생산 공정에서 사용하는 제품 재고 차감 메서드
+	 * 내부적으로 consumeProductFIFO를 호출하여 일관된 차감 처리
+	 * 
+	 * @param params 생산 공정 관련 파라미터
+	 * @return 처리 결과
+	 */
+	@Transactional
+	public Map<String, Object> consumeProductByProduction(Map<String, Object> params) {
+	    String pdtCode = (String) params.get("parentPdtCode");
+	    String qtyStr = (String) params.get("bomQty");
+	    String lotNo = (String) params.get("childLotCode");
+	    String woCode = (String) params.get("woCode");
+	    String userId = (String) params.getOrDefault("userId", SecurityUtil.getUserId());
+	    
+	    log.info("생산 공정 차감 시작: 제품코드={}, 수량={}, 작업지시={}, 로트={}",
+	        pdtCode, qtyStr, woCode, lotNo);
+	    
+	    Map<String, Object> fifoParams = new HashMap<>();
+	    fifoParams.put("pdtCode", pdtCode);
+	    fifoParams.put("consumptionQty", qtyStr);
+	    fifoParams.put("consumptionType", "PRODUCTION");
+	    fifoParams.put("lotNo", lotNo);
+	    fifoParams.put("woCode", woCode);
+	    fifoParams.put("updatedBy", userId);
+	    
+	    return consumeProductFIFO(fifoParams);
 	}	     
 	
 	/**
@@ -458,6 +492,101 @@ public class ProductsInventoryService {
 	        log.error("제품 재고 데이터 생성 중 오류 발생: {}", e.getMessage(), e);
 	        resultMap.put("success", false);
 	        resultMap.put("message", "재고 데이터 생성 중 오류 발생: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
+	/**
+	 * 임시 생산입고 처리 (초기 재고 데이터 생성용)
+	 * FIFO 관리를 위한 생산입고 이력 생성 및 재고 증가 처리
+	 */
+	@Transactional
+	public Map<String, Object> createTempProductionReceipt(Map<String, Object> params) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    
+	    try {
+	        log.info("임시 생산입고 처리 시작: {}", params);
+	        
+	        // 필수 파라미터 검증
+	        if (!params.containsKey("pdtCode") || !params.containsKey("qty")) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "필수 파라미터가 누락되었습니다. (pdtCode, qty)");
+	            return resultMap;
+	        }
+	        
+	        String pdtCode = (String) params.get("pdtCode");
+	        String qty = (String) params.get("qty");
+	        String lotNo = (String) params.getOrDefault("lotNo", "INIT-" + pdtCode + "-" + System.currentTimeMillis());
+	        
+	        // 제품 정보 조회
+	        Map<String, Object> param = new HashMap<>();
+	        param.put("PDT_CODE", pdtCode);
+	        Map<String, Object> productInfo = productsMasterMapper.selectSingleProducts(param);
+	        
+	        if (productInfo == null) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "제품 정보를 찾을 수 없습니다: " + pdtCode);
+	            return resultMap;
+	        }
+	        
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
+	        // 1. 생산입고 정보 생성
+	        String receiptCode = "PR-INIT-" + pdtCode + "-" + System.currentTimeMillis();
+	        
+	        Map<String, Object> receiptParams = new HashMap<>();
+	        receiptParams.put("receiptCode", receiptCode);
+	        receiptParams.put("productionCode", lotNo);
+	        receiptParams.put("pdtCode", pdtCode);
+	        receiptParams.put("receivedQty", qty);
+	        receiptParams.put("receiptDate", java.time.LocalDate.now().toString());
+	        receiptParams.put("receiptStatus", "입고완료");
+	        receiptParams.put("warehouseCode", productInfo.get("DEFAULT_WAREHOUSE_CODE"));
+	        receiptParams.put("locationCode", productInfo.get("DEFAULT_LOCATION_CODE"));
+	        receiptParams.put("receiver", userId);
+	        receiptParams.put("createdBy", userId);
+	        
+	        // ProductsProductionReceiptMapper를 통한 데이터 저장
+	        pprMapper.insertProductionReceipt(receiptParams);
+	        Long receiptNo = pprMapper.getLastReceiptNo();
+	        
+	        // 2. FIFO 관리용 생산입고 이력 저장
+	        Map<String, Object> stockParams = new HashMap<>();
+	        stockParams.put("receiptNo", receiptNo);
+	        stockParams.put("productionCode", lotNo);
+	        stockParams.put("pdtCode", pdtCode);
+	        stockParams.put("remainingQty", qty);
+	        stockParams.put("productionDate", java.time.LocalDate.now().toString());
+	        stockParams.put("lotNo", lotNo);
+	        stockParams.put("createdBy", userId);
+	        
+	        pprsmapper.insertStock(stockParams);
+	        
+	        // 3. 제품 재고 증가
+	        Map<String, Object> inventoryParams = new HashMap<>();
+	        inventoryParams.put("pdtCode", pdtCode);
+	        inventoryParams.put("receivedQty", qty);
+	        inventoryParams.put("warehouseCode", productInfo.get("DEFAULT_WAREHOUSE_CODE"));
+	        inventoryParams.put("locationCode", productInfo.get("DEFAULT_LOCATION_CODE"));
+	        inventoryParams.put("updatedBy", userId);
+	        
+	        pImapper.mergeInventory(inventoryParams);
+	        
+	        resultMap.put("success", true);
+	        resultMap.put("message", "임시 생산입고 처리가 완료되었습니다.");
+	        resultMap.put("receiptNo", receiptNo);
+	        resultMap.put("pdtCode", pdtCode);
+	        resultMap.put("qty", qty);
+	        resultMap.put("lotNo", lotNo);
+	        
+	        log.info("임시 생산입고 처리 완료: 제품코드={}, 수량={}, LOT={}", pdtCode, qty, lotNo);
+	        
+	    } catch (Exception e) {
+	        log.error("임시 생산입고 처리 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
 	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 	    }
 	    
