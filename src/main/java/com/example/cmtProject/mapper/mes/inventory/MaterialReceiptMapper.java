@@ -121,4 +121,11 @@ public interface MaterialReceiptMapper {
      * @return 처리 건수
      */
     public int updateMaterialInventory(Map<String, Object> params);
+   
+    /**
+     * 특정 접두어로 시작하는 마지막 입고 코드 조회
+     * @param prefix 접두어 (예: "RC-20250506-")
+     * @return 마지막 입고 코드
+     */
+    public String getLastReceiptCodeByPrefix(String prefix);
 }

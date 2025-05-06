@@ -93,14 +93,14 @@ public class IpiService {
 		
         Map<String, Object> params = new HashMap<>();
         params.put("pdtName", ipiDTO.getPdtName());
-        //params.put("pdtCode", ipiDTO.getPdtCode());
-        params.put("pdtCode", "WIP002");
+        params.put("pdtCode", ipiDTO.getPdtCode());
+       // params.put("pdtCode", "WIP002");
         params.put("woQty", ipiDTO.getWoQty());
         params.put("childLotCode", ipiDTO.getChildLotCode());
         params.put("IpiInspectionResult", ipiDTO.getIpiInspectionResult());
         System.out.println("3333333333333"+ipiDTO.getIpiInspectionResult());
         System.out.println("4444444444444"+ipiDTO);
-        ius.receiveProductionItem(params);
+     //   ius.receiveProductionItem(params);
         // 검수 결과가 합격인 경우만 입고 처리
         if ("합격".equals(ipiDTO.getIpiInspectionResult())) {
         	System.out.println("****************************************************************8");

@@ -860,45 +860,69 @@ const MaterialInventoryManager = (function() {
      * 기본 재고 데이터 생성 함수
      * 아직 재고 정보가 없는 원자재에 대한 기본 재고 데이터를 생성합니다.
      */
-    async function generateInventoryData() {
-        try {
-            // 확인 대화상자 표시
-            const confirmed = await AlertUtil.showConfirm(
-                '기본 재고 데이터 생성 확인',
-                '아직 재고 정보가 없는 원자재에 대한 기본 재고 데이터를 생성하시겠습니까?\n(이미 재고 정보가 있는 원자재는 영향 없음)'
-            );
+	async function generateInventoryData() {
+	    try {
+	        // 확인 대화상자 표시 - 객체 형태로 파라미터 전달
+	        const confirmed = await AlertUtil.showConfirm({
+	            title: '기본 재고 데이터 생성 확인',
+	            text: '아직 재고 정보가 없는 원자재에 대한 기본 재고 데이터를 생성하시겠습니까?\n(이미 재고 정보가 있는 원자재는 영향 없음)',
+	            icon: 'question'
+	        });
 
-            if (!confirmed) return false;
+	        if (!confirmed) return false;
 
-            // API 호출
-            const response = await ApiUtil.processRequest(
-                () => ApiUtil.post(API_URLS.GENERATE_DATA), {
-                    loadingMessage: '재고 데이터 생성 중...',
-                    successMessage: "기본 재고 데이터 생성이 완료되었습니다.",
-                    errorMessage: "재고 데이터 생성 중 오류가 발생했습니다.",
-                    successCallback: searchData // 생성 후 목록 새로고침
-                }
-            );
-
-            if (response.success) {
-                // 상세 결과 표시
-                const created = response.data.createdCount || 0;
-                const failed = (response.data.failedItems || []).length;
-
-                await AlertUtil.showSuccess(
-                    '기본 재고 생성 완료',
-                    `${created}개 원자재의 기본 재고 정보가 생성되었습니다.${failed > 0 ? ` (${failed}개 실패)` : ''}`
-                );
-                return true;
-            } else {
-                return false;
-            }
-        } catch (error) {
-            console.error('재고 데이터 생성 중 오류:', error);
-            await AlertUtil.showError('생성 오류', '재고 데이터 생성 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
+	        console.log('API 호출 시작:', API_URLS.GENERATE_DATA);
+	        
+	        const response = await fetch('/api/materialinventory/generate-data', {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json',
+	                'Accept': 'application/json'
+	            }
+	        });
+	        
+	        const result = await response.json();
+	        console.log('API 응답 데이터:', result);
+	        
+	        // 응답 처리
+	        if (result && result.success) {
+	            // 대소문자 모두 확인
+	            let createdCount = 0;
+	            
+	            if (result.data && result.data.CREATED_COUNT !== undefined) {
+	                createdCount = result.data.CREATED_COUNT;
+	            } else if (result.data && result.data.createdCount !== undefined) {
+	                createdCount = result.data.createdCount;
+	            } else if (result.createdCount !== undefined) {
+	                createdCount = result.createdCount;
+	            }
+	            
+	            console.log('생성된 항목 수:', createdCount);
+	            
+	            // 서버에서 이미 생성한 메시지를 사용
+	            let message = createdCount + '개 원자재의 기본 재고 정보가 생성되었습니다.';
+	            if (result.data && result.data.MESSAGE) {
+	                message = result.data.MESSAGE;
+	            }
+	            
+	            // 성공 메시지 표시
+	            await AlertUtil.showSuccess('기본 재고 생성 완료', message);
+	            
+	            // 목록 새로고침
+	            await searchData();
+	            return true;
+	        } else {
+	            // 오류 메시지 표시
+	            const errorMsg = result && result.message ? result.message : '재고 데이터 생성에 실패했습니다.';
+	            await AlertUtil.showError('생성 실패', errorMsg);
+	            return false;
+	        }
+	    } catch (error) {
+	        console.error('재고 데이터 생성 중 오류:', error);
+	        await AlertUtil.showError('생성 오류', '재고 데이터 생성 중 오류가 발생했습니다.');
+	        return false;
+	    }
+	}
 
     // =============================
     // 공개 API - 외부에서 접근 가능한 메서드

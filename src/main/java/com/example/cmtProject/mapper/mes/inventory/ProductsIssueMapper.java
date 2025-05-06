@@ -100,4 +100,11 @@ public interface ProductsIssueMapper {
 	 * @return 처리 건수
 	 */
 	public int updateSalesOrderStatus(Map<String, Object> params);
+	
+	/**
+	 * 특정 접두어로 시작하는 마지막 출고 코드 조회
+	 * @param prefix 접두어 (예: "IS-20250506-")
+	 * @return 마지막 출고 코드
+	 */
+	public String getLastIssueCodeByPrefix(String prefix);
 }

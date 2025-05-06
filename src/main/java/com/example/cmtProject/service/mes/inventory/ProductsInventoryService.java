@@ -104,12 +104,8 @@ public class ProductsInventoryService {
 	}
 	
 	/**
-     * FIFO 방식으로 재고 차감
-     * 가장 오래된 출고분부터 순차적으로 재고를 차감합니다.
-     * 
-     * @param params 차감 정보 (pdtCode, consumptionQty, consumptionType, soCode/woCode, updatedBy 포함)
-     * @return 처리 결과
-     */
+	 * FIFO 방식으로 재고 차감 및 이력 기록
+	 */
 	@Transactional
 	public Map<String, Object> consumeProductFIFO(Map<String, Object> params) {
 	    Map<String, Object> resultMap = new HashMap<>();
@@ -143,53 +139,78 @@ public class ProductsInventoryService {
 	            return resultMap;
 	        }
 	        
-	        // 2. 가장 오래된 출고분부터 차례로 조회 (FIFO)
-	        List<Map<String, Object>> stockList = pIsmapper.getStocksForFIFO(pdtCode);
+	        // 2. 가장 오래된 생산입고분부터 차례로 조회 (FIFO)
+	        List<Map<String, Object>> stockList = pprsmapper.getStocksForFIFO(pdtCode);
 	        
-	        log.info("FIFO 차감 대상 출고재고 조회: {}건", stockList.size());
+	        log.info("FIFO 차감 대상 생산입고재고 조회: {}건", stockList.size());
 	        
 	        double remainingToConsume = Double.parseDouble(consumptionQty);
+	        List<Map<String, Object>> consumptionDetails = new ArrayList<>();
 	        
 	        // 3. FIFO로 재고 차감
 	        for (Map<String, Object> stock : stockList) {
 	            if (remainingToConsume <= 0) break;
 	            
-	            Long stockNo = Long.valueOf(stock.get("ISSUE_STOCK_NO").toString());
-	            double remainingQty = Double.parseDouble((String) stock.get("ISSUED_QTY"));
+	            Long stockNo = Long.valueOf(stock.get("PRODUCTION_RECEIPT_STOCK_NO").toString());
+	            double remainingQty = Double.parseDouble((String) stock.get("REMAINING_QTY"));
 	            
 	            // 차감할 수량 결정
 	            double qtyToDeduct = Math.min(remainingQty, remainingToConsume);
 	            
-	            log.debug("출고분 차감: 출고재고번호={}, 차감수량={}, 남은수량={}",
+	            log.debug("생산입고분 차감: 입고재고번호={}, 차감수량={}, 남은수량={}",
 	                stockNo, qtyToDeduct, remainingQty - qtyToDeduct);
 	            
-	            // 출고별 재고 차감 처리
+	            // 생산입고별 재고 차감 처리
 	            Map<String, Object> deductParams = new HashMap<>();
-	            deductParams.put("issueStockNo", stockNo);
+	            deductParams.put("productionReceiptStockNo", stockNo);
 	            deductParams.put("deductQty", String.valueOf(qtyToDeduct));
 	            deductParams.put("updatedBy", userId);
 	            
-	            pIsmapper.deductStock(deductParams);
+	            pprsmapper.deductStock(deductParams);
 	            
-	            // FIFO 이력 저장
-	            Map<String, Object> historyParams = new HashMap<>();
-	            historyParams.put("issueStockNo", stockNo);
-	            historyParams.put("pdtCode", pdtCode);
-	            historyParams.put("consumedQty", String.valueOf(qtyToDeduct));
-	            historyParams.put("consumptionType", consumptionType);
-	            
-	            // 소비 타입에 따라 적절한 코드 설정
-	            if ("SHIPMENT".equals(consumptionType)) {
-	                historyParams.put("soCode", soCode);
-	            } else if ("PRODUCTION".equals(consumptionType)) {
-	                historyParams.put("woCode", woCode);
-	                historyParams.put("lotNo", lotNo);
+	            // FIFO 이력 저장 부분 수정 - 오류 디버깅
+	            try {
+	                Map<String, Object> historyParams = new HashMap<>();
+	                historyParams.put("issueStockNo", stockNo);  // issue_stock_no 대신 production_receipt_stock_no 사용
+	                historyParams.put("pdtCode", pdtCode);
+	                historyParams.put("consumedQty", String.valueOf(qtyToDeduct));
+	                historyParams.put("consumptionType", consumptionType);
+	                
+	                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"+historyParams);
+	                
+	                // 로트번호, 수주코드, 작업지시코드 처리
+	                if (lotNo != null && !lotNo.isEmpty()) {
+	                    historyParams.put("lotNo", lotNo);
+	                }
+	                
+	                if ("SHIPMENT".equals(consumptionType) && soCode != null && !soCode.isEmpty()) {
+	                    historyParams.put("soCode", soCode);
+	                } else if ("PRODUCTION".equals(consumptionType) && woCode != null && !woCode.isEmpty()) {
+	                    historyParams.put("woCode", woCode);
+	                }
+	                
+	                historyParams.put("consumedBy", userId);
+	                historyParams.put("consumedDate", java.time.LocalDate.now().toString());
+	                
+	                // 이력 저장 전 파라미터 로깅
+	                log.info("FIFO 이력 저장 파라미터: {}", historyParams);
+	                
+	                // 이력 저장 실행
+	                int historyResult = pIsmapper.insertFIFOHistory(historyParams);
+	                
+	                // 이력 저장 결과 로깅
+	                log.info("FIFO 이력 저장 결과: {} (1=성공)", historyResult);
+	                
+	                // 차감 상세 정보 저장
+	                Map<String, Object> consumptionDetail = new HashMap<>();
+	                consumptionDetail.put("stockNo", stockNo);
+	                consumptionDetail.put("deductedQty", qtyToDeduct);
+	                consumptionDetail.put("historyResult", historyResult);
+	                consumptionDetails.add(consumptionDetail);
+	            } catch (Exception historyException) {
+	                log.error("FIFO 이력 저장 중 오류 발생: {}", historyException.getMessage(), historyException);
+	                // 이력 저장 실패해도 재고 차감은 계속 진행
 	            }
-	            
-	            historyParams.put("consumedBy", userId);
-	            historyParams.put("consumedDate", java.time.LocalDate.now().toString());
-	            
-	            pIsmapper.insertFIFOHistory(historyParams);
 	            
 	            // 차감할 남은 수량 갱신
 	            remainingToConsume -= qtyToDeduct;
@@ -207,6 +228,7 @@ public class ProductsInventoryService {
 	        
 	        resultMap.put("success", true);
 	        resultMap.put("message", "재고가 FIFO 원칙에 따라 성공적으로 차감되었습니다.");
+	        resultMap.put("consumptionDetails", consumptionDetails);
 	        
 	    } catch (Exception e) {
 	        log.error("FIFO 재고 차감 중 오류 발생: " + e.getMessage(), e);
@@ -216,7 +238,7 @@ public class ProductsInventoryService {
 	    }
 	    
 	    return resultMap;
-	}
+	}	     
 	
 	/**
 	 * FIFO 상세 정보 조회
@@ -261,10 +283,10 @@ public class ProductsInventoryService {
 	            }
 	            
 	            // 프론트엔드 호환을 위한 필드 매핑
-	            // PRODUCTION_CODE → ISSUE_NO 등으로 매핑
 	            stock.put("ISSUE_NO", stock.get("PRODUCTION_CODE"));
-	            stock.put("ISSUED_QTY", stock.get("REMAINING_QTY"));
 	            stock.put("ISSUE_DATE", stock.get("PRODUCTION_DATE"));
+	            stock.put("ISSUED_QTY", stock.get("REMAINING_QTY"));
+	            // ORIGINAL_QTY는 이미 JOIN으로 설정되어 있음
 	        }
 	        
 	        result.put("INVENTORY", inventory);
@@ -280,10 +302,9 @@ public class ProductsInventoryService {
 	    
 	    return result;
 	}
-
+	
 	/**
-	 * FIFO 이력 조회 - 기존 코드 유지
-	 * (필요시 나중에 생산 입고 이력도 추가 가능)
+	 * FIFO 이력 조회
 	 */
 	public List<Map<String, Object>> getFIFOHistory(String pdtCode) {
 	    log.info("FIFO 이력 조회 서비스 호출. 제품코드: {}", pdtCode);
