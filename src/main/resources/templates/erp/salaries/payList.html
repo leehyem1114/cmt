@@ -5,6 +5,7 @@
 		  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 		  layout:decorate="~{layouts/layout}">
 <head>
+	<!-- Favicon -->
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
 	<!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
@@ -550,7 +551,7 @@
     		error: function () {
 				Swal.fire({
 				  icon: "error",
-				  title: "급여 이체가 실패하였습니다."
+				  title: "급여 이체에 실패했습니다."
 				});
     		}
 		});
@@ -575,7 +576,10 @@
       			window.open('/pdfs/payslip.pdf', '_blank', 'width=800,height=1000');
       		},
 			error : function(error){
-      			console.log("오류 발생");
+				Swal.fire({
+					icon: "error",
+					title: "PDF 저장에 실패했습니다."
+				});
 			}
       	});
 		      	  
