@@ -562,12 +562,13 @@
 	// 급여 명세서 출력 ===================================================
 	function payPrint(){
     	const checkedRows = payGrid.getCheckedRows();
-        const empId = checkedRows[0].empId;
+        //const empId = checkedRows[0].empId;
+		const payNo = checkedRows[0].payNo;
       		
       	$.ajax({
-      		url : '/salaries/payPrint/' + empId ,
+      		url : '/salaries/payPrint/' + payNo ,
       		method : 'get',
-       		data : {empId : empId},
+       		//data : {empId : empId},
       		success : function(response){
 				Swal.fire({
 					icon: "success",

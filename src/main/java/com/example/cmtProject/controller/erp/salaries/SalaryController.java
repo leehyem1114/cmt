@@ -1,6 +1,7 @@
 package com.example.cmtProject.controller.erp.salaries;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -292,39 +293,46 @@ public class SalaryController { // 급여 관리 Controller
 
 	//==========================================
 	
-	@GetMapping("insertPayForm/{empId}")
-	public String insertPayForm(@PathVariable("empId") String empId,PaymentDTO paymentDTO,Model model) {
-		PaymentDTO payList = salaryService.getEmpPayment(empId);
-		model.addAttribute("pay",payList);
-		System.out.println("개인 지급내역>>>"+payList);
-		
-		return"erp/salaries/insertPayForm";
-	}
-	
-	@PostMapping("/insertPay")
-	@ResponseBody
-	public String insertPay(Model model) {
-		return"이체가 완료 되었습니다.";
-	}
+	/*
+	 * @GetMapping("insertPayForm/{empId}") public String
+	 * insertPayForm(@PathVariable("empId") String empId,PaymentDTO paymentDTO,Model
+	 * model) { PaymentDTO payList = salaryService.getEmpPayment(empId);
+	 * model.addAttribute("pay",payList); System.out.println("개인 지급내역>>>"+payList);
+	 * 
+	 * return"erp/salaries/insertPayForm"; }
+	 * 
+	 * @PostMapping("/insertPay")
+	 * 
+	 * @ResponseBody public String insertPay(Model model) { return"이체가 완료 되었습니다."; }
+	 */
 	
 	//----------------------------------------------------------------------------------------------------	
 	
 	// PDF 급여 명세서 출력
-	@GetMapping("/payPrint/{empId}")
-	public String patPrint(@PathVariable("empId") String empId,PaymentDTO paymentDTO,Model model) throws Exception {
-		PaymentDTO payList = salaryService.getEmpPayment(empId);
-		
-		Map<String, Object> data = new HashMap<>();
-		data.put("pay", payList);
-		data.put("today", LocalDate.now());
-
-		String html = parseThymeleafToHtml(data); // 위에서 만든 메서드
-		new PdfGenerator().generatePdf(html, "D:/pdfs/payslip.pdf");
-		model.addAttribute("pay", payList); 
-		System.out.println(">>>>>>>>>>>뿌려질 내용" + payList);
-		
-		return "pdf/paySlip";
+	@GetMapping("/payPrint/{payNo}")
+	public String payPrint(@PathVariable("payNo") Long payNo, Model model) throws Exception {
+		try {
+			PaymentDTO payList = salaryService.getEmpPayment(payNo);
+			
+			Map<String, Object> data = new HashMap<>();
+			data.put("pay", payList);
+			data.put("today", LocalDate.now());
+	
+			String html = parseThymeleafToHtml(data); // 위에서 만든 메서드
+			File dir = new File("D:/pdfs");
+		    if (!dir.exists()) dir.mkdirs();
+			
+			new PdfGenerator().generatePdf(html, "D:/pdfs/payslip.pdf");
+			model.addAttribute("pay", payList); 
+			System.out.println(">>>>>>>>>>>뿌려질 내용" + payList);
+			
+			return "pdf/paySlip";
+		} catch (Exception e) {
+	        e.printStackTrace();
+	        throw e;
+		}
 	}
+	
 	
 	//----------------------------------------------------------------------------------------------------	
 	

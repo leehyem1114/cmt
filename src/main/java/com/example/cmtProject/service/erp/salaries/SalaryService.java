@@ -104,8 +104,8 @@ public class SalaryService { // 급여 관리 Service
 	// ---------------------------------------------------
 	
 	// 개인 지급내역
-	public PaymentDTO getEmpPayment(String empId) {
-		return salMapper.selectEmpPayment(empId);
+	public PaymentDTO getEmpPayment(Long payNo) {
+		return salMapper.selectEmpPayment(payNo);
 	}
 
 }
