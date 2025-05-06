@@ -41,7 +41,8 @@ public class ProductionPlanController { //생산계획 수립, 작업지시 발�
 		//일주일 공정완료 그래프
 		List<WorkOrderDTO> stats = orderService.getCompleteStatsLast7Days();
 		List<String> workDateList = stats.stream()
-		    .map(WorkOrderDTO::getWorkDate)
+		    //.map(WorkOrderDTO::getWorkDate)
+			.map(dto -> dto.getWorkDate().substring(0, 10))
 		    .collect(Collectors.toList());
 	
 		List<Integer> completeCountList = stats.stream()
