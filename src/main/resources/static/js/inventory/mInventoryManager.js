@@ -392,40 +392,45 @@ const MaterialInventoryManager = (function() {
     /**
      * FIFO 상세 정보 표시
      */
-    function displayFIFODetail(data) {
-        console.log('displayFIFODetail 실행됨, data:', data);
+	function displayFIFODetail(data) {
+	    console.log('displayFIFODetail 실행됨, data:', data);
+	    
+	    // FIFO 큐 시각화
+	    const queueVisual = document.getElementById('queueVisual');
+	    if (!queueVisual) {
+	        console.error('queueVisual 요소를 찾을 수 없음');
+	        return;
+	    }
+	    queueVisual.innerHTML = '';
 
-        // FIFO 큐 시각화
-        const queueVisual = document.getElementById('queueVisual');
-        if (!queueVisual) {
-            console.error('queueVisual 요소를 찾을 수 없음');
-            return;
-        }
-        queueVisual.innerHTML = '';
+	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+	        console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
+	        data.STOCK_LIST.forEach((stock, index) => {
+	            console.log(`Stock ${index}:`, stock);
+	            
+	            // 원본 수량과 남은 수량 확인
+	            const originalQty = parseFloat(stock.ORIGINAL_QTY || 0);
+	            const remaining = parseFloat(stock.REMAINING_QTY || 0);
+	            
+	            // 사용률 계산 (%)
+	            const usagePercent = originalQty > 0 ? 
+	                Math.round((remaining / originalQty) * 100) : 0;
+	                
+	            const isActive = stock.STATUS === '사용중';
+	            const isNext = !isActive && remaining > 0 && index === 1;
 
-        // 필드명이 대문자인 것을 확인 - STOCK_LIST 사용
-        if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
-            console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
-            data.STOCK_LIST.forEach((stock, index) => {
-                // 데이터 확인을 위한 로깅
-                console.log(`Stock ${index}:`, stock);
+	            const queueItem = document.createElement('div');
+	            queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
 
-                const remaining = parseFloat(stock.REMAINING_QTY);
-                const isActive = stock.STATUS === '사용중';
-                const isNext = !isActive && remaining > 0 && index === 1;
-
-                const queueItem = document.createElement('div');
-                queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
-
-                queueItem.innerHTML = `
+	            queueItem.innerHTML = `
 	                <div class="queue-number">${stock.FIFO_ORDER}순위</div>
 	                <div class="queue-date">${formatDate(stock.RECEIPT_DATE)}</div>
 	                <div class="queue-progress">
 	                    <div>입고번호: ${stock.RECEIPT_NO}</div>
-	                    <small class="text-muted">남은수량: ${Number(remaining).toLocaleString()}</small>
+	                    <small class="text-muted">입고량: ${Number(originalQty).toLocaleString()} / 남은량: ${Number(remaining).toLocaleString()} (${usagePercent}%)</small>
 	                    <div class="progress-bar-custom">
 	                        <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
-	                             style="width: ${remaining > 0 ? '100%' : '0%'};"></div>
+	                             style="width: ${usagePercent}%;"></div>
 	                    </div>
 	                </div>
 	                <div style="color: ${isActive ? '#0d6efd' : isNext ? '#ffc107' : '#6c757d'};">
@@ -433,41 +438,51 @@ const MaterialInventoryManager = (function() {
 	                </div>
 	            `;
 
-                queueVisual.appendChild(queueItem);
-            });
-            console.log('queueVisual 업데이트 완료');
-        } else {
-            console.log('STOCK_LIST가 없거나 비어있음');
-        }
+	            queueVisual.appendChild(queueItem);
+	        });
+	        console.log('queueVisual 업데이트 완료');
+	    } else {
+	        console.log('STOCK_LIST가 없거나 비어있음');
+	    }
 
-        // 상세 테이블 표시
-        const tableBody = document.getElementById('fifoDetailTableBody');
-        if (!tableBody) {
-            console.error('fifoDetailTableBody 요소를 찾을 수 없음');
-            return;
-        }
-        tableBody.innerHTML = '';
+	    // 상세 테이블 표시 부분도 수정
+	    const tableBody = document.getElementById('fifoDetailTableBody');
+	    if (!tableBody) {
+	        console.error('fifoDetailTableBody 요소를 찾을 수 없음');
+	        return;
+	    }
+	    tableBody.innerHTML = '';
 
-        if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
-            data.STOCK_LIST.forEach(stock => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+	        data.STOCK_LIST.forEach(stock => {
+	            const row = document.createElement('tr');
+	            
+	            // 원본 수량과 남은 수량
+	            const originalQty = parseFloat(stock.ORIGINAL_QTY || 0);
+	            const remainingQty = parseFloat(stock.REMAINING_QTY || 0);
+	            
+	            // 사용률 계산
+	            const usagePercent = originalQty > 0 ? 
+	                Math.round((remainingQty / originalQty) * 100) : 0;
+	            
+	            row.innerHTML = `
 	                <td>${stock.FIFO_ORDER}</td>
 	                <td>${formatDate(stock.RECEIPT_DATE)}</td>
 	                <td>${stock.RECEIPT_NO}</td>
-	                <td>${Number(stock.ORIGINAL_QTY).toLocaleString()}</td>
-	                <td>${Number(stock.REMAINING_QTY).toLocaleString()}</td>
+	                <td>${Number(originalQty).toLocaleString()}</td>
+	                <td>${Number(remainingQty).toLocaleString()} (${usagePercent}%)</td>
 	                <td>
 	                    <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
 	                </td>
 	            `;
-                tableBody.appendChild(row);
-            });
-            console.log('테이블 업데이트 완료');
-        } else {
-            console.log('테이블에 표시할 데이터가 없음');
-        }
-    }
+	            tableBody.appendChild(row);
+	        });
+	        console.log('테이블 업데이트 완료');
+	    } else {
+	        console.log('테이블에 표시할 데이터가 없음');
+	        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">데이터가 없습니다</td></tr>';
+	    }
+	}
 
     /**
      * FIFO 이력 로드

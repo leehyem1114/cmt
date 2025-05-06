@@ -187,13 +187,26 @@
         margin-top: 15px;
     }
     
-    .fifo-detail-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        margin-top: 20px;
-    }
-    
+	.fifo-detail-table {
+	    width: 100%;
+	    border-collapse: collapse;
+	    background: white;
+	    margin-top: 20px;
+		table-layout: fixed;
+	}
+	/* 현황 테이블 컬럼 너비 지정 */
+	#queueTab .fifo-detail-table th:nth-child(1) { width: 60px; }  /* 순번 */
+	#queueTab .fifo-detail-table th:nth-child(2) { width: 120px; } /* 입고일 */
+	#queueTab .fifo-detail-table th:nth-child(3) { width: 150px; } /* 입고번호 */
+	#queueTab .fifo-detail-table th:nth-child(4) { width: 100px; } /* 입고수량 */
+	#queueTab .fifo-detail-table th:nth-child(5) { width: 100px; } /* 남은수량 */
+	#queueTab .fifo-detail-table th:nth-child(6) { width: 80px; }  /* 상태 */
+
+	/* 이력 테이블 컬럼 너비 지정 */
+	#historyTab .fifo-detail-table th:nth-child(1) { width: 150px; } /* 날짜 */
+	#historyTab .fifo-detail-table th:nth-child(2) { width: 100px; } /* 작업 유형 */
+	#historyTab .fifo-detail-table th:nth-child(3) { width: 450px; } /* 설명 */
+	#historyTab .fifo-detail-table th:nth-child(4) { width: 100px; } /* 처리자 */
     .fifo-detail-table th,
     .fifo-detail-table td {
         padding: 8px 12px;
