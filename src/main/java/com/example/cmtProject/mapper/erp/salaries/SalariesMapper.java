@@ -68,6 +68,6 @@ public interface SalariesMapper { // 급여 관리 Mapper
 	// ---------------------------------------------------
 	
 	// 개인 지급내역
-	PaymentDTO selectEmpPayment(String empId);
+	PaymentDTO selectEmpPayment(Long payNo);
 	
 }

@@ -558,16 +558,32 @@
 	});
 	// 급여 이체 끝 =======================================================	
 	
+	
+	// 행 아무곳이나 클릭하면 체크박스 활성화 =============================
+	payGrid.on('click', ev => {
+		  const { rowKey, columnName } = ev;
+
+		  if (columnName === '_checked') return;
+		  const isChecked = payGrid.getCheckedRowKeys().includes(rowKey);
+		  if (!isChecked) {
+		    payGrid.check(rowKey);
+		  } else {
+		    payGrid.uncheck(rowKey);
+		  }
+	});
+	// ====================================================================
+	
 
 	// 급여 명세서 출력 ===================================================
 	function payPrint(){
     	const checkedRows = payGrid.getCheckedRows();
-        const empId = checkedRows[0].empId;
+        //const empId = checkedRows[0].empId;
+		const payNo = checkedRows[0].payNo;
       		
       	$.ajax({
-      		url : '/salaries/payPrint/' + empId ,
+      		url : '/salaries/payPrint/' + payNo ,
       		method : 'get',
-       		data : {empId : empId},
+       		//data : {empId : empId},
       		success : function(response){
 				Swal.fire({
 					icon: "success",
