@@ -355,7 +355,7 @@ const ProductsInventoryManager = (function() {
                     <div class="queue-number">${stock.FIFO_ORDER}순위</div>
                     <div class="queue-date">${formatDate(stock.ISSUE_DATE)}</div>
                     <div class="queue-progress">
-                        <div>출고번호: ${stock.ISSUE_NO}</div>
+                        <div>입고LOT번호: ${stock.ISSUE_NO}</div>
                         <small class="text-muted">남은수량: ${Number(remaining).toLocaleString()}</small>
                         <div class="progress-bar-custom">
                             <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
