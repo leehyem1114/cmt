@@ -288,15 +288,7 @@
                                 <div class="search-file-group">
                                     <input type="text" class="form-control" id="mInventoryInput" 
                                         placeholder="원자재명 검색">
-<!--                                     <button type="button" id="mInventorySearchBtn" class="btn btn-outline-primary"> -->
-<!--                                         <i class="bi bi-search"></i> -->
-<!--                                     </button> -->
                                     
-                                    <!-- 엑셀 파일 입력 및 버튼 -->
-<!--                                     <input type="file" class="form-control file-input" id="mInventoryFileInput" accept=".xlsx,.xls"> -->
-<!--                                     <button type="button" id="mInventoryExcelUpBtn" class="btn btn-excel"> -->
-<!--                                         <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드 -->
-                                    </button>
                                     <button type="button" id="mInventoryExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
@@ -304,12 +296,17 @@
                                 
                                 <!-- 오른쪽: CRUD 버튼 -->
                                 <div class="button-group">
-<!--                                     <button type="button" id="mInventoryAppendBtn" class="btn btn-outline-secondary">추가</button> -->
-<!--                                     <button type="button" id="mInventorySaveBtn" class="btn btn-outline-success">저장</button> -->
-<!--                                     <button type="button" id="mInventoryDeleteBtn" class="btn btn-outline-danger">삭제</button> -->
-										<button type="button" id="mInventoryGenerateBtn" class="btn btn-outline-primary">
-										    <i class="bi bi-database-add"></i> 기본 재고 생성
-										</button>
+                                    <button type="button" id="mInventoryGenerateBtn" class="btn btn-outline-primary">
+                                        <i class="bi bi-database-add"></i> 기본 재고 생성
+                                    </button>
+                                    <button type="button" class="btn btn-warning" id="btnTempMaterialReceipt"
+									sec:authorize="hasRole('SYSTEM')">
+                                        <i class="fas fa-plus-circle"></i> 임시 발주입고
+                                    </button>
+                                    <button type="button" class="btn btn-info" id="btnTempMaterialReceiptAll"
+									sec:authorize="hasRole('SYSTEM')">
+                                        <i class="fas fa-cubes"></i> 전체 임시 발주입고
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -380,6 +377,150 @@
                 </div>
             </div>
         </section>
+        
+        <!-- 임시 발주입고 모달 -->
+        <div class="modal fade" id="tempMaterialReceiptModal" tabindex="-1" role="dialog" aria-labelledby="tempMaterialReceiptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tempMaterialReceiptModalLabel">임시 발주입고</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="tempMaterialReceiptForm">
+                            <div class="form-group row">
+                                <label for="tempMtlCode" class="col-sm-3 col-form-label">원자재 코드</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="tempMtlCode" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" id="btnSearchMaterial">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempMtlName" class="col-sm-3 col-form-label">원자재명</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempMtlName" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempQty" class="col-sm-3 col-form-label">수량</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempQty" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempLotNo" class="col-sm-3 col-form-label">LOT 번호 (선택사항)</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempLotNo" placeholder="미입력시 자동 생성됩니다">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempWarehouse" class="col-sm-3 col-form-label">창고</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempWarehouse" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempLocation" class="col-sm-3 col-form-label">위치</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempLocation" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveTempMaterialReceipt">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 전체 임시 발주입고 모달 -->
+        <div class="modal fade" id="tempMaterialReceiptAllModal" tabindex="-1" role="dialog" aria-labelledby="tempMaterialReceiptAllModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tempMaterialReceiptAllModalLabel">전체 원자재 임시 발주입고</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 이 기능은 모든 원자재에 대해 임시 발주입고 처리를 수행합니다. 원자재 수에 따라 시간이 소요될 수 있습니다.
+                        </div>
+                        <form id="tempMaterialReceiptAllForm">
+                            <div class="form-group">
+                                <label for="defaultQty">기본 수량</label>
+                                <input type="text" class="form-control" id="defaultQty" value="10" required>
+                                <small class="form-text text-muted">모든 원자재에 적용할 기본 수량을 입력하세요.</small>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="overwriteExisting">
+                                <label class="form-check-label" for="overwriteExisting">이미 재고가 있는 원자재도 처리</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btnCloseAllModal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveTempMaterialReceiptAll">일괄 생성</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 원자재 검색 모달 -->
+        <div class="modal fade" id="materialSearchModal" tabindex="-1" role="dialog" aria-labelledby="materialSearchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="materialSearchModalLabel">원자재 검색</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchMaterialKeyword" placeholder="원자재코드 또는 원자재명">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="btnSearchMaterialExecute">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="materialSearchTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 100px;">원자재코드</th>
+                                        <th>원자재명</th>
+                                        <th>규격</th>
+                                        <th>단위</th>
+                                        <th>선택</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- 검색 결과가 여기에 표시됩니다 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 
@@ -396,6 +537,271 @@
         <script src="/js/inventory/mInventoryManager.js"></script>
         <script src="/js/commonJs/ExcelUtil.js"></script>
         <script src="/js/commonJs/GridSearchUtil.js"></script>
+        
+        <!-- 임시 발주입고 관련 스크립트 -->
+        <script>
+            $(document).ready(function() {
+                // 임시 발주입고 모달 열기
+                $("#btnTempMaterialReceipt").on("click", function() {
+                    // 모달 입력 초기화
+                    $("#tempMaterialReceiptForm")[0].reset();
+                    $("#tempMaterialReceiptModal").modal("show");
+                });
+                
+                // 원자재 검색 버튼 클릭
+                $("#btnSearchMaterial").on("click", function() {
+                    $("#searchMaterialKeyword").val($("#tempMtlCode").val());
+                    searchMaterials();
+                    $("#materialSearchModal").modal("show");
+                });
+                
+                // 원자재 검색 실행
+                $("#btnSearchMaterialExecute").on("click", function() {
+                    searchMaterials();
+                });
+                
+                // 엔터키로 검색
+                $("#searchMaterialKeyword").on("keypress", function(e) {
+                    if (e.which === 13) {
+                        searchMaterials();
+                    }
+                });
+                
+                // 원자재 코드 직접 입력 후 포커스 이동 시 원자재 정보 조회
+                $("#tempMtlCode").on("blur", function() {
+                    const mtlCode = $(this).val();
+                    if (mtlCode) {
+                        getMaterialInfo(mtlCode);
+                    }
+                });
+                
+                // 임시 발주입고 저장
+                $("#btnSaveTempMaterialReceipt").on("click", function() {
+                    const mtlCode = $("#tempMtlCode").val();
+                    const qty = $("#tempQty").val();
+                    const lotNo = $("#tempLotNo").val() || "";
+                    
+                    if (!mtlCode) {
+                        alert("원자재 코드는 필수입니다.");
+                        $("#tempMtlCode").focus();
+                        return;
+                    }
+                    
+                    if (!qty) {
+                        alert("수량은 필수입니다.");
+                        $("#tempQty").focus();
+                        return;
+                    }
+                    
+                    // 숫자만 입력 가능하도록 검증
+                    if (!/^\d+$/.test(qty)) {
+                        alert("수량은 숫자만 입력 가능합니다.");
+                        $("#tempQty").focus();
+                        return;
+                    }
+                    
+                    // 서버로 전송
+                    $.ajax({
+                        url: "/api/materialinventory/temp-material-receipt",
+                        type: "POST",
+                        data: JSON.stringify({
+                            mtlCode: mtlCode,
+                            qty: qty,
+                            lotNo: lotNo
+                        }),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.success) {
+                                alert("임시 발주입고가 완료되었습니다.");
+                                $("#tempMaterialReceiptModal").modal("hide");
+                                // 재고 목록 갱신
+                                location.reload();
+                            } else {
+                                alert("처리 중 오류: " + response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            alert("서버 오류가 발생했습니다.");
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+                
+                // 원자재 검색 함수
+                function searchMaterials() {
+                    const keyword = $("#searchMaterialKeyword").val();
+                    
+                    $.ajax({
+                        url: "/api/material-info/list",
+                        type: "GET",
+                        data: { keyword: keyword },
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.success) {
+                                renderMaterialSearchResults(response.data);
+                            } else {
+                                alert("원자재 검색 중 오류: " + response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            alert("서버 오류가 발생했습니다.");
+                            console.error(xhr.responseText);
+                        }
+                    });
+                }
+                
+                // 원자재 검색 결과 렌더링
+                function renderMaterialSearchResults(materials) {
+                    const $tbody = $("#materialSearchTable tbody");
+                    $tbody.empty();
+                    
+                    if (materials.length === 0) {
+                        $tbody.append('<tr><td colspan="5" class="text-center">검색 결과가 없습니다.</td></tr>');
+                        return;
+                    }
+                    
+                    $.each(materials, function(i, material) {
+                        const tr = `
+                            <tr>
+                                <td>${material.MTL_CODE}</td>
+                                <td>${material.MTL_NAME || ''}</td>
+								<td>${material.MTL_STANDARD || ''}</td>
+                                <td>${material.MTL_UNIT || ''}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary select-material" 
+                                        data-code="${material.MTL_CODE}" 
+                                        data-name="${material.MTL_NAME || ''}"
+                                        data-warehouse="${material.DEFAULT_WAREHOUSE_CODE || ''}"
+                                        data-location="${material.DEFAULT_LOCATION_CODE || ''}">
+                                        선택
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        $tbody.append(tr);
+                    });
+                    
+                    // 원자재 선택 이벤트
+                    $(".select-material").on("click", function() {
+                        const code = $(this).data("code");
+                        const name = $(this).data("name");
+                        const warehouse = $(this).data("warehouse");
+                        const location = $(this).data("location");
+                        
+                        $("#tempMtlCode").val(code);
+                        $("#tempMtlName").val(name);
+                        $("#tempWarehouse").val(warehouse);
+                        $("#tempLocation").val(location);
+                        
+                        $("#materialSearchModal").modal("hide");
+                    });
+                }
+                
+                // 원자재 정보 조회
+                function getMaterialInfo(mtlCode) {
+                    $.ajax({
+                        url: "/api/material-info/" + mtlCode,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.success) {
+                                const material = response.data;
+                                $("#tempMtlName").val(material.MTL_NAME || '');
+                                $("#tempWarehouse").val(material.DEFAULT_WAREHOUSE_CODE || '');
+                                $("#tempLocation").val(material.DEFAULT_LOCATION_CODE || '');
+                            } else {
+                                alert("원자재 정보 조회 중 오류: " + response.message);
+                                $("#tempMtlName").val('');
+                                $("#tempWarehouse").val('');
+                                $("#tempLocation").val('');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert("원자재 정보 조회 중 오류가 발생했습니다.");
+                            console.error(xhr.responseText);
+                            $("#tempMtlName").val('');
+                            $("#tempWarehouse").val('');
+                            $("#tempLocation").val('');
+                        }
+                    });
+                }
+                
+                // 모달 닫기 함수 - 전역 스코프로 이동
+                window.closeModal = function(modalId) {
+                    $(modalId).modal("hide");
+                };
+                
+                // 모달 닫기 버튼 이벤트
+                $("#btnCloseAllModal").on("click", function() {
+                    window.closeModal("#tempMaterialReceiptAllModal");
+                });
+                
+                // 전체 임시 발주입고 모달 열기
+                $("#btnTempMaterialReceiptAll").on("click", function() {
+                    // 모달 입력 초기화
+                    $("#tempMaterialReceiptAllForm")[0].reset();
+                    $("#tempMaterialReceiptAllModal").modal("show");
+                });
+                
+                // 전체 임시 발주입고 저장
+                $("#btnSaveTempMaterialReceiptAll").on("click", function() {
+                    const defaultQty = $("#defaultQty").val();
+                    const overwriteExisting = $("#overwriteExisting").prop("checked");
+                    
+                    if (!defaultQty) {
+                        alert("기본 수량은 필수입니다.");
+                        $("#defaultQty").focus();
+                        return;
+                    }
+                    
+                    // 숫자만 입력 가능하도록 검증
+                    if (!/^\d+$/.test(defaultQty)) {
+                        alert("수량은 숫자만 입력 가능합니다.");
+                        $("#defaultQty").focus();
+                        return;
+                    }
+                    
+                    if (confirm("모든 원자재에 대해 임시 발주입고 처리를 수행하시겠습니까?")) {
+                        // 처리 중 UI 표시
+                        $("#btnSaveTempMaterialReceiptAll").prop("disabled", true)
+                            .html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
+                        
+                        // 서버로 전송
+                        $.ajax({
+                            url: "/api/materialinventory/temp-material-receipt-all",
+                            type: "POST",
+                            data: JSON.stringify({
+                                defaultQty: defaultQty,
+                                overwriteExisting: overwriteExisting
+                            }),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function(response) {
+                                $("#btnSaveTempMaterialReceiptAll").prop("disabled", false)
+                                    .html('일괄 생성');
+                                
+                                if (response.success) {
+                                    alert(response.message);
+                                    window.closeModal("#tempMaterialReceiptAllModal");
+                                    // 재고 목록 갱신
+                                    location.reload();
+                                } else {
+                                    alert("처리 중 오류: " + response.message);
+                                }
+                            },
+                            error: function(xhr) {
+                                $("#btnSaveTempMaterialReceiptAll").prop("disabled", false)
+                                    .html('일괄 생성');
+                                
+                                alert("서버 오류가 발생했습니다.");
+                                console.error(xhr.responseText);
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
     </th:block>
 </body>
 </html>

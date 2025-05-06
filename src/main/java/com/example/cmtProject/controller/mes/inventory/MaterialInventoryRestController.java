@@ -155,4 +155,40 @@ public class MaterialInventoryRestController {
         }
     }
     
+    /**
+     * 임시 발주입고 API (초기 재고 데이터용)
+     */
+    @PostMapping("/temp-material-receipt")
+    public ApiResponse<Map<String, Object>> createTempMaterialReceipt(@RequestBody Map<String, Object> params) {
+        log.info("임시 발주입고 요청: {}", params);
+        
+        Map<String, Object> result = mis.createTempMaterialReceipt(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("임시 발주입고 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("임시 발주입고 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 모든 원자재 임시 발주입고 API
+     */
+    @PostMapping("/temp-material-receipt-all")
+    public ApiResponse<Map<String, Object>> createTempMaterialReceiptForAll(@RequestBody Map<String, Object> params) {
+        log.info("전체 원자재 임시 발주입고 요청: {}", params);
+        
+        Map<String, Object> result = mis.createTempMaterialReceiptForAll(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("전체 원자재 임시 발주입고 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("전체 원자재 임시 발주입고 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
 }

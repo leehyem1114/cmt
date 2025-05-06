@@ -278,10 +278,12 @@
 									<button type="button" id="pInventoryGenerateBtn" class="btn btn-outline-primary">
 									    <i class="bi bi-database-add"></i> 기본 재고 생성
 									</button>
-									<button type="button" class="btn btn-warning" id="btnTempProductionReceipt">
+									<button type="button" class="btn btn-warning" id="btnTempProductionReceipt"
+									sec:authorize="hasRole('SYSTEM')">
 									    <i class="fas fa-plus-circle"></i> 임시 생산입고
 									</button>
-									<button type="button" class="btn btn-info" id="btnTempProductionReceiptAll">
+									<button type="button" class="btn btn-info" id="btnTempProductionReceiptAll"
+									sec:authorize="hasRole('SYSTEM')">
 									    <i class="fas fa-cubes"></i> 전체 임시 생산입고
 									</button>
                                 </div>
