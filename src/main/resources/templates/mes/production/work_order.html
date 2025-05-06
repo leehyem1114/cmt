@@ -148,54 +148,56 @@
 				
 		  	
 		    <div class="card-header">
-		        <h5 class="card-title">📈 최근 7일간 공정 완료 추이</h5>
+		        <h5 class="card-title">📈 최근 한 달간 공정 완료 추이</h5>
 		    </div>
 		    
 		    <div>
 		    
 		<div id="myChart9"></div>
 		<script th:inline="javascript">
+			
 		window.workDateList = /*[[${workDateList}]]*/ [];
 		window.completeCountList = /*[[${completeCountList}]]*/ [];
-			const options9 = {
-					  chart: {
-					    type: 'area',
-					    height: 350
-					  },
-					  series: [{
-					    name: "공정 완료 수",
-					    data: completeCountList
-					    
-					  }],
-					  xaxis: {
-					    type: 'category',
-					    categories: workDateList
-					  },
-					  yaxis: {
-					    min: 0, // 시작 값
-					    tickAmount: 8, // 눈금 수
-					    forceNiceScale: true,
-					    labels: {
-					      formatter: function (val) {
-					        return Number.isInteger(val) ? val : '';
-					      }
-					    }
-					  },
-					  colors: ["#00C49F"],
-					  fill: {
-					    type: "gradient",
-					    gradient: {
-					      shadeIntensity: 1,
-					      opacityFrom: 0.7,
-					      opacityTo: 0.3,
-					      stops: [0, 90, 100]
-					    }
-					  }
-					};
-					//console.log(workDateList); // 날짜
-					//console.log(completeCountList); // 개수
-				  const chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
-				  chart9.render();
+		
+		const options9 = {
+			chart: {
+				type: 'area',
+			    height: 350
+			},
+			series: [{
+				name: "공정 완료 수",
+			    data: completeCountList
+			    
+			}],
+			xaxis: {
+				type: 'category',
+			    categories: workDateList
+			},
+			yaxis: {
+			    min: 0, // 시작 값
+			    tickAmount: 8, // 눈금 수
+			    forceNiceScale: true,
+			    labels: {
+					formatter: function (val) {
+				    	return Number.isInteger(val) ? val : '';
+				   	}
+				}
+			},
+			colors: ["#00C49F"],
+				fill: {
+			    type: "gradient",
+			    gradient: {
+			    	shadeIntensity: 1,
+			      	opacityFrom: 0.7,
+			      	opacityTo: 0.3,
+			      	stops: [0, 90, 100]
+			    	}
+				}
+			};
+			
+		  const chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
+		  chart9.render();
+		  
 		</script>
 		
 		    
@@ -290,7 +292,7 @@
 					    url: "/workOrder/data",
 					    method: "GET",
 					    success: function(newData) {
-							console.log(newData);
+							//console.log(newData);
 					        grid.resetData(newData);
 							
 							location.reload();
