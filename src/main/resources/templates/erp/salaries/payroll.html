@@ -263,6 +263,23 @@
 		}
 	});
 	
+	
+	// 행 아무곳이나 클릭했을 때 모달창 띄우기 활성화 =============================
+	monthlyGrid.on('click', (ev) => {
+		const { rowKey, columnName } = ev;
+
+		// '조회' 버튼 셀 클릭 무시 (중복 방지)
+		if (columnName === 'sliDesc') return;
+
+		selectedRowKey = rowKey;
+
+		// 모달 수동 호출
+		const modal = new bootstrap.Modal(document.getElementById('payrollModal'));
+		modal.show();
+	});
+	// ============================================================================
+	
+	
 	// 월별 상세 급여대장 모달창			
 	document.getElementById('payrollModal').addEventListener('shown.bs.modal', () => {
 		if (selectedRowKey !== null) {
