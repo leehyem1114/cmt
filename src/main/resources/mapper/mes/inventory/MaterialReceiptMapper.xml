@@ -59,11 +59,11 @@
             #{receiptStatus},
             #{warehouseCode, jdbcType=VARCHAR}, 
             #{locationCode, jdbcType=VARCHAR},
-            #{receiver},
-            #{createdBy},
-            #{updatedBy}, 
-            #{createdDate},
-            #{updatedDate}
+            #{receiver, jdbcType=VARCHAR},
+            #{createdBy, jdbcType=VARCHAR},
+            #{updatedBy, jdbcType=VARCHAR}, 
+            #{createdDate, jdbcType=DATE},
+            #{updatedDate, jdbcType=DATE}
         )
 	</insert>
 	

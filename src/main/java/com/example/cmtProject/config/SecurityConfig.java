@@ -49,8 +49,8 @@ public class SecurityConfig{
             .requestMatchers("/productsissue/**").authenticated() //productsissue 로그인필수
             .requestMatchers("/material-info/**").authenticated() //material-info 로그인필수
             .requestMatchers("/products-info/**").authenticated() //products-info 로그인필수
-            .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER") //ADMIN또는 MANAGER가 접근
-            .requestMatchers("/admin/**","/comm/**").hasRole("ADMIN") //ADMIN만 접근
+            .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER","SYSTEM") //ADMIN또는 MANAGER가 접근
+            .requestMatchers("/admin/**","/comm/**").hasAnyRole("ADMIN", "SYSTEM") //ADMIN만 접근
             .anyRequest().permitAll() //그 외 모든 요청은 허용
             )
             .formLogin(login -> login

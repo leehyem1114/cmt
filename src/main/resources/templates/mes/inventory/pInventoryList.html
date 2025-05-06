@@ -280,8 +280,13 @@
 									<button type="button" id="pInventoryGenerateBtn" class="btn btn-outline-primary">
 									    <i class="bi bi-database-add"></i> 기본 재고 생성
 									</button>
-									<button type="button" class="btn btn-warning" id="btnTempProductionReceipt">
+									<button type="button" class="btn btn-warning" id="btnTempProductionReceipt"
+									sec:authorize="hasRole('SYSTEM')">
 									    <i class="fas fa-plus-circle"></i> 임시 생산입고
+									</button>
+									<button type="button" class="btn btn-info" id="btnTempProductionReceiptAll"
+									sec:authorize="hasRole('SYSTEM')">
+									    <i class="fas fa-cubes"></i> 전체 임시 생산입고
 									</button>
                                 </div>
                             </div>
@@ -414,8 +419,41 @@
 		                </form>
 		            </div>
 		            <div class="modal-footer">
-		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+		                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
 		                <button type="button" class="btn btn-primary" id="btnSaveTempProductionReceipt">저장</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		<!-- 전체 임시 생산입고 모달 -->
+		<div class="modal fade" id="tempProductionReceiptAllModal" tabindex="-1" role="dialog" aria-labelledby="tempProductionReceiptAllModalLabel" aria-hidden="true">
+		    <div class="modal-dialog" role="document">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h5 class="modal-title" id="tempProductionReceiptAllModalLabel">전체 제품 임시 생산입고</h5>
+		                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		            </div>
+		            <div class="modal-body">
+		                <div class="alert alert-info">
+		                    <i class="fas fa-info-circle"></i> 이 기능은 모든 제품에 대해 임시 생산입고 처리를 수행합니다. 제품 수에 따라 시간이 소요될 수 있습니다.
+		                </div>
+		                <form id="tempProductionReceiptAllForm">
+		                    <div class="form-group">
+		                        <label for="defaultQty">기본 수량</label>
+		                        <input type="text" class="form-control" id="defaultQty" value="10" required>
+		                        <small class="form-text text-muted">모든 제품에 적용할 기본 수량을 입력하세요.</small>
+		                    </div>
+		                    <div class="form-check mb-3">
+		                        <input type="checkbox" class="form-check-input" id="overwriteExisting">
+		                        <label class="form-check-label" for="overwriteExisting">이미 재고가 있는 제품도 처리</label>
+		                    </div>
+		                </form>
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" id="btnCloseAllModal">취소</button>
+		                <button type="button" class="btn btn-primary" id="btnSaveTempProductionReceiptAll">일괄 생성</button>
 		            </div>
 		        </div>
 		    </div>
@@ -460,7 +498,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
                     </div>
                 </div>
             </div>
@@ -483,195 +521,270 @@
         <script src="/js/commonJs/GridSearchUtil.js"></script>
 
         <!-- 임시 생산입고 관련 스크립트 -->
-        <script>
-            $(document).ready(function() {
-                // 임시 생산입고 모달 열기
-                $("#btnTempProductionReceipt").on("click", function() {
-                    // 모달 입력 초기화
-                    $("#tempProductionReceiptForm")[0].reset();
-                    $("#tempProductionReceiptModal").modal("show");
-                });
-                
-                // 제품 검색 버튼 클릭
-                $("#btnSearchProduct").on("click", function() {
-                    $("#searchProductKeyword").val($("#tempPdtCode").val());
-                    searchProducts();
-                    $("#productSearchModal").modal("show");
-                });
-                
-                // 제품 검색 실행
-                $("#btnSearchProductExecute").on("click", function() {
-                    searchProducts();
-                });
-                
-                // 엔터키로 검색
-                $("#searchProductKeyword").on("keypress", function(e) {
-                    if (e.which === 13) {
-                        searchProducts();
-                    }
-                });
-                
-                // 제품 코드 직접 입력 후 포커스 이동 시 제품 정보 조회
-                $("#tempPdtCode").on("blur", function() {
-                    const pdtCode = $(this).val();
-                    if (pdtCode) {
-                        getProductInfo(pdtCode);
-                    }
-                });
-                
-                // 임시 생산입고 저장
-                $("#btnSaveTempProductionReceipt").on("click", function() {
-                    const pdtCode = $("#tempPdtCode").val();
-                    const qty = $("#tempQty").val();
-                    const lotNo = $("#tempLotNo").val() || "";
-                    
-                    if (!pdtCode) {
-                        alert("제품 코드는 필수입니다.");
-                        $("#tempPdtCode").focus();
-                        return;
-                    }
-                    
-                    if (!qty) {
-                        alert("수량은 필수입니다.");
-                        $("#tempQty").focus();
-                        return;
-                    }
-                    
-                    // 숫자만 입력 가능하도록 검증
-                    if (!/^\d+$/.test(qty)) {
-                        alert("수량은 숫자만 입력 가능합니다.");
-                        $("#tempQty").focus();
-                        return;
-                    }
-                    
-                    // 서버로 전송
-                    $.ajax({
-                        url: "/api/productsinventory/temp-production-receipt",
-                        type: "POST",
-                        data: JSON.stringify({
-                            pdtCode: pdtCode,
-                            qty: qty,
-                            lotNo: lotNo
-                        }),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function(response) {
-                            if (response.success) {
-                                alert("임시 생산입고가 완료되었습니다.");
-                                $("#tempProductionReceiptModal").modal("hide");
-                                // 재고 목록 갱신
-                                location.reload();
-                            } else {
-                                alert("처리 중 오류: " + response.message);
-                            }
-                        },
-                        error: function(xhr) {
-                            alert("서버 오류가 발생했습니다.");
-                            console.error(xhr.responseText);
-                        }
-                    });
-                });
-                
-                // 제품 검색 함수
-                function searchProducts() {
-                    const keyword = $("#searchProductKeyword").val();
-                    
-                    $.ajax({
-                        url: "/api/products-info/list",
-                        type: "GET",
-                        data: { keyword: keyword },
-                        dataType: "json",
-                        success: function(response) {
-                            if (response.success) {
-                                renderProductSearchResults(response.data);
-                            } else {
-                                alert("제품 검색 중 오류: " + response.message);
-                            }
-                        },
-                        error: function(xhr) {
-                            alert("서버 오류가 발생했습니다.");
-                            console.error(xhr.responseText);
-                        }
-                    });
-                }
-                
-                // 제품 검색 결과 렌더링
-                function renderProductSearchResults(products) {
-                    const $tbody = $("#productSearchTable tbody");
-                    $tbody.empty();
-                    
-                    if (products.length === 0) {
-                        $tbody.append('<tr><td colspan="5" class="text-center">검색 결과가 없습니다.</td></tr>');
-                        return;
-                    }
-                    
-                    $.each(products, function(i, product) {
-                        const tr = `
-                            <tr>
-                                <td>${product.PDT_CODE}</td>
-                                <td>${product.PDT_NAME || ''}</td>
-                                <td>${product.PDT_SPECIFICATION || ''}</td>
-                                <td>${product.PDT_TYPE || ''}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-primary select-product" 
-                                        data-code="${product.PDT_CODE}" 
-                                        data-name="${product.PDT_NAME || ''}"
-                                        data-warehouse="${product.DEFAULT_WAREHOUSE_CODE || ''}"
-                                        data-location="${product.DEFAULT_LOCATION_CODE || ''}">
-                                        선택
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        $tbody.append(tr);
-                    });
-                    
-                    // 제품 선택 이벤트
-                    $(".select-product").on("click", function() {
-                        const code = $(this).data("code");
-                        const name = $(this).data("name");
-                        const warehouse = $(this).data("warehouse");
-                        const location = $(this).data("location");
-                        
-                        $("#tempPdtCode").val(code);
-                        $("#tempPdtName").val(name);
-                        $("#tempWarehouse").val(warehouse);
-                        $("#tempLocation").val(location);
-                        
-                        $("#productSearchModal").modal("hide");
-                    });
-                }
-                
-                // 제품 정보 조회
-                function getProductInfo(pdtCode) {
-                    $.ajax({
-                        url: "/api/products-info/" + pdtCode,
-                        type: "GET",
-                        dataType: "json",
-                        success: function(response) {
-                            if (response.success) {
-                                const product = response.data;
-                                $("#tempPdtName").val(product.PDT_NAME || '');
-                                $("#tempWarehouse").val(product.DEFAULT_WAREHOUSE_CODE || '');
-                                $("#tempLocation").val(product.DEFAULT_LOCATION_CODE || '');
-                            } else {
-                                alert("제품 정보 조회 중 오류: " + response.message);
-                                $("#tempPdtName").val('');
-                                $("#tempWarehouse").val('');
-                                $("#tempLocation").val('');
-                            }
-                        },
-                        error: function(xhr) {
-                            alert("제품 정보 조회 중 오류가 발생했습니다.");
-                            console.error(xhr.responseText);
-                            $("#tempPdtName").val('');
-                            $("#tempWarehouse").val('');
-                            $("#tempLocation").val('');
-                        }
-                    });
-                }
-            });
-        </script>
+		<!-- 임시 생산입고 관련 스크립트 -->
+		<script>
+		    $(document).ready(function() {
+		        // 임시 생산입고 모달 열기
+		        $("#btnTempProductionReceipt").on("click", function() {
+		            // 모달 입력 초기화
+		            $("#tempProductionReceiptForm")[0].reset();
+		            $("#tempProductionReceiptModal").modal("show");
+		        });
+		        
+		        // 제품 검색 버튼 클릭
+		        $("#btnSearchProduct").on("click", function() {
+		            $("#searchProductKeyword").val($("#tempPdtCode").val());
+		            searchProducts();
+		            $("#productSearchModal").modal("show");
+		        });
+		        
+		        // 제품 검색 실행
+		        $("#btnSearchProductExecute").on("click", function() {
+		            searchProducts();
+		        });
+		        
+		        // 엔터키로 검색
+		        $("#searchProductKeyword").on("keypress", function(e) {
+		            if (e.which === 13) {
+		                searchProducts();
+		            }
+		        });
+		        
+		        // 제품 코드 직접 입력 후 포커스 이동 시 제품 정보 조회
+		        $("#tempPdtCode").on("blur", function() {
+		            const pdtCode = $(this).val();
+		            if (pdtCode) {
+		                getProductInfo(pdtCode);
+		            }
+		        });
+		        
+		        // 임시 생산입고 저장
+		        $("#btnSaveTempProductionReceipt").on("click", function() {
+		            const pdtCode = $("#tempPdtCode").val();
+		            const qty = $("#tempQty").val();
+		            const lotNo = $("#tempLotNo").val() || "";
+		            
+		            if (!pdtCode) {
+		                alert("제품 코드는 필수입니다.");
+		                $("#tempPdtCode").focus();
+		                return;
+		            }
+		            
+		            if (!qty) {
+		                alert("수량은 필수입니다.");
+		                $("#tempQty").focus();
+		                return;
+		            }
+		            
+		            // 숫자만 입력 가능하도록 검증
+		            if (!/^\d+$/.test(qty)) {
+		                alert("수량은 숫자만 입력 가능합니다.");
+		                $("#tempQty").focus();
+		                return;
+		            }
+		            
+		            // 서버로 전송
+		            $.ajax({
+		                url: "/api/productsinventory/temp-production-receipt",
+		                type: "POST",
+		                data: JSON.stringify({
+		                    pdtCode: pdtCode,
+		                    qty: qty,
+		                    lotNo: lotNo
+		                }),
+		                contentType: "application/json",
+		                dataType: "json",
+		                success: function(response) {
+		                    if (response.success) {
+		                        alert("임시 생산입고가 완료되었습니다.");
+		                        $("#tempProductionReceiptModal").modal("hide");
+		                        // 재고 목록 갱신
+		                        location.reload();
+		                    } else {
+		                        alert("처리 중 오류: " + response.message);
+		                    }
+		                },
+		                error: function(xhr) {
+		                    alert("서버 오류가 발생했습니다.");
+		                    console.error(xhr.responseText);
+		                }
+		            });
+		        });
+		        
+		        // 제품 검색 함수
+		        function searchProducts() {
+		            const keyword = $("#searchProductKeyword").val();
+		            
+		            $.ajax({
+		                url: "/api/products-info/list",
+		                type: "GET",
+		                data: { keyword: keyword },
+		                dataType: "json",
+		                success: function(response) {
+		                    if (response.success) {
+		                        renderProductSearchResults(response.data);
+		                    } else {
+		                        alert("제품 검색 중 오류: " + response.message);
+		                    }
+		                },
+		                error: function(xhr) {
+		                    alert("서버 오류가 발생했습니다.");
+		                    console.error(xhr.responseText);
+		                }
+		            });
+		        }
+		        
+		        // 제품 검색 결과 렌더링
+		        function renderProductSearchResults(products) {
+		            const $tbody = $("#productSearchTable tbody");
+		            $tbody.empty();
+		            
+		            if (products.length === 0) {
+		                $tbody.append('<tr><td colspan="5" class="text-center">검색 결과가 없습니다.</td></tr>');
+		                return;
+		            }
+		            
+		            $.each(products, function(i, product) {
+		                const tr = `
+		                    <tr>
+		                        <td>${product.PDT_CODE}</td>
+		                        <td>${product.PDT_NAME || ''}</td>
+		                        <td>${product.PDT_SPECIFICATION || ''}</td>
+		                        <td>${product.PDT_TYPE || ''}</td>
+		                        <td>
+		                            <button type="button" class="btn btn-sm btn-primary select-product" 
+		                                data-code="${product.PDT_CODE}" 
+		                                data-name="${product.PDT_NAME || ''}"
+		                                data-warehouse="${product.DEFAULT_WAREHOUSE_CODE || ''}"
+		                                data-location="${product.DEFAULT_LOCATION_CODE || ''}">
+		                                선택
+		                            </button>
+		                        </td>
+		                    </tr>
+		                `;
+		                $tbody.append(tr);
+		            });
+		            
+		            // 제품 선택 이벤트
+		            $(".select-product").on("click", function() {
+		                const code = $(this).data("code");
+		                const name = $(this).data("name");
+		                const warehouse = $(this).data("warehouse");
+		                const location = $(this).data("location");
+		                
+		                $("#tempPdtCode").val(code);
+		                $("#tempPdtName").val(name);
+		                $("#tempWarehouse").val(warehouse);
+		                $("#tempLocation").val(location);
+		                
+		                $("#productSearchModal").modal("hide");
+		            });
+		        }
+		        
+		        // 제품 정보 조회
+		        function getProductInfo(pdtCode) {
+		            $.ajax({
+		                url: "/api/products-info/" + pdtCode,
+		                type: "GET",
+		                dataType: "json",
+		                success: function(response) {
+		                    if (response.success) {
+		                        const product = response.data;
+		                        $("#tempPdtName").val(product.PDT_NAME || '');
+		                        $("#tempWarehouse").val(product.DEFAULT_WAREHOUSE_CODE || '');
+		                        $("#tempLocation").val(product.DEFAULT_LOCATION_CODE || '');
+		                    } else {
+		                        alert("제품 정보 조회 중 오류: " + response.message);
+		                        $("#tempPdtName").val('');
+		                        $("#tempWarehouse").val('');
+		                        $("#tempLocation").val('');
+		                    }
+		                },
+		                error: function(xhr) {
+		                    alert("제품 정보 조회 중 오류가 발생했습니다.");
+		                    console.error(xhr.responseText);
+		                    $("#tempPdtName").val('');
+		                    $("#tempWarehouse").val('');
+		                    $("#tempLocation").val('');
+		                }
+		            });
+		        }
+		        
+		        // 모달 닫기 함수 - 전역 스코프로 이동
+		        window.closeModal = function(modalId) {
+		            $(modalId).modal("hide");
+		        };
+		        
+		        // 모달 닫기 버튼 이벤트
+		        $("#btnCloseAllModal").on("click", function() {
+		            window.closeModal("#tempProductionReceiptAllModal");
+		        });
+		        
+		        // 전체 임시 생산입고 모달 열기
+		        $("#btnTempProductionReceiptAll").on("click", function() {
+		            // 모달 입력 초기화
+		            $("#tempProductionReceiptAllForm")[0].reset();
+		            $("#tempProductionReceiptAllModal").modal("show");
+		        });
+		        
+		        // 전체 임시 생산입고 저장
+		        $("#btnSaveTempProductionReceiptAll").on("click", function() {
+		            const defaultQty = $("#defaultQty").val();
+		            const overwriteExisting = $("#overwriteExisting").prop("checked");
+		            
+		            if (!defaultQty) {
+		                alert("기본 수량은 필수입니다.");
+		                $("#defaultQty").focus();
+		                return;
+		            }
+		            
+		            // 숫자만 입력 가능하도록 검증
+		            if (!/^\d+$/.test(defaultQty)) {
+		                alert("수량은 숫자만 입력 가능합니다.");
+		                $("#defaultQty").focus();
+		                return;
+		            }
+		            
+		            if (confirm("모든 제품에 대해 임시 생산입고 처리를 수행하시겠습니까?")) {
+		                // 처리 중 UI 표시
+		                $("#btnSaveTempProductionReceiptAll").prop("disabled", true)
+		                    .html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
+		                
+		                // 서버로 전송
+		                $.ajax({
+		                    url: "/api/productsinventory/temp-production-receipt-all",
+		                    type: "POST",
+		                    data: JSON.stringify({
+		                        defaultQty: defaultQty,
+		                        overwriteExisting: overwriteExisting
+		                    }),
+		                    contentType: "application/json",
+		                    dataType: "json",
+		                    success: function(response) {
+		                        $("#btnSaveTempProductionReceiptAll").prop("disabled", false)
+		                            .html('일괄 생성');
+		                        
+		                        if (response.success) {
+		                            alert(response.message);
+		                            window.closeModal("#tempProductionReceiptAllModal");
+		                            // 재고 목록 갱신
+		                            location.reload();
+		                        } else {
+		                            alert("처리 중 오류: " + response.message);
+		                        }
+		                    },
+		                    error: function(xhr) {
+		                        $("#btnSaveTempProductionReceiptAll").prop("disabled", false)
+		                            .html('일괄 생성');
+		                        
+		                        alert("서버 오류가 발생했습니다.");
+		                        console.error(xhr.responseText);
+		                    }
+		                });
+		            }
+		        });
+		    });
+		</script>
     </th:block>
 </body>
 </html>

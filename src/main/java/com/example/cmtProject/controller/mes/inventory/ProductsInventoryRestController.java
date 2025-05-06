@@ -175,4 +175,22 @@ public class ProductsInventoryRestController {
         }
     }
     
+    /**
+     * 모든 제품 임시 생산입고 API
+     */
+    @PostMapping("/temp-production-receipt-all")
+    public ApiResponse<Map<String, Object>> createTempProductionReceiptForAll(@RequestBody Map<String, Object> params) {
+        log.info("전체 제품 임시 생산입고 요청: {}", params);
+        
+        Map<String, Object> result = pis.createTempProductionReceiptForAll(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("전체 제품 임시 생산입고 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("전체 제품 임시 생산입고 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
 }

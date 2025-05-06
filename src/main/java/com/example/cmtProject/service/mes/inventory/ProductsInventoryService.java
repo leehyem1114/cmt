@@ -592,4 +592,121 @@ public class ProductsInventoryService {
 	    
 	    return resultMap;
 	}
+	
+	/**
+	 * 모든 제품에 대한 임시 생산입고 처리 (초기 재고 데이터 일괄 생성)
+	 * 
+	 * @param params 입력 파라미터 (기본 수량, 창고/위치 코드 등)
+	 * @return 처리 결과
+	 */
+	@Transactional
+	public Map<String, Object> createTempProductionReceiptForAll(Map<String, Object> params) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    int successCount = 0;
+	    int failCount = 0;
+	    List<String> failedItems = new ArrayList<>();
+	    
+	    try {
+	        log.info("전체 제품 임시 생산입고 처리 시작: {}", params);
+	        
+	        // 필수 파라미터 검증
+	        if (!params.containsKey("defaultQty")) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "기본 수량은 필수입니다.");
+	            return resultMap;
+	        }
+	        
+	        String defaultQty = (String) params.get("defaultQty");
+	        
+	        // 제품 목록 조회 (사용 중인 것만)
+	        Map<String, Object> queryParams = new HashMap<>();
+	        List<Map<String, Object>> productsList = productsMasterMapper.selectProducts(queryParams);
+	        
+	        if (productsList.isEmpty()) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "처리할 제품이 없습니다.");
+	            return resultMap;
+	        }
+	        
+	        log.info("처리할 제품 수: {}", productsList.size());
+	        
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
+	        // 각 제품에 대해 임시 생산입고 처리
+	        for (Map<String, Object> product : productsList) {
+	            try {
+	                String pdtCode = (String) product.get("PDT_CODE");
+	                
+	                // 이미 재고가 있는지 확인
+	                Map<String, Object> inventory = pImapper.getInventoryByPdtCode(pdtCode);
+	                
+	                // 재고가 있고 임시 데이터 생성 옵션이 false인 경우 스킵
+	                boolean overwriteExisting = params.containsKey("overwriteExisting") && 
+	                                         (Boolean) params.get("overwriteExisting");
+	                
+	             // 재고가 있고(재고 수량이 0보다 큰 경우) 임시 데이터 생성 옵션이 false인 경우 스킵
+	                if (inventory != null && Integer.parseInt(inventory.get("CURRENT_QTY").toString()) > 0 && !overwriteExisting) {
+	                    log.info("제품 {}은(는) 이미 재고가 있어 스킵합니다.", pdtCode);
+	                    continue;
+	                }
+	                // LOT 번호 생성
+	                String lotNo = "INIT-" + pdtCode + "-" + System.currentTimeMillis();
+	                
+	                // 임시 생산입고 처리 파라미터 설정
+	                Map<String, Object> entryParams = new HashMap<>();
+	                entryParams.put("pdtCode", pdtCode);
+	                entryParams.put("qty", defaultQty);
+	                entryParams.put("lotNo", lotNo);
+	                
+	                // 개별 임시 생산입고 처리 호출
+	                Map<String, Object> result = createTempProductionReceipt(entryParams);
+	                
+	                if ((Boolean) result.get("success")) {
+	                    successCount++;
+	                    log.info("제품 {} 임시 생산입고 성공: {}", pdtCode, result.get("message"));
+	                } else {
+	                    failCount++;
+	                    failedItems.add(pdtCode);
+	                    log.warn("제품 {} 임시 생산입고 실패: {}", pdtCode, result.get("message"));
+	                }
+	                
+	                // 처리 간격을 두어 시스템 부하 감소
+	                Thread.sleep(10);
+	                
+	            } catch (Exception e) {
+	                failCount++;
+	                failedItems.add((String) product.get("PDT_CODE"));
+	                log.error("제품 {} 처리 중 오류: {}", product.get("PDT_CODE"), e.getMessage(), e);
+	            }
+	        }
+	        
+	        if (successCount > 0) {
+	            String message = successCount + "개 제품의 임시 생산입고가 완료되었습니다.";
+	            if (failCount > 0) {
+	                message += " (" + failCount + "개 실패)";
+	            }
+	            
+	            resultMap.put("success", true);
+	            resultMap.put("message", message);
+	        } else {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "모든 제품의 임시 생산입고 처리에 실패했습니다.");
+	        }
+	        
+	        resultMap.put("successCount", successCount);
+	        resultMap.put("failCount", failCount);
+	        resultMap.put("failedItems", failedItems);
+	        
+	        log.info("전체 제품 임시 생산입고 처리 완료: 성공={}, 실패={}", successCount, failCount);
+	        
+	    } catch (Exception e) {
+	        log.error("전체 제품 임시 생산입고 처리 중 오류: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "처리 중 오류가 발생했습니다: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
 }
