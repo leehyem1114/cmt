@@ -156,4 +156,23 @@ public class ProductsInventoryRestController {
             return ApiResponse.error(result.get("message").toString(), result);
         }
     }
+    
+    /**
+     * 임시 생산입고 API (초기 재고 데이터용)
+     */
+    @PostMapping("/temp-production-receipt")
+    public ApiResponse<Map<String, Object>> createTempProductionReceipt(@RequestBody Map<String, Object> params) {
+        log.info("임시 생산입고 요청: {}", params);
+        
+        Map<String, Object> result = pis.createTempProductionReceipt(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("임시 생산입고 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("임시 생산입고 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
 }

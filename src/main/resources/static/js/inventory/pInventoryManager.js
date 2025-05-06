@@ -325,83 +325,97 @@ const ProductsInventoryManager = (function() {
         }
     }
 
-    /**
-     * FIFO 상세 정보 표시
-     */
-    function displayFIFODetail(data) {
-        console.log('displayFIFODetail 실행됨, data:', data);
-        
-        // FIFO 큐 시각화
-        const queueVisual = document.getElementById('queueVisual');
-        if (!queueVisual) {
-            console.error('queueVisual 요소를 찾을 수 없음');
-            return;
-        }
-        queueVisual.innerHTML = '';
+	/**
+	 * FIFO 상세 정보 표시
+	 */
+	function displayFIFODetail(data) {
+	    console.log('displayFIFODetail 실행됨, data:', data);
+	    
+	    // FIFO 큐 시각화
+	    const queueVisual = document.getElementById('queueVisual');
+	    if (!queueVisual) {
+	        console.error('queueVisual 요소를 찾을 수 없음');
+	        return;
+	    }
+	    queueVisual.innerHTML = '';
 
-        if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
-            console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
-            data.STOCK_LIST.forEach((stock, index) => {
-                console.log(`Stock ${index}:`, stock);
-                
-                const remaining = parseFloat(stock.ISSUED_QTY);
-                const isActive = stock.STATUS === '사용중';
-                const isNext = !isActive && remaining > 0 && index === 1;
+	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+	        console.log('STOCK_LIST 개수:', data.STOCK_LIST.length);
+	        data.STOCK_LIST.forEach((stock, index) => {
+	            console.log(`Stock ${index}:`, stock);
+	            
+	            // 원본 수량과 남은 수량 확인
+	            const originalQty = parseFloat(stock.ORIGINAL_QTY || 0);
+	            const remaining = parseFloat(stock.ISSUED_QTY || 0);
+	            
+	            // 사용률 계산 (%)
+	            const usagePercent = originalQty > 0 ? 
+	                Math.round((remaining / originalQty) * 100) : 0;
+	            
+	            const isActive = stock.STATUS === '사용중';
+	            const isNext = !isActive && remaining > 0 && index === 1;
 
-                const queueItem = document.createElement('div');
-                queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
+	            const queueItem = document.createElement('div');
+	            queueItem.className = `queue-item ${isActive ? 'active' : ''} ${isNext ? 'next' : ''}`;
 
-                queueItem.innerHTML = `
-                    <div class="queue-number">${stock.FIFO_ORDER}순위</div>
-                    <div class="queue-date">${formatDate(stock.ISSUE_DATE)}</div>
-                    <div class="queue-progress">
-                        <div>입고LOT번호: ${stock.ISSUE_NO}</div>
-                        <small class="text-muted">남은수량: ${Number(remaining).toLocaleString()}</small>
-                        <div class="progress-bar-custom">
-                            <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
-                                 style="width: ${remaining > 0 ? '100%' : '0%'};"></div>
-                        </div>
-                    </div>
-                    <div style="color: ${isActive ? '#0d6efd' : isNext ? '#ffc107' : '#6c757d'};">
-                        ${stock.STATUS}
-                    </div>
-                `;
+	            queueItem.innerHTML = `
+	                <div class="queue-number">${stock.FIFO_ORDER}순위</div>
+	                <div class="queue-date">${formatDate(stock.ISSUE_DATE)}</div>
+	                <div class="queue-progress">
+	                    <div>입고LOT번호: ${stock.ISSUE_NO}</div>
+	                    <small class="text-muted">입고량: ${Number(originalQty).toLocaleString()} / 남은량: ${Number(remaining).toLocaleString()} (${usagePercent}%)</small>
+	                    <div class="progress-bar-custom">
+	                        <div class="${isActive ? 'progress-fill-blue' : 'progress-fill-yellow'}" 
+	                             style="width: ${usagePercent}%;"></div>
+	                    </div>
+	                </div>
+	                <div style="color: ${isActive ? '#0d6efd' : isNext ? '#ffc107' : '#6c757d'};">
+	                    ${stock.STATUS}
+	                </div>
+	            `;
 
-                queueVisual.appendChild(queueItem);
-            });
-            console.log('queueVisual 업데이트 완료');
-        } else {
-            console.log('STOCK_LIST가 없거나 비어있음');
-        }
+	            queueVisual.appendChild(queueItem);
+	        });
+	        console.log('queueVisual 업데이트 완료');
+	    } else {
+	        console.log('STOCK_LIST가 없거나 비어있음');
+	        queueVisual.innerHTML = '<div class="alert alert-info">FIFO 데이터가 없습니다.</div>';
+	    }
 
-        // 상세 테이블 표시
-        const tableBody = document.getElementById('fifoDetailTableBody');
-        if (!tableBody) {
-            console.error('fifoDetailTableBody 요소를 찾을 수 없음');
-            return;
-        }
-        tableBody.innerHTML = '';
+	    // 상세 테이블 표시
+	    const tableBody = document.getElementById('fifoDetailTableBody');
+	    if (!tableBody) {
+	        console.error('fifoDetailTableBody 요소를 찾을 수 없음');
+	        return;
+	    }
+	    tableBody.innerHTML = '';
 
-        if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
-            data.STOCK_LIST.forEach(stock => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${stock.FIFO_ORDER}</td>
-                    <td>${formatDate(stock.ISSUE_DATE)}</td>
-                    <td>${stock.ISSUE_NO}</td>
-                    <td>${Number(stock.ISSUED_QTY).toLocaleString()}</td>
-                    <td>${Number(stock.ISSUED_QTY).toLocaleString()}</td>
-                    <td>
-                        <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-            console.log('테이블 업데이트 완료');
-        } else {
-            console.log('테이블에 표시할 데이터가 없음');
-        }
-    }
+	    if (data.STOCK_LIST && data.STOCK_LIST.length > 0) {
+	        data.STOCK_LIST.forEach(stock => {
+	            const row = document.createElement('tr');
+	            
+	            // 원본 수량과 남은 수량을 별도로 표시
+	            const originalQty = parseFloat(stock.ORIGINAL_QTY || 0);
+	            const remainingQty = parseFloat(stock.ISSUED_QTY || 0);
+	            
+	            row.innerHTML = `
+	                <td>${stock.FIFO_ORDER}</td>
+	                <td>${formatDate(stock.ISSUE_DATE)}</td>
+	                <td>${stock.ISSUE_NO}</td>
+	                <td>${Number(originalQty).toLocaleString()}</td>
+	                <td>${Number(remainingQty).toLocaleString()}</td>
+	                <td>
+	                    <span class="badge bg-${getBadgeColor(stock.STATUS)}">${stock.STATUS}</span>
+	                </td>
+	            `;
+	            tableBody.appendChild(row);
+	        });
+	        console.log('테이블 업데이트 완료');
+	    } else {
+	        console.log('테이블에 표시할 데이터가 없음');
+	        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">데이터가 없습니다</td></tr>';
+	    }
+	}
 
     /**
      * FIFO 이력 로드
@@ -424,25 +438,31 @@ const ProductsInventoryManager = (function() {
     /**
      * FIFO 이력 표시
      */
-    function displayFIFOHistory(historyData) {
-        const tableBody = document.getElementById('fifoHistoryTableBody');
-        tableBody.innerHTML = '';
+	function displayFIFOHistory(historyData) {
+	    const tableBody = document.getElementById('fifoHistoryTableBody');
+	    tableBody.innerHTML = '';
 
-        if (historyData && historyData.length > 0) {
-            historyData.forEach(history => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDateTime(history.UPDATED_DATE)}</td>
-                    <td>${history.ACTION_TYPE}</td>
-                    <td>${history.ACTION_DESCRIPTION}</td>
-                    <td>${history.UPDATED_BY || '-'}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        } else {
-            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">이력 정보가 없습니다.</td></tr>';
-        }
-    }
+	    if (historyData && historyData.length > 0) {
+	        console.log("FIFO 이력 데이터 있음: ", historyData.length, "건");
+	        
+	        historyData.forEach(history => {
+	            // 디버그용 로그 추가
+	            console.log("이력 데이터:", history);
+	            
+	            const row = document.createElement('tr');
+	            row.innerHTML = `
+	                <td>${formatDateTime(history.UPDATED_DATE)}</td>
+	                <td>${history.ACTION_TYPE || "데이터 없음"}</td>
+	                <td>${history.ACTION_DESCRIPTION || "상세 정보 없음"}</td>
+	                <td>${history.UPDATED_BY || '-'}</td>
+	            `;
+	            tableBody.appendChild(row);
+	        });
+	    } else {
+	        console.log("FIFO 이력 데이터가 없음");
+	        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">이력 정보가 없습니다.</td></tr>';
+	    }
+	}
 
     /**
      * 탭 전환
@@ -544,35 +564,59 @@ const ProductsInventoryManager = (function() {
 	// 기본 재고 데이터 생성 함수 
 	async function generateInventoryData() {
 	    try {
-	        // 확인 대화상자 표시
-	        const confirmed = await AlertUtil.showConfirm(
-	            '기본 재고 데이터 생성 확인',
-	            '아직 재고 정보가 없는 제품에 대한 기본 재고 데이터를 생성하시겠습니까?\n(이미 재고 정보가 있는 제품은 영향 없음)'
-	        );
+	        // 확인 대화상자 표시 - 객체 형태로 파라미터 전달
+	        const confirmed = await AlertUtil.showConfirm({
+	            title: '기본 재고 데이터 생성 확인',
+	            text: '아직 재고 정보가 없는 제품에 대한 기본 재고 데이터를 생성하시겠습니까?\n(이미 재고 정보가 있는 제품은 영향 없음)',
+	            icon: 'question'
+	        });
 	        
 	        if (!confirmed) return false;
 	        
-	        // API 호출
-	        const response = await ApiUtil.processRequest(
-	            () => ApiUtil.post('/api/productsinventory/generate-data'), {
-	                loadingMessage: '재고 데이터 생성 중...',
-	                successMessage: "기본 재고 데이터 생성이 완료되었습니다.",
-	                errorMessage: "재고 데이터 생성 중 오류가 발생했습니다.",
-	                successCallback: searchData // 생성 후 목록 새로고침
-	            }
-	        );
+	        console.log('API 호출 시작: /api/productsinventory/generate-data');
 	        
-	        if (response.success) {
-	            // 상세 결과 표시
-	            const created = response.data.createdCount || 0;
-	            const failed = (response.data.failedItems || []).length;
+	        const response = await fetch('/api/productsinventory/generate-data', {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json',
+	                'Accept': 'application/json'
+	            }
+	        });
+	        
+	        const result = await response.json();
+	        console.log('API 응답 데이터:', result);
+	        
+	        // 응답 처리
+	        if (result && result.success) {
+	            // 대소문자 모두 확인
+	            let createdCount = 0;
 	            
-	            await AlertUtil.showSuccess(
-	                '기본 재고 생성 완료', 
-	                `${created}개 제품의 기본 재고 정보가 생성되었습니다.${failed > 0 ? ` (${failed}개 실패)` : ''}`
-	            );
+	            if (result.data && result.data.CREATED_COUNT !== undefined) {
+	                createdCount = result.data.CREATED_COUNT;
+	            } else if (result.data && result.data.createdCount !== undefined) {
+	                createdCount = result.data.createdCount;
+	            } else if (result.createdCount !== undefined) {
+	                createdCount = result.createdCount;
+	            }
+	            
+	            console.log('생성된 항목 수:', createdCount);
+	            
+	            // 서버에서 이미 생성한 메시지를 사용
+	            let message = createdCount + '개 제품의 기본 재고 정보가 생성되었습니다.';
+	            if (result.data && result.data.MESSAGE) {
+	                message = result.data.MESSAGE;
+	            }
+	            
+	            // 성공 메시지 표시
+	            await AlertUtil.showSuccess('기본 재고 생성 완료', message);
+	            
+	            // 목록 새로고침
+	            await searchData();
 	            return true;
 	        } else {
+	            // 오류 메시지 표시
+	            const errorMsg = result && result.message ? result.message : '재고 데이터 생성에 실패했습니다.';
+	            await AlertUtil.showError('생성 실패', errorMsg);
 	            return false;
 	        }
 	    } catch (error) {

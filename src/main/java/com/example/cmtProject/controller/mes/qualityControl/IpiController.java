@@ -41,50 +41,50 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/ipi")
 @Slf4j
 public class IpiController {
-	
-	@Autowired
-	private IpiService ipiService;
-	
-	@Autowired
-	private QcmService qcmService;
+   
+   @Autowired
+   private IpiService ipiService;
+   
+   @Autowired
+   private QcmService qcmService;
 
-	
-	@GetMapping("/inspection-info")
-	public String getIpiInfo(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
-		
-		if (principalDetails == null) {
+   
+   @GetMapping("/inspection-info")
+   public String getIpiInfo(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+      
+      if (principalDetails == null) {
             return "redirect:/login"; // 로그인 페이지로 리다이렉트
         }
-    	// 유저정보
-    	String loginUser = principalDetails.getUsername();
-    	
-    	// 현재 유저 Role 넘겨주기
-    	model.addAttribute("userRole", principalDetails.getAuthorities().iterator().next().getAuthority());
-    	
-    	// IPI 리스트
-    	List<IpiDTO> ipiList = ipiService.getAllIpi();
-    	model.addAttribute("ipiList", ipiList);
-    	
-    	return "mes/qualityControl/ipiList";
-	}
-	
-	
-	@GetMapping("/names-by-pdt")
-	@ResponseBody
-	public List<Map<String, Object>> getQcmNamesByPdt(@RequestParam("pdtName") String pdtName) {
-	    return qcmService.getQcmNamesByPdtName(pdtName);
-	}
-	
-	
-	// 그리드에서 바로 수정
-	@ResponseBody
-	@PostMapping("/edit")
-	public void qcmEditexep(@ModelAttribute IpiDTO ipiDTO) throws JsonMappingException, JsonProcessingException {
-			ipiService.ipiRemarksAndQcmNameUpdate(ipiDTO); 
-	}
-	
-	
-	// 삭제 메서드
+       // 유저정보
+       String loginUser = principalDetails.getUsername();
+       
+       // 현재 유저 Role 넘겨주기
+       model.addAttribute("userRole", principalDetails.getAuthorities().iterator().next().getAuthority());
+       
+       // IPI 리스트
+       List<IpiDTO> ipiList = ipiService.getAllIpi();
+       model.addAttribute("ipiList", ipiList);
+       
+       return "mes/qualityControl/ipiList";
+   }
+   
+   
+   @GetMapping("/names-by-pdt")
+   @ResponseBody
+   public List<Map<String, Object>> getQcmNamesByPdt(@RequestParam("pdtName") String pdtName) {
+       return qcmService.getQcmNamesByPdtName(pdtName);
+   }
+   
+   
+   // 그리드에서 바로 수정
+   @ResponseBody
+   @PostMapping("/edit")
+   public void qcmEditexep(@ModelAttribute IpiDTO ipiDTO) throws JsonMappingException, JsonProcessingException {
+         ipiService.ipiRemarksAndQcmNameUpdate(ipiDTO); 
+   }
+   
+   
+   // 삭제 메서드
     @PostMapping("/delete")
     @ResponseBody
     public ResponseEntity<String> deleteIpi(@RequestBody Map<String, List<Long>> data) {
@@ -101,15 +101,15 @@ public class IpiController {
     @ResponseBody
     @PostMapping("/status-action")
     public ResponseEntity<?> postMethodName(Model model, 
-    											@RequestBody Map<String, String> payload,
-    											@AuthenticationPrincipal PrincipalDetails principalDetails) {
+                                     @RequestBody Map<String, String> payload,
+                                     @AuthenticationPrincipal PrincipalDetails principalDetails) {
 
-    	// 유저정보
-    	Employees loginUser = principalDetails.getUser();
-    	
-    	IpiDTO ipiDTO = new IpiDTO();
-    	
-    	ipiDTO.setIpiCode(payload.get("ipiCode"));
+       // 유저정보
+       Employees loginUser = principalDetails.getUser();
+       
+       IpiDTO ipiDTO = new IpiDTO();
+       
+       ipiDTO.setIpiCode(payload.get("ipiCode"));
         String status = payload.get("status");
         ipiDTO.setWoCode(payload.get("woCode"));
         ipiDTO.setPdtCode(payload.get("pdtCode"));
@@ -120,11 +120,11 @@ public class IpiController {
 
         // TODO: 상태에 따라 분기 처리
         if ("검사중".equals(status)) {
-        	ipiService.updateIpiInspectionStatusProcessing(loginUser, ipiDTO);
+           ipiService.updateIpiInspectionStatusProcessing(loginUser, ipiDTO);
         } else if ("검사완료".equals(status)) {
-        	ipiService.updateIpiInspectionStatusComplete(ipiDTO);
+           ipiService.updateIpiInspectionStatusComplete(ipiDTO);
         }
-    	
+       
         
         return ResponseEntity.ok(Collections.singletonMap("result", "success"));
     }
@@ -166,39 +166,39 @@ public class IpiController {
     }
     
     
-	
-	
-	
-//----------------------------------------------------------------------------------------------------	
-	
-	
-	//엑셀 파일 다운로드
-	@GetMapping("/excel-file-down")
-	public void downloadExcel(HttpServletResponse response) throws IOException {
-	    String fileName = "bom_form.xls";
-	    String filePath = "/excel/" + fileName;
+   
+   
+   
+//----------------------------------------------------------------------------------------------------   
+   
+   
+   //엑셀 파일 다운로드
+   @GetMapping("/excel-file-down")
+   public void downloadExcel(HttpServletResponse response) throws IOException {
+       String fileName = "bom_form.xls";
+       String filePath = "/excel/" + fileName;
 
-	    // /static/ 디렉토리 기준으로 파일을 읽어옴
-	    log.info("filePath:"+filePath);
-	    InputStream inputStream = new ClassPathResource(filePath).getInputStream();
+       // /static/ 디렉토리 기준으로 파일을 읽어옴
+       log.info("filePath:"+filePath);
+       InputStream inputStream = new ClassPathResource(filePath).getInputStream();
 
-	    log.info("inputStream:"+inputStream);
-	    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-	    response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+       log.info("inputStream:"+inputStream);
+       response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+       response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-	    // 파일 내용을 응답 스트림에 복사
-	    StreamUtils.copy(inputStream, response.getOutputStream());
-	    response.flushBuffer();
-		}
-	
-	// 엑셀 파일 적용
-	@PostMapping("/saveExcelData")
-	@ResponseBody
-	public ResponseEntity<?> saveExcelData(@RequestBody List<IpiDTO> list) {
+       // 파일 내용을 응답 스트림에 복사
+       StreamUtils.copy(inputStream, response.getOutputStream());
+       response.flushBuffer();
+      }
+   
+   // 엑셀 파일 적용
+   @PostMapping("/saveExcelData")
+   @ResponseBody
+   public ResponseEntity<?> saveExcelData(@RequestBody List<IpiDTO> list) {
 
-	    for (IpiDTO dto : list) {
-	        ipiService.saveExcelData(dto); // insert or update
-	    }
-	    return ResponseEntity.ok("엑셀 저장 완료");
-	}
+       for (IpiDTO dto : list) {
+           ipiService.saveExcelData(dto); // insert or update
+       }
+       return ResponseEntity.ok("엑셀 저장 완료");
+   }
 }

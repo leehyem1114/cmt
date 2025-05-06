@@ -1,6 +1,7 @@
 package com.example.cmtProject.service.mes.inventory;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,9 @@ public class ProductsIssueService {
 	
 	@Autowired
 	private FqcService fqcService;
+	
+	@Autowired
+	private ProductsInventoryService pIService;
 	
 	// 출고 상태 상수 정의
 	private static final String STATUS_WAITING = "출고대기";
@@ -124,7 +128,7 @@ public class ProductsIssueService {
 	        Map<String, Object> issueMap = new HashMap<>();
 	        
 	        // 기본 정보 설정
-	        issueMap.put("issueCode", "IS" + System.currentTimeMillis() % 10000);
+	        issueMap.put("issueCode", generateIssueCode());
 	        issueMap.put("pdtCode", soData.get("PDT_CODE"));
 	        issueMap.put("requestQty", soData.get("SO_QTY"));
 	        issueMap.put("issuedQty", "0"); // 초기 출고 수량은 0
@@ -508,21 +512,6 @@ public class ProductsIssueService {
 		            return resultMap;
 		        }
 		        
-		        // 출고 상태 확인
-		        String issueStatus = (String) issueDetail.get("ISSUE_STATUS");
-		        if (STATUS_COMPLETED.equals(issueStatus) || STATUS_CANCELED.equals(issueStatus)) {
-		            resultMap.put("success", false);
-		            resultMap.put("message", "이미 처리된 출고입니다: " + issueStatus);
-		            return resultMap;
-		        }
-		        
-		        // 검수완료(합격) 상태인지 확인 - 검수 합격만 출고 처리 가능
-		        if (!STATUS_INSPECT_PASSED.equals(issueStatus) && !STATUS_WAITING.equals(issueStatus)) {
-		            resultMap.put("success", false);
-		            resultMap.put("message", "검수 완료된 항목(합격)만 출고 처리할 수 있습니다. 현재 상태: " + issueStatus);
-		            return resultMap;
-		        }
-		        
 		        // 현재 날짜
 		        LocalDate now = LocalDate.now();
 		        String nowStr = now.toString();
@@ -532,8 +521,27 @@ public class ProductsIssueService {
 		        
 		        // 출고 수량 설정 (요청 수량 전체 출고)
 		        String issuedQty = (String) issueDetail.get("REQUEST_QTY");
+		        String pdtCode = (String) issueDetail.get("PDT_CODE");
+		        String soCode = (String) issueDetail.get("SO_CODE");
 		        
-		        // 1. 출고 상태 및 출고일 업데이트
+		        // 1. FIFO 재고 차감 처리
+		        Map<String, Object> fifoParams = new HashMap<>();
+		        fifoParams.put("pdtCode", pdtCode);
+		        fifoParams.put("consumptionQty", issuedQty);
+		        fifoParams.put("consumptionType", "SHIPMENT");  // 출고 타입으로 설정
+		        fifoParams.put("soCode", soCode);  // 수주 코드 설정
+		        fifoParams.put("updatedBy", userId);
+		        
+		        // ProductsInventoryService의 FIFO 차감 메서드 호출
+		        Map<String, Object> fifoResult = pIService.consumeProductFIFO(fifoParams);
+		        
+		        if (!(Boolean) fifoResult.get("success")) {
+		            resultMap.put("success", false);
+		            resultMap.put("message", fifoResult.get("message"));
+		            return resultMap;
+		        }
+		        
+		        // 2. 출고 상태 및 출고일 업데이트 
 		        Map<String, Object> updateMap = new HashMap<>();
 		        updateMap.put("issueNo", issueNo);
 		        updateMap.put("issueStatus", STATUS_COMPLETED);
@@ -549,35 +557,7 @@ public class ProductsIssueService {
 		            return resultMap;
 		        }
 		        
-		        // 2. 재고 처리
-		        String pdtCode = (String) issueDetail.get("PDT_CODE");
-		        Map<String, Object> inventoryParams = new HashMap<>();
-		        inventoryParams.put("pdtCode", pdtCode);
-		        inventoryParams.put("consumptionQty", issuedQty);
-		        inventoryParams.put("updatedBy", userId);
-		        
-		        // 재고 차감
-		        int deductResult = pInvMapper.deductInventory(inventoryParams);
-		        
-		        if (deductResult <= 0) {
-		            resultMap.put("success", false);
-		            resultMap.put("message", "재고 차감에 실패했습니다. 재고가 충분한지 확인하세요.");
-		            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-		            return resultMap;
-		        }
-		        
-		        // 3. 출고 재고 정보 저장
-		        Map<String, Object> stockParams = new HashMap<>();
-		        stockParams.put("issueNo", issueNo);
-		        stockParams.put("pdtCode", pdtCode);
-		        stockParams.put("issuedQty", issuedQty);
-		        stockParams.put("issueDate", nowStr);
-		        stockParams.put("lotNo", issueDetail.get("LOT_NO"));
-		        stockParams.put("createdBy", userId);
-		        
-		        pIsmapper.insertStock(stockParams);
-		        
-		        // 4. 출고 이력 저장
+		        // 3. 출고 이력 저장
 		        Map<String, Object> historyMap = new HashMap<>();
 		        historyMap.put("issueNo", issueNo);
 		        historyMap.put("actionType", "출고완료");
@@ -587,19 +567,16 @@ public class ProductsIssueService {
 		        
 		        pIhmapper.insertHistory(historyMap);
 		        
-		        // 5. 수주 상태 업데이트 - 출고완료로 변경
-		        // 수주코드를 알고 있다면 수주 상태 업데이트 처리
-		        if (params.containsKey("soCode") && params.get("soCode") != null) {
+		        // 4. 수주 상태 업데이트 (수주코드가 있는 경우)
+		        if (soCode != null && !soCode.isEmpty()) {
+		            Map<String, Object> soParams = new HashMap<>();
+		            soParams.put("soCode", soCode);
+		            soParams.put("soStatus", "SO_SHIPPED"); // 출고완료 상태코드
+		            soParams.put("updatedBy", userId);
+		            
 		            try {
-		                // 수주상태 업데이트 처리
-		                Map<String, Object> soParams = new HashMap<>();
-		                soParams.put("soCode", params.get("soCode"));
-		                soParams.put("soStatus", "SO_SHIPPED"); // 출고완료 상태코드
-		                soParams.put("updatedBy", userId);
-		                
 		                pImapper.updateSalesOrderStatus(soParams);
-		                
-		                log.info("수주 상태 업데이트: 코드={}, 상태=SO_SHIPPED", params.get("soCode"));
+		                log.info("수주 상태 업데이트: 코드={}, 상태=SO_SHIPPED", soCode);
 		            } catch (Exception e) {
 		                log.warn("수주 상태 업데이트 중 오류 발생: {}", e.getMessage());
 		                // 수주 상태 업데이트 실패해도 출고 자체는 완료 처리
@@ -848,5 +825,32 @@ public class ProductsIssueService {
 		    }
 		    
 		    return resultMap;
+		}
+		
+		/**
+		 * 출고 코드 생성 함수
+		 * 형식: IS-YYYYMMDD-XXX (XXX: 일련번호)
+		 * @return 생성된 출고 코드
+		 */
+		private String generateIssueCode() {
+		    LocalDate today = LocalDate.now();
+		    String dateStr = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		    
+		    // 오늘 날짜의 마지막 출고 코드 조회
+		    String lastCodePrefix = "IS-" + dateStr + "-";
+		    String lastCode = pImapper.getLastIssueCodeByPrefix(lastCodePrefix);
+		    
+		    int sequence = 1;
+		    if (lastCode != null && !lastCode.isEmpty()) {
+		        String seqStr = lastCode.substring(lastCodePrefix.length());
+		        try {
+		            sequence = Integer.parseInt(seqStr) + 1;
+		        } catch (NumberFormatException e) {
+		            // 파싱 오류 시 기본값 1 사용
+		            log.warn("출고코드 일련번호 파싱 오류: {}", lastCode);
+		        }
+		    }
+		    
+		    return String.format("IS-%s-%03d", dateStr, sequence);
 		}
 	}

@@ -210,74 +210,75 @@
 		ORDER SIBLINGS BY L.PRC_TYPE
 	</select>
 	
-  <select id="selectCompleteStatsLast7Days"  resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
-<!--     SELECT TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') AS workDate, -->
-<!--            COUNT(*) AS completeCount  -->
-<!--     FROM WORK_ORDER -->
-<!--     WHERE WO_END_DATE BETWEEN SYSDATE - 6 AND SYSDATE -->
-<!--       AND WO_STATUS_CODE = 'CP' -->
-<!--     GROUP BY TO_CHAR(WO_END_DATE, 'YYYY-MM-DD') -->
-<!--     ORDER BY workDate -->
-    
+  	<select id="selectCompleteStatsLast7Days"  resultType="com.example.cmtProject.dto.mes.production.WorkOrderDTO">
+
     <!-- LOT기준으로 그래프 그리기 >>> 값이 하루에만 너무 많아짐 -->
-    SELECT TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') AS workDate,
-       COUNT(*) AS completeCount 
-	FROM LOT
-	WHERE CREATE_DATE BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE) + 0.99999
-	  AND WO_STATUS_NO = 'CP'
-	GROUP BY TO_CHAR(CREATE_DATE, 'YYYY-MM-DD')
-	ORDER BY workDate
-  </select>
+    <!-- SELECT TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') AS workDate,
+	       COUNT(*) AS completeCount 
+		FROM LOT
+		WHERE CREATE_DATE BETWEEN TRUNC(SYSDATE) - 6 AND TRUNC(SYSDATE) + 0.99999
+		  AND WO_STATUS_NO = 'CP'
+		GROUP BY TO_CHAR(CREATE_DATE, 'YYYY-MM-DD')
+		ORDER BY workDate -->
+			
+	 	SELECT END_DATE AS workDate,
+COUNT(END_DATE) AS completeCount 
+		  FROM LOT
+		  WHERE END_DATE BETWEEN TRUNC(SYSDATE) - 30 AND TRUNC(SYSDATE) + 0.99999
+		    AND WO_STATUS_NO = 'CP'
+		  GROUP BY END_DATE
+	      ORDER BY workDate		
+	  </select>
   
-  <!-- lotNo로 품질이력 들고오기 -->
-  <select id="selectQualityHistory" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
-  	SELECT 
-	  	IPI_START_TIME
-	  	,IPI_END_TIME 
-	  	,IPI_MEASURED_LENGTH_VALUE
-	  	,IPI_MEASURED_WEIGHT_VALUE
-	  	,IPI_INSPECTION_RESULT
-	  	,CHILD_LOT_CODE
-	  	,QCM_NAME
-	  	,LOT_NO
-	  	,EMP_NAME
-  	  FROM IPI 
-  	 WHERE LOT_NO = #{lotNo}
-  </select>
+	  <!-- lotNo로 품질이력 들고오기 -->
+	  <select id="selectQualityHistory" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+	  	SELECT 
+		  	IPI_START_TIME
+		  	,IPI_END_TIME 
+		  	,IPI_MEASURED_LENGTH_VALUE
+		  	,IPI_MEASURED_WEIGHT_VALUE
+		  	,IPI_INSPECTION_RESULT
+		  	,CHILD_LOT_CODE
+		  	,QCM_NAME
+		  	,LOT_NO
+		  	,EMP_NAME
+	  	  FROM IPI 
+	  	 WHERE LOT_NO = #{lotNo}
+	  </select>
   
-  <select id="selectTodayProcessTop5"  resultType="com.example.cmtProject.dto.mes.production.LotDTO">
-	  SELECT 
-		    P.PRC_TYPE_NAME AS processName, 
-		    COUNT(*) AS incompleteCount
-		FROM LOT L
-		LEFT JOIN PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
-		WHERE L.CREATE_DATE BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 0.99999
-		  AND L.WO_STATUS_NO != 'CP' -- 미완료만
-		GROUP BY P.PRC_TYPE_NAME
-		ORDER BY incompleteCount DESC
-		FETCH FIRST 5 ROWS ONLY
-  </select>
-  
-  <select id="getWoNoMax" resultType="Long">
-  		SELECT MAX(WO_NO) 
-  		  FROM WORK_ORDER
-  </select>
-  
-  <select id="getWoCodeLast" resultType="String">
-  	  SELECT WO_CODE
-	  FROM WORK_ORDER
-	  WHERE WO_NO = (SELECT NVL(MAX(WO_NO),0) FROM WORK_ORDER)
-  </select>
-  <!-- LOT검색 -->
-  <select id="findLotsByKeyword" parameterType="String" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
-  	SELECT 
-	    L.*, 
-	    W.PDT_NAME
-	  FROM LOT L
-	  LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
-	  WHERE LOWER(L.CHILD_LOT_CODE) LIKE LOWER(#{keyword})
-	     OR LOWER(L.WO_CODE) LIKE LOWER(#{keyword})
-	     OR LOWER(W.PDT_NAME) LIKE LOWER(#{keyword})
-  </select>
+	  <select id="selectTodayProcessTop5"  resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+		  SELECT 
+			    P.PRC_TYPE_NAME AS processName, 
+			    COUNT(*) AS incompleteCount
+			FROM LOT L
+			LEFT JOIN PROCESS_INFO P ON L.PRC_TYPE = P.PRC_TYPE_CODE
+			WHERE L.CREATE_DATE BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 0.99999
+			  AND L.WO_STATUS_NO != 'CP' -- 미완료만
+			GROUP BY P.PRC_TYPE_NAME
+			ORDER BY incompleteCount DESC
+			FETCH FIRST 5 ROWS ONLY
+	  </select>
+	  
+	  <select id="getWoNoMax" resultType="Long">
+	  		SELECT MAX(WO_NO) 
+	  		  FROM WORK_ORDER
+	  </select>
+	  
+	  <select id="getWoCodeLast" resultType="String">
+	  	  SELECT WO_CODE
+		  FROM WORK_ORDER
+		  WHERE WO_NO = (SELECT NVL(MAX(WO_NO),0) FROM WORK_ORDER)
+	  </select>
+	  <!-- LOT검색 -->
+	  <select id="findLotsByKeyword" parameterType="String" resultType="com.example.cmtProject.dto.mes.production.LotDTO">
+	  	SELECT 
+		    L.*, 
+		    W.PDT_NAME
+		  FROM LOT L
+		  LEFT JOIN WORK_ORDER W ON L.WO_CODE = W.WO_CODE
+		  WHERE LOWER(L.CHILD_LOT_CODE) LIKE LOWER(#{keyword})
+		     OR LOWER(L.WO_CODE) LIKE LOWER(#{keyword})
+		     OR LOWER(W.PDT_NAME) LIKE LOWER(#{keyword})
+	  </select>
 </mapper>
 	

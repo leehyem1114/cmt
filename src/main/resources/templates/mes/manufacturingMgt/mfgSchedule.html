@@ -395,7 +395,10 @@
 				const msData = response.data;
 				msDetailGrid.resetData(msData);
 			} else {
-				alert("상세정보를 불러오지 못했습니다.");
+				Swal.fire({
+					icon: "error",
+					title: "제조 계획 상세 정보 조회에 실패했습니다.",
+				});
 			}
 		},
 		error: function (err) {
@@ -452,7 +455,7 @@
 	            align: "center" 
 	        },
 	        {
-	            header: '코드 유형',
+	            header: '제품 유형',
 	            name: 'ITEM_TYPE',
 	            fontSize: '40',
 	            sortable: true, 
@@ -520,7 +523,7 @@
 				rowHeaders: ['checkbox'],
 				pageOptions: {
 					useClient: true,
-					perPage: 5
+					perPage: 10
 				},
 				columns: [
 					{
@@ -609,7 +612,7 @@
 		if (checkedRows.length === 0) {
 	        await Swal.fire({
 	            icon: 'warning',
-	            title: '선택된 항목 없음',
+	            title: '알림',
 	            text: '제조 계획 등록할 항목을 선택해주세요.'
 	        });
 	        return;
@@ -743,14 +746,14 @@
   		    if (!response.ok) {
   		    	await Swal.fire({
   		        	icon: "error",
-  		       	 	title: "삭제 처리 중 오류가 발생했습니다",
+  		       	 	title: "삭제 처리 중 오류가 발생했습니다.",
   		      	});
   		      	throw new Error("삭제 처리 중 오류");
   		    }
 
   		    await Swal.fire({
-  		    	title: "삭제가 완료되었습니다",
   		      	icon: "success",
+				title: "삭제가 완료되었습니다."
   		    });
   		    
   		    location.reload();
@@ -759,7 +762,7 @@
   		  console.error('Error:', error);
   		  	await Swal.fire({
   		    	icon: "error",
-  		      	title: "삭제 처리 중 오류가 발생했습니다",
+  		      	title: "삭제 처리 중 오류가 발생했습니다.",
   		    });
   		}
   	}
