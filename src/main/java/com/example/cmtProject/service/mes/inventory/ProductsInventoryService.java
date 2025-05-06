@@ -13,6 +13,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptStockMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,9 @@ public class ProductsInventoryService {
 	
 	@Autowired
 	private ProductsMasterMapper productsMasterMapper;
+	
+	@Autowired
+	private ProductsProductionReceiptStockMapper pprsmapper;
 	
 	/**
 	 * 재고 목록 조회
@@ -216,44 +220,70 @@ public class ProductsInventoryService {
 	
 	/**
 	 * FIFO 상세 정보 조회
+	 * 생산공정을 통한 입고 데이터를 기반으로 FIFO 정보 제공
 	 */
 	public Map<String, Object> getFIFODetail(String pdtCode) {
 	    Map<String, Object> result = new HashMap<>();
 	    
-	    // 전체 재고 정보
-	    Map<String, Object> inventory = pImapper.getInventoryByPdtCode(pdtCode);
-	    
-	    // 출고별 재고 목록 (FIFO 순서)
-	    List<Map<String, Object>> stockList = pIsmapper.getStocksForFIFO(pdtCode);
-	    
-	    // FIFO 순번 및 상태 추가
-	    int order = 1;
-	    boolean foundActive = false;
-	    
-	    for (Map<String, Object> stock : stockList) {
-	        stock.put("FIFO_ORDER", order++);
+	    try {
+	        log.info("제품 FIFO 상세 정보 조회 시작: pdtCode={}", pdtCode);
 	        
-	        long issuedQty = Long.parseLong((String) stock.get("ISSUED_QTY"));
+	        // 전체 재고 정보
+	        Map<String, Object> inventory = pImapper.getInventoryByPdtCode(pdtCode);
 	        
-	        // 상태 결정 로직
-	        if (issuedQty <= 0) {
-	            stock.put("STATUS", "소진");
-	        } else if (!foundActive) {
-	            stock.put("STATUS", "사용중");
-	            foundActive = true;
-	        } else {
-	            stock.put("STATUS", "대기");
+	        // 생산 입고 재고 목록 조회 (FIFO 순서)
+	        List<Map<String, Object>> stockList = pprsmapper.getStocksForFIFO(pdtCode);
+	        log.info("생산 입고 FIFO 목록 조회 결과: {}건", stockList != null ? stockList.size() : 0);
+	        
+	        if (stockList == null) {
+	            stockList = new ArrayList<>();
 	        }
+	        
+	        // FIFO 순번 및 상태 추가
+	        int order = 1;
+	        boolean foundActive = false;
+	        
+	        for (Map<String, Object> stock : stockList) {
+	            // FIFO 순번 설정
+	            stock.put("FIFO_ORDER", order++);
+	            
+	            // 남은 수량 확인
+	            long remainingQty = Long.parseLong((String) stock.get("REMAINING_QTY"));
+	            
+	            // 상태 결정 로직
+	            if (remainingQty <= 0) {
+	                stock.put("STATUS", "소진");
+	            } else if (!foundActive) {
+	                stock.put("STATUS", "사용중");
+	                foundActive = true;
+	            } else {
+	                stock.put("STATUS", "대기");
+	            }
+	            
+	            // 프론트엔드 호환을 위한 필드 매핑
+	            // PRODUCTION_CODE → ISSUE_NO 등으로 매핑
+	            stock.put("ISSUE_NO", stock.get("PRODUCTION_CODE"));
+	            stock.put("ISSUED_QTY", stock.get("REMAINING_QTY"));
+	            stock.put("ISSUE_DATE", stock.get("PRODUCTION_DATE"));
+	        }
+	        
+	        result.put("INVENTORY", inventory);
+	        result.put("STOCK_LIST", stockList);
+	        
+	        log.info("제품 FIFO 상세 정보 조회 완료");
+	        
+	    } catch (Exception e) {
+	        log.error("제품 FIFO 상세 정보 조회 중 오류: {}", e.getMessage(), e);
+	        result.put("INVENTORY", null);
+	        result.put("STOCK_LIST", new ArrayList<>());
 	    }
-	    
-	    result.put("INVENTORY", inventory);
-	    result.put("STOCK_LIST", stockList);
 	    
 	    return result;
 	}
 
 	/**
-	 * FIFO 이력 조회
+	 * FIFO 이력 조회 - 기존 코드 유지
+	 * (필요시 나중에 생산 입고 이력도 추가 가능)
 	 */
 	public List<Map<String, Object>> getFIFOHistory(String pdtCode) {
 	    log.info("FIFO 이력 조회 서비스 호출. 제품코드: {}", pdtCode);
@@ -261,7 +291,7 @@ public class ProductsInventoryService {
 	    List<Map<String, Object>> historyList = pIsmapper.getFIFOHistory(pdtCode);
 	    
 	    if (historyList == null) {
-	        return new java.util.ArrayList<>();
+	        return new ArrayList<>();
 	    }
 	    
 	    return historyList;
