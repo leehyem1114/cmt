@@ -21,7 +21,7 @@
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<title>공정 검사</title>
+<title>CMT</title>
 
 <style>
 .tui-datepicker {
@@ -351,10 +351,11 @@
             	},
             	{ 
                   header: 'LOT', 
-              	  name: 'chileLotCode', 
+              	  name: 'childLotCode', 
               	  sortable: true, 
               	  filter: 'text', 
-              	  align: "center"
+              	  align: "center",
+              	  width: 200,
               	},
             	{
            		  header: '작업 상태',
@@ -449,8 +450,17 @@
                	  align: "center",
             	},
             	{ 
+               	  header: '완제품 CODE', 
+               	  name: 'pdtCode', 
+               	  sortable: true, 
+               	  filter: 'text',
+                  width: 200,
+               	  align: "center",
+               	  hidden: true 
+            	},
+            	{ 
               	  header: '공정 검사 수량', 
-              	  name: 'receivedQty', 
+              	  name: 'woQty', 
               	  sortable: true, 
               	  filter: 'text',
               	  width: 100,
@@ -586,6 +596,11 @@
 	   const rowKey = grid.getData().findIndex(row => row.ipiCode === ipiCode);
 	   const row = grid.getRow(rowKey);
 	   const woCode = row.woCode; // 또는 e.target.dataset.woCode;
+	   const pdtCode = row.pdtCode;
+	   const pdtName = row.pdtName;
+	   const woQty = row.woQty;
+	   const childLotCode = row.childLotCode;
+	   const ipiInspectionResult = row.ipiInspectionResult
 
 	   // 검사 항목(qcmName) 없는 경우 차단
 	   if (!row.qcmName || row.qcmName.trim() === '') {
@@ -596,13 +611,13 @@
 	     });
 	     return;
 	   }
-
-	   handleStatusClick(ipiCode, status, row, rowKey, woCode); // ✅ 전달
+	   
+	   handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult); // ✅ 전달
 
 	 }
 
 	 // [2] 상태 전환 핸들러
-	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode) {
+	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult) {
 	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
@@ -612,7 +627,7 @@
 	       cancelButtonText: '취소'
 	     }).then(result => {
 	       if (result.isConfirmed) {
-	         updateStatus(ipiCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode);
+	         updateStatus(ipiCode, '검사중', '상태가 "검사중"으로 변경되었습니다.', woCode, pdtCode, pdtName, woQty, childLotCode);
 	       }
 	     });
 
@@ -628,9 +643,11 @@
 	       
 	    	// ✅ 검사완료 가기 전에 자동검사 먼저
 	       await autoInspect(row, rowKey);
+	    	
+	       const updatedRow = grid.getRow(rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
-	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode);
+	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode, pdtCode, pdtName, woQty, childLotCode, updatedRow.ipiInspectionResult);
 	     });
 
 	   } else if (status === '검사완료') {
@@ -731,11 +748,11 @@
 	 }
 
 	 // 상태 변경 서버 요청
-	 function updateStatus(ipiCode, newStatus, successMsg, woCode) {
+	 function updateStatus(ipiCode, newStatus, successMsg, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult) {
 	   fetch('/ipi/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ ipiCode, status: newStatus, woCode })
+	     body: JSON.stringify({ ipiCode, status: newStatus, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult })
 	   })
 	     .then(res => res.json())
 	     .then(data => {
@@ -818,7 +835,7 @@
 	    		    ${makeDetailItem('공정 코드', rowData.woCode)}
 	    	        ${makeDetailItem('공정 검사 코드', rowData.ipiCode)}
 	    	        ${makeDetailItem('검사이름', rowData.qcmName)}
-	    	        ${makeDetailItem('공정 검사 수량', `${rowData.receivedQty} ${rowData.unitQty}`)}
+	    	        ${makeDetailItem('공정 검사 수량', `${rowData.woQty} ${rowData.unitQty}`)}
 	    	        ${makeDetailItem('검수자', `${safe(rowData.empName)} ${safe(rowData.empId)}`)}
 	    	        ${makeDetailItem('완제품', rowData.pdtName)}
 	    	        ${makeDetailItem('무게 측정값', `${safe(rowData.ipiMeasuredWeightValue)} ${safe(rowData.qcmUnitWeight)}`)}
@@ -1053,19 +1070,21 @@
     			worksheet["C1"] = { t: "s", v: "ipiInspectionStatus", r:"<t>ipiInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiInspectionStatus', w: 'ipiInspectionStatus' };
     			worksheet["D1"] = { t: "s", v: "ipiInspectionResult", r:"<t>ipiInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiInspectionResult', w: 'ipiInspectionResult' };
     			worksheet["E1"] = { t: "s", v: "ipiCode", r:"<t>ipiCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiCode', w: 'ipiCode' };
-    			worksheet["F1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["G1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["H1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
-    			worksheet["I1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
-    			worksheet["J1"] = { t: "s", v: "woQty", r:"<t>woQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woQty', w: 'woQty' };
-    			worksheet["K1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
-    			worksheet["L1"] = { t: "s", v: "ipiMeasuredWeightValue", r:"<t>ipiMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiMeasuredWeightValue', w: 'ipiMeasuredWeightValue' };
-    			worksheet["M1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["N1"] = { t: "s", v: "ipiMeasuredLengthValue", r:"<t>ipiMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiMeasuredLengthValue', w: 'ipiMeasuredLengthValue' };
-    			worksheet["O1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["P1"] = { t: "s", v: "ipiStartTime", r:"<t>ipiStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiStartTime', w: 'ipiStartTime' };
-    			worksheet["Q1"] = { t: "s", v: "ipiEndTime", r:"<t>ipiEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiEndTime', w: 'ipiEndTime' };
-    			worksheet["R1"] = { t: "s", v: "ipiRemarks", r:"<t>ipiRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiRemarks', w: 'ipiRemarks' };    			
+    			worksheet["F1"] = { t: "s", v: "woCode", r:"<t>woCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woCode', w: 'woCode' };
+    			worksheet["G1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["H1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["I1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
+    			worksheet["J1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+    			worksheet["K1"] = { t: "s", v: "pdtCode", r:"<t>pdtCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtCode', w: 'pdtCode' };
+    			worksheet["L1"] = { t: "s", v: "woQty", r:"<t>woQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woQty', w: 'woQty' };
+    			worksheet["M1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
+    			worksheet["N1"] = { t: "s", v: "ipiMeasuredWeightValue", r:"<t>ipiMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiMeasuredWeightValue', w: 'ipiMeasuredWeightValue' };
+    			worksheet["O1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["P1"] = { t: "s", v: "ipiMeasuredLengthValue", r:"<t>ipiMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiMeasuredLengthValue', w: 'ipiMeasuredLengthValue' };
+    			worksheet["Q1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["R1"] = { t: "s", v: "ipiStartTime", r:"<t>ipiStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiStartTime', w: 'ipiStartTime' };
+    			worksheet["S1"] = { t: "s", v: "ipiEndTime", r:"<t>ipiEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiEndTime', w: 'ipiEndTime' };
+    			worksheet["T1"] = { t: "s", v: "ipiRemarks", r:"<t>ipiRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'ipiRemarks', w: 'ipiRemarks' };    			
     			
     			
     			

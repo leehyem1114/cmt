@@ -4,7 +4,9 @@
 	      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	      layout:decorate="~{layouts/layout}">
 	<head>
-		
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">	
+	
 	<!-- date-picker -->
 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.css">
 	<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
@@ -12,7 +14,7 @@
 	<!-- pagination -->
 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
 			
-<!-- 	<!-- toast 부트스트랩 기본 --> 
+<!-- 	 toast 부트스트랩 기본 --> 
 <!-- 	<link rel="stylesheet" href="https://uicdn.toast.com/tui.grid/latest/tui-grid.css" /> -->
 <!-- 	<script src="https://uicdn.toast.com/tui.grid/latest/tui-grid.min.js"></script> -->
 		
@@ -194,15 +196,16 @@
 		let productListSelected = productList.map(item => ({text: item.pdtName, label: item.pdtName, value: item.pdtCode}));
 		let soStatusListSelected = soStatusList.map(item => ({text: item.statusName, label: item.statusName, value: item.statusCode}));
 		
+		/*
 		console.log('cltList - ',cltList)
 		console.log('empList - ',empList);
 		console.log('productList - ',productList)
 		console.log('soStatusList - ',soStatusList);
-		
-	    console.log('soMainList - ',/*[[${soMainList}]]*/ []);
+		*/	
+	    //console.log('soMainList - ',/*[[${soMainList}]]*/ []);
 		
 		let gridData = /*[[${soMainList}]]*/ [];
-	    
+	    console.log(gridData)
 	    let grid = new tui.Grid({
 	        el: document.getElementById('gridTop'), 
 			//data : /*[[${soMainList}]]*/ [],
@@ -322,7 +325,7 @@
 	            },
 	            {
 	                header: '수량',
-	                name: 'soQuantity',
+	                name: 'soQty',
 					width: 100,
 					sortable: true, 
 					filter: 'text',
@@ -331,7 +334,7 @@
 	            },
 	            {
 	                header: '단가',
-	                name: 'pdtShippingPrice',
+	                name: 'pdtPrice',
 					width: 150,
 					sortable: true, 
 					filter: 'text',
@@ -428,7 +431,7 @@
 			var checkedValue = grid.getCheckedRows();
 			var checkedArray = checkedValue.map(row => row.soNo)
 			
-			console.log(checkedArray);
+			//console.log(checkedArray);
 			
 			if(checkedValue.length <= 0){
 				
@@ -499,8 +502,8 @@
 		           //data: JSON.stringify(cltValue), // POST방식일 때 stringify 실행
 				   data: {pdtCode: pdtValue}, //GET방식 일 때 사용
 		           success: function(response) {
-		        	  	console.log(response.CLT_CODE);
-		        	  	console.log(response.SO_NO);
+		        	  	//console.log(response.CLT_CODE);
+		        	  	//console.log(response.SO_NO);
 						$("#pdtName").val(response);
 		           },
 		           error: function(error) {
@@ -541,7 +544,7 @@
 				}
 				
 				var s = $("#soNo").val();
-				console.log("----------------soNo:"+ s);
+				//console.log("----------------soNo:"+ s);
 				
 				//서버로 검색할 데이터 전송
 				$.ajax({
@@ -554,7 +557,7 @@
 						//console.log(/*[[${response}]]*/ [])
 
 						grid.resetData(response);
-						console.log(response);
+						//console.log(response);
 						
 						grid.rowHeaders
 						grid.setColumns([
@@ -622,7 +625,7 @@
 			            },
 			            {
 			                header: '수량',
-			                name: 'SO_QUANTITY',
+			                name: 'SO_QTY',
 							width: 100,
 							sortable: true, 
 							filter: 'text',
@@ -630,7 +633,7 @@
 			            },
 			            {
 			                header: '단가',
-			                name: 'PDT_SHIPPING_PRICE',
+			                name: 'PDT_PRICE',
 							width: 150,
 							sortable: true, 
 							filter: 'text',

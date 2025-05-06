@@ -5,22 +5,22 @@
 
 <mapper namespace="com.example.cmtProject.mapper.mes.manufacturingMgt.MfgScheduleMapper">
 
-	<!-- 전체 제조 계획 조회 상단그리드 -->
+	<!-- 전체 제조 계획 조회 (상단 그리드) -->
 	<select id="getMfgScheduleTotalList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
 		SELECT
-			MS.MS_NO,
-			MS.MS_CODE,
-		    MP.MP_CODE,
-		    SO.SO_QTY,
-		    CD.CMN_DETAIL_NAME AS qtyUnitName,
-		    MS.EMP_ID,
-		    E.EMP_NAME,
-		    MS.MS_STATUS,
-		    MP.MP_PRIORITY,
-		    MS.PDT_CODE,
-		    P.PDT_NAME,
-		    MS.MS_CREATED_AT,
-		    MS.MS_UPDATED_AT
+			MS.MS_NO
+			, MS.MS_CODE
+			, MP.MP_CODE
+			, SO.SO_QTY
+			, CD.CMN_DETAIL_NAME AS qtyUnitName
+			, MS.EMP_ID
+			, E.EMP_NAME
+			, MS.MS_STATUS
+			, MP.MP_PRIORITY
+			, MS.PDT_CODE
+			, P.PDT_NAME
+			, MS.MS_CREATED_AT
+			, MS.MS_UPDATED_AT
 		FROM MFG_SCHEDULES MS
 		LEFT JOIN MFG_PLANS MP ON MS.MP_CODE = MP.MP_CODE
 		LEFT JOIN SALES_ORDER SO ON SO.SO_CODE = MP.SO_CODE	
@@ -31,19 +31,19 @@
 		ORDER BY MS.MS_NO DESC	
 	</select>
 	
-	<!-- 제조 계획 등록 시 생산 계획 내역 조회  모달의 그리드 조회-->
+	<!-- 제조 계획 등록 시 생산 계획 내역 조회 (모달의 그리드) -->
 	<select id="getMpList" resultType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgSchedulePlanDTO">
 		SELECT
-			MP.MP_CODE AS mpCode,
-			E.EMP_ID AS empId,
-			E.EMP_NAME AS empName,
-			SO.SO_QTY AS soQty,
-			CD.CMN_DETAIL_NAME AS qtyUnitName,
-			SO.PDT_CODE AS pdtCode,
-			P.PDT_NAME AS pdtName,
-			MP.MP_PRIORITY AS mpPriority,
-			MP.MP_START_DATE AS mpStartDate,
-			MP.MP_END_DATE AS mpEndDate
+			MP.MP_CODE
+			, E.EMP_ID
+			, E.EMP_NAME
+			, SO.SO_QTY
+			, CD.CMN_DETAIL_NAME AS qtyUnitName
+			, SO.PDT_CODE
+			, P.PDT_NAME
+			, MP.MP_PRIORITY
+			, MP.MP_START_DATE
+			, MP.MP_END_DATE
 		FROM MFG_PLANS MP
 		LEFT JOIN EMPLOYEES E ON MP.EMP_ID = E.EMP_ID
 		LEFT JOIN SALES_ORDER SO ON SO.SO_CODE = MP.SO_CODE	
@@ -53,14 +53,14 @@
 		ORDER BY MP.MP_NO DESC
 	</select>
 	
-	<!-- 제조 계획 등록 모달 등록 시-->
+	<!-- 제조 계획 등록 -->
 	<insert id="registMsPlan" parameterType="com.example.cmtProject.dto.mes.manufacturingMgt.MfgScheduleDTO">
 	    <selectKey keyProperty="msCode" resultType="String" order="BEFORE">
 	        SELECT 'MS-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || LPAD(MFG_SCHEDULES_SEQ.NEXTVAL, 3, '0') FROM DUAL
 	    </selectKey>
 	    
 	    INSERT INTO MFG_SCHEDULES (
-	          MS_NO
+	        MS_NO
 	        , MS_CODE
 	        , MP_CODE
 	        , EMP_ID
@@ -70,7 +70,7 @@
 	        , MS_CREATED_AT
 	        , MS_UPDATED_AT
 	    ) VALUES (
-	          MFG_SCHEDULES_SEQ.NEXTVAL
+	        MFG_SCHEDULES_SEQ.NEXTVAL
 	        , #{msCode}
 	        , #{mpCode}
 	        , #{empId}
@@ -82,35 +82,35 @@
 	    )
 	</insert>
 
-    <!-- 생산 계획 상태변경 -->
+    <!-- 생산 계획 상태 변경 -->
     <update id="updateMpStatus">
     	UPDATE MFG_PLANS
 		SET MP_STATUS = '대기'
 		WHERE MP_CODE = #{mpCode}
     </update>
 	
-	<!-- 제조 계획 상세 하단 그리드 -->
+	<!-- 제조 계획 상세 조회 (하단 그리드) -->
 	<select id="selectBomDetailByMsCode1" resultType="map" parameterType="String">
 		SELECT
-		    MSD.MSD_NO,
-		    MSD.PARENT_PDT_CODE,
-		    PM.NAME AS PDT_NAME,
-		    MSD.ITEM_TYPE,
-		    MSD.MS_QTY,
-		    CD.CMN_DETAIL_NAME AS qtyUnitName,
-		    MSD.MS_CODE
+		    MSD.MSD_NO
+		    , MSD.PARENT_PDT_CODE
+		    , PM.NAME AS PDT_NAME
+		    , MSD.ITEM_TYPE
+		    , MSD.MS_QTY
+		    , CD.CMN_DETAIL_NAME AS qtyUnitName
+		    , MSD.MS_CODE
 		FROM MFG_SCHEDULES_DETAIL MSD
 		LEFT JOIN (
 		    SELECT 
-		        P.PDT_CODE AS CODE,
-		        P.PDT_NAME AS NAME
+		        P.PDT_CODE   AS CODE
+		        , P.PDT_NAME AS NAME
 		    FROM PRODUCTS P
 		
 		    UNION ALL
 		
 		    SELECT 
-		        M.MTL_CODE AS CODE,
-		        M.MTL_NAME AS NAME
+		        M.MTL_CODE   AS CODE
+		        , M.MTL_NAME AS NAME
 		    FROM MATERIALS M
 		) PM ON MSD.PARENT_PDT_CODE = PM.CODE
 		LEFT JOIN MFG_SCHEDULES MS ON MSD.MS_CODE = MS.MS_CODE
@@ -124,18 +124,18 @@
 	<!-- MFG_SCHEDULES_DETAIL INSERT 문 -->
 	<insert id="insertBomDetailFromBom" parameterType="map">
 	    INSERT INTO MFG_SCHEDULES_DETAIL (
-	        MSD_NO,
-	        PARENT_PDT_CODE,
-	        ITEM_TYPE,
-	        MS_QTY,
-	        MS_CODE
+	        MSD_NO
+	        , PARENT_PDT_CODE
+	        , ITEM_TYPE
+	        , MS_QTY
+	        , MS_CODE
 	    )
 	    SELECT
-	        MFG_SCHEDULES_DETAIL_SEQ.NEXTVAL,
-	        parentPdtCode,
-	        itemType,
-	        msQty,
-	        msCode
+	        MFG_SCHEDULES_DETAIL_SEQ.NEXTVAL
+	        , parentPdtCode
+	        , itemType
+	        , msQty
+	        , msCode
 	    FROM (
 	        SELECT
 	            B.PARENT_PDT_CODE AS parentPdtCode,
@@ -144,16 +144,16 @@
 	                ELSE 'SEMI_FINISHED'
 	            END AS itemType,
 	            (SELECT SO.SO_QTY
-	               FROM SALES_ORDER SO
-	              WHERE SO.SO_CODE = (
-	                  SELECT MP.SO_CODE
-	                  FROM MFG_PLANS MP
-	                  WHERE MP.MP_CODE = (
-	                      SELECT MS.MP_CODE
-	                      FROM MFG_SCHEDULES MS
-	                      WHERE MS.MS_CODE = #{msCode}
-	                  )
-	              )
+	             	FROM SALES_ORDER SO
+	              	WHERE SO.SO_CODE = (
+	                	SELECT MP.SO_CODE
+	                  	FROM MFG_PLANS MP
+	                  	WHERE MP.MP_CODE = (
+	                    	SELECT MS.MP_CODE
+	                      	FROM MFG_SCHEDULES MS
+	                      	WHERE MS.MS_CODE = #{msCode}
+	                  	)
+	              	)
 	            ) AS msQty,
 	            #{msCode} AS msCode
 	        FROM BOM B
@@ -176,12 +176,12 @@
 	        SELECT 1
 	        FROM MFG_SCHEDULES_DETAIL MSD
 	        WHERE MSD.PARENT_PDT_CODE = tmp.parentPdtCode
-	          AND MSD.MS_CODE = tmp.msCode
+	        	AND MSD.MS_CODE = tmp.msCode
 	    )
 	</insert>
 	
 	<!-- 제조 계획 삭제 (숨김 처리) -->
-	<update id="isVisiableToFalse" parameterType="java.util.List">
+	<update id="isVisibleToFalse" parameterType="java.util.List">
 		UPDATE MFG_SCHEDULES
 		SET MS_VISIBLE = 'N'
 		WHERE MS_NO IN (

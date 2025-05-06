@@ -46,5 +46,6 @@ public class IqcDTO {
     private Long qcmNo;				// qcmNO
     private String qcmCode;
     private String receiptCode;         // 입고 코드
+    private String receiptNo;         // 입고 코드
 
 }

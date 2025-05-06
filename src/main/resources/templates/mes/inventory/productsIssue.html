@@ -8,7 +8,9 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제품 출고관리</title>
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+    <title>CMT</title>
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
     .top-input-group {
@@ -142,7 +144,7 @@
     }
     
     .badge-inspecting {
-        background-color: #17a2b8;
+        background-color: #007bff;
         color: white;
     }
     
@@ -224,6 +226,18 @@
                                     <button type="button" id="pIssueRequestBtn" class="btn btn-outline-secondary">
                                         <i class="bi bi-plus-circle"></i> 출고 요청
                                     </button>
+<!--                                    <div class="btn-group">-->
+<!--                                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                                            상태별 출고 요청-->
+<!--                                        </button>-->
+<!--                                        <ul class="dropdown-menu">-->
+<!--                                            <li><a class="dropdown-item issue-by-status" data-status="SO_CONFIRMED" href="#">확정된 수주</a></li>-->
+<!--                                            <li><a class="dropdown-item issue-by-status" data-status="SO_PLANNED" href="#">계획된 수주</a></li>-->
+<!--                                            <li><a class="dropdown-item issue-by-status" data-status="SO_COMPLETED" href="#">완료된 수주</a></li>-->
+<!--                                            <li><hr class="dropdown-divider"></li>-->
+<!--                                            <li><a class="dropdown-item issue-by-status" data-status="SO_CONFIRMED,SO_PLANNED,SO_COMPLETED" href="#">모든 활성 수주</a></li>-->
+<!--                                        </ul>-->
+<!--                                    </div>-->
                                     <button type="button" id="pIssueInspectionBtn" class="btn btn-outline-primary">
                                         <i class="bi bi-clipboard-check"></i> 검수 등록
                                     </button>
@@ -359,15 +373,8 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-12">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">수주 선택</span>
-                                    <select class="form-select" id="soSelect">
-                                        <option value="">수주를 선택하세요</option>
-                                        <!-- 수주 목록이 여기에 동적으로 추가됩니다 -->
-                                    </select>
-                                    <button type="button" class="btn btn-outline-secondary" id="getSoBtn">
-                                        <i class="bi bi-search"></i> 조회
-                                    </button>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 출고 요청할 수주를 선택하세요. 이미 등록된 수주는 목록에 표시되지 않습니다.
                                 </div>
                             </div>
                         </div>

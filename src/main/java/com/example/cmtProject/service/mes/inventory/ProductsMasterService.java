@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +20,9 @@ public class ProductsMasterService {
 	
 	@Autowired
 	private ProductsMasterMapper productsMapper;
+
+	@Autowired
+	private ProductsInventoryService pIsMapper;
 	
 	/**
 	 * 제품 기준정보 목록 조회
@@ -47,55 +51,68 @@ public class ProductsMasterService {
 	 */
 	@Transactional
 	public Map<String, Object> saveProducts(Map<String, Object> params) {
-		Map<String, Object> resultMap = new HashMap<>();
-		
-		try {
-			log.info("제품 정보 저장 시작: {}", params);
-			
-			// 제품 코드로 기존 데이터 조회
-			Map<String, Object> existingData = productsSingle(params);
-			
-			int result = 0;
-			
-			// 존재하면 수정, 없으면 등록
-			if (existingData != null) {
-				log.info("제품 정보 수정: {}", params.get("PDT_CODE"));
-				result = productsMapper.updateProducts(params);
-				
-				if (result > 0) {
-					resultMap.put("success", true);
-					resultMap.put("message", "제품 정보가 수정되었습니다.");
-				} else {
-					resultMap.put("success", false);
-					resultMap.put("message", "제품 정보 수정에 실패했습니다.");
-				}
-			} else {
-				log.info("제품 정보 등록: {}", params.get("PDT_CODE"));
-				result = productsMapper.insertProducts(params);
-				
-				if (result > 0) {
-					resultMap.put("success", true);
-					resultMap.put("message", "제품 정보가 등록되었습니다.");
-				} else {
-					resultMap.put("success", false);
-					resultMap.put("message", "제품 정보 등록에 실패했습니다.");
-				}
-			}
-			
-			// 저장 후 데이터 조회
-			if (result > 0) {
-				Map<String, Object> savedData = productsSingle(params);
-				resultMap.put("data", savedData);
-			}
-			
-		} catch (Exception e) {
-			log.error("제품 정보 저장 중 오류 발생: {}", e.getMessage(), e);
-			resultMap.put("success", false);
-			resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
-			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-		}
-		
-		return resultMap;
+	    Map<String, Object> resultMap = new HashMap<>();
+	    
+	    try {
+	        log.info("제품 정보 저장 시작: {}", params);
+	        
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
+	        // 처리자 정보 설정
+	        params.put("updatedBy", userId);
+	        
+	        // 제품 코드로 기존 데이터 조회
+	        Map<String, Object> existingData = productsSingle(params);
+	        
+	        int result = 0;
+	        
+	        // 존재하면 수정, 없으면 등록
+	        if (existingData != null) {
+	            log.info("제품 정보 수정: {}", params.get("PDT_CODE"));
+	            result = productsMapper.updateProducts(params);
+	            
+	            if (result > 0) {
+	                resultMap.put("success", true);
+	                resultMap.put("message", "제품 정보가 수정되었습니다.");
+	            } else {
+	                resultMap.put("success", false);
+	                resultMap.put("message", "제품 정보 수정에 실패했습니다.");
+	            }
+	        } else {
+	            log.info("제품 정보 등록: {}", params.get("PDT_CODE"));
+	            // 생성자 정보 설정
+	            params.put("createdBy", userId);
+	            
+	            result = productsMapper.insertProducts(params);
+	            
+	            if (result > 0) {
+	                resultMap.put("success", true);
+	                resultMap.put("message", "제품 정보가 등록되었습니다.");
+	                
+	                // 새 제품인 경우 재고 정보도 자동 생성
+	                String pdtCode = (String) params.get("PDT_CODE");
+	                pIsMapper.generateProductInventory(pdtCode);
+	            } else {
+	                resultMap.put("success", false);
+	                resultMap.put("message", "제품 정보 등록에 실패했습니다.");
+	            }
+	        }
+	        
+	        // 저장 후 데이터 조회
+	        if (result > 0) {
+	            Map<String, Object> savedData = productsSingle(params);
+	            resultMap.put("data", savedData);
+	        }
+	        
+	    } catch (Exception e) {
+	        log.error("제품 정보 저장 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
 	}
 	
 	/**
@@ -112,8 +129,15 @@ public class ProductsMasterService {
 		try {
 			log.info("제품 정보 일괄 저장 시작: {}건", productsList.size());
 			
+			// 현재 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
 			for (Map<String, Object> productsData : productsList) {
 				try {
+				    // 처리자 정보 설정
+				    productsData.put("updatedBy", userId);
+				    productsData.put("createdBy", userId);
+				    
 					Map<String, Object> result = saveProducts(productsData);
 					
 					if ((Boolean) result.get("success")) {
@@ -191,4 +215,5 @@ public class ProductsMasterService {
 		
 		return resultMap;
 	}
+	
 }

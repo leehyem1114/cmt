@@ -74,6 +74,7 @@
 		    PARENT_PDT_CODE,
 		    ITEM_TYPE,
 		    BOM_PRC_TYPE,
+		    BOM_DATE,
 		    BOM_QTY,
 		    BOM_UNIT,
 		    LTRIM(SYS_CONNECT_BY_PATH(CHILD_ITEM_CODE, ' ← '), ' ← ') AS PATH

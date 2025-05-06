@@ -66,19 +66,19 @@
 	    	IQC_INSPECTION_STATUS       = #{iqcInspectionStatus},
 	        IQC_INSPECTION_RESULT       = #{iqcInspectionResult},
 	        IQC_CODE                    = #{iqcCode},
+	        RECEIPT_CODE                = #{receiptCode},
 	        QCM_NAME                    = #{qcmName},
 	        EMP_NAME                    = #{empName},
 	        EMP_ID                      = #{empId},
 	        MTL_NAME                    = #{mtlName},
 	        RECEIVED_QTY                = #{receivedQty},
 	        UNIT_QTY                    = #{unitQty},
-	        IQC_MEASURED_WEIGHT_VALUE   = #{iqcMeasuredWeightValue},
+	        IQC_MEASURED_WEIGHT_VALUE   = #{iqcMeasuredWeightValue, jdbcType=NUMERIC},
 	        QCM_UNIT_WEIGHT             = #{qcmUnitWeight},
-	        IQC_MEASURED_LENGTH_VALUE   = #{iqcMeasuredLengthValue},
+	        IQC_MEASURED_LENGTH_VALUE   = #{iqcMeasuredLengthValue, jdbcType=NUMERIC},
 	        QCM_UNIT_LENGTH             = #{qcmUnitLength},
-	        IQC_START_TIME              = #{iqcStartTime},
-	        IQC_END_TIME                = #{iqcEndTime},
-	        WHS_NAME                    = #{whsName},
+	        IQC_START_TIME              = #{iqcStartTime, jdbcType=TIMESTAMP},
+	        IQC_END_TIME                = #{iqcEndTime, jdbcType=TIMESTAMP},
 	        IQC_REMARKS                 = #{iqcRemarks}
 	    WHERE IQC_NO = #{iqcNo}
 	</update>
@@ -89,6 +89,7 @@
 	<select id="getMaterialReceipts" resultType="map" parameterType="map">
 		SELECT 
 			RECEIPT_CODE,
+			RECEIPT_NO,
 			MTL_CODE,
 			RECEIVED_QTY,
 			WAREHOUSE_CODE
@@ -114,10 +115,10 @@
 	  IQC_INSPECTION_RESULT,
 	  IQC_CODE, 
 	  RECEIPT_CODE,
+	  RECEIPT_NO,
 	  MTL_CODE, 
 	  RECEIVED_QTY, 
 	  UNIT_QTY,
-	  WHS_CODE,
 	  IQC_VISIABLE
 	)
 	SELECT
@@ -125,10 +126,10 @@
 	  '예정',
 	  #{iqcCode},
 	  #{receiptCode}, 
+	  #{receiptNo}, 
 	  #{mtlCode}, 
 	  #{receivedQty},
 	  '개',
-	  #{whsCode},
 	  'Y'
 	FROM DUAL
 	WHERE NOT EXISTS (

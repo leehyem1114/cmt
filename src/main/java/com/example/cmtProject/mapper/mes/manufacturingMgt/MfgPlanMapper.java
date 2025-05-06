@@ -27,6 +27,6 @@ public interface MfgPlanMapper { // 생산 계획 Mapper
 	void updateMpPlan(List<MfgPlanDTO> mpList);
 
 	// 생산 계획 삭제 (숨김 처리)
-	void isVisiableToFalse(List<Long> mpNos);
+	void isVisibleToFalse(List<Long> mpNos);
 
 }

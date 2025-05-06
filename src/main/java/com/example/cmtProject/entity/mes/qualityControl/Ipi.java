@@ -30,7 +30,10 @@ public class Ipi {
     @Column(name = "IPI_NO")
     private Long ipiNo;
 
-    @Column(name = "IPI_CODE")
+	@Column(name = "LOT_NO")
+	private Long lotNo;
+
+	@Column(name = "IPI_CODE")
     private String ipiCode;
     
     @Column(name = "WO_CODE")

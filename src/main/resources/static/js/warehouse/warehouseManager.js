@@ -2,9 +2,10 @@
  * 창고 기준정보 관리 모듈
  * 
  * 창고 기준정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
+ * 마스터-디테일 구조로 창고 기준정보(마스터)와 위치정보(디테일)를 관리합니다.
  * 
- * @version 1.0.0
- * @since 2025-05-01
+ * @version 1.1.0
+ * @since 2025-05-03
  */
 const WarehouseManager = (function() {
     // =============================
@@ -13,16 +14,30 @@ const WarehouseManager = (function() {
 
     // 그리드 인스턴스 참조
     let warehouseGrid;
+    let locationGrid;
+    
+    // 선택된 창고 코드 저장
+    let selectedWarehouseCode = '';
 
     // API URL 상수 정의
     const API_URLS = {
-        LIST: '/api/warehouse/list',             // 데이터 목록 조회
-        SINGLE: '/api/warehouse/',               // 단건 조회/삭제 시 사용
-        SAVE: '/api/warehouse',                  // 데이터 저장
-        BATCH: '/api/warehouse/batch',           // 데이터 일괄 저장
-        EXCEL: {
-            UPLOAD: '/api/warehouse/excel/upload',    // 엑셀 업로드 API URL
-            DOWNLOAD: '/api/warehouse/excel/download' // 엑셀 다운로드 API URL
+        // 창고 기준정보 API
+        WAREHOUSE: {
+            LIST: '/api/warehouse/list',          // 데이터 목록 조회
+            SINGLE: '/api/warehouse/',            // 단건 조회/삭제 시 사용
+            SAVE: '/api/warehouse',               // 데이터 저장
+            BATCH: '/api/warehouse/batch',        // 데이터 일괄 저장
+            EXCEL: {
+                UPLOAD: '/api/warehouse/excel/upload',    // 엑셀 업로드 API URL
+                DOWNLOAD: '/api/warehouse/excel/download' // 엑셀 다운로드 API URL
+            }
+        },
+        // 위치정보 API
+        LOCATION: {
+            LIST: '/api/warehouse/locations/',     // 위치 목록 조회 (/{whsCode} 추가됨)
+            SAVE: '/api/warehouse/location',       // 위치 저장
+            BATCH: '/api/warehouse/location/batch', // 위치 일괄 저장
+            DELETE: '/api/warehouse/location/'     // 위치 삭제 (/{locCode} 추가됨)
         }
     };
 
@@ -39,7 +54,8 @@ const WarehouseManager = (function() {
             console.log('창고 기준정보 관리 초기화를 시작합니다.');
 
             // 그리드 초기화
-            await initGrid();
+            await initWarehouseGrid();
+            await initLocationGrid();
 
             // 이벤트 리스너 등록
             await registerEvents();
@@ -49,6 +65,9 @@ const WarehouseManager = (function() {
             
             // 엑셀 기능 초기화
             initExcelFeatures();
+            
+            // 초기에는 위치정보 비활성화
+            toggleLocationControls(false);
 
             console.log('창고 기준정보 관리 초기화가 완료되었습니다.');
         } catch (error) {
@@ -63,17 +82,28 @@ const WarehouseManager = (function() {
      */
     async function registerEvents() {
         try {
-            // UIUtil을 사용하여 이벤트 리스너 등록
+            // 창고 그리드 관련 이벤트 리스너 등록
             await UIUtil.registerEventListeners({
-                'warehouseAppendBtn': appendRow,              // 행 추가 버튼
-                'warehouseSaveBtn': saveData,                 // 데이터 저장 버튼
-                'warehouseDeleteBtn': deleteRows,             // 데이터 삭제 버튼
-                'warehouseSearchBtn': searchData              // 데이터 검색 버튼
-                // 엑셀 버튼 이벤트는 ExcelUtil에서 별도로 처리됩니다
+                'warehouseAppendBtn': appendWarehouseRow,        // 창고 행 추가 버튼
+                'warehouseSaveBtn': saveWarehouseData,           // 창고 데이터 저장 버튼
+                'warehouseDeleteBtn': deleteWarehouseRows,       // 창고 데이터 삭제 버튼
+                'warehouseSearchBtn': searchWarehouseData        // 창고 데이터 검색 버튼
+            });
+
+            // 위치 그리드 관련 이벤트 리스너 등록
+            await UIUtil.registerEventListeners({
+                'locationAppendBtn': appendLocationRow,         // 위치 행 추가 버튼
+                'locationSaveBtn': saveLocationData,            // 위치 데이터 저장 버튼
+                'locationDeleteBtn': deleteLocationRows,        // 위치 데이터 삭제 버튼
+                'locationSearchBtn': searchLocationData         // 위치 데이터 검색 버튼
             });
 
             // 엔터키 검색 이벤트 등록
-            await UIUtil.bindEnterKeySearch('warehouseInput', searchData);
+            await UIUtil.bindEnterKeySearch('warehouseInput', searchWarehouseData);
+            await UIUtil.bindEnterKeySearch('locationInput', searchLocationData);
+            
+            // 창고 그리드 행 선택 이벤트 등록
+            warehouseGrid.on('click', onWarehouseRowClick);
         } catch (error) {
             console.error('이벤트 리스너 등록 중 오류:', error);
             throw error;
@@ -88,17 +118,31 @@ const WarehouseManager = (function() {
         try {
             console.log('그리드 검색 초기화');
             
-            // 그리드 검색 설정
+            // 창고 그리드 검색 설정
             GridSearchUtil.setupGridSearch({
                 gridId: 'warehouseGrid',
                 searchInputId: 'warehouseInput',
                 autoSearch: true, // 입력 시 자동 검색
                 beforeSearch: function() {
-                    console.log('그리드 검색 시작');
+                    console.log('창고 그리드 검색 시작');
                     return true;
                 },
                 afterSearch: function(filteredData) {
-                    console.log('그리드 검색 완료, 결과:', filteredData.length, '건');
+                    console.log('창고 그리드 검색 완료, 결과:', filteredData.length, '건');
+                }
+            });
+            
+            // 위치 그리드 검색 설정
+            GridSearchUtil.setupGridSearch({
+                gridId: 'locationGrid',
+                searchInputId: 'locationInput',
+                autoSearch: true, // 입력 시 자동 검색
+                beforeSearch: function() {
+                    console.log('위치 그리드 검색 시작');
+                    return true;
+                },
+                afterSearch: function(filteredData) {
+                    console.log('위치 그리드 검색 완료, 결과:', filteredData.length, '건');
                 }
             });
         } catch (error) {
@@ -134,7 +178,7 @@ const WarehouseManager = (function() {
                 fileInputId: 'warehouseFileInput', 
                 uploadButtonId: 'warehouseExcelUpBtn', 
                 gridId: 'warehouseGrid',
-                apiUrl: API_URLS.EXCEL.UPLOAD,
+                apiUrl: API_URLS.WAREHOUSE.EXCEL.UPLOAD,
                 headerMapping: {
                     '창고코드': 'WHS_CODE',
                     '창고명': 'WHS_NAME',
@@ -167,12 +211,12 @@ const WarehouseManager = (function() {
     // =============================
 
     /**
-     * 그리드 초기화 함수
-     * 그리드를 생성하고 초기 데이터를 로드합니다.
+     * 창고 그리드 초기화 함수
+     * 창고 그리드를 생성하고 초기 데이터를 로드합니다.
      */
-    async function initGrid() {
+    async function initWarehouseGrid() {
         try {
-            console.log('그리드 초기화를 시작합니다.');
+            console.log('창고 그리드 초기화를 시작합니다.');
 
             // DOM 요소 존재 확인
             const gridElement = document.getElementById('warehouseGrid');
@@ -286,20 +330,251 @@ const WarehouseManager = (function() {
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
             GridSearchUtil.updateOriginalData('warehouseGrid', gridData);
 
-            console.log('그리드 초기화가 완료되었습니다.');
+            console.log('창고 그리드 초기화가 완료되었습니다.');
         } catch (error) {
-            console.error('그리드 초기화 오류:', error);
+            console.error('창고 그리드 초기화 오류:', error);
             throw error;
         }
     }
 
     /**
-     * 데이터 행 추가 함수
-     * 그리드에 새로운 행을 추가합니다.
+     * 위치정보 그리드 초기화 함수
+     * 위치정보 그리드를 생성합니다.
      */
-    async function appendRow() {
+    async function initLocationGrid() {
         try {
-            console.log('행 추가');
+            console.log('위치정보 그리드 초기화를 시작합니다.');
+
+            // DOM 요소 존재 확인
+            const gridElement = document.getElementById('locationGrid');
+            if (!gridElement) {
+                throw new Error('locationGrid 요소를 찾을 수 없습니다. HTML을 확인해주세요.');
+            }
+
+            // 초기에는 빈 데이터로 시작
+            const gridData = [];
+
+            // 그리드 생성 - GridUtil 사용
+            locationGrid = GridUtil.registerGrid({
+                id: 'locationGrid',
+                columns: [
+                    {
+                        header: '위치코드',
+                        name: 'LOC_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 120
+                    },
+                    {
+                        header: '위치명',
+                        name: 'LOC_NAME',
+                        editor: 'text',
+                        sortable: true,
+                        width: 150
+                    },
+                    {
+                        header: '위치유형',
+                        name: 'LOC_TYPE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 120
+                    },
+                    {
+                        header: '창고코드',
+                        name: 'WHS_CODE',
+                        editor: {
+                            type: 'text',
+                            disabled: true
+                        },
+                        sortable: true,
+                        width: 120
+                    },
+                    {
+                        header: '수용용량',
+                        name: 'CAPACITY',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
+                    },
+                    {
+                        header: '현재사용량',
+                        name: 'CURRENT_USAGE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
+                    },
+                    {
+                        header: '사용여부',
+                        name: 'USE_YN',
+                        editor: GridUtil.createYesNoEditor(),
+                        sortable: true,
+                        width: 80
+                    },
+                    {
+                        header: '타입',
+                        name: 'ROW_TYPE',
+                        hidden: true
+                    }
+                ],
+                columnOptions: {
+                    resizable: true
+                },
+                pageOptions: {
+                    useClient: true,
+                    perPage: 10
+                },
+                data: gridData,
+                draggable: false,
+                hiddenColumns: ['ROW_TYPE'],
+                gridOptions: {
+                    rowHeaders: ['rowNum', 'checkbox']
+                },
+                toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
+            });
+            
+            // 편집 완료 이벤트 처리 - 변경된 행 추적
+            locationGrid.on('editingFinish', function(ev) {
+                const rowKey = ev.rowKey;
+                const row = locationGrid.getRow(rowKey);
+                
+                // 원래 값과 변경된 값이 다른 경우에만 ROW_TYPE 업데이트
+                if (row.ROW_TYPE !== 'insert' && ev.value !== ev.prevValue) {
+                    locationGrid.setValue(rowKey, 'ROW_TYPE', 'update');
+                    console.log(`위치 행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
+                }
+            });
+
+            // 키 컬럼 제어 설정 - 기존 데이터의 경우 LOC_CODE 편집 제한
+            GridUtil.setupKeyColumnControl('locationGrid', 'LOC_CODE');
+
+            console.log('위치정보 그리드 초기화가 완료되었습니다.');
+        } catch (error) {
+            console.error('위치정보 그리드 초기화 오류:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * 창고 그리드 행 클릭 이벤트 핸들러
+     * 클릭한 창고의 위치정보를 조회하여 위치정보 그리드에 표시
+     */
+    async function onWarehouseRowClick(ev) {
+        try {
+            // 헤더 클릭인 경우 무시
+            if (ev.rowKey === null || ev.rowKey === undefined) return;
+            
+            const grid = GridUtil.getGrid('warehouseGrid');
+            const row = grid.getRow(ev.rowKey);
+            
+            // 창고 코드 가져오기
+            const whsCode = row.WHS_CODE;
+            if (!whsCode) {
+                console.warn('선택한 행에 창고 코드가 없습니다:', row);
+                return;
+            }
+            
+            // 이전에 선택한 창고와 같은 경우 중복 조회 방지
+            if (selectedWarehouseCode === whsCode) return;
+            
+            selectedWarehouseCode = whsCode;
+            
+            // 선택된 창고 정보 표시
+            document.getElementById('selectedWarehouseInfo').textContent = 
+                `선택된 창고: ${row.WHS_NAME} (${whsCode})`;
+            
+            // 위치정보 컨트롤 활성화
+            toggleLocationControls(true);
+            
+            // 위치정보 로드
+            await loadLocationData(whsCode);
+            
+        } catch (error) {
+            console.error('창고 행 클릭 처리 중 오류:', error);
+            AlertUtil.showError('오류', '위치정보 로드 중 오류가 발생했습니다.');
+        }
+    }
+    
+    /**
+     * 위치정보 컨트롤 활성화/비활성화 함수
+     * @param {boolean} enabled 활성화 여부
+     */
+    function toggleLocationControls(enabled) {
+        const controls = [
+            document.getElementById('locationInput'),
+            document.getElementById('locationSearchBtn'),
+            document.getElementById('locationAppendBtn'),
+            document.getElementById('locationSaveBtn'),
+            document.getElementById('locationDeleteBtn')
+        ];
+        
+        controls.forEach(control => {
+            if (control) {
+                control.disabled = !enabled;
+            }
+        });
+        
+        // 위치정보 섹션 스타일 조정
+        const locationSection = document.getElementById('location-table');
+        if (locationSection) {
+            locationSection.style.opacity = enabled ? '1' : '0.6';
+        }
+        
+        // 선택된 창고 정보 초기화 (비활성화 시)
+        if (!enabled) {
+            document.getElementById('selectedWarehouseInfo').textContent = '';
+        }
+    }
+
+    /**
+     * 위치정보 데이터 로드 함수
+     * @param {string} whsCode 창고 코드
+     */
+    async function loadLocationData(whsCode) {
+        try {
+            console.log(`창고코드 ${whsCode}에 대한 위치정보 로드`);
+            
+            if (!whsCode) {
+                locationGrid.resetData([]);
+                return;
+            }
+            
+            // 위치정보 API 호출
+            const response = await ApiUtil.getWithLoading(
+                API_URLS.LOCATION.LIST + whsCode, 
+                {},
+                '위치정보 로드 중...'
+            );
+            
+            // 응답 데이터 처리
+            const data = Array.isArray(response) ? response : (response.data || []);
+            
+            // 위치정보 그리드 데이터 설정
+            locationGrid.resetData(data);
+            
+            // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
+            GridSearchUtil.updateOriginalData('locationGrid', data);
+            
+            console.log('위치정보 로드 완료. 결과:', data.length, '건');
+            
+        } catch (error) {
+            console.error('위치정보 로드 중 오류:', error);
+            locationGrid.resetData([]);
+            AlertUtil.showError('오류', '위치정보 로드 중 오류가 발생했습니다.');
+        }
+    }
+
+    // =============================
+    // 데이터 처리 함수
+    // =============================
+
+    /**
+     * 창고 데이터 행 추가 함수
+     */
+    async function appendWarehouseRow() {
+        try {
+            console.log('창고 행 추가');
 
             const newRowData = {
                 WHS_CODE: '',
@@ -321,61 +596,137 @@ const WarehouseManager = (function() {
                 focus: true
             });
         } catch (error) {
-            console.error('행 추가 중 오류:', error);
-            await AlertUtil.showError('행 추가 오류', '행 추가 중 오류가 발생했습니다.');
+            console.error('창고 행 추가 중 오류:', error);
+            await AlertUtil.showError('행 추가 오류', '창고 행 추가 중 오류가 발생했습니다.');
+        }
+    }
+    
+    /**
+     * 위치정보 데이터 행 추가 함수
+     */
+    async function appendLocationRow() {
+        try {
+            console.log('위치정보 행 추가');
+            
+            // 창고가 선택되어 있는지 확인
+            if (!selectedWarehouseCode) {
+                await AlertUtil.showWarning('알림', '위치정보를 추가할 창고를 먼저 선택해주세요.');
+                return;
+            }
+
+            const newRowData = {
+                LOC_CODE: '',
+                LOC_NAME: '',
+                LOC_TYPE: '',
+                WHS_CODE: selectedWarehouseCode, // 선택된 창고 코드 자동 설정
+                CAPACITY: '',
+                CURRENT_USAGE: '',
+                USE_YN: 'Y',
+                CREATED_BY: '',
+                UPDATED_BY: ''
+            };
+
+            // 그리드에 새 행 추가
+            await GridUtil.addNewRow('locationGrid', newRowData, {
+                at: 0,
+                focus: true
+            });
+        } catch (error) {
+            console.error('위치정보 행 추가 중 오류:', error);
+            await AlertUtil.showError('행 추가 오류', '위치정보 행 추가 중 오류가 발생했습니다.');
         }
     }
 
     /**
-     * 데이터 검색 함수
-     * 검색어를 이용하여 데이터를 검색하고 그리드에 결과를 표시합니다.
+     * 창고 데이터 검색 함수
      */
-    async function searchData() {
+    async function searchWarehouseData() {
         try {
             const keyword = document.getElementById('warehouseInput').value;
-            console.log('데이터 검색 시작. 검색어:', keyword);
+            console.log('창고 데이터 검색 시작. 검색어:', keyword);
 
             // API 호출
             const response = await ApiUtil.getWithLoading(
-                API_URLS.LIST, 
+                API_URLS.WAREHOUSE.LIST, 
                 {
                     keyword: keyword
                 },
-                '데이터 검색 중...'
+                '창고 데이터 검색 중...'
             );
 
             // 응답 데이터 처리
             const data = Array.isArray(response) ? response : (response.data || []);
 
             // 그리드 데이터 설정
-            const grid = GridUtil.getGrid('warehouseGrid');
-            if (grid) {
-                grid.resetData(data);
-                
-                // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
-                GridSearchUtil.updateOriginalData('warehouseGrid', data);
-            }
+            warehouseGrid.resetData(data);
+            
+            // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
+            GridSearchUtil.updateOriginalData('warehouseGrid', data);
+            
+            // 창고 변경 시 위치정보 초기화
+            locationGrid.resetData([]);
+            selectedWarehouseCode = '';
+            document.getElementById('selectedWarehouseInfo').textContent = '';
+            
+            // 위치정보 컨트롤 비활성화
+            toggleLocationControls(false);
 
-            console.log('데이터 검색 완료. 결과:', data.length, '건');
+            console.log('창고 데이터 검색 완료. 결과:', data.length, '건');
             return data;
         } catch (error) {
-            console.error('데이터 검색 중 오류:', error);
-            await AlertUtil.showError('검색 오류', '데이터 검색 중 오류가 발생했습니다.');
+            console.error('창고 데이터 검색 중 오류:', error);
+            await AlertUtil.showError('검색 오류', '창고 데이터 검색 중 오류가 발생했습니다.');
+            throw error;
+        }
+    }
+    
+    /**
+     * 위치정보 데이터 검색 함수
+     */
+    async function searchLocationData() {
+        try {
+            const keyword = document.getElementById('locationInput').value;
+            console.log('위치정보 검색 시작. 검색어:', keyword);
+            
+            // 창고가 선택되어 있는지 확인
+            if (!selectedWarehouseCode) {
+                await AlertUtil.showWarning('알림', '위치정보를 검색할 창고를 먼저 선택해주세요.');
+                return;
+            }
+
+            // API 호출
+            const response = await ApiUtil.getWithLoading(
+                API_URLS.LOCATION.LIST + selectedWarehouseCode, 
+                {
+                    keyword: keyword
+                },
+                '위치정보 검색 중...'
+            );
+
+            // 응답 데이터 처리
+            const data = Array.isArray(response) ? response : (response.data || []);
+
+            // 그리드 데이터 설정
+            locationGrid.resetData(data);
+            
+            // 그리드 원본 데이터 업데이트 (검색 기능 위해 추가)
+            GridSearchUtil.updateOriginalData('locationGrid', data);
+
+            console.log('위치정보 검색 완료. 결과:', data.length, '건');
+            return data;
+        } catch (error) {
+            console.error('위치정보 검색 중 오류:', error);
+            await AlertUtil.showError('검색 오류', '위치정보 검색 중 오류가 발생했습니다.');
             throw error;
         }
     }
 
-    // =============================
-    // CRUD 처리 함수
-    // =============================
-
     /**
-     * 데이터 저장 함수
-     * 그리드의 변경된 데이터를 저장합니다.
+     * 창고 데이터 저장 함수
      */
-    async function saveData() {
+    async function saveWarehouseData() {
         try {
-            console.log('데이터 저장 시작');
+            console.log('창고 데이터 저장 시작');
 
             const grid = GridUtil.getGrid('warehouseGrid');
             if (!grid) {
@@ -417,17 +768,17 @@ const WarehouseManager = (function() {
                 
                 // API 호출
                 const response = await ApiUtil.processRequest(
-                    () => ApiUtil.post(API_URLS.SAVE, saveData), 
+                    () => ApiUtil.post(API_URLS.WAREHOUSE.SAVE, saveData), 
                     {
-                        loadingMessage: '데이터 저장 중...',
-                        successMessage: "데이터가 저장되었습니다.",
-                        errorMessage: "데이터 저장 중 오류가 발생했습니다.",
-                        successCallback: searchData
+                        loadingMessage: '창고 데이터 저장 중...',
+                        successMessage: "창고 데이터가 저장되었습니다.",
+                        errorMessage: "창고 데이터 저장 중 오류가 발생했습니다.",
+                        successCallback: searchWarehouseData
                     }
                 );
                 
                 if(response.success){
-                    await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+                    await AlertUtil.showSuccess('저장 완료', '창고 데이터가 성공적으로 저장되었습니다.');
                     return true;
                 } else {
                     return false;
@@ -435,17 +786,17 @@ const WarehouseManager = (function() {
             } else {
                 // 일괄 저장
                 const response = await ApiUtil.processRequest(
-                    () => ApiUtil.post(API_URLS.BATCH, modifiedData), 
+                    () => ApiUtil.post(API_URLS.WAREHOUSE.BATCH, modifiedData), 
                     {
-                        loadingMessage: '데이터 일괄 저장 중...',
-                        successMessage: "데이터가 일괄 저장되었습니다.",
-                        errorMessage: "데이터 일괄 저장 중 오류가 발생했습니다.",
-                        successCallback: searchData
+                        loadingMessage: '창고 데이터 일괄 저장 중...',
+                        successMessage: "창고 데이터가 일괄 저장되었습니다.",
+                        errorMessage: "창고 데이터 일괄 저장 중 오류가 발생했습니다.",
+                        successCallback: searchWarehouseData
                     }
                 );
                 
                 if(response.success){
-                    await AlertUtil.showSuccess('저장 완료', '데이터가 성공적으로 저장되었습니다.');
+                    await AlertUtil.showSuccess('저장 완료', '창고 데이터가 성공적으로 저장되었습니다.');
                     return true;
                 } else {
                     return false;
@@ -453,24 +804,122 @@ const WarehouseManager = (function() {
             }
             
         } catch (error) {
-            console.error('데이터 저장 오류:', error);
-            await AlertUtil.notifySaveError("저장 실패", "데이터 저장 중 오류가 발생했습니다.");
+            console.error('창고 데이터 저장 오류:', error);
+            await AlertUtil.notifySaveError("저장 실패", "창고 데이터 저장 중 오류가 발생했습니다.");
+            return false;
+        }
+    }
+    
+    /**
+     * 위치정보 데이터 저장 함수
+     */
+    async function saveLocationData() {
+        try {
+            console.log('위치정보 저장 시작');
+            
+            // 창고가 선택되어 있는지 확인
+            if (!selectedWarehouseCode) {
+                await AlertUtil.showWarning('알림', '위치정보를 저장할 창고를 먼저 선택해주세요.');
+                return false;
+            }
+
+            const grid = GridUtil.getGrid('locationGrid');
+            if (!grid) {
+                throw new Error('locationGrid를 찾을 수 없습니다.');
+            }
+
+            // 마지막으로 입력한 셀에 대한 값 반영을 위해 포커스 해제
+            grid.blur();
+
+            // 변경된 데이터 추출
+            const changes = await GridUtil.extractChangedData('locationGrid');
+            const modifiedData = [...changes.insert, ...changes.update];
+
+            if (modifiedData.length === 0) {
+                await AlertUtil.showWarning("알림", "수정된 내용이 없습니다.");
+                return false;
+            }
+
+            // 유효성 검사
+            for (const item of modifiedData) {
+                if (ValidationUtil.isEmpty(item.LOC_CODE)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "위치코드는 필수입니다.");
+                    return false;
+                }
+                if (ValidationUtil.isEmpty(item.LOC_NAME)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "위치명은 필수입니다.");
+                    return false;
+                }
+                if (ValidationUtil.isEmpty(item.WHS_CODE)) {
+                    // 창고 코드 자동 설정
+                    item.WHS_CODE = selectedWarehouseCode;
+                }
+                if (ValidationUtil.isEmpty(item.USE_YN)) {
+                    await AlertUtil.notifyValidationError("유효성 오류", "사용여부는 필수입니다.");
+                    return false;
+                }
+            }
+
+            // 저장할 데이터 준비 - 단건 또는 배치 방식 선택
+            if (modifiedData.length === 1) {
+                // 단건 저장
+                const saveData = modifiedData[0];
+                
+                // API 호출
+                const response = await ApiUtil.processRequest(
+                    () => ApiUtil.post(API_URLS.LOCATION.SAVE, saveData), 
+                    {
+                        loadingMessage: '위치정보 저장 중...',
+                        successMessage: "위치정보가 저장되었습니다.",
+                        errorMessage: "위치정보 저장 중 오류가 발생했습니다.",
+                        successCallback: () => loadLocationData(selectedWarehouseCode)
+                    }
+                );
+                
+                if(response.success){
+                    await AlertUtil.showSuccess('저장 완료', '위치정보가 성공적으로 저장되었습니다.');
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                // 일괄 저장
+                const response = await ApiUtil.processRequest(
+                    () => ApiUtil.post(API_URLS.LOCATION.BATCH, modifiedData), 
+                    {
+                        loadingMessage: '위치정보 일괄 저장 중...',
+                        successMessage: "위치정보가 일괄 저장되었습니다.",
+                        errorMessage: "위치정보 일괄 저장 중 오류가 발생했습니다.",
+                        successCallback: () => loadLocationData(selectedWarehouseCode)
+                    }
+                );
+                
+                if(response.success){
+                    await AlertUtil.showSuccess('저장 완료', '위치정보가 성공적으로 저장되었습니다.');
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            
+        } catch (error) {
+            console.error('위치정보 저장 오류:', error);
+            await AlertUtil.notifySaveError("저장 실패", "위치정보 저장 중 오류가 발생했습니다.");
             return false;
         }
     }
 
     /**
-     * 데이터 삭제 함수
-     * 선택된 행을 삭제합니다.
+     * 창고 데이터 삭제 함수
      */
-    async function deleteRows() {
+    async function deleteWarehouseRows() {
         try {
             // 선택된 행 ID 확인
             const grid = GridUtil.getGrid('warehouseGrid');
             const selectedRowKeys = grid.getCheckedRowKeys();
             
             if (selectedRowKeys.length === 0) {
-                await AlertUtil.showWarning('알림', '삭제할 항목을 선택해주세요.');
+                await AlertUtil.showWarning('알림', '삭제할 창고를 선택해주세요.');
                 return false;
             }
             
@@ -499,19 +948,27 @@ const WarehouseManager = (function() {
                     try {
                         // 삭제 요청 생성
                         const deleteRequests = selectedCodes.map(whsCode => 
-                            async () => ApiUtil.del(API_URLS.SINGLE + whsCode)
+                            async () => ApiUtil.del(API_URLS.WAREHOUSE.SINGLE + whsCode)
                         );
                         
                         // 일괄 삭제 요청 실행
                         await ApiUtil.withLoading(async () => {
                             await Promise.all(deleteRequests.map(req => req()));
-                        }, '데이터 삭제 중...');
+                        }, '창고 데이터 삭제 중...');
                         
                         // 삭제 성공 메시지
                         await AlertUtil.notifyDeleteSuccess('삭제 완료', '창고 정보가 삭제되었습니다.');
                         
                         // 목록 갱신
-                        await searchData();
+                        await searchWarehouseData();
+                        
+                        // 위치정보 초기화 (창고가 삭제되었으므로)
+                        locationGrid.resetData([]);
+                        selectedWarehouseCode = '';
+                        document.getElementById('selectedWarehouseInfo').textContent = '';
+                        
+                        // 위치정보 컨트롤 비활성화
+                        toggleLocationControls(false);
                     } catch (apiError) {
                         console.error('삭제 API 호출 중 오류:', apiError);
                         await AlertUtil.notifyDeleteError('삭제 실패', '창고 정보 삭제 중 API 오류가 발생했습니다.');
@@ -521,129 +978,106 @@ const WarehouseManager = (function() {
             
             return result;
         } catch (error) {
-            console.error('데이터 삭제 오류:', error);
-            await AlertUtil.notifyDeleteError('삭제 실패', '데이터 삭제 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-
-    // =============================
-    // 유틸리티 함수
-    // =============================
-
-    /**
-     * 그리드 인스턴스 반환 함수
-     * 외부에서 그리드 인스턴스에 직접 접근할 수 있습니다.
-     * 
-     * @returns {Object} 그리드 인스턴스
-     */
-    function getGrid() {
-        return warehouseGrid;
-    }
-
-    /**
-     * 검색 조건 저장 함수
-     * 현재 검색 조건을 로컬 스토리지에 저장합니다.
-     */
-    async function saveSearchCondition() {
-        try {
-            const searchCondition = document.getElementById('warehouseInput')?.value || '';
-
-            localStorage.setItem('warehouseSearchCondition', searchCondition);
-            console.log('검색 조건이 저장되었습니다.');
-
-            await AlertUtil.showSuccess("저장 완료", "검색 조건이 저장되었습니다.");
-            return true;
-        } catch (error) {
-            console.error('검색 조건 저장 오류:', error);
-            await AlertUtil.showError('저장 오류', '검색 조건 저장 중 오류가 발생했습니다.');
-            return false;
-        }
-    }
-
-    /**
-     * 저장된 검색 조건 로드 함수
-     * 로컬 스토리지에서 저장된 검색 조건을 불러와 적용합니다.
-     * 
-     * @returns {boolean} 로드 성공 여부
-     */
-    async function loadSearchCondition() {
-        try {
-            const savedCondition = localStorage.getItem('warehouseSearchCondition');
-
-            if (!savedCondition) {
-                console.log('저장된 검색 조건이 없습니다.');
-                return false;
-            }
-
-            // 검색 조건 설정
-            const searchInput = document.getElementById('warehouseInput');
-            if (searchInput) {
-                searchInput.value = savedCondition;
-            }
-
-            // 검색 실행
-            await searchData();
-
-            console.log('검색 조건이 로드되었습니다.');
-            return true;
-        } catch (error) {
-            console.error('검색 조건 로드 오류:', error);
-            await AlertUtil.showError('로드 오류', '검색 조건 로드 중 오류가 발생했습니다.');
+            console.error('창고 데이터 삭제 오류:', error);
+            await AlertUtil.notifyDeleteError('삭제 실패', '창고 데이터 삭제 중 오류가 발생했습니다.');
             return false;
         }
     }
     
     /**
-     * 로컬 검색 함수
-     * 그리드 내 로컬 데이터를 대상으로 검색을 수행합니다.
+     * 위치정보 데이터 삭제 함수
      */
-    function performLocalSearch() {
+    async function deleteLocationRows() {
         try {
-            const keyword = document.getElementById('warehouseInput').value.toLowerCase();
+            // 창고가 선택되어 있는지 확인
+            if (!selectedWarehouseCode) {
+                await AlertUtil.showWarning('알림', '위치정보를 삭제할 창고를 먼저 선택해주세요.');
+                return false;
+            }
             
-            // 원본 데이터 가져오기
-            GridSearchUtil.resetToOriginalData('warehouseGrid');
-            const grid = GridUtil.getGrid('warehouseGrid');
-            const originalData = grid.getData();
+            // 선택된 행 ID 확인
+            const grid = GridUtil.getGrid('locationGrid');
+            const selectedRowKeys = grid.getCheckedRowKeys();
             
-            // 필터링
-            const filtered = originalData.filter(row => {
-                return Object.values(row).some(val => {
-                    if (val == null) return false;
-                    return String(val).toLowerCase().includes(keyword);
-                });
+            if (selectedRowKeys.length === 0) {
+                await AlertUtil.showWarning('알림', '삭제할 위치정보를 선택해주세요.');
+                return false;
+            }
+            
+            // 선택된 코드 목록 생성
+            const selectedCodes = [];
+            for (const rowKey of selectedRowKeys) {
+                const locCode = grid.getValue(rowKey, "LOC_CODE");
+                if (locCode) selectedCodes.push(locCode);
+            }
+            
+            if (selectedCodes.length === 0) {
+                await AlertUtil.showWarning('알림', '유효한 위치코드를 찾을 수 없습니다.');
+                return false;
+            }
+            
+            // GridUtil.deleteSelectedRows 사용 (UI 측면의 삭제 확인 및 행 제거)
+            const result = await GridUtil.deleteSelectedRows('locationGrid', {
+                confirmTitle: "삭제 확인",
+                confirmMessage: "선택한 위치정보를 삭제하시겠습니까?",
+                onBeforeDelete: async () => {
+                    // 삭제 전 처리 - 여기서 true 반환해야 삭제 진행
+                    return true;
+                },
+                onAfterDelete: async () => {
+                    // 삭제 API 호출 및 처리
+                    try {
+                        // 삭제 요청 생성
+                        const deleteRequests = selectedCodes.map(locCode => 
+                            async () => ApiUtil.del(API_URLS.LOCATION.DELETE + locCode)
+                        );
+                        
+                        // 일괄 삭제 요청 실행
+                        await ApiUtil.withLoading(async () => {
+                            await Promise.all(deleteRequests.map(req => req()));
+                        }, '위치정보 삭제 중...');
+                        
+                        // 삭제 성공 메시지
+                        await AlertUtil.notifyDeleteSuccess('삭제 완료', '위치정보가 삭제되었습니다.');
+                        
+                        // 목록 갱신
+                        await loadLocationData(selectedWarehouseCode);
+                    } catch (apiError) {
+                        console.error('삭제 API 호출 중 오류:', apiError);
+                        await AlertUtil.notifyDeleteError('삭제 실패', '위치정보 삭제 중 API 오류가 발생했습니다.');
+                    }
+                }
             });
             
-            // 그리드 업데이트
-            grid.resetData(filtered);
-            console.log('로컬 검색 완료, 결과:', filtered.length, '건');
-            
-            return filtered;
+            return result;
         } catch (error) {
-            console.error('로컬 검색 중 오류:', error);
-            return [];
+            console.error('위치정보 삭제 오류:', error);
+            await AlertUtil.notifyDeleteError('삭제 실패', '위치정보 삭제 중 오류가 발생했습니다.');
+            return false;
         }
     }
 
-    // =============================
     // 공개 API - 외부에서 접근 가능한 메서드
-    // =============================
     return {
         // 초기화 및 기본 기능
-        init,           // 모듈 초기화
+        init,
 
-        // 데이터 관련 함수
-        searchData,     // 데이터 검색
-        appendRow,      // 행 추가
-        saveData,       // 데이터 저장
-        deleteRows,     // 데이터 삭제
+        // 창고 관련 함수
+        searchWarehouseData,
+        appendWarehouseRow,
+        saveWarehouseData,
+        deleteWarehouseRows,
+
+        // 위치정보 관련 함수
+        loadLocationData,
+        searchLocationData,
+        appendLocationRow,
+        saveLocationData,
+        deleteLocationRows,
 
         // 유틸리티 함수
-        getGrid,               // 그리드 인스턴스 반환
-        saveSearchCondition,   // 검색 조건 저장
-        loadSearchCondition,   // 저장된 검색 조건 로드
-        performLocalSearch     // 로컬 검색 실행
+        getWarehouseGrid: () => warehouseGrid,
+        getLocationGrid: () => locationGrid
     };
 })();
 
@@ -654,9 +1088,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         // 창고 기준정보 관리 초기화
         await WarehouseManager.init();
-
-        // 저장된 검색 조건 로드 (필요 시 활성화)
-        // await WarehouseManager.loadSearchCondition();
     } catch (error) {
         console.error('초기화 중 오류 발생:', error);
         if (window.AlertUtil) {

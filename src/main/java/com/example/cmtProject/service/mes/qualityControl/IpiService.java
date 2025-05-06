@@ -15,16 +15,21 @@ import com.example.cmtProject.dto.mes.qualityControl.InspectionSummaryDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.qualityControl.QcmDTO;
 import com.example.cmtProject.entity.erp.employees.Employees;
-import com.example.cmtProject.mapper.mes.inventory.InventoryUpdateMapper;
 import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
-
+import com.example.cmtProject.service.mes.inventory.InventoryUpdateService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 
 @Service
 public class IpiService {
+
 	
 	@Autowired
 	private IpiMapper ipiMapper;
+	
+	@Autowired
+	private InventoryUpdateService ius;
+
 
 	// 모든 입고 검사 목록
 	public List<IpiDTO> getAllIpi() {
@@ -80,17 +85,25 @@ public class IpiService {
 		ipiMapper.updateIpiInspectionStatusProcessing(loginUser, ipiDTO);
 	}
 
+	/**
+	 * 검사중에서 검사완료로 업데이트
+	 */
 	@Transactional
-	// 검사중에서 검사완료로 업데이트
 	public void updateIpiInspectionStatusComplete(IpiDTO ipiDTO) {
-		ipiDTO.setIpiEndTime(LocalDateTime.now());
-		ipiMapper.updateIpiInspectionStatusComplete(ipiDTO);
-		
-        String code = ipiDTO.getWoCode();
-        Map<String, Object> params = new HashMap<>();
-        params.put("woCode", code);
-//        ium.updateWoStatus(params);
-
+	    ipiDTO.setIpiEndTime(LocalDateTime.now());
+	    ipiMapper.updateIpiInspectionStatusComplete(ipiDTO);
+	    
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("pdtName", ipiDTO.getPdtName());
+	    params.put("pdtCode", ipiDTO.getPdtCode());
+	    params.put("woQty", ipiDTO.getWoQty());
+	    params.put("childLotCode", ipiDTO.getChildLotCode());
+	    params.put("IpiInspectionResult", ipiDTO.getIpiInspectionResult());
+	    
+	    // 검수 결과가 합격인 경우만 입고 처리
+	    if ("합격".equals(ipiDTO.getIpiInspectionResult())) {
+	        ius.receiveProductionItem(params);
+	    }
 	}
 
 	

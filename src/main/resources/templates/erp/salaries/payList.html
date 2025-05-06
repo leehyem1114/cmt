@@ -5,141 +5,173 @@
 		  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 		  layout:decorate="~{layouts/layout}">
 <head>
+	<!-- Favicon -->
 	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
-	<!-- 그리드 -->
-<!-- 	<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.min.js"></script>
-	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" /> -->
-	
-	<!-- SweetAlert2 CDN -->
-<!-- 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
-	
 	<!-- 기본 메타 정보 -->
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>CMT</title>
 <style>
-	.container {
-		display: grid;
-		grid-template-columns:  120px 180px 120px 180px 120px 180px 50px 180px 150px 1fr;
-	    gap: 3px;
-	    background: #f5f5f5;
-	    padding: 4px;
-	    border-radius: 5px;
-		border : 1px solid black;
-		text-align: center;
-		max-width: 100vw;
-	}
-	
-	.container input, .container select {
-		padding: 5px;
-		border: 1px solid #ccc;
-		border-radius: 3px;
-	}
-	 
-	.button-container {
-		display: flex;
-		gap: 5px;
-		margin: 10px;
-		justify-content: space-between;
-	}
-		
-/* 	button {
-		padding: 5px 10px;
-	    border: none;
-	    cursor: pointer;
-	    border-radius: 3px;
-	}
-	
-	.btnSearch { background:dodgerblue; color: white; }
-	.calculate { background:dodgerblue; color: white; }
-	.print { background: purple; color: white; }
-	.transfer { background: green; color: white; }
-	.delete { background: red; color: white; } */
+    /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
+    .top-input-group {
+        display: flex; /* 플렉스박스로 배치 */
+        align-items: flex-start; /* 위쪽 정렬 */
+        justify-content: space-between; /* 좌우 여백 최대 */
+        flex-wrap: wrap; /* 요소가 넘칠 경우 줄바꿈 */
+        gap: 10px; /* 요소 간 간격 */
+        margin-bottom: 15px; /* 하단 여백 */
+    }
+
+    /* 검색 및 파일 관련 그룹: 가로 배치, 줄바꿈 가능 */
+    .search-file-group {
+        display: flex;
+        align-items: center; /* 수직 정렬 */
+        gap: 8px; /* 요소 간 여백 */
+        flex-wrap: wrap; /* 줄바꿈 허용 */
+        flex: 1 1 auto; /* 공간을 적절히 차지하도록 설정 */
+        min-width: 500px; /* 최소 너비 확보 (줄바꿈 방지) */
+    }
+
+    /* CRUD 버튼 그룹: 버튼을 가로로 배치, 줄바꿈 허용 */
+    .button-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* 일반 입력창 스타일: 최대 너비 설정, 반응형 대응 */
+    .form-control {
+        max-width: 200px; /* 최대 너비 제한 */
+        flex: 0 1 auto; /* 내용에 따라 너비 조절 */
+    }
+
+    /* 테이블 전체 스타일 */
+    .table {
+        table-layout: fixed; /* 열 너비 고정 */
+        width: 100%; /* 부모 너비에 맞춤 */
+    }
+
+    /* 테이블 스크롤 영역 */
+/*     .table-responsive { */
+/*         height: 530px; /* 높이 고정 */ */
+/*         overflow: auto; /* 스크롤 활성화 */ */
+/*         -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */ */
+/*     } */
+
+    /* 첫 번째 열(선택 체크박스)의 너비와 정렬 */
+    th:first-child,
+    td:first-child {
+        width: 40px;
+        text-align: center;
+    }
+
+    /* TOAST UI Grid의 비활성 셀 스타일 */
+    .tui-grid-cell-disabled {
+        background-color: #fff !important;
+        color: #212529 !important;
+    }
+
+    /* 반응형: 화면이 좁을 때의 처리 */
+    @media (max-width: 768px) {
+        .top-input-group {
+            flex-direction: column; /* 세로로 배치 */
+            align-items: flex-start; /* 왼쪽 정렬 */
+        }
+
+        .search-file-group,
+        .button-group {
+            width: 100%; /* 전체 너비 사용 */
+            margin-bottom: 10px; /* 하단 여백 */
+        }
+    }
 </style>
 </head>
 <body>
 	<div layout:fragment="content">
-		<div class="button-container">
-			<h2>급여 조회</h2>
+		<h2>급여 조회</h2>
 			
-			<div>
-				<button type="button" class="btn btn-primary transfer" data-bs-toggle="modal" data-bs-target="#payTransferModal" sec:authorize="hasRole('ROLE_ADMIN')">급여 이체</button>
-				<button type="button" class="btn btn-primary print" onclick="payPrint()" sec:authorize="hasRole('ROLE_ADMIN')">명세서 출력</button>
-				<button type="button" class="btn btn-danger delete" th:data-id="*{payNo}" sec:authorize="hasRole('ROLE_ADMIN')">삭제</button>
-			</div>
-		</div><!-- <div class="button-container"> -->
-
-<!--		<form th:action="@{/salaries/searchPayList}" method="post" th:object="${paySearchDTO}">
-			<div class="container">
-				<label class="deptLabel">부서</label>
-				<select class="form-select" id="deptName" name="dept">
-					<option value="">전체</option>
-					<option th:each="dept : ${deptList}"
-						th:value="${dept.cmnDetailCode}" th:text="${dept.cmnDetailName}"></option>
-				</select>
-				<label class="emp-Label">이름</label>
-					<input type="text" id="empName" maxlength="9" th:field="*{empName}">
-				<label class="payLabel">지급일</label>
-					<input type="date" id="minDate" th:field="*{minDate}">~ 
-					<input type="date" id="maxDate" th:field="*{maxDate}">
-				<button type="submit" class="btnSearch">🔍 검색</button>
-				<span></span>
-			</div>
-		</form>-->
-		
-		<!-- 그리드 top 시작 -->
-		<div id="gridTop"></div>
-
-		<!-- 급여 이체 모달 -->
-		<div class="modal fade" id="payTransferModal" tabindex="-1">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="payCalcModal">급여 이체</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal"
-							aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<!--<div class="input-group mb-2">
-						<input type="date" id="payDate" class="form-control">
-					</div>
-					<div class="input-group mb-2">
-						<select class="form-select" id="dept" name="dept">
-							<option th:each="dept : ${deptList}" th:value="${dept.cmnDetailCode}"
-								th:text="${dept.cmnDetailName}"></option>
-						</select>-->
-						<div class="input-group mb-2">
-							<!--							<select class="form-select" id="position" name="position">-->
-							<!--								<option th:each="code : ${commonCodeMap['POSITION']}" th:value="${code.cmnDetailCode}"-->
-							<!--									th:text="${code.cmnDetailName}"></option>-->
-							<!--							</select>-->
-							<!-- <select> 대신 숨겨서 넘기기 -->
-							<input type="hidden" id="position" name="position"
-								th:value="${commonCodeMap['POSITION'][0].cmnDetailCode}" />
-
-						</div>
-						<!--						<button type="submit" class="btn btn-secondary ms-2">조회</button>-->
-						<!-- 그리드 top 시작 -->
-						<div id="gridTop2" style="width: 100%"></div>
-						<!-- 그리드 끝 -->
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary"
-								data-bs-dismiss="modal">닫기</button>
-							<button type="button" id="payTransferBtn" class="btn btn-primary"
-								data-bs-dismiss="modal">이체</button>
-						</div>
-					</div>
+		<!-- 급여 지급 내역 정보 섹션 -->
+		<section class="section">
+			<div class="row" id="basic-table">
+			<!-- 급여 지급 내역 정보 그리드 카드 -->
+			<div class="col-12 col-md-12">
+            	<div class="card">
+					<div class="card-header">
+						<h4 class="card-title">급여 지급 내역</h4>
+						
+						<!-- 검색, CRUD 버튼 -->
+						<div class="top-input-group">
+                        	<!-- 왼쪽: 검색 관련 -->
+                           	<div class="search-file-group">
+                            	<input type="text" class="form-control" id="searchInput" 
+                                       placeholder="급여 내역 검색">
+                                <button type="button" id="paySearchBtn" class="btn btn-outline-primary">
+										<i class="bi bi-search"></i>
+								</button>
+							</div>	
+                                    
+                            <!-- 오른쪽: CRUD 버튼 -->
+                            <div class="button-group">
+                            	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#payTransferModal"sec:authorize="hasRole('ROLE_ADMIN')">
+									<i class="bi bi-calculator"></i> 급여 이체</button>
+								<button type="button" id="print" class="btn btn-outline-primary" onclick="payPrint()" sec:authorize="hasRole('ROLE_ADMIN')">
+									<i class="bi bi-printer"></i> 명세서 출력</button>
+                            </div>
+                        </div>
+                	</div>            
+					<div class="card-body">
+						<div class="table-responsive">
+							
+							<!-- 급여 지급 내역 그리드 -->
+							<div id="payGrid"></div>
+							
+                        </div>
+                    </div>
 				</div>
 			</div>
-		</div>
-		<!-- 급여 이체 모달 -->
+		</div>		
+    </section>
+        
+	<!-- 급여 이체 모달 창 시작 -->
+	<div class="modal fade" id="payTransferModal" tabindex="-1" aria-labelledby="mfgPlanModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="payCalcModalLabel">급여 이체</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+<!--					<div class="input-group mb-2">
+						<input type="hidden" id="position" name="position"
+							   th:value="${commonCodeMap['POSITION'][0].cmnDetailCode}" />
+					</div>-->
+					<!-- 검색 관련 -->
+                    <div class="search-file-group" style="margin-bottom: 15px;">
+				    	<input type="month" class="form-control" id="unpaidMonth"
+				       		   th:value="${currentMonth}" />
+                    	<input type="text" class="form-control" id="searchInput2" 
+                               placeholder="미지급자 검색">
+					</div>	
+					
+					<!-- 사원 그리드 -->
+					<div id="empGrid"></div>
+					
+				</div>	
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+					<button type="button" id="payTransferBtn" class="btn btn-primary">이체</button>
+				</div>
+			</div><!-- modal-content -->
+		</div><!-- modal-dialog modal-lg -->
+	</div><!-- modal -->
+	<!-- 모달 끝 -->
 
-	<!-- <script src="/js/jquery-3.7.1.js"></script> -->
 	<script th:inline="javascript">
-	//그리드 gridTop 시작 --------------------------------------
-	console.log(/*[[${payList}]]*/ []);
-		
+	
+	// 급여 지급 내역 그리드 시작 ============================================
+	
+	// 컬럼	
 	const columns = [
 		{
 		 	header: '지급번호', 
@@ -191,72 +223,84 @@
 		{
 			header: '기본급',
 			name: 'payBasic',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '야근수당',
 			name: 'payBonusOvertime',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '명절수당',
-			name: 'PAY_BONUS_HOIDAY',
+			name: 'payBonusHoliday',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '총수당금액',
 			name: 'payBonusTotal',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '국민연금',
 			name: 'payTaxPension',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '건강보험',
 			name: 'payTaxHealth',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '장기요양보험',
 			name: 'payTaxCare',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '고용보험',
 			name: 'payTaxEmployment',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '소득세',
 			name: 'payTaxIncome',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '주민세',
 			name: 'payTaxResidence',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '총공제금액',
 			name: 'payTaxTotal',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
 		{
 			header: '실수령액',
 			name: 'payTotal',
+			sortable: true,
 			width: 100,
 			align: "right"
 		},
@@ -270,11 +314,13 @@
 		{
 			header: '계좌번호',
 			name: 'salBankAccount',
+			sortable: true,
 			width: 100,
 			align: "center"
 		}
 	];
-		
+	
+	// 금액 컬럼	
 	const moneyColumns = [
 		'payBasic', 'payBonusOvertime', 'payBonusHoliday', 'payBonusTotal',
 		'payTaxPension', 'payTaxHealth', 'payTaxCare', 'payTaxEmployment',
@@ -295,22 +341,23 @@
 		    };
 		}
 	});
-		
-	const grid = new tui.Grid({
-		el: document.getElementById('gridTop'), 
+	
+	// 급여 지급 내역 그리드 생성	
+	const payGrid = new tui.Grid({
+		el: document.getElementById('payGrid'), 
 		data : /*[[${payList}]]*/ [],
 	    rowHeaders: ['checkbox'],
 		pageOptions: {
 			useClient: true,
-			perPage: 5
+			perPage: 10
 		},
 	    columns: columns
 	});
 	    
 		/*
-		grid.on('click', function(ev) {
+		payGrid.on('click', function(ev) {
 	         const rowKey = ev.rowKey;
-	         const rowData = grid.getRow(rowKey);
+	         const rowData = payGrid.getRow(rowKey);
 	         const columnName = ev.columnName; 
 	        
 	     	 // 체크박스 클릭은 무시
@@ -325,14 +372,14 @@
 		*/
 		
 		/*
-	    grid.on('click', (checkItem) => {
+	    payGrid.on('click', (checkItem) => {
 	    	const rowKey = ev.rowKey;
 	        const columnName = ev.columnName; // 체크박스 클릭 방지용
 
 	        // 체크박스 클릭 막기
 	        if (columnName === '_checked') return;
 
-	        const rowData = grid.getRow(rowKey);
+	        const rowData = payGrid.getRow(rowKey);
 
 	        if (rowData) {
 	            window.open('/salaries/insertPayForm/' + rowData.empId, '_blank', 'width=800, height=600');
@@ -340,104 +387,147 @@
 	        }
 	    });*/
 
-	    // 체크 해제 시 이벤트 추가
-	    grid.on('uncheck', (checkItem) => {
-	    	console.log("체크 해제 확인");
-	    });
-		//그리드 gridTop 끝 --------------------------------------
+	// 급여 지급 내역 그리드 끝 =============================================
 		
 		
-		//그리드 gridTop2 시작 --------------------------------------
-		let grid2 = null;
-			
-		document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
-			
-		console.log("===============================================")
-		console.log(/*[[${empList}]]*/ []);
-			
-      	 // 모달 완전히 열린 후에 grid 생성
-		// $('#payTransferModal').on('shown.bs.modal', function () {
-		if (!grid2) {
-			grid2 = new tui.Grid({
-				el: document.getElementById('gridTop2'), 
-				data : /*[[${empList}]]*/ [],
+	// 사원 그리드 시작 =====================================================
+	let empGrid = null;
+	let originalData2 = [];
+
+	// 급여 이체 모달창
+	document.getElementById('payTransferModal').addEventListener('shown.bs.modal', () => {
+
+		// 사원 그리드 생성
+		if (!empGrid) {
+			empGrid = new tui.Grid({
+				el: document.getElementById('empGrid'), 
+				data : [],
 				rowHeaders: ['checkbox'],
 				pageOptions: {
 					useClient: true,
-					perPage: 5
+					perPage: 10
 				},
 				columns: [
 					{
 						header: '사원번호',
-						name: 'empId',
+						name: 'EMP_ID',
 						align: "center"
 					},
 					{
 						header: '사원명',
-						name: 'empName',
+						name: 'EMP_NAME',
 						align: "center"
 					},
 					{
 						header: '부서',
-						name: 'deptName', 
+						name: 'DEPT_NAME', 
 						sortable: true,
 						align: "center"
 					},
 					{
 						header: '직급',
-						name: 'deptPosition', 
+						name: 'POSITION', 
 						sortable: true,
 						align: "center"
 					}	
-				] // 열 설정
-			});
-			
-			console.log("empList:", /*[[${empList}]]*/ []);
-    
-			/*
-			grid2.on('click', function(ev) {
-		         const rowKey = ev.rowKey;
-		         const rowData = grid2.getRow(rowKey);
-		         const columnName = ev.columnName; 
-		        
-		     	 // 체크박스 클릭은 무시
-		         if(columnName === '_checked') return;
-		      
-		         if (rowData) {
-		             // 클릭한 사원번호를 바로 새 창으로 넘김
-		             window.open('/salaries/insertPayForm/' + rowData.empId, '_blank', 'width=800, height=600');
-		             console.log("넘긴데이터"+rowData.empId);
-		          }
-			});     
-			*/
-			
-			// 체크박스 클릭 시 이벤트 추가
-			grid2.on('check', (checkItem) => {
-				console.log("체크 확인");
+				]
 			});
 
-			// 체크 해제 시 이벤트 추가
-			grid2.on('uncheck', (checkItem) => {
-				console.log("체크 해제 확인");
-			});
+		originalData2 = empGrid.getData();
+		
 		} else {
-			// 이미 Grid 있으면 데이터 리셋
-			grid2.resetData(/*[[${empList}]]*/ []);
-		}	
-	});
-	//그리드 gridTop2 끝 --------------------------------------
-	
-	//급여 이체 시작 -------------------------------------------
-	$('#payTransferBtn').on('click', function () {
-		const checkedRows = grid2.getCheckedRows();
-		const empIdList = checkedRows.map(row => row.empId);
-		const position = $('#position').val();
+			empGrid.resetData(/*[[${empList}]]*/ []);
+			originalData2 = empGrid.getData();
+		}
+		
 
+		// 모달 열릴 때 unpaidMonth 값이 있으면 자동으로 미지급자 목록 조회
+		const selectedMonth = document.getElementById('unpaidMonth').value;
+		
+			if (selectedMonth) {
+				$.ajax({
+					url: '/salaries/unpaidEmpList',
+					method: 'GET',
+					data: { payMonth: selectedMonth },
+					success: function (res) {
+						if (res.length === 0) {
+							Swal.fire({
+								icon: "info",
+								title: "해당 월의 미지급자가 없습니다."
+							});
+							empGrid.resetData([]);
+							originalData2 = [];
+							return;
+						}
+						empGrid.resetData(res);
+						originalData2 = res;
+					},
+					error: function () {
+						Swal.fire({
+							icon: "error",
+							title: "미지급자 조회에 실패했습니다."
+						});
+					}
+				});
+			}
+	});
+	// 사원 그리드 끝 ====================================================
+	
+		
+	// 급여 이체 시작 ====================================================
+ 	document.getElementById('unpaidMonth').addEventListener('change', function () {
+		const selectedMonth = this.value; // '2025-05' 형식
+	
+		if (!selectedMonth) return;
+	
+		// 검색 초기화
+		document.getElementById('searchInput2').value = '';
+	
+		$.ajax({
+			url: '/salaries/unpaidEmpList',
+			method: 'GET',
+			data: { payMonth: selectedMonth },
+			success: function (res) {
+				if (res.length === 0) {
+					Swal.fire({
+						icon: "info",
+					    title: "해당 월의 미지급자가 없습니다."
+					});
+					
+					empGrid.resetData([]); // 데이터 리셋
+					originalData2 = [];
+					
+					return;
+				}
+					    
+				if (empGrid) {
+					empGrid.resetData(res); // 데이터 업데이트
+					originalData2 = res; // 원본 데이터 업데이트
+				}
+			},
+			error: function () {
+				Swal.fire({
+					icon: "error",
+					title: "미지급자 조회에 실패했습니다."
+				});
+			}
+		});
+	}); 
+	
+	
+	// 급여 이체 모달창에서 이체 버튼 클릭 시
+	$('#payTransferBtn').on('click', function () {
+		const checkedRows = empGrid.getCheckedRows();
+		const empIds = checkedRows.map(row => row.EMP_ID);
+		//const position = $('#position').val();
+		const selectedMonth = $('#unpaidMonth').val();
+		
 		$.ajax({
     		type: 'POST',
     		url: '/salaries/payTransfer',
-    		data: { position: position,
-    				empIdList: empIdList
+    		data: { 
+    				payMonth: selectedMonth,
+    				empIds: empIds
     		},
 			traditional: true,
     		success: function (res) {
@@ -445,14 +535,14 @@
 				if(res === 'fail'){
 					Swal.fire({
 					  icon: "error",
-					  title: "지급일이 아닙니다.",
+					  title: "급여 지급일이 아닙니다."
 					});
 				}
 				
 				if(res === 'success'){
 					Swal.fire({
 					  icon: "success",
-					  title: "급여이체 완료!",
+					  title: "급여 이체가 완료되었습니다."
 					});
 					
 					location.reload(); // or 특정 그리드/뷰 갱신
@@ -461,78 +551,136 @@
     		error: function () {
 				Swal.fire({
 				  icon: "error",
-				  title: "급여이체 실패!",
+				  title: "급여 이체에 실패했습니다."
 				});
     		}
 		});
 	});
-	//급여 이체 끝---------------------------------------------------------	
+	// 급여 이체 끝 =======================================================	
+	
+	
+	// 행 아무곳이나 클릭하면 체크박스 활성화 =============================
+	payGrid.on('click', ev => {
+		  const { rowKey, columnName } = ev;
 
+		  if (columnName === '_checked') return;
+		  const isChecked = payGrid.getCheckedRowKeys().includes(rowKey);
+		  if (!isChecked) {
+		    payGrid.check(rowKey);
+		  } else {
+		    payGrid.uncheck(rowKey);
+		  }
+	});
+	// ====================================================================
+	
+
+	// 급여 명세서 출력 ===================================================
 	function payPrint(){
-    	const checkedRows = grid.getCheckedRows();
-        const empId = checkedRows[0].empId;
-      		
-        console.log("payPrint()!! 클릭된 아이디>>" + empId);
+    	const checkedRows = payGrid.getCheckedRows();
+		const payNo = checkedRows[0].payNo;
       		
       	$.ajax({
-      		url : '/salaries/payPrint/' + empId ,
+      		url : '/salaries/payPrint/' + payNo ,
       		method : 'get',
-       		data : {empId : empId},
+       		//data : {empId : empId},
       		success : function(response){
 				Swal.fire({
 					icon: "success",
-					title: "PDF 저장 성공!",
+					title: "PDF 저장에 성공했습니다."
 				});
       			window.open('/pdfs/payslip.pdf', '_blank', 'width=800,height=1000');
       		},
 			error : function(error){
-      			console.log("오류발생");
+				Swal.fire({
+					icon: "error",
+					title: "PDF 저장에 실패했습니다."
+				});
 			}
       	});
 		      	  
 	}
+	// ====================================================================
+	
+	
+	// 급여 지급 내역 검색 ================================================
+	
+  	// grid 데이터 원본 저장
+  	const originalData = payGrid.getData();
 
-	// 삭제 버튼 클릭 시 삭제 진행
-	$(document).on('click', '.delete', function () {
-		const checkedRows = grid.getCheckedRows();
-		if (checkedRows.length === 0) {
-			Swal.fire({ icon: "warning", title: "선택된 행이 없습니다." });
-			return;
+  	document.getElementById('searchInput').addEventListener('input', function (e) {
+  		const keyword = e.target.value.toLowerCase();
+
+  	  	// 원본 데이터를 기준으로 필터링
+  	  	const filtered = originalData.filter(row => {
+  	    	return Object.values(row).some(val => {
+  	      		if (val == null) return false;
+  	    	return String(val).toLowerCase().includes(keyword);
+  	    	});
+  	  	});
+
+  	  	// 필터링된 데이터로 그리드 업데이트
+  	  	payGrid.resetData(filtered);
+  	});
+  	
+  	function applyFilter() {
+		const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+		let filtered = originalData;
+
+		if (keyword) {
+			filtered = filtered.filter(row =>
+			    Object.values(row).some(val =>
+			    	val != null && String(val).toLowerCase().includes(keyword)
+			    )
+		    );
 		}
+		payGrid.resetData(filtered);
+		}
+
+  		document.getElementById('paySearchBtn').addEventListener('click', applyFilter);
+		document.getElementById('searchInput').addEventListener('input', applyFilter);
 		
-		const payNos = checkedRows.map(row => row.payNo);
-						
-		Swal.fire({
-			icon: "warning",
-			title: "내역을 삭제하시겠습니까?",
-			showCancelButton: true,
-			confirmButtonText: "확인",
-			cancelButtonText: "취소"
-		}).then((result) => {
-			if (result.isConfirmed) {
-				$.ajax({
-					url: "/salaries/delete",
-					type: "POST",
-					contentType: 'application/json',
-					data: JSON.stringify(payNos),
-					success: function(response) {
-						Swal.fire({
-							icon: "success",
-							title: "내역 삭제 성공!"
-						}).then(() => {
-							location.reload();
-						});
-					},
-					error: function () {
-						Swal.fire({
-							icon: "error",
-							title: "내역 삭제 실패!",
-						});
-					}							
-				});
-			}
-		});
+	// ==================================================================
+	
+	
+	// 사원 그리드 내 검색 ==============================================
+		
+	// grid 데이터 원본 저장
+	//const originalData2 = empGrid.getData();
+
+	document.getElementById('searchInput2').addEventListener('input', function (e) {
+		if (!empGrid) return;
+	  	  
+	  	const keyword2 = e.target.value.toLowerCase();
+
+	  	// 원본 데이터를 기준으로 필터링
+	  	const filtered2 = originalData2.filter(row => {
+	  		return Object.values(row).some(val => {
+	  	    	if (val == null) return false;
+	  	    return String(val).toLowerCase().includes(keyword2);
+	  	    });
+	  	});
+
+	  	// 필터링된 데이터로 그리드 업데이트
+	  	empGrid.resetData(filtered2);
 	});
+	  	
+	function applyFilter2() {
+		const keyword2 = document.getElementById('searchInput2').value.toLowerCase();
+
+		let filtered2 = originalData2;
+
+		if (keyword2) {
+			filtered2 = filtered2.filter(row =>
+				Object.values(row).some(val =>
+			    	val != null && String(val).toLowerCase().includes(keyword2)
+			    )
+			);
+		}
+		empGrid.resetData(filtered2);
+		}
+	// ==================================================================
+	
 	</script>
 		
 	</div>	

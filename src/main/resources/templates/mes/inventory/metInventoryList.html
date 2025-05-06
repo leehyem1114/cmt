@@ -8,7 +8,9 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>원자재 재고현황</title>
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+    <title>CMT</title>
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
     .top-input-group {
@@ -102,6 +104,165 @@
             margin-bottom: 10px; /* 하단 여백 */
         }
     }
+    
+    /* FIFO 관련 스타일 추가 */
+    .fifo-detail-section {
+        background: #f8f9fa;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 8px;
+        display: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .fifo-tabs {
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 15px;
+    }
+    
+    .tab-button {
+        padding: 8px 16px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #6c757d;
+        border-bottom: 2px solid transparent;
+        margin-right: 15px;
+    }
+    
+    .tab-button.active {
+        color: #0d6efd;
+        border-bottom-color: #0d6efd;
+    }
+    
+    .queue-visual {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .queue-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .queue-item.active {
+        background: #e3f2fd;
+        border-color: #90caf9;
+    }
+    
+    .queue-item.next {
+        background: #fff8e1;
+        border-color: #ffe082;
+    }
+    
+    .queue-number {
+        width: 60px;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    .queue-date {
+        width: 100px;
+        font-size: 13px;
+    }
+    
+    .queue-progress {
+        flex: 1;
+        margin: 0 15px;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+    
+    .progress-fill-blue {
+        height: 100%;
+        background: #0d6efd;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-fill-yellow {
+        height: 100%;
+        background: #ffc107;
+        transition: width 0.3s ease;
+    }
+    
+    /* 탭 컨텐츠 기본 스타일 추가 */
+    .tab-content {
+        margin-top: 15px;
+    }
+    
+    .fifo-detail-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        margin-top: 20px;
+		table-layout: fixed;
+    }
+	/* 현황 테이블 컬럼 너비 지정 */
+	#queueTab .fifo-detail-table th:nth-child(1) { width: 60px; }  /* 순번 */
+	#queueTab .fifo-detail-table th:nth-child(2) { width: 120px; } /* 입고일 */
+	#queueTab .fifo-detail-table th:nth-child(3) { width: 150px; } /* 입고번호 */
+	#queueTab .fifo-detail-table th:nth-child(4) { width: 100px; } /* 입고수량 */
+	#queueTab .fifo-detail-table th:nth-child(5) { width: 100px; } /* 남은수량 */
+	#queueTab .fifo-detail-table th:nth-child(6) { width: 80px; }  /* 상태 */
+
+	/* 이력 테이블 컬럼 너비 지정 */
+	#historyTab .fifo-detail-table th:nth-child(1) { width: 150px; } /* 날짜 */
+	#historyTab .fifo-detail-table th:nth-child(2) { width: 100px; } /* 작업 유형 */
+	#historyTab .fifo-detail-table th:nth-child(3) { width: 450px; } /* 설명 */
+	#historyTab .fifo-detail-table th:nth-child(4) { width: 100px; } /* 처리자 */
+    
+    .fifo-detail-table th,
+    .fifo-detail-table td {
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+    
+    .fifo-detail-table th {
+        background: #f2f2f7;
+        color: #676293;
+        font-weight: 600;
+    }
+    
+    /* 상태별 배지 색상 */
+    .badge {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: normal;
+    }
+
+    .bg-primary {
+        background-color: #0d6efd !important;
+        color: white;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+        color: black;
+    }
+
+    .bg-secondary {
+        background-color: #6c757d !important;
+        color: white;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+        color: black;
+    }
 </style>
 
 
@@ -129,15 +290,7 @@
                                 <div class="search-file-group">
                                     <input type="text" class="form-control" id="mInventoryInput" 
                                         placeholder="원자재명 검색">
-<!--                                     <button type="button" id="mInventorySearchBtn" class="btn btn-outline-primary"> -->
-<!--                                         <i class="bi bi-search"></i> -->
-<!--                                     </button> -->
                                     
-                                    <!-- 엑셀 파일 입력 및 버튼 -->
-<!--                                     <input type="file" class="form-control file-input" id="mInventoryFileInput" accept=".xlsx,.xls"> -->
-<!--                                     <button type="button" id="mInventoryExcelUpBtn" class="btn btn-excel"> -->
-<!--                                         <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드 -->
-                                    </button>
                                     <button type="button" id="mInventoryExcelDownBtn" class="btn btn-excel">
                                         <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
                                     </button>
@@ -145,9 +298,17 @@
                                 
                                 <!-- 오른쪽: CRUD 버튼 -->
                                 <div class="button-group">
-<!--                                     <button type="button" id="mInventoryAppendBtn" class="btn btn-outline-secondary">추가</button> -->
-<!--                                     <button type="button" id="mInventorySaveBtn" class="btn btn-outline-success">저장</button> -->
-<!--                                     <button type="button" id="mInventoryDeleteBtn" class="btn btn-outline-danger">삭제</button> -->
+                                    <button type="button" id="mInventoryGenerateBtn" class="btn btn-outline-primary">
+                                        <i class="bi bi-database-add"></i> 기본 재고 생성
+                                    </button>
+                                    <button type="button" class="btn btn-warning" id="btnTempMaterialReceipt"
+									sec:authorize="hasRole('SYSTEM')">
+                                        <i class="fas fa-plus-circle"></i> 임시 발주입고
+                                    </button>
+                                    <button type="button" class="btn btn-info" id="btnTempMaterialReceiptAll"
+									sec:authorize="hasRole('SYSTEM')">
+                                        <i class="fas fa-cubes"></i> 전체 임시 발주입고
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -161,6 +322,207 @@
                 </div>
             </div>
         </section>
+        
+        <!-- FIFO 상세 정보 영역 -->
+        <section class="section fifo-detail-section" id="fifoDetailSection">
+            <div class="row">
+                <div class="col-12">
+                    <h5><i class="bi bi-info-circle"></i> FIFO 상세 정보 - <span id="selectedMtlCode"></span></h5>
+                    
+                    <!-- 탭 네비게이션 -->
+                    <div class="fifo-tabs">
+                        <button class="tab-button active" onclick="MaterialInventoryManager.switchTab('queue')">FIFO 현황</button>
+                        <button class="tab-button" onclick="MaterialInventoryManager.switchTab('history')">FIFO 이력</button>
+                    </div>
+                    
+                    <!-- FIFO 큐 현황 -->
+                    <div id="queueTab" class="tab-content">
+                        <h6>현재 FIFO 큐 상태</h6>
+                        <div class="queue-visual" id="queueVisual">
+                            <!-- 동적으로 생성될 FIFO 큐 항목들 -->
+                        </div>
+                        
+                        <h6>상세 입고 데이터</h6>
+                        <table class="fifo-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>순번</th>
+                                    <th>입고일</th>
+                                    <th>입고번호</th>
+                                    <th>입고수량</th>
+                                    <th>남은수량</th>
+                                    <th>상태</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fifoDetailTableBody">
+                                <!-- 동적으로 생성될 데이터 행들 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- FIFO 이력 탭 -->
+                    <div id="historyTab" class="tab-content" style="display: none;">
+                        <table class="fifo-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>날짜</th>
+                                    <th>작업 유형</th>
+                                    <th>설명</th>
+                                    <th>처리자</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fifoHistoryTableBody">
+                                <!-- 동적으로 생성될 이력 행들 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 임시 발주입고 모달 -->
+        <div class="modal fade" id="tempMaterialReceiptModal" tabindex="-1" role="dialog" aria-labelledby="tempMaterialReceiptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tempMaterialReceiptModalLabel">임시 발주입고</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="tempMaterialReceiptForm">
+                            <div class="form-group row">
+                                <label for="tempMtlCode" class="col-sm-3 col-form-label">원자재 코드</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="tempMtlCode" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" id="btnSearchMaterial">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempMtlName" class="col-sm-3 col-form-label">원자재명</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempMtlName" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempQty" class="col-sm-3 col-form-label">수량</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempQty" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempLotNo" class="col-sm-3 col-form-label">LOT 번호 (선택사항)</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempLotNo" placeholder="미입력시 자동 생성됩니다">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempWarehouse" class="col-sm-3 col-form-label">창고</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempWarehouse" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tempLocation" class="col-sm-3 col-form-label">위치</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="tempLocation" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveTempMaterialReceipt">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 전체 임시 발주입고 모달 -->
+        <div class="modal fade" id="tempMaterialReceiptAllModal" tabindex="-1" role="dialog" aria-labelledby="tempMaterialReceiptAllModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tempMaterialReceiptAllModalLabel">전체 원자재 임시 발주입고</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 이 기능은 모든 원자재에 대해 임시 발주입고 처리를 수행합니다. 원자재 수에 따라 시간이 소요될 수 있습니다.
+                        </div>
+                        <form id="tempMaterialReceiptAllForm">
+                            <div class="form-group">
+                                <label for="defaultQty">기본 수량</label>
+                                <input type="text" class="form-control" id="defaultQty" value="10" required>
+                                <small class="form-text text-muted">모든 원자재에 적용할 기본 수량을 입력하세요.</small>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="overwriteExisting">
+                                <label class="form-check-label" for="overwriteExisting">이미 재고가 있는 원자재도 처리</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btnCloseAllModal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveTempMaterialReceiptAll">일괄 생성</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 원자재 검색 모달 -->
+        <div class="modal fade" id="materialSearchModal" tabindex="-1" role="dialog" aria-labelledby="materialSearchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="materialSearchModalLabel">원자재 검색</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchMaterialKeyword" placeholder="원자재코드 또는 원자재명">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="btnSearchMaterialExecute">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="materialSearchTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 100px;">원자재코드</th>
+                                        <th>원자재명</th>
+                                        <th>규격</th>
+                                        <th>단위</th>
+                                        <th>선택</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- 검색 결과가 여기에 표시됩니다 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 
@@ -177,6 +539,271 @@
         <script src="/js/inventory/mInventoryManager.js"></script>
         <script src="/js/commonJs/ExcelUtil.js"></script>
         <script src="/js/commonJs/GridSearchUtil.js"></script>
+        
+        <!-- 임시 발주입고 관련 스크립트 -->
+        <script>
+            $(document).ready(function() {
+                // 임시 발주입고 모달 열기
+                $("#btnTempMaterialReceipt").on("click", function() {
+                    // 모달 입력 초기화
+                    $("#tempMaterialReceiptForm")[0].reset();
+                    $("#tempMaterialReceiptModal").modal("show");
+                });
+                
+                // 원자재 검색 버튼 클릭
+                $("#btnSearchMaterial").on("click", function() {
+                    $("#searchMaterialKeyword").val($("#tempMtlCode").val());
+                    searchMaterials();
+                    $("#materialSearchModal").modal("show");
+                });
+                
+                // 원자재 검색 실행
+                $("#btnSearchMaterialExecute").on("click", function() {
+                    searchMaterials();
+                });
+                
+                // 엔터키로 검색
+                $("#searchMaterialKeyword").on("keypress", function(e) {
+                    if (e.which === 13) {
+                        searchMaterials();
+                    }
+                });
+                
+                // 원자재 코드 직접 입력 후 포커스 이동 시 원자재 정보 조회
+                $("#tempMtlCode").on("blur", function() {
+                    const mtlCode = $(this).val();
+                    if (mtlCode) {
+                        getMaterialInfo(mtlCode);
+                    }
+                });
+                
+                // 임시 발주입고 저장
+                $("#btnSaveTempMaterialReceipt").on("click", function() {
+                    const mtlCode = $("#tempMtlCode").val();
+                    const qty = $("#tempQty").val();
+                    const lotNo = $("#tempLotNo").val() || "";
+                    
+                    if (!mtlCode) {
+                        alert("원자재 코드는 필수입니다.");
+                        $("#tempMtlCode").focus();
+                        return;
+                    }
+                    
+                    if (!qty) {
+                        alert("수량은 필수입니다.");
+                        $("#tempQty").focus();
+                        return;
+                    }
+                    
+                    // 숫자만 입력 가능하도록 검증
+                    if (!/^\d+$/.test(qty)) {
+                        alert("수량은 숫자만 입력 가능합니다.");
+                        $("#tempQty").focus();
+                        return;
+                    }
+                    
+                    // 서버로 전송
+                    $.ajax({
+                        url: "/api/materialinventory/temp-material-receipt",
+                        type: "POST",
+                        data: JSON.stringify({
+                            mtlCode: mtlCode,
+                            qty: qty,
+                            lotNo: lotNo
+                        }),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.success) {
+                                alert("임시 발주입고가 완료되었습니다.");
+                                $("#tempMaterialReceiptModal").modal("hide");
+                                // 재고 목록 갱신
+                                location.reload();
+                            } else {
+                                alert("처리 중 오류: " + response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            alert("서버 오류가 발생했습니다.");
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+                
+                // 원자재 검색 함수
+                function searchMaterials() {
+                    const keyword = $("#searchMaterialKeyword").val();
+                    
+                    $.ajax({
+                        url: "/api/material-info/list",
+                        type: "GET",
+                        data: { keyword: keyword },
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.success) {
+                                renderMaterialSearchResults(response.data);
+                            } else {
+                                alert("원자재 검색 중 오류: " + response.message);
+                            }
+                        },
+                        error: function(xhr) {
+                            alert("서버 오류가 발생했습니다.");
+                            console.error(xhr.responseText);
+                        }
+                    });
+                }
+                
+                // 원자재 검색 결과 렌더링
+                function renderMaterialSearchResults(materials) {
+                    const $tbody = $("#materialSearchTable tbody");
+                    $tbody.empty();
+                    
+                    if (materials.length === 0) {
+                        $tbody.append('<tr><td colspan="5" class="text-center">검색 결과가 없습니다.</td></tr>');
+                        return;
+                    }
+                    
+                    $.each(materials, function(i, material) {
+                        const tr = `
+                            <tr>
+                                <td>${material.MTL_CODE}</td>
+                                <td>${material.MTL_NAME || ''}</td>
+								<td>${material.MTL_STANDARD || ''}</td>
+                                <td>${material.MTL_UNIT || ''}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary select-material" 
+                                        data-code="${material.MTL_CODE}" 
+                                        data-name="${material.MTL_NAME || ''}"
+                                        data-warehouse="${material.DEFAULT_WAREHOUSE_CODE || ''}"
+                                        data-location="${material.DEFAULT_LOCATION_CODE || ''}">
+                                        선택
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        $tbody.append(tr);
+                    });
+                    
+                    // 원자재 선택 이벤트
+                    $(".select-material").on("click", function() {
+                        const code = $(this).data("code");
+                        const name = $(this).data("name");
+                        const warehouse = $(this).data("warehouse");
+                        const location = $(this).data("location");
+                        
+                        $("#tempMtlCode").val(code);
+                        $("#tempMtlName").val(name);
+                        $("#tempWarehouse").val(warehouse);
+                        $("#tempLocation").val(location);
+                        
+                        $("#materialSearchModal").modal("hide");
+                    });
+                }
+                
+                // 원자재 정보 조회
+                function getMaterialInfo(mtlCode) {
+                    $.ajax({
+                        url: "/api/material-info/" + mtlCode,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.success) {
+                                const material = response.data;
+                                $("#tempMtlName").val(material.MTL_NAME || '');
+                                $("#tempWarehouse").val(material.DEFAULT_WAREHOUSE_CODE || '');
+                                $("#tempLocation").val(material.DEFAULT_LOCATION_CODE || '');
+                            } else {
+                                alert("원자재 정보 조회 중 오류: " + response.message);
+                                $("#tempMtlName").val('');
+                                $("#tempWarehouse").val('');
+                                $("#tempLocation").val('');
+                            }
+                        },
+                        error: function(xhr) {
+                            alert("원자재 정보 조회 중 오류가 발생했습니다.");
+                            console.error(xhr.responseText);
+                            $("#tempMtlName").val('');
+                            $("#tempWarehouse").val('');
+                            $("#tempLocation").val('');
+                        }
+                    });
+                }
+                
+                // 모달 닫기 함수 - 전역 스코프로 이동
+                window.closeModal = function(modalId) {
+                    $(modalId).modal("hide");
+                };
+                
+                // 모달 닫기 버튼 이벤트
+                $("#btnCloseAllModal").on("click", function() {
+                    window.closeModal("#tempMaterialReceiptAllModal");
+                });
+                
+                // 전체 임시 발주입고 모달 열기
+                $("#btnTempMaterialReceiptAll").on("click", function() {
+                    // 모달 입력 초기화
+                    $("#tempMaterialReceiptAllForm")[0].reset();
+                    $("#tempMaterialReceiptAllModal").modal("show");
+                });
+                
+                // 전체 임시 발주입고 저장
+                $("#btnSaveTempMaterialReceiptAll").on("click", function() {
+                    const defaultQty = $("#defaultQty").val();
+                    const overwriteExisting = $("#overwriteExisting").prop("checked");
+                    
+                    if (!defaultQty) {
+                        alert("기본 수량은 필수입니다.");
+                        $("#defaultQty").focus();
+                        return;
+                    }
+                    
+                    // 숫자만 입력 가능하도록 검증
+                    if (!/^\d+$/.test(defaultQty)) {
+                        alert("수량은 숫자만 입력 가능합니다.");
+                        $("#defaultQty").focus();
+                        return;
+                    }
+                    
+                    if (confirm("모든 원자재에 대해 임시 발주입고 처리를 수행하시겠습니까?")) {
+                        // 처리 중 UI 표시
+                        $("#btnSaveTempMaterialReceiptAll").prop("disabled", true)
+                            .html('<i class="fas fa-spinner fa-spin"></i> 처리 중...');
+                        
+                        // 서버로 전송
+                        $.ajax({
+                            url: "/api/materialinventory/temp-material-receipt-all",
+                            type: "POST",
+                            data: JSON.stringify({
+                                defaultQty: defaultQty,
+                                overwriteExisting: overwriteExisting
+                            }),
+                            contentType: "application/json",
+                            dataType: "json",
+                            success: function(response) {
+                                $("#btnSaveTempMaterialReceiptAll").prop("disabled", false)
+                                    .html('일괄 생성');
+                                
+                                if (response.success) {
+                                    alert(response.message);
+                                    window.closeModal("#tempMaterialReceiptAllModal");
+                                    // 재고 목록 갱신
+                                    location.reload();
+                                } else {
+                                    alert("처리 중 오류: " + response.message);
+                                }
+                            },
+                            error: function(xhr) {
+                                $("#btnSaveTempMaterialReceiptAll").prop("disabled", false)
+                                    .html('일괄 생성');
+                                
+                                alert("서버 오류가 발생했습니다.");
+                                console.error(xhr.responseText);
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
     </th:block>
 </body>
 </html>

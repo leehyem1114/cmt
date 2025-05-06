@@ -21,7 +21,7 @@
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<title>출고 검사</title>
+<title>CMT</title>
 
 <style>
 .tui-datepicker {
@@ -1042,19 +1042,20 @@
        			worksheet["B1"] = { t: "s", v: "fqcInspectionStatus", r:"<t>fqcInspectionStatus</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionStatus', w: 'fqcInspectionStatus' };
     			worksheet["C1"] = { t: "s", v: "fqcInspectionResult", r:"<t>fqcInspectionResult</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcInspectionResult', w: 'fqcInspectionResult' };
        			worksheet["D1"] = { t: "s", v: "fqcCode", r:"<t>fqcCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcCode', w: 'fqcCode' };
-    			worksheet["E1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
-    			worksheet["F1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
-    			worksheet["G1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
-    			worksheet["H1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
-    			worksheet["I1"] = { t: "s", v: "woQty", r:"<t>woQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woQty', w: 'woQty' };
-    			worksheet["J1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
-    			worksheet["K1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
-    			worksheet["L1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
-    			worksheet["M1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
-    			worksheet["N1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
-    			worksheet["O1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
-    			worksheet["P1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
-    			worksheet["Q1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
+       			worksheet["E1"] = { t: "s", v: "woCode", r:"<t>woCode</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woCode', w: 'woCode' };
+    			worksheet["F1"] = { t: "s", v: "qcmName", r:"<t>qcmName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmName', w: 'qcmName' };
+    			worksheet["G1"] = { t: "s", v: "empName", r:"<t>empName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empName', w: 'empName' };
+    			worksheet["H1"] = { t: "s", v: "empId", r:"<t>empId</t><phoneticPr fontId='1' type='noConversion'/>", h: 'empId', w: 'empId' };
+    			worksheet["I1"] = { t: "s", v: "pdtName", r:"<t>pdtName</t><phoneticPr fontId='1' type='noConversion'/>", h: 'pdtName', w: 'pdtName' };
+    			worksheet["J1"] = { t: "s", v: "woQty", r:"<t>woQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'woQty', w: 'woQty' };
+    			worksheet["K1"] = { t: "s", v: "unitQty", r:"<t>unitQty</t><phoneticPr fontId='1' type='noConversion'/>", h: 'unitQty', w: 'unitQty' };
+    			worksheet["L1"] = { t: "s", v: "fqcMeasuredWeightValue", r:"<t>fqcMeasuredWeightValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredWeightValue', w: 'fqcMeasuredWeightValue' };
+    			worksheet["M1"] = { t: "s", v: "qcmUnitWeight", r:"<t>qcmUnitWeight</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitWeight', w: 'qcmUnitWeight' };
+    			worksheet["N1"] = { t: "s", v: "fqcMeasuredLengthValue", r:"<t>fqcMeasuredLengthValue</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcMeasuredLengthValue', w: 'fqcMeasuredLengthValue' };
+    			worksheet["O1"] = { t: "s", v: "qcmUnitLength", r:"<t>qcmUnitLength</t><phoneticPr fontId='1' type='noConversion'/>", h: 'qcmUnitLength', w: 'qcmUnitLength' };
+    			worksheet["P1"] = { t: "s", v: "fqcStartTime", r:"<t>fqcStartTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcStartTime', w: 'fqcStartTime' };
+    			worksheet["Q1"] = { t: "s", v: "fqcEndTime", r:"<t>fqcEndTime</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcEndTime', w: 'fqcEndTime' };
+    			worksheet["R1"] = { t: "s", v: "fqcRemarks", r:"<t>fqcRemarks</t><phoneticPr fontId='1' type='noConversion'/>", h: 'fqcRemarks', w: 'fqcRemarks' };    			
     			
     			
     			const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });

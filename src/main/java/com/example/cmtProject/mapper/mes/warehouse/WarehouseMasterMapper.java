@@ -37,4 +37,29 @@ public interface WarehouseMasterMapper {
      * 창고 기준정보 삭제(DELETE)(Map 반환)
      */
     public int deleteWarehouse(Map<String, Object> map);
+    
+    /**
+     * 창고별 위치 목록 조회(Map 반환)
+     */
+    public List<Map<String, Object>> selectWarehouseLocations(Map<String, Object> map);
+    
+    /**
+     * 위치정보 단건 조회(Map 반환)
+     */
+    public Map<String, Object> selectSingleLocation(Map<String, Object> map);
+    
+    /**
+     * 위치정보 등록(INSERT)(Map 반환)
+     */
+    public int insertLocation(Map<String, Object> map);
+    
+    /**
+     * 위치정보 수정(UPDATE)(Map 반환)
+     */
+    public int updateLocation(Map<String, Object> map);
+    
+    /**
+     * 위치정보 삭제(DELETE)(Map 반환)
+     */
+    public int deleteLocation(Map<String, Object> map);
 }

@@ -5,7 +5,22 @@
 	      layout:decorate="~{layouts/layout}">
 <head>
 <meta charset="UTF-8">
-
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+	
+	<!-- 토스트 ui css -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui-tree/latest/tui-tree.css" />
+	<!-- 토스트 ui js -->
+	<script src="https://uicdn.toast.com/tui-code-snippet/latest/tui-code-snippet.js"></script>
+	<script src="https://uicdn.toast.com/tui-tree/latest/tui-tree.js"></script>
+	<!-- ApexCharts 라이브러리 CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+	<!-- Toast UI Chart -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+	<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
+	<title>CMT</title>
 	
 
 </head>
@@ -91,98 +106,101 @@
 			<div id="myChart6"></div>
 			
 			<script type="text/javascript" th:inline="javascript">
-				let processNameList = /*[[${processNameList}]]*/ [];
-				if (!processNameList) {
-				  processNameList = [];
-				}
-	
-				let incompleteCountList = /*[[${incompleteCountList}]]*/ [];
-				if (!incompleteCountList) {
-				  incompleteCountList = [];
-				}
-				const data6 = {
-				  categories: processNameList,
-				  series: [
-				    {
-				      name: '미완료 건수',
-				      data: incompleteCountList
-				    }
-				  ]
-				};
-	
-				if (processNameList.length == 0) {
-					  // 미완료 공정이 없을 때
-					  document.getElementById('myChart6').innerHTML = '<span> - 현재 미완료 공정이 없습니다 <i class="fa-regular fa-face-smile-beam"></i></span>';
-					} else {
-					  const data6 = {
-					    categories: processNameList,
-					    series: [
-					      {
-					        name: '미완료 건수',
-					        data: incompleteCountList
-					      }
-					    ]
-					  };
-	
-				toastui.Chart.barChart({
-				  el: document.getElementById('myChart6'),
-				  data: data6,
-				  options: options6
-				});
-			}
+			  let processNameList = /*[[${processNameList}]]*/ [];
+			  let incompleteCountList = /*[[${incompleteCountList}]]*/ [];
 
-				</script>
+			  const data6 = {
+			    categories: processNameList,
+			    series: [
+			      {
+			        name: '미완료 건수',
+			        data: incompleteCountList
+			      }
+			    ]
+			  };
+
+			  const options6 = {
+			    chart: {
+			      width: 600,
+			      height: 400,
+			    },
+			    yAxis: {
+			      title: '건수',
+			      min: 0
+			    },
+			    xAxis: {
+			      title: '공정명',
+			      categories: processNameList
+			    },
+			    series: {
+			      showLabel: true
+			    }
+			  };
+
+			  if (processNameList.length === 0) {
+			    document.getElementById('myChart6').innerHTML = '<span> - 현재 미완료 공정이 없습니다 <i class="fa-regular fa-face-smile-beam"></i></span>';
+			  } else {
+			    toastui.Chart.barChart({
+			      el: document.getElementById('myChart6'),
+			      data: data6,
+			      options: options6
+			    });
+			  }
+			</script>
+		  	
 				
 		  	
 		    <div class="card-header">
-		        <h5 class="card-title">📈 최근 7일간 공정 완료 추이</h5>
+		        <h5 class="card-title">📈 최근 한 달간 공정 완료 추이</h5>
 		    </div>
 		    
 		    <div>
 		    
 		<div id="myChart9"></div>
 		<script th:inline="javascript">
+			
 		window.workDateList = /*[[${workDateList}]]*/ [];
 		window.completeCountList = /*[[${completeCountList}]]*/ [];
-			const options9 = {
-					  chart: {
-					    type: 'area',
-					    height: 350
-					  },
-					  series: [{
-					    name: "공정 완료 수",
-					    data: completeCountList
-					    
-					  }],
-					  xaxis: {
-					    type: 'category',
-					    categories: workDateList
-					  },
-					  yaxis: {
-					    min: 0, // 시작 값
-					    tickAmount: 8, // 눈금 수
-					    forceNiceScale: true,
-					    labels: {
-					      formatter: function (val) {
-					        return Number.isInteger(val) ? val : '';
-					      }
-					    }
-					  },
-					  colors: ["#00C49F"],
-					  fill: {
-					    type: "gradient",
-					    gradient: {
-					      shadeIntensity: 1,
-					      opacityFrom: 0.7,
-					      opacityTo: 0.3,
-					      stops: [0, 90, 100]
-					    }
-					  }
-					};
-					//console.log(workDateList); // 날짜
-					//console.log(completeCountList); // 개수
-				  const chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
-				  chart9.render();
+		
+		const options9 = {
+			chart: {
+				type: 'area',
+			    height: 350
+			},
+			series: [{
+				name: "공정 완료 수",
+			    data: completeCountList
+			    
+			}],
+			xaxis: {
+				type: 'category',
+			    categories: workDateList
+			},
+			yaxis: {
+			    min: 0, // 시작 값
+			    tickAmount: 8, // 눈금 수
+			    forceNiceScale: true,
+			    labels: {
+					formatter: function (val) {
+				    	return Number.isInteger(val) ? val : '';
+				   	}
+				}
+			},
+			colors: ["#00C49F"],
+				fill: {
+			    type: "gradient",
+			    gradient: {
+			    	shadeIntensity: 1,
+			      	opacityFrom: 0.7,
+			      	opacityTo: 0.3,
+			      	stops: [0, 90, 100]
+			    	}
+				}
+			};
+			
+		  const chart9 = new ApexCharts(document.querySelector("#myChart9"), options9);
+		  chart9.render();
+		  
 		</script>
 		
 		    
@@ -277,7 +295,7 @@
 					    url: "/workOrder/data",
 					    method: "GET",
 					    success: function(newData) {
-							console.log(newData);
+							//console.log(newData);
 					        grid.resetData(newData);
 							
 							location.reload();

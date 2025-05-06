@@ -90,6 +90,8 @@ public class saleController {
  		//========================= 하단 메인 list부분 ========================
  		//수주 메인 목록(clients, products, warehouses, employees 조인)
  		List<SalesOrderMainDTO> soMainList = salesOrderService.soMainSelect();
+ 		log.info("soMainList:"+ soMainList);
+ 		
  		model.addAttribute("soMainList",soMainList);
  		//salesOrderModels로 clients와 products와 warehouses 데이터를 다 가져오기 때문에 이거 사용 안함
  		
@@ -181,11 +183,14 @@ public class saleController {
 		
 		//주의! sequence 증가시 soNo값을 null로 줘야 insert가 제대로 동작
 		salesOrder.setSoNo(null); 
-		log.info("salesOrder=======1:" + salesOrder);
-		
+		salesOrder.setWhsCode(null);
 		salesOrder.setSoVisible("Y");
 		
-		log.info("salesOrder========2:" + salesOrder);
+		//입력창에서 받는 건 sipDate밖에 없다. 이 값과 soDueDate를 같게 하기 위해 설정
+		salesOrder.setSoDueDate(salesOrder.getShipDate());
+		
+		//log.info("salesOrder=========================:" + salesOrder);
+		
 		
 		salesOrderRepository.save(salesOrder);
 		salesOrderRepository.flush();
@@ -238,28 +243,20 @@ public class saleController {
 		TypeReference : Jackson 라이브러리에서 제네릭 타입(JSON 컬렉션 등)을 역직렬화할 때 사용하는 클래스입니다.
 		*/
 		
-		System.out.println("soEditDto:" + soEditDto); //soEditDto:SalesOrderEditDTO(soNo=445, columnName=empId, value=911114)
-		
 		//main으로부터 empNo가 아니라 empId를 받아오기 때문에 empId를 변경한 경우 empNo를 찾아와서 SALES_ORDER테이블에서 변경(SALES_ORDER 테이블에 empNo가 있음)
 		if(soEditDto.getColumnName().equals("empId")) {
 			
 			//empId에 해당하는 empNo를 가져오기 - JPA이용
 			Long empNo = salesOrderRepository.findEmpNoByEmpId(soEditDto.getValue());
 			
-			System.out.println("empNo:" + empNo+" ,soNO:" + soEditDto.getSoNo());
-			//sono를 통해 empno를 업데이트한다
-			
 			salesOrderRepository.updateEmpNo(empNo, soEditDto.getSoNo());
 			
 		}else {
 			int updateResult = salesOrderService.soMainUpdate(soEditDto);
-			System.out.println("updateResult:" + updateResult);
 		}
 
 		return "success";
 	}
-	
-	
 	
 	//employees 테이블에서 부서와 직급에 해당하는 사원 이름 목록 가져오기
 	@GetMapping("/getEmpName")
@@ -278,10 +275,7 @@ public class saleController {
 	//public List<SalesOrderMainDTO> searchForm(@RequestBody SalesOrderSearchDTO searchDto) {
 	public List<SalesOrderMainDTO> searchForm(@ModelAttribute SalesOrderSearchDTO searchDto) {
 		
-		System.out.println("searchDto:"+searchDto);
-		
 		List<SalesOrderMainDTO> mainDtoList = salesOrderService.soMainSearch(searchDto);
-		System.out.println("mainDtoList:"+ mainDtoList);
 		
 		return mainDtoList;
 	}
@@ -291,8 +285,6 @@ public class saleController {
 	@PostMapping("/delItems")
 	public String deleteItems(@RequestBody List<Map<String, Object>> data) {
 		
-//		System.out.println("data:" + data);
-		
 		List<Integer> soNoList = new ArrayList<>();
 		
 		for(Map<String, Object> list : data) {
@@ -301,10 +293,9 @@ public class saleController {
 			soNoList.add(soNoTemp);
 		}
 		
-		System.out.println(soNoList);
-		
 		String visibleType = "N";
 		salesOrderRepository.updateSoVisibleBySoNo(visibleType, soNoList);
+		//salesOrderRepository.updatesoUseYnBySoNo(visibleType, soNoList);
 		
 		return "SUCCESS";
 	}

@@ -222,7 +222,7 @@
 	<!-- IPI테이블에 입력 -->
 	<insert id="insertIpi">
 		INSERT INTO IPI (
-		    EMP_ID
+		    LOT_NO
 		    ,CHILD_LOT_CODE
 		    ,IPI_INSPECTION_RESULT
 		    ,IPI_INSPECTION_STATUS
@@ -231,9 +231,12 @@
 		    ,WO_CODE
 		    ,WO_QTY
 		    ,PDT_TYPE
+		    ,UNIT_QTY
+		    ,IPI_VISIABLE
+		    ,IPI_CODE
 		)
 		SELECT
-			'991114'
+			#{lotNo}
 		    ,#{childLotCode}
 		    ,'예정'
 		    ,'검사시작'
@@ -242,6 +245,9 @@
 		    ,#{woCode}
 		    ,#{woQty}
 		    ,#{pdtType}
+		    ,'개'
+		    ,'Y'
+		    ,#{ipiCode}
 		FROM DUAL
 	</insert>
 	

@@ -31,8 +31,11 @@ import com.example.cmtProject.dto.mes.production.WorkOrderDTO;
 import com.example.cmtProject.dto.mes.qualityControl.IpiDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.BomInfoDTO;
 import com.example.cmtProject.dto.mes.standardInfoMgt.ProductTotalDTO;
+import com.example.cmtProject.mapper.mes.qualityControl.IpiMapper;
+import com.example.cmtProject.service.mes.inventory.InventoryUpdateService;
 import com.example.cmtProject.service.mes.production.LotService;
 import com.example.cmtProject.service.mes.production.ProductionPrcService;
+import com.example.cmtProject.service.mes.qualityControl.IpiService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/production")
 public class ProductionPrcController {
+
 	
 	/*
 	 * - 공정 상황 설명 -
@@ -112,6 +116,16 @@ public class ProductionPrcController {
 	
 	@Autowired
 	private LotService lotService;
+	
+	@Autowired
+	private IpiService ipiService;
+	
+	@Autowired
+	private IpiMapper ipiMapper;
+	
+	@Autowired
+	private InventoryUpdateService ius;
+
 	
 	//공정 현황 메인 페이지
 	@GetMapping("/productionPrc")
@@ -520,6 +534,17 @@ public class ProductionPrcController {
 		
 		lotService.updateLotPresentPRC(lotOrigin);
 		
+	    // 생산완료 재고 차감 처리
+	    Map<String, Object> lotInfo = new HashMap<>();
+	    lotInfo.put("parentPdtCode", lotUpdateDTO.getParentPdtCode());
+	    lotInfo.put("bomQty", lotOrigin.getBomQty());
+	    lotInfo.put("childPdtCode", lotUpdateDTO.getChildPdtCode());
+	    lotInfo.put("childLotCode", lotUpdateDTO.getChildLotCode());
+	    lotInfo.put("woCode", lotUpdateDTO.getWoCode());
+	    
+	    ius.completeProduction(lotInfo);
+	    // 생산완료 재고 차감 처리 
+	    
 		if(!lotUpdateDTO.getNum().equals("0")) { //공정의 끝인지 아닌지 파악
 			
 			//LOT_NO - 1 에 START_TIME 등록
@@ -541,8 +566,11 @@ public class ProductionPrcController {
 		IpiDTO ipidto = new IpiDTO();
 		// UNIT_QTY, WO_CODE, WO_QTY, PDT_TYPE)
 		//IPI_NO 입력
-		Long ipiNo = lotService.getIpiNo();
-		ipidto.setIpiNo(ipiNo + 1);
+		//Long ipiNo = lotService.getIpiNo();
+		//ipidto.setIpiNo(ipiNo + 1);
+		
+		//LOT_NO
+		ipidto.setLotNo(Long.valueOf(lotUpdateDTO.getLotNo()));
 		
 		//childLotCode
 		ipidto.setChildLotCode(lotUpdateDTO.getChildLotCode());
@@ -569,6 +597,8 @@ public class ProductionPrcController {
 		//wo_qty
 		ipidto.setWoQty(lotUpdateDTO.getBomQty());
 		
+		ipidto.setIpiCode(generateIpiCode());
+		
 		//UPDATE
 		lotService.insertIpi(ipidto);
 		
@@ -577,6 +607,15 @@ public class ProductionPrcController {
 		//log.info("/jobCmpl의 selectLotOrigin:" + selectLotOrigin);
 		
 		return selectLotOrigin;
+	}
+	
+	// IPI 코드 생성
+	private String generateIpiCode() {
+		String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		int maxSeq = ipiMapper.getMaxIpiCodeSeq(datePart);
+		int nextSeq = maxSeq + 1;
+		String seqStr = String.format("%03d", nextSeq);
+		return "IPI-" + datePart + "-" + seqStr;
 	}
 	
 	//SAVE_PRC테이블에 데이터 입력(위에 jobCmpl 작업 실행 내부에서 연달아 실행)

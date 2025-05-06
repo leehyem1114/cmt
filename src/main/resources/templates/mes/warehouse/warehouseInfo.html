@@ -8,7 +8,9 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>창고 기준정보</title>
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+    <title>CMT</title>
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
     .top-input-group {
@@ -71,7 +73,7 @@
 
     /* 테이블 스크롤 영역 */
     .table-responsive {
-         height: 530px; /* 높이 고정 */ 
+         height: 300px; /* 높이 조정 - 마스터-디테일 구조에 맞게 변경 */ 
          overflow: auto; /* 스크롤 활성화 */ 
          -webkit-overflow-scrolling: touch; /* 모바일 스크롤 개선 */ 
      } 
@@ -87,6 +89,18 @@
     .tui-grid-cell-disabled {
         background-color: #fff !important;
         color: #212529 !important;
+    }
+
+    /* 선택된 창고 정보 스타일 */
+    #selectedWarehouseInfo {
+        font-weight: bold;
+        margin-left: 10px;
+        color: #3172b9;
+    }
+
+    /* 마스터-디테일 구조를 위한 카드 간격 */
+    .master-detail-container .card {
+        margin-bottom: 1rem;
     }
 
     /* 반응형: 화면이 좁을 때의 처리 */
@@ -112,69 +126,112 @@
     <div layout:fragment="content">
         <h3>창고 기준정보</h3>
         
-        <!-- 창고 기준정보 섹션 -->
-        <section class="section">
-            <div class="row" id="basic-table">
-                <!-- 창고 기준정보 그리드 카드 -->
-                <div class="col-12 col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">창고 기준정보 목록</h4>
-                            
-                            <!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
-                            <div class="top-input-group">
-                                <!-- 왼쪽: 검색 및 엑셀 관련 -->
-                                <div class="search-file-group">
-                                    <input type="text" class="form-control" id="warehouseInput" 
-                                        placeholder="창고명 검색">
-                                    <button type="button" id="warehouseSearchBtn" class="btn btn-outline-primary">
-                                        <i class="bi bi-search"></i>
-                                    </button>
-                                    
-                                    <!-- 엑셀 파일 입력 및 버튼 -->
-                                    <input type="file" class="form-control file-input" id="warehouseFileInput" accept=".xlsx,.xls">
-                                    <button type="button" id="warehouseExcelUpBtn" class="btn btn-excel">
-                                        <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
-                                    </button>
-                                    <button type="button" id="warehouseExcelDownBtn" class="btn btn-excel">
-                                        <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
-                                    </button>
-                                </div>
+        <div class="master-detail-container">
+            <!-- 창고 기준정보 섹션 (마스터) -->
+            <section class="section">
+                <div class="row" id="basic-table">
+                    <!-- 창고 기준정보 그리드 카드 -->
+                    <div class="col-12 col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">창고 기준정보 목록</h4>
                                 
-                                <!-- 오른쪽: CRUD 버튼 -->
-                                <div class="button-group">
-                                    <button type="button" id="warehouseAppendBtn" class="btn btn-outline-secondary">추가</button>
-                                    <button type="button" id="warehouseSaveBtn" class="btn btn-outline-success">저장</button>
-                                    <button type="button" id="warehouseDeleteBtn" class="btn btn-outline-danger">삭제</button>
+                                <!-- 검색, 파일 업로드, 엑셀 및 CRUD 버튼 -->
+                                <div class="top-input-group">
+                                    <!-- 왼쪽: 검색 및 엑셀 관련 -->
+                                    <div class="search-file-group">
+                                        <input type="text" class="form-control" id="warehouseInput" 
+                                            placeholder="창고명 검색">
+                                        <button type="button" id="warehouseSearchBtn" class="btn btn-outline-primary">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        
+                                        <!-- 엑셀 파일 입력 및 버튼 -->
+                                        <input type="file" class="form-control file-input" id="warehouseFileInput" accept=".xlsx,.xls">
+                                        <button type="button" id="warehouseExcelUpBtn" class="btn btn-excel">
+                                            <i class="bi bi-file-earmark-arrow-up"></i> 엑셀 업로드
+                                        </button>
+                                        <button type="button" id="warehouseExcelDownBtn" class="btn btn-excel">
+                                            <i class="bi bi-file-earmark-arrow-down"></i> 엑셀 다운로드
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- 오른쪽: CRUD 버튼 -->
+                                    <div class="button-group">
+                                        <button type="button" id="warehouseAppendBtn" class="btn btn-outline-secondary">추가</button>
+                                        <button type="button" id="warehouseSaveBtn" class="btn btn-outline-success">저장</button>
+                                        <button type="button" id="warehouseDeleteBtn" class="btn btn-outline-danger">삭제</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <!-- 창고 정보 그리드 -->
-                                <div id="warehouseGrid"></div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <!-- 창고 정보 그리드 -->
+                                    <div id="warehouseGrid"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+            
+            <!-- 위치정보 섹션 (디테일) -->
+            <section class="section mt-3">
+                <div class="row" id="location-table">
+                    <div class="col-12 col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex align-items-center">
+                                    <h4 class="card-title">창고 위치정보 목록</h4>
+                                    <span id="selectedWarehouseInfo" class="ms-2"></span>
+                                </div>
+                                
+                                <!-- 위치정보 검색 및 CRUD 버튼 -->
+                                <div class="top-input-group mt-2">
+                                    <!-- 왼쪽: 검색 관련 -->
+                                    <div class="search-file-group">
+                                        <input type="text" class="form-control" id="locationInput" 
+                                            placeholder="위치명 검색">
+                                        <button type="button" id="locationSearchBtn" class="btn btn-outline-primary">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- 오른쪽: CRUD 버튼 -->
+                                    <div class="button-group">
+                                        <button type="button" id="locationAppendBtn" class="btn btn-outline-secondary">추가</button>
+                                        <button type="button" id="locationSaveBtn" class="btn btn-outline-success">저장</button>
+                                        <button type="button" id="locationDeleteBtn" class="btn btn-outline-danger">삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <!-- 위치정보 그리드 -->
+                                    <div id="locationGrid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 
-	<!-- 
-	        페이지별 JavaScript 추가 영역.
-	        여기에 페이지에서 사용할 스크립트를 작성하세요.
-	        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
-	    -->
-	    <th:block layout:fragment="script">
-	        <script th:inline="javascript">
-	            // Thymeleaf 데이터를 전역 변수로 설정
-	            window.warehouseList = /*[[${warehouseList}]]*/[];
-	            console.log("warehouseList 데이터:", window.warehouseList);
-	        </script>
-	        <script src="/js/warehouse/warehouseManager.js"></script>
-	        <script src="/js/commonJs/ExcelUtil.js"></script>
-	        <script src="/js/commonJs/GridSearchUtil.js"></script>
-	    </th:block>
-	</body>
-	</html>
+    <!-- 
+        페이지별 JavaScript 추가 영역.
+        여기에 페이지에서 사용할 스크립트를 작성하세요.
+        공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
+    -->
+    <th:block layout:fragment="script">
+        <script th:inline="javascript">
+            // Thymeleaf 데이터를 전역 변수로 설정
+            window.warehouseList = /*[[${warehouseList}]]*/[];
+            console.log("warehouseList 데이터:", window.warehouseList);
+        </script>
+        <script src="/js/warehouse/warehouseManager.js"></script>
+        <script src="/js/commonJs/ExcelUtil.js"></script>
+        <script src="/js/commonJs/GridSearchUtil.js"></script>
+    </th:block>
+</body>
+</html>

@@ -2,9 +2,10 @@
  * 제품 기준정보 관리 모듈
  * 
  * 제품 기준정보의 조회, 추가, 수정, 삭제 기능을 담당하는 관리 모듈입니다.
+ * 창고/위치 드롭다운 기능이 추가되었습니다.
  * 
- * @version 1.0.0
- * @since 2025-05-01
+ * @version 1.3.0
+ * @since 2025-05-05
  */
 const ProductsManager = (function() {
     // =============================
@@ -14,12 +15,17 @@ const ProductsManager = (function() {
     // 그리드 인스턴스 참조
     let productsGrid;
 
+    // 현재 선택된 제품정보
+    let selectedProduct = null;
+
     // API URL 상수 정의
     const API_URLS = {
         LIST: '/api/products-info/list', // 데이터 목록 조회
         SINGLE: '/api/products-info/', // 단건 조회/삭제 시 사용
         SAVE: '/api/products-info', // 데이터 저장
         BATCH: '/api/products-info/batch', // 데이터 일괄 저장
+        WAREHOUSES: '/api/warehouse/list', // 창고 목록 조회
+        LOCATIONS: (whsCode) => `/api/warehouse/locations/${whsCode}`, // 위치 목록 조회
         EXCEL: {
             UPLOAD: '/api/products-info/excel/upload', // 엑셀 업로드 API URL
             DOWNLOAD: '/api/products-info/excel/download' // 엑셀 다운로드 API URL
@@ -40,6 +46,14 @@ const ProductsManager = (function() {
 
             // 그리드 초기화
             await initGrid();
+
+            // 창고 데이터 로드 (필요한 경우)
+            try {
+                await loadWarehouseData();
+            } catch (err) {
+                console.warn('창고 데이터 로드 실패:', err);
+                // 계속 진행 - 이 기능이 없어도 기본 기능은 작동
+            }
 
             // 이벤트 리스너 등록
             await registerEvents();
@@ -74,6 +88,18 @@ const ProductsManager = (function() {
 
             // 엔터키 검색 이벤트 등록
             await UIUtil.bindEnterKeySearch('productsInput', searchData);
+
+            // 파일 인풋 변경 이벤트 (있는 경우)
+            const fileInput = document.getElementById('productsFileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    const fileName = this.files[0]?.name || '선택된 파일 없음';
+                    const fileNameDisplay = document.getElementById('productsFileName');
+                    if (fileNameDisplay) {
+                        fileNameDisplay.textContent = fileName;
+                    }
+                });
+            }
         } catch (error) {
             console.error('이벤트 리스너 등록 중 오류:', error);
             throw error;
@@ -130,37 +156,41 @@ const ProductsManager = (function() {
             });
 
             // 엑셀 업로드 버튼 설정
-            ExcelUtil.setupExcelUploadButton({
-                fileInputId: 'productsFileInput',
-                uploadButtonId: 'productsExcelUpBtn',
-                gridId: 'productsGrid',
-                apiUrl: API_URLS.EXCEL.UPLOAD,
-                headerMapping: {
-                    '제품코드': 'PDT_CODE',
-                    '제품명': 'PDT_NAME',
-                    '비용': 'PDT_SHIPPING_PRICE',
-                    '제품설명': 'PDT_COMMENTS',
-                    '사용여부': 'PDT_USEYN',
-                    '재질코드': 'MTL_TYPE_CODE',
-                    '제품중량': 'PDT_WEIGHT',
-                    '중량단위': 'WT_TYPE_CODE',
-                    '제품크기': 'PDT_SIZE',
-                    '리드타입코드': 'LT_TYPE_CODE',
-                    '제품유형': 'PDT_TYPE',
-                    '제품규격': 'PDT_SPECIFICATION',
-                },
-                beforeLoad: function() {
-                    console.log('엑셀 업로드 시작');
-                    return true;
-                },
-                afterLoad: function(data, saveResult) {
-                    console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
-                    if (saveResult) {
-                        // 그리드 원본 데이터 업데이트
-                        GridSearchUtil.updateOriginalData('productsGrid', data);
+            const uploadButton = document.getElementById('productsExcelUpBtn');
+            if (uploadButton) {
+                ExcelUtil.setupExcelUploadButton({
+                    fileInputId: 'productsFileInput',
+                    uploadButtonId: 'productsExcelUpBtn',
+                    gridId: 'productsGrid',
+                    apiUrl: API_URLS.EXCEL.UPLOAD,
+                    headerMapping: {
+                        '제품코드': 'PDT_CODE',
+                        '제품명': 'PDT_NAME',
+                        '배송비': 'PDT_SHIPPING_PRICE',
+                        '제품설명': 'PDT_COMMENTS',
+                        '사용여부': 'PDT_USEYN',
+                        '자재유형코드': 'MTL_TYPE_CODE',
+                        '제품중량': 'PDT_WEIGHT',
+                        '중량단위': 'WT_TYPE_CODE',
+                        '제품크기': 'PDT_SIZE',
+                        '리드타입': 'LT_TYPE_CODE',
+                        '제품유형': 'PDT_TYPE',
+                        '창고코드': 'DEFAULT_WAREHOUSE_CODE',
+                        '위치코드': 'DEFAULT_LOCATION_CODE'
+                    },
+                    beforeLoad: function() {
+                        console.log('엑셀 업로드 시작');
+                        return true;
+                    },
+                    afterLoad: function(data, saveResult) {
+                        console.log('엑셀 업로드 완료, 결과:', data.length, '건, 저장:', saveResult);
+                        if (saveResult) {
+                            // 그리드 원본 데이터 업데이트
+                            GridSearchUtil.updateOriginalData('productsGrid', data);
+                        }
                     }
-                }
-            });
+                });
+            }
         } catch (error) {
             console.error('엑셀 기능 초기화 중 오류:', error);
         }
@@ -206,61 +236,33 @@ const ProductsManager = (function() {
                         width: 150
                     },
                     {
-                        header: '제품규격',
-                        name: 'PDT_SPECIFICATION',
-                        editor: 'text',
+                        header: '창고코드',
+                        name: 'DEFAULT_WAREHOUSE_CODE',
+                        editor: createWarehouseEditor(),
                         sortable: true,
                         width: 150
                     },
                     {
-                        header: '제품유형',
-                        name: 'PDT_TYPE',
-                        editor: 'text',
+                        header: '위치 코드',
+                        name: 'DEFAULT_LOCATION_CODE',
+                        editor: createLocationEditor(),
                         sortable: true,
-                        width: 120
+                        width: 150
                     },
                     {
-                        header: '제품중량',
-                        name: 'PDT_WEIGHT',
-                        editor: 'text',
-                        sortable: true,
-                        width: 100
-                    },
-                    {
-                        header: '중량단위',
-                        name: 'WT_TYPE_CODE',
-                        editor: 'text',
-                        sortable: true,
-                        width: 80
-                    },
-                    {
-                        header: '제품크기',
-                        name: 'PDT_SIZE',
-                        editor: 'text',
-                        sortable: true,
-                        width: 100
-                    },
-                    {
-                        header: '리드타입코드',
-                        name: 'LT_TYPE_CODE',
-                        editor: 'text',
-                        sortable: true,
-                        width: 120
-                    },
-                    {
-                        header: '재질코드',
-                        name: 'MTL_TYPE_CODE',
-                        editor: 'text',
-                        sortable: true,
-                        width: 120
-                    },
-                    {
-                        header: '비용',
+                        header: '배송비',
                         name: 'PDT_SHIPPING_PRICE',
                         editor: 'text',
                         sortable: true,
                         width: 100,
                         align: 'right'
+                    },
+                    {
+                        header: '제품설명',
+                        name: 'PDT_COMMENTS',
+                        editor: 'text',
+                        sortable: true,
+                        width: 150
                     },
                     {
                         header: '사용여부',
@@ -270,11 +272,47 @@ const ProductsManager = (function() {
                         width: 80
                     },
                     {
-                        header: '제품설명',
-                        name: 'PDT_COMMENTS',
+                        header: '자재유형코드',
+                        name: 'MTL_TYPE_CODE',
                         editor: 'text',
                         sortable: true,
-                        width: 150
+                        width: 120
+                    },
+                    {
+                        header: '제품중량',
+                        name: 'PDT_WEIGHT',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100,
+                        align: 'right'
+                    },
+                    {
+                        header: '중량단위',
+                        name: 'WT_TYPE_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '제품크기',
+                        name: 'PDT_SIZE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '리드타입',
+                        name: 'LT_TYPE_CODE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
+                    },
+                    {
+                        header: '제품유형',
+                        name: 'PDT_TYPE',
+                        editor: 'text',
+                        sortable: true,
+                        width: 100
                     },
                     {
                         header: '타입',
@@ -298,6 +336,21 @@ const ProductsManager = (function() {
                 toggleRowCheckedOnClick: true // 행 클릭 시 체크박스 토글 기능 활성화
             });
 
+            // 편집 시작 이벤트 처리 - 드롭다운 데이터 로드
+            productsGrid.on('editingStart', function(ev) {
+                console.log('편집 시작:', ev.columnName, '행:', ev.rowKey);
+
+                if (ev.columnName === 'DEFAULT_LOCATION_CODE') {
+                    const rowKey = ev.rowKey;
+                    const row = productsGrid.getRow(rowKey);
+                    const warehouseCode = row.DEFAULT_WAREHOUSE_CODE;
+
+                    if (warehouseCode) {
+                        updateLocationDropdown(rowKey, warehouseCode);
+                    }
+                }
+            });
+
             // 편집 완료 이벤트 처리 - 변경된 행 추적
             productsGrid.on('editingFinish', function(ev) {
                 const rowKey = ev.rowKey;
@@ -308,6 +361,11 @@ const ProductsManager = (function() {
                     productsGrid.setValue(rowKey, 'ROW_TYPE', 'update');
                     console.log(`행 ${rowKey}의 ROW_TYPE을 'update'로 변경했습니다.`);
                 }
+
+                // 창고 코드가 변경된 경우 위치 코드 드롭다운 업데이트
+                if (ev.columnName === 'DEFAULT_WAREHOUSE_CODE' && ev.value !== ev.prevValue) {
+                    updateLocationDropdown(rowKey, ev.value);
+                }
             });
 
             // 키 컬럼 제어 설정 - 기존 데이터의 경우 PDT_CODE 편집 제한
@@ -316,11 +374,62 @@ const ProductsManager = (function() {
             // 그리드 원본 데이터 저장 (검색 기능 위해 추가)
             GridSearchUtil.updateOriginalData('productsGrid', gridData);
 
+            // 행 클릭 이벤트 등록
+            GridUtil.onRowClick('productsGrid', function(rowData, rowKey, columnName) {
+                if (!rowData) return;
+                selectedProduct = rowData;
+            });
+
+            // 초기 데이터에 대해 위치 드롭다운 설정 (지연 로드)
+            setTimeout(() => {
+                const rows = productsGrid.getData();
+                rows.forEach((row, index) => {
+                    if (row.DEFAULT_WAREHOUSE_CODE) {
+                        // 더 짧은 지연 시간으로 설정
+                        setTimeout(() => {
+                            updateLocationDropdown(index, row.DEFAULT_WAREHOUSE_CODE);
+                        }, 50 * index);
+                    }
+                });
+            }, 100);
+
             console.log('그리드 초기화가 완료되었습니다.');
         } catch (error) {
             console.error('그리드 초기화 오류:', error);
             throw error;
         }
+    }
+
+    /**
+     * 창고 선택 에디터 생성 함수
+     * 창고 선택을 위한 셀렉트 에디터를 생성합니다.
+     */
+    function createWarehouseEditor() {
+        return {
+            type: 'select',
+            options: {
+                listItems: [{
+                    text: '창고를 선택하세요',
+                    value: ''
+                }]
+            }
+        };
+    }
+
+    /**
+     * 위치 선택 에디터 생성 함수
+     * 위치 선택을 위한 셀렉트 에디터를 생성합니다.
+     */
+    function createLocationEditor() {
+        return {
+            type: 'select',
+            options: {
+                listItems: [{
+                    text: '위치를 선택하세요',
+                    value: ''
+                }]
+            }
+        };
     }
 
     /**
@@ -343,7 +452,8 @@ const ProductsManager = (function() {
                 PDT_SIZE: '',
                 LT_TYPE_CODE: '',
                 PDT_TYPE: '',
-                PDT_SPECIFICATION: ''
+                DEFAULT_WAREHOUSE_CODE: '',
+                DEFAULT_LOCATION_CODE: ''
                 // ROW_TYPE은 GridUtil.addNewRow()에서 자동으로 추가됨
             };
 
@@ -436,8 +546,7 @@ const ProductsManager = (function() {
                     return false;
                 }
                 if (ValidationUtil.isEmpty(item.PDT_USEYN)) {
-                    await AlertUtil.notifyValidationError("유효성 오류", "사용여부는 필수입니다.");
-                    return false;
+                    item.PDT_USEYN = 'Y'; // 기본값 설정
                 }
             }
 
@@ -557,6 +666,128 @@ const ProductsManager = (function() {
     }
 
     // =============================
+    // 드롭다운 관련 함수 (추가된 기능)
+    // =============================
+
+    /**
+     * 창고 데이터 로드 및 드롭다운 업데이트
+     */
+    async function loadWarehouseData() {
+        try {
+            await UIUtil.toggleLoading(true, '창고 정보를 불러오는 중...');
+
+            const response = await ApiUtil.get(API_URLS.WAREHOUSES);
+
+            await UIUtil.toggleLoading(false);
+
+            if (!response || !response.success) {
+                throw new Error('창고 정보를 가져오는데 실패했습니다.');
+            }
+
+            const warehouses = response.data || [];
+
+            // 드롭다운 아이템 포맷팅
+            const items = warehouses.map(warehouse => ({
+                value: warehouse.WHS_CODE,
+                text: `${warehouse.WHS_CODE} - ${warehouse.WHS_NAME}`
+            }));
+
+            // 빈 옵션 추가
+            items.unshift({
+                value: '',
+                text: '선택하세요'
+            });
+
+            // 그리드 칼럼 에디터 옵션 업데이트
+            const grid = GridUtil.getGrid('productsGrid');
+            if (!grid) return false;
+
+            const column = grid.getColumn('DEFAULT_WAREHOUSE_CODE');
+            if (column && column.editor && column.editor.options) {
+                column.editor.options.listItems = items;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('창고 데이터 로드 오류:', error);
+            await UIUtil.toggleLoading(false);
+            return false;
+        }
+    }
+
+    /**
+     * 위치 데이터 로드 및 드롭다운 업데이트
+     * 
+     * @param {number} rowKey - 행 키
+     * @param {string} warehouseCode - 창고 코드 
+     */
+    async function updateLocationDropdown(rowKey, warehouseCode) {
+        try {
+            const grid = GridUtil.getGrid('productsGrid');
+            if (!grid) return false;
+
+            if (!warehouseCode) {
+                // 창고 코드가 없으면 위치 드롭다운 비우기
+                const column = grid.getColumn('DEFAULT_LOCATION_CODE');
+                if (column && column.editor && column.editor.options) {
+                    column.editor.options.listItems = [{
+                        text: '위치를 선택하세요',
+                        value: ''
+                    }];
+                }
+                return false;
+            }
+
+            const response = await ApiUtil.get(API_URLS.LOCATIONS(warehouseCode));
+
+            if (!response || !response.success) {
+                throw new Error('위치 정보를 가져오는데 실패했습니다.');
+            }
+
+            const locations = response.data || [];
+
+            // 위치 정보가 없으면 종료
+            if (!locations || locations.length === 0) {
+                console.log('위치 정보가 없습니다:', warehouseCode);
+                return false;
+            }
+
+            // 드롭다운 아이템 포맷팅
+            const items = locations.map(location => ({
+                value: location.LOC_CODE,
+                text: `${location.LOC_CODE} - ${location.LOC_NAME}`
+            }));
+
+            // 빈 옵션 추가
+            items.unshift({
+                value: '',
+                text: '위치를 선택하세요'
+            });
+
+            // 위치 드롭다운 업데이트
+            const column = grid.getColumn('DEFAULT_LOCATION_CODE');
+            if (column && column.editor && column.editor.options) {
+                column.editor.options.listItems = items;
+            }
+
+            // 기존 값 유지 (중요! 항상 첫 번째 위치로 설정하지 않음)
+            const currentValue = grid.getValue(rowKey, 'DEFAULT_LOCATION_CODE');
+
+            // 현재 값이 없거나 선택한 창고의 위치 목록에 없는 경우에만 초기화
+            const validLocationCodes = locations.map(loc => loc.LOC_CODE);
+            if (!currentValue || !validLocationCodes.includes(currentValue)) {
+                // 값이 없거나 유효하지 않은 경우 빈 값으로 초기화
+                grid.setValue(rowKey, 'DEFAULT_LOCATION_CODE', '');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('위치 데이터 로드 오류:', error);
+            return false;
+        }
+    }
+
+    // =============================
     // 유틸리티 함수
     // =============================
 
@@ -667,6 +898,10 @@ const ProductsManager = (function() {
         appendRow, // 행 추가
         saveData, // 데이터 저장
         deleteRows, // 데이터 삭제
+
+        // 드롭다운 관련 함수 (추가된 기능)
+        loadWarehouseData, // 창고 데이터 로드
+        updateLocationDropdown, // 위치 드롭다운 업데이트
 
         // 유틸리티 함수
         getGrid, // 그리드 인스턴스 반환

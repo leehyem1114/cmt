@@ -8,7 +8,9 @@
     <!-- 기본 메타 정보 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>원자재 입고관리</title>
+	<!-- Favicon -->
+	<link rel="shortcut icon" href="/assets/images/logo/favicon.png" type="image/x-icon">
+    <title>CMT</title>
 <style>
     /* 상단 입력 그룹: 검색 및 버튼들을 가로로 배치하며 필요시 줄바꿈 허용 */
     .top-input-group {
@@ -197,9 +199,13 @@
                                 
                                 <!-- 오른쪽: 작업 버튼 -->
                                 <div class="button-group">
-									<button type="button" id="mReceiptTestBtn" class="btn btn-outline-secondary">발주입고 테스트 버튼</button>
+									<button type="button" id="mReceiptTestBtn" class="btn btn-outline-secondary">
+										<i class="bi bi-plus-circle"></i>입고요청</button>
                                     <button type="button" id="mReceiptConfirmBtn" class="btn btn-outline-success">
                                         <i class="bi bi-check-circle"></i> 입고확정
+                                    </button>
+                                    <button type="button" id="mReceiptConfirmWithLocationBtn" class="btn btn-outline-info">
+                                        <i class="bi bi-geo-alt"></i> 위치지정 입고확정
                                     </button>
                                     <button type="button" id="mReceiptInspectionBtn" class="btn btn-outline-primary">
                                         <i class="bi bi-clipboard-check"></i> 검수등록
@@ -233,27 +239,6 @@
                                 기본정보
                             </button>
                         </li>
-<!--                        <li class="nav-item" role="presentation">-->
-<!--                            <button class="nav-link" id="inspection-tab" data-bs-toggle="tab" -->
-<!--                                    data-bs-target="#inspection-info" type="button" role="tab" -->
-<!--                                    aria-controls="inspection-info" aria-selected="false">-->
-<!--                                검수정보-->
-<!--                            </button>-->
-<!--                        </li>-->
-<!--                        <li class="nav-item" role="presentation">-->
-<!--                            <button class="nav-link" id="lot-tab" data-bs-toggle="tab" -->
-<!--                                    data-bs-target="#lot-info" type="button" role="tab" -->
-<!--                                    aria-controls="lot-info" aria-selected="false">-->
-<!--                                LOT정보-->
-<!--                            </button>-->
-<!--                        </li>-->
-<!--                        <li class="nav-item" role="presentation">-->
-<!--                            <button class="nav-link" id="location-tab" data-bs-toggle="tab" -->
-<!--                                    data-bs-target="#location-info" type="button" role="tab" -->
-<!--                                    aria-controls="location-info" aria-selected="false">-->
-<!--                                위치정보-->
-<!--                            </button>-->
-<!--                        </li>-->
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="history-tab" data-bs-toggle="tab" 
                                     data-bs-target="#history-info" type="button" role="tab" 
@@ -319,50 +304,6 @@
                             </div>
                         </div>
                         
-                        <!-- 검수정보 탭 -->
-<!--                        <div class="tab-pane fade" id="inspection-info" role="tabpanel" aria-labelledby="inspection-tab">-->
-<!--                            <div id="inspectionContent">-->
-<!--                                <div class="alert alert-info">-->
-<!--                                    <i class="bi bi-info-circle"></i> 검수 정보가 없습니다. 검수등록 버튼을 클릭하여 검수 정보를 등록해주세요.-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-                        
-                        <!-- LOT정보 탭 -->
-<!--                        <div class="tab-pane fade" id="lot-info" role="tabpanel" aria-labelledby="lot-tab">-->
-<!--                            <table class="table table-bordered">-->
-<!--                                <thead>-->
-<!--                                    <tr>-->
-<!--                                        <th>LOT 번호</th>-->
-<!--                                        <th>수량</th>-->
-<!--                                        <th>생성일자</th>-->
-<!--                                        <th>상태</th>-->
-<!--                                    </tr>-->
-<!--                                </thead>-->
-<!--                                <tbody id="lotInfoBody">-->
-<!--                                     LOT 정보가 여기에 동적으로 추가됩니다 -->
-<!--                                </tbody>-->
-<!--                            </table>-->
-<!--                        </div>-->
-                        
-                        <!-- 위치정보 탭 -->
-<!--                        <div class="tab-pane fade" id="location-info" role="tabpanel" aria-labelledby="location-tab">-->
-<!--                            <table class="table table-bordered">-->
-<!--                                <thead>-->
-<!--                                    <tr>-->
-<!--                                        <th>창고코드</th>-->
-<!--                                        <th>창고명</th>-->
-<!--                                        <th>위치코드</th>-->
-<!--                                        <th>위치명</th>-->
-<!--                                        <th>수량</th>-->
-<!--                                    </tr>-->
-<!--                                </thead>-->
-<!--                                <tbody id="locationInfoBody">-->
-<!--                                     위치 정보가 여기에 동적으로 추가됩니다 -->
-<!--                                </tbody>-->
-<!--                            </table>-->
-<!--                        </div>-->
-                        
                         <!-- 이력정보 탭 -->
                         <div class="tab-pane fade" id="history-info" role="tabpanel" aria-labelledby="history-tab">
                             <table class="table table-bordered">
@@ -384,6 +325,98 @@
             </div>
         </section>
         
+        <!-- 위치지정 입고확정 모달 -->
+        <div class="modal fade" id="confirmWithLocationModal" tabindex="-1" aria-labelledby="confirmWithLocationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmWithLocationModalLabel">위치지정 입고확정</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 선택한 항목의 입고 위치 정보를 지정하고 확정합니다.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="warehouseSelect" class="form-label">창고 선택</label>
+                                <select class="form-select" id="warehouseSelect">
+                                    <option value="">창고를 선택하세요</option>
+                                    <!-- 창고 목록이 여기에 동적으로 추가됩니다 -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="locationSelect" class="form-label">위치 선택</label>
+                                <select class="form-select" id="locationSelect" disabled>
+                                    <option value="">위치를 선택하세요</option>
+                                    <!-- 위치 목록이 여기에 동적으로 추가됩니다 -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>입고 코드</th>
+                                            <th>자재 코드</th>
+                                            <th>자재명</th>
+                                            <th>수량</th>
+                                            <th>상태</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="confirmItemsBody">
+                                        <!-- 확정할 항목 목록이 여기에 동적으로 추가됩니다 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-success" id="confirmReceiptBtn">입고 확정</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 발주입고처리 모달 -->
+        <div class="modal fade" id="purchaseToReceiptModal" tabindex="-1" aria-labelledby="purchaseToReceiptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="purchaseToReceiptModalLabel">
+									원자재 입고요청</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 미입고 상태의 발주를 입고대기 상태로 등록합니다.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="purchaseOrderGrid" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="processPurchaseOrderBtn">입고 요청</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 
@@ -392,37 +425,6 @@
         공통 스크립트는 레이아웃에서 자동으로 포함됩니다.
     -->
     <th:block layout:fragment="script">
-		<script>
-		// 발주입고 테스트 버튼 이벤트 처리
-		$(document).ready(function() {
-		    // 발주입고 테스트 버튼 클릭 이벤트
-		    $('#mReceiptTestBtn').on('click', function() {
-		        // 입고 처리 AJAX 요청
-		        $.ajax({
-		            url: '/api/materialreceipt/register-all',
-		            type: 'POST',
-		            success: function(response) {
-		                console.log("응답 결과:", response);
-		                
-		                if (response.statusCode === 'SUCCESS') {
-		                    const result = response.data;
-		                    alert('요청이 완료되었습니다. ' + result.message);
-		                    
-		                    // 그리드 데이터 갱신을 위한 API 호출
-		                    location.reload(); // 간단하게 페이지 새로고침
-		                } else {
-		                    alert('서버 오류가 발생했습니다: ' + response.message);
-		                }
-		            },
-		            error: function(xhr, status, error) {
-		                console.error('AJAX 오류:', error);
-		                alert('서버 요청 실패: ' + error);
-		            } 
-		        });
-		    });
-		});
-			
-		</script>
         <script th:inline="javascript">
             // Thymeleaf 데이터를 전역 변수로 설정
             window.mReceipt = /*[[${mReceipt}]]*/[];

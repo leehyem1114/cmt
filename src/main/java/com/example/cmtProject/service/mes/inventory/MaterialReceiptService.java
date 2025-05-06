@@ -1,6 +1,7 @@
 package com.example.cmtProject.service.mes.inventory;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,11 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import com.example.cmtProject.constants.MesStatusConstants;
 import com.example.cmtProject.mapper.mes.inventory.MaterialInventoryMapper;
+import com.example.cmtProject.mapper.mes.inventory.MaterialMasterMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptHistoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
 import com.example.cmtProject.service.mes.qualityControl.IqcService;
+import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +42,9 @@ public class MaterialReceiptService {
 	
 	@Autowired
 	private MaterialReceiptStockMapper mRsmapper;
+	
+	@Autowired
+	private MaterialMasterMapper mmmapper;
 	
 	@Autowired
 	private IqcService iqcService;
@@ -65,48 +72,94 @@ public class MaterialReceiptService {
 	}
 
 	/**
-	 * 발주 정보 바탕으로 입고정보 생성
+	 * 선택된 발주 정보를 기반으로 입고대기 등록
 	 * 
+	 * @param params 선택된 발주 정보 목록을 포함하는 파라미터
 	 * @return 처리 결과
 	 */
 	@Transactional
-	public Map<String, Object> createReceiptFromPurchaseOrder() {
+	public Map<String, Object> createReceiptFromPurchaseOrder(Map<String, Object> params) {
 	    Map<String, Object> resultMap = new HashMap<>();
 	    int insertCount = 0;
-	    
+
 	    try {
-	        log.info("발주 정보 기반 입고 등록 시작");
+	        log.info("선택된 발주 정보 기반 입고 등록 시작");
+
+	        // 선택된 발주 목록 가져오기
+	        @SuppressWarnings("unchecked")
+	        List<Map<String, Object>> selectedOrders = (List<Map<String, Object>>) params.get("items");
 	        
-	        // 미입고 상태인 발주 목록 조회
-	        Map<String, Object> findMap = new HashMap<>();
-	        List<Map<String, Object>> purchaseOrders = mRmapper.puchasesList(findMap);
-	        
-	        log.info("조회된 발주 목록 수: {}", purchaseOrders.size());
-	        
+	        if (selectedOrders == null || selectedOrders.isEmpty()) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "선택된 발주 정보가 없습니다.");
+	            return resultMap;
+	        }
+
+	        log.info("선택된 발주 목록 수: {}", selectedOrders.size());
+
 	        LocalDate now = LocalDate.now();
 	        String nowStr = now.toString();
-	        
-	        for (Map<String, Object> po : purchaseOrders) {
+
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+
+	        for (Map<String, Object> po : selectedOrders) {
 	            try {
+	                // 자재 코드로 기준정보 조회
+	                String mtlCode = (String) po.get("MTL_CODE");
+	                
+	                Map<String, Object> param = new HashMap<>();
+	                param.put("MTL_CODE", mtlCode);
+	                
+	                Map<String, Object> materialInfo = mmmapper.selectSingleMaterials(param);
+	                
+	                // 디버깅 로그 추가
+	                log.info("========= DEBUG 시작 =========");
+	                log.info("발주 정보: {}", po);  // 발주 전체 정보 확인
+	                log.info("자재코드: {}", mtlCode);
+	                log.info("조회된 기준정보: {}", materialInfo);
+	                
+	                // 발주에서 직접 위치 정보가 오는지 확인
+	                log.info("발주에서 가져온 창고코드: {}", po.get("WHS_CODE"));
+	                log.info("발주에서 가져온 위치코드: {}", po.get("LOCATION_CODE"));
+	                
+	                // 창고/위치 정보 결정
+	                String warehouseCode = null;
+	                String locationCode = null;
+	                
+	                if (materialInfo != null) {
+	                    warehouseCode = (String) materialInfo.get("DEFAULT_WAREHOUSE_CODE");
+	                    locationCode = (String) materialInfo.get("DEFAULT_LOCATION_CODE");
+	                    
+	                    log.info("기준정보에서 가져온 창고코드: {}", warehouseCode);
+	                    log.info("기준정보에서 가져온 위치코드: {}", locationCode);
+	                } else {
+	                    log.warn("자재 기준정보를 찾을 수 없음: {}", mtlCode);
+	                }
+	                
+	                // 최종적으로 사용되는 값 확인
+	                log.info("최종 저장할 창고코드: {}", warehouseCode);
+	                log.info("최종 저장할 위치코드: {}", locationCode);
+	                
 	                // 입고 정보 맵 생성
 	                Map<String, Object> receiptMap = new HashMap<>();
 	                
-	                // 필수 파라미터 설정
-	                receiptMap.put("receiptCode", "RC" + System.currentTimeMillis() % 10000);
+	                receiptMap.put("receiptCode", generateReceiptCode());
 	                receiptMap.put("poCode", po.get("PO_CODE"));
-	                receiptMap.put("mtlCode", po.get("MTL_CODE"));
+	                receiptMap.put("mtlCode", mtlCode);
 	                receiptMap.put("receivedQty", po.get("PO_QTY"));
 	                receiptMap.put("lotNo", "LOT-" + nowStr.replace("-", "") + "-" + insertCount);
 	                receiptMap.put("receiptStatus", "입고대기");
-	                receiptMap.put("warehouseCode", po.get("WHS_CODE"));
-	                receiptMap.put("locationCode", "LOC-DEFAULT");
-	                receiptMap.put("receiver", "SYSTEM");
-	                receiptMap.put("createdBy", "SYSTEM");
-	                receiptMap.put("updatedBy", "SYSTEM");
+	                receiptMap.put("warehouseCode", warehouseCode);
+	                receiptMap.put("locationCode", locationCode);
+	                receiptMap.put("receiver", userId);
+	                receiptMap.put("createdBy", userId);
+	                receiptMap.put("updatedBy", userId);
 	                receiptMap.put("createdDate", nowStr);
 	                receiptMap.put("updatedDate", nowStr);
 	                
 	                log.info("입고 정보 생성: {}", receiptMap);
+	                log.info("========= DEBUG 끝 =========");
 	                
 	                // 입고 정보 저장
 	                int result = mRmapper.insertMaterialReceipt(receiptMap);
@@ -115,13 +168,19 @@ public class MaterialReceiptService {
 	                    // 입고 번호 조회
 	                    Long receiptNo = mRmapper.getLastReceiptNo();
 	                    
+	                    // 실제로 DB에 어떻게 저장되었는지 다시 조회해서 확인
+	                    Map<String, Object> savedReceipt = mRmapper.getReceiptDetail(receiptNo);
+	                    log.info("실제 저장된 데이터: {}", savedReceipt);
+	                    log.info("저장 전: locationCode={}, 저장 후: locationCode={}", 
+	                        receiptMap.get("locationCode"), savedReceipt.get("LOCATION_CODE"));
+	                    
 	                    // 입고 이력 저장
 	                    Map<String, Object> historyMap = new HashMap<>();
 	                    historyMap.put("receiptNo", receiptNo);
 	                    historyMap.put("actionType", "입고등록");
-	                    historyMap.put("actionDescription", "발주번호 " + po.get("PO_CODE") + "의 자동 입고 등록");
-	                    historyMap.put("actionUser", "SYSTEM");
-	                    historyMap.put("createdBy", "SYSTEM");
+	                    historyMap.put("actionDescription", "발주번호 " + po.get("PO_CODE") + "의 선택적 입고 등록");
+	                    historyMap.put("actionUser", userId);
+	                    historyMap.put("createdBy", userId);
 	                    
 	                    mRhmapper.insertHistory(historyMap);
 	                    
@@ -233,11 +292,20 @@ public class MaterialReceiptService {
 	 * @param receiptNo 입고 번호
 	 * @return 검수 정보
 	 */
-//	public Map<String, Object> getInspectionInfo(Long receiptNo) {
-//	    log.info("검수 정보 조회 서비스 호출. 입고번호: {}", receiptNo);
-//	    
-//	    return mRmapper.getInspectionInfo(receiptNo);
-//	}
+	public Map<String, Object> getInspectionInfo(Long receiptNo) {
+	    log.info("검수 정보 조회 서비스 호출. 입고번호: {}", receiptNo);
+	    
+	    Map<String, Object> inspectionInfo = mRmapper.getInspectionInfo(receiptNo);
+	    
+	    // 로그 추가: 검수 정보 확인
+	    if (inspectionInfo != null) {
+	        log.info("조회된 검수 정보: {}", inspectionInfo);
+	    } else {
+	        log.warn("입고번호 {}에 대한 검수 정보가 없습니다.", receiptNo);
+	    }
+	    
+	    return inspectionInfo;
+	}
 	
 	/**
 	 * 입고 확정 처리
@@ -264,10 +332,16 @@ public class MaterialReceiptService {
 	            return resultMap;
 	        }
 	        
+	        // 위치 지정 입고 여부 확인
+	        boolean withLocation = params.containsKey("withLocation") && (Boolean) params.get("withLocation");
+	        
 	        List<String> failedItems = new ArrayList<>();
 	        
 	        LocalDate now = LocalDate.now();
 	        String nowStr = now.toString();
+	        
+	        // 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
 	        
 	        for (Map<String, Object> item : items) {
 	            try {
@@ -287,30 +361,69 @@ public class MaterialReceiptService {
 	                    continue;
 	                }
 	                
-	                // 검수 정보 확인
-//	                Map<String, Object> inspectionInfo = getInspectionInfo(receiptNo);
-//	                if (inspectionInfo == null) {
-//	                    log.warn("검수 정보가 없는 항목: 입고번호={}", receiptNo);
-//	                    failedItems.add(String.valueOf(item.get("receiptCode")));
-//	                    continue;
-//	                }
-//	                
-	                // 검수 결과 확인 - 합격 또는 조건부 합격만 처리
-//	                String inspResult = (String) inspectionInfo.get("INSP_RESULT");
-//	                if (!"PASS".equals(inspResult) && !"CONDITIONAL_PASS".equals(inspResult)) {
-//	                    log.warn("검수 불합격 항목: 입고번호={}, 결과={}", receiptNo, inspResult);
-//	                    failedItems.add(String.valueOf(item.get("receiptCode")));
-//	                    continue;
-//	                }
+	                // 입고 정보 조회
+	                Map<String, Object> receiptDetail = mRmapper.getReceiptDetail(receiptNo);
 	                
-	                // 1. 입고 상태 업데이트
-	                Map<String, Object> updateMap = new HashMap<>();
-	                updateMap.put("receiptNo", receiptNo);
-	                updateMap.put("receiptStatus", "입고완료");
-	                updateMap.put("updatedBy", item.get("updatedBy"));
-	                updateMap.put("updatedDate", nowStr);
+	                if (receiptDetail == null) {
+	                    log.warn("입고 정보를 찾을 수 없음: 입고번호={}", receiptNo);
+	                    failedItems.add(String.valueOf(item.get("receiptCode")));
+	                    continue;
+	                }
 	                
-	                int result = mRmapper.updateReceiptStatus(updateMap);
+	                // 현재 상태 확인
+	                String currentStatus = (String) receiptDetail.get("RECEIPT_STATUS");
+	                
+	                log.info("입고확정 검사 - 입고번호: {}, 현재상태: {}", receiptNo, currentStatus);
+	                // 상태 또는 검수 결과 확인 - 주석 처리
+	                /*
+	                boolean isValidForConfirmation = false;
+	                
+	                // 1. 상태가 "검사 합격"인 경우 
+	                if (MesStatusConstants.RECEIPT_STATUS_INSPECT_PASSED.equals(currentStatus)) {
+	                    isValidForConfirmation = true;
+	                    log.info("입고상태가 '검사 합격'이므로 확정 가능: 입고번호={}", receiptNo);
+	                } 
+	                // 2. 검수 정보 조회 및 결과 확인
+	                else {
+	                    Map<String, Object> inspInfo = getInspectionInfo(receiptNo);
+	                    
+	                    if (inspInfo != null && "합격".equals(inspInfo.get("INSP_RESULT"))) {
+	                        isValidForConfirmation = true;
+	                        log.info("검수결과가 '합격'이므로 확정 가능: 입고번호={}", receiptNo);
+	                    } else {
+	                        log.warn("검수 정보가 없거나 합격이 아님: 입고번호={}, 상태={}, 검수결과={}", 
+	                            receiptNo, currentStatus, 
+	                            (inspInfo != null ? inspInfo.get("INSP_RESULT") : "없음"));
+	                    }
+	                }
+	                
+	                if (!isValidForConfirmation) {
+	                    failedItems.add(String.valueOf(item.get("receiptCode")));
+	                    continue;
+	                }
+	                */
+	                int result = 0;
+	                
+	                // 위치 지정 여부에 따라 처리
+	                if (withLocation) {
+	                    // 위치 지정 입고 - 창고/위치 코드 업데이트
+	                    Map<String, Object> updateMap = new HashMap<>();
+	                    updateMap.put("receiptNo", receiptNo);
+	                    updateMap.put("receiptStatus", MesStatusConstants.RECEIPT_STATUS_COMPLETED);
+	                    updateMap.put("warehouseCode", item.get("warehouseCode"));
+	                    updateMap.put("locationCode", item.get("locationCode"));
+	                    updateMap.put("updatedBy", userId);
+	                    
+	                    result = mRmapper.updateReceiptStatusAndLocation(updateMap);
+	                } else {
+	                    // 기본 입고 - 상태만 업데이트
+	                    Map<String, Object> updateMap = new HashMap<>();
+	                    updateMap.put("receiptNo", receiptNo);
+	                    updateMap.put("receiptStatus", MesStatusConstants.RECEIPT_STATUS_COMPLETED);
+	                    updateMap.put("updatedBy", userId);
+	                    
+	                    result = mRmapper.updateReceiptStatus(updateMap);
+	                }
 	                
 	                if (result > 0) {
 	                    updateCount++;
@@ -319,40 +432,66 @@ public class MaterialReceiptService {
 	                    Map<String, Object> historyMap = new HashMap<>();
 	                    historyMap.put("receiptNo", receiptNo);
 	                    historyMap.put("actionType", "입고확정");
-	                    historyMap.put("actionDescription", "입고 확정 처리됨");
-	                    historyMap.put("actionUser", item.get("updatedBy"));
-	                    historyMap.put("createdBy", item.get("updatedBy"));
+	                    
+	                    if (withLocation) {
+	                        // 위치 지정 입고인 경우 이력에 창고/위치 정보 포함
+	                        historyMap.put("actionDescription", 
+	                            "입고 확정 처리됨 (창고: " + item.get("warehouseCode") + 
+	                            ", 위치: " + item.get("locationCode") + ")");
+	                    } else {
+	                        historyMap.put("actionDescription", "입고 확정 처리됨");
+	                    }
+	                    
+	                    historyMap.put("actionUser", userId);
+	                    historyMap.put("createdBy", userId);
 	                    
 	                    mRhmapper.insertHistory(historyMap);
 	                    
-	                    // 3. 입고 정보 조회
-	                    Map<String, Object> receiptDetail = mRmapper.getReceiptDetail(receiptNo);
+	                    // 3. 재고 정보 업데이트 - 실제 입고 수량만큼 재고 증가
+	                    Map<String, Object> inventoryParams = new HashMap<>();
+	                    inventoryParams.put("mtlCode", receiptDetail.get("MTL_CODE"));
 	                    
-	                    if (receiptDetail != null) {
-	                        // 4. 재고 정보 업데이트 - 실제 입고 수량만큼 재고 증가
-	                        Map<String, Object> inventoryParams = new HashMap<>();
-	                        inventoryParams.put("mtlCode", receiptDetail.get("MTL_CODE"));
-	                        inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
-	                        inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
-	                        inventoryParams.put("receivedQty", receiptDetail.get("RECEIVED_QTY"));
-	                        inventoryParams.put("updatedBy", item.get("updatedBy"));
+	                    // 창고/위치 정보 설정
+	                    if (withLocation) {
+	                        inventoryParams.put("warehouseCode", item.get("warehouseCode"));
+	                        inventoryParams.put("locationCode", item.get("locationCode"));
+	                    } else {
+	                        // 위치 지정 입고가 아닌 경우 기준정보에서 창고/위치 가져오기
+	                        Map<String, Object> param = new HashMap<>();
+	                        param.put("MTL_CODE", receiptDetail.get("MTL_CODE"));
+	                        Map<String, Object> materialInfo = mmmapper.selectSingleMaterials(param);
 	                        
-	                        // 재고 업데이트 (있으면 증가, 없으면 생성)
-	                        mImapper.mergeInventory(inventoryParams);
-	                        
-	                        // 5. 입고별 재고 정보 추가 (FIFO 관리용)
-	                        Map<String, Object> stockParams = new HashMap<>();
-	                        stockParams.put("receiptNo", receiptNo);
-	                        stockParams.put("mtlCode", receiptDetail.get("MTL_CODE"));
-	                        stockParams.put("remainingQty", receiptDetail.get("RECEIVED_QTY"));
-	                        stockParams.put("receiptDate", receiptDetail.get("RECEIPT_DATE"));
-	                        stockParams.put("createdBy", item.get("updatedBy"));
-	                        
-	                        mRsmapper.insertStock(stockParams);
-	                        
-	                        log.info("입고 확정 처리 완료: 입고번호={}, 자재코드={}, 수량={}",
-	                            receiptNo, receiptDetail.get("MTL_CODE"), receiptDetail.get("RECEIVED_QTY"));
+	                        if (materialInfo != null) {
+	                            String warehouseCode = (String) materialInfo.get("DEFAULT_WAREHOUSE_CODE");
+	                            String locationCode = (String) materialInfo.get("DEFAULT_LOCATION_CODE");
+	                            
+	                            inventoryParams.put("warehouseCode", warehouseCode);
+	                            inventoryParams.put("locationCode", locationCode);
+	                        } else {
+	                            // 기본값 설정 - RECEIPT_DETAIL에서 가져오기
+	                            inventoryParams.put("warehouseCode", receiptDetail.get("WAREHOUSE_CODE"));
+	                            inventoryParams.put("locationCode", receiptDetail.get("LOCATION_CODE"));
+	                        }
 	                    }
+	                    
+	                    inventoryParams.put("receivedQty", receiptDetail.get("RECEIVED_QTY"));
+	                    inventoryParams.put("updatedBy", userId);
+	                    
+	                    // 재고 업데이트 (있으면 증가, 없으면 생성)
+	                    mImapper.mergeInventory(inventoryParams);
+	                    
+	                    // 4. 입고별 재고 정보 추가 (FIFO 관리용)
+	                    Map<String, Object> stockParams = new HashMap<>();
+	                    stockParams.put("receiptNo", receiptNo);
+	                    stockParams.put("mtlCode", receiptDetail.get("MTL_CODE"));
+	                    stockParams.put("remainingQty", receiptDetail.get("RECEIVED_QTY"));
+	                    stockParams.put("receiptDate", receiptDetail.get("RECEIPT_DATE"));
+	                    stockParams.put("createdBy", userId);
+	                    
+	                    mRsmapper.insertStock(stockParams);
+	                    
+	                    log.info("입고 확정 처리 완료: 입고번호={}, 자재코드={}, 수량={}",
+	                            receiptNo, receiptDetail.get("MTL_CODE"), receiptDetail.get("RECEIVED_QTY"));
 	                } else {
 	                    failedItems.add(String.valueOf(item.get("receiptCode")));
 	                }
@@ -420,12 +559,15 @@ public class MaterialReceiptService {
             LocalDate today = LocalDate.now();
             String todayStr = today.toString();
             
+            // 사용자 ID 가져오기
+            String userId = SecurityUtil.getUserId();
+            
             // 입고 상태 및 입고일 업데이트
             Map<String, Object> updateMap = new HashMap<>();
             updateMap.put("receiptNo", receiptNo);
             updateMap.put("receiptStatus", "검수중");
             updateMap.put("receiptDate", todayStr); // 검수 요청일을 입고일로 설정
-            updateMap.put("updatedBy", params.get("updatedBy"));
+            updateMap.put("updatedBy", userId);
             updateMap.put("updatedDate", todayStr);
             updateMap.put("receiptCode", params.get("receiptCode"));
             
@@ -439,8 +581,8 @@ public class MaterialReceiptService {
                 historyMap.put("receiptNo", receiptNo);
                 historyMap.put("actionType", "검수시작");
                 historyMap.put("actionDescription", "검수 등록됨");
-                historyMap.put("actionUser", params.get("updatedBy"));
-                historyMap.put("createdBy", params.get("updatedBy"));
+                historyMap.put("actionUser", userId);
+                historyMap.put("createdBy", userId);
                 
                 mRhmapper.insertHistory(historyMap);
                 
@@ -479,7 +621,7 @@ public class MaterialReceiptService {
         try {
             log.info("다건 검수 등록 처리 시작: {}", params);
             
-            // 다건 처리 지원
+            // 다건
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> items = (List<Map<String, Object>>) params.get("items");
             
@@ -566,4 +708,32 @@ public class MaterialReceiptService {
 //            return false;
 //        }
 //    }
+    
+    
+    /**
+     * 입고 코드 생성 함수
+     * 형식: RC-YYYYMMDD-XXX (XXX: 일련번호)
+     * @return 생성된 입고 코드
+     */
+    private String generateReceiptCode() {
+        LocalDate today = LocalDate.now();
+        String dateStr = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        
+        // 오늘 날짜의 마지막 입고 코드 조회
+        String lastCodePrefix = "RC-" + dateStr + "-";
+        String lastCode = mRmapper.getLastReceiptCodeByPrefix(lastCodePrefix);
+        
+        int sequence = 1;
+        if (lastCode != null && !lastCode.isEmpty()) {
+            String seqStr = lastCode.substring(lastCodePrefix.length());
+            try {
+                sequence = Integer.parseInt(seqStr) + 1;
+            } catch (NumberFormatException e) {
+                // 파싱 오류 시 기본값 1 사용
+                log.warn("입고코드 일련번호 파싱 오류: {}", lastCode);
+            }
+        }
+        
+        return String.format("RC-%s-%03d", dateStr, sequence);
+    }
 }

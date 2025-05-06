@@ -31,6 +31,6 @@ public interface MfgScheduleMapper { // 제조 계획 Mapper
 	List<Map<String, Object>> selectBomDetailByMsCode1(@Param("msCode") String msCode);
 
 	// 제조 계획 삭제 (숨김 처리)
-	void isVisiableToFalse(List<Long> msNos);
+	void isVisibleToFalse(List<Long> msNos);
 
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,12 +54,17 @@ public class ProductsInventoryRestController {
      * 제품 재고 차감 API (FIFO 적용)
      * 출고에서 사용된 제품의 재고를 FIFO 방식으로 차감합니다.
      * 
-     * @param params 차감 정보 (pdtCode: 제품코드, consumptionQty: 소비량, updatedBy: 처리자)
+     * @param params 차감 정보 (pdtCode: 제품코드, consumptionQty: 소비량, consumptionType: 소비유형, updatedBy: 처리자)
      * @return 처리 결과
      */
     @PostMapping(PathConstants.CONSUME)
     public ApiResponse<Map<String, Object>> consumeProduct(@RequestBody Map<String, Object> params) {
         log.info("제품 재고 차감 요청: {}", params);
+        
+        // 소비 타입이 지정되지 않은 경우 기본값 설정
+        if (!params.containsKey("consumptionType")) {
+            params.put("consumptionType", "PRODUCTION");
+        }
         
         Map<String, Object> result = pis.consumeProductFIFO(params);
         
@@ -92,4 +98,99 @@ public class ProductsInventoryRestController {
             return ApiResponse.error(result.get("message").toString(), result);
         }
     }
+    
+    /**
+     * FIFO 상세 정보 표시
+     */
+    @GetMapping(PathConstants.FIFO + "/{pdtCode}")
+    public ApiResponse<Map<String, Object>> getFIFODetail(@PathVariable("pdtCode") String pdtCode) {
+        log.info("FIFO 상세 조회: {}", pdtCode);
+        
+        Map<String, Object> result = pis.getFIFODetail(pdtCode);
+        return ApiResponse.success(result);
+    }
+    
+    /**
+     * FIFO 이력 조회 API
+     */
+    @GetMapping(PathConstants.FIFO_HISTORY + "/{pdtCode}")
+    public ApiResponse<List<Map<String, Object>>> getFIFOHistory(@PathVariable("pdtCode") String pdtCode) {
+        log.info("FIFO 이력 조회: {}", pdtCode);
+        
+        List<Map<String, Object>> historyList = pis.getFIFOHistory(pdtCode);
+        return ApiResponse.success(historyList);
+    }
+    /**
+     * 제품 기본 재고 데이터 자동 생성 API
+     * 아직 재고 정보가 없는 제품에 대해서만 기본 재고 정보 생성
+     */
+    @PostMapping("/generate-data")
+    public ApiResponse<Map<String, Object>> generateInventoryData() {
+        log.info("미등록 제품 재고 데이터 자동 생성 요청");
+        
+        Map<String, Object> result = pis.generateInitialInventoryData();
+        
+        if ((Boolean) result.get("success")) {
+            log.info("제품 재고 데이터 생성 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("제품 재고 데이터 생성 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 특정 제품에 대한 기본 재고 데이터 생성 API
+     */
+    @PostMapping("/generate-data/{pdtCode}")
+    public ApiResponse<Map<String, Object>> generateInventoryForProduct(@PathVariable("pdtCode") String pdtCode) {
+        log.info("제품 {} 재고 데이터 생성 요청", pdtCode);
+        
+        Map<String, Object> result = pis.generateProductInventory(pdtCode);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("제품 {} 재고 데이터 생성 성공", pdtCode);
+            return ApiResponse.success(result);
+        } else {
+            log.warn("제품 {} 재고 데이터 생성 실패: {}", pdtCode, result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
+    /**
+     * 임시 생산입고 API (초기 재고 데이터용)
+     */
+    @PostMapping("/temp-production-receipt")
+    public ApiResponse<Map<String, Object>> createTempProductionReceipt(@RequestBody Map<String, Object> params) {
+        log.info("임시 생산입고 요청: {}", params);
+        
+        Map<String, Object> result = pis.createTempProductionReceipt(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("임시 생산입고 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("임시 생산입고 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
+    /**
+     * 모든 제품 임시 생산입고 API
+     */
+    @PostMapping("/temp-production-receipt-all")
+    public ApiResponse<Map<String, Object>> createTempProductionReceiptForAll(@RequestBody Map<String, Object> params) {
+        log.info("전체 제품 임시 생산입고 요청: {}", params);
+        
+        Map<String, Object> result = pis.createTempProductionReceiptForAll(params);
+        
+        if ((Boolean) result.get("success")) {
+            log.info("전체 제품 임시 생산입고 처리 성공: {}", result.get("message"));
+            return ApiResponse.success(result);
+        } else {
+            log.warn("전체 제품 임시 생산입고 처리 실패: {}", result.get("message"));
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+    
 }

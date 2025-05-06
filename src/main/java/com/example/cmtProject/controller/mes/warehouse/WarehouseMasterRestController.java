@@ -75,6 +75,34 @@ public class WarehouseMasterRestController {
     }
     
     /**
+     * 창고별 위치 목록 조회 API
+     * 
+     * @param whsCode 창고 코드
+     * @param keyword 검색 키워드 (선택)
+     * @return 위치 목록 데이터
+     */
+    @GetMapping("/locations/{whsCode}")
+    public ApiResponse<List<Map<String, Object>>> getLocationList(
+            @PathVariable("whsCode") String whsCode,
+            @RequestParam(name = "keyword", required = false) String keyword) {
+        
+        Map<String, Object> findMap = new HashMap<>();
+        findMap.put("whsCode", whsCode);
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            findMap.put("keyword", keyword);
+        }
+        
+        log.info("위치 목록 조회 요청. 창고 코드: {}, 검색어: {}", whsCode, keyword);
+        
+        List<Map<String, Object>> locations = wms.warehouseLocationList(findMap);
+        
+        log.info("위치 목록 조회 결과: {}건", locations.size());
+        
+        return ApiResponse.success(locations);
+    }
+    
+    /**
      * 창고 정보 단건 저장 API (등록/수정)
      * 
      * @param warehouseData 창고 정보
@@ -126,6 +154,66 @@ public class WarehouseMasterRestController {
         param.put("WHS_CODE", whsCode);
         
         Map<String, Object> result = wms.deleteWarehouse(param);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), null);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), null);
+        }
+    }
+    
+    /**
+     * 위치정보 저장 API
+     * 
+     * @param locationData 위치정보 데이터
+     * @return 처리 결과
+     */
+    @PostMapping("/location")
+    public ApiResponse<Map<String, Object>> saveLocation(@RequestBody Map<String, Object> locationData) {
+        log.info("위치정보 저장 요청. 데이터: {}", locationData);
+        
+        Map<String, Object> result = wms.saveLocation(locationData);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), result);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 위치정보 일괄 저장 API
+     * 
+     * @param requestData 저장할 위치정보 목록
+     * @return 처리 결과
+     */
+    @PostMapping("/location/batch")
+    public ApiResponse<Map<String, Object>> saveLocationBatch(@RequestBody List<Map<String, Object>> requestData) {
+        log.info("위치정보 일괄 저장 요청. 데이터 건수: {}", requestData.size());
+        
+        Map<String, Object> result = wms.saveLocationBatch(requestData);
+        
+        if ((Boolean) result.get("success")) {
+            return ApiResponse.success(result.get("message").toString(), result);
+        } else {
+            return ApiResponse.error(result.get("message").toString(), result);
+        }
+    }
+
+    /**
+     * 위치정보 삭제 API
+     * 
+     * @param locCode 위치 코드
+     * @return 처리 결과
+     */
+    @DeleteMapping("/location/{locCode}")
+    public ApiResponse<Void> deleteLocation(@PathVariable("locCode") String locCode) {
+        log.info("위치정보 삭제 요청. 위치 코드: {}", locCode);
+        
+        Map<String, Object> param = new HashMap<>();
+        param.put("LOC_CODE", locCode);
+        
+        Map<String, Object> result = wms.deleteLocation(param);
         
         if ((Boolean) result.get("success")) {
             return ApiResponse.success(result.get("message").toString(), null);

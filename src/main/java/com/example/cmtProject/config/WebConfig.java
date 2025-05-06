@@ -10,14 +10,17 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	  // 이미지 파일 경로
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:///D:/profile/images/profile/");
-    	
 //        registry.addResourceHandler("/images/**")
-//        		.addResourceLocations("file:/usr/local/cmt/images/profile/");
+//                .addResourceLocations("file:///D:/profile/images/profile/");
+    	
+        registry.addResourceHandler("/images/**")
+        		.addResourceLocations("file:/usr/local/cmt/images/profile/");
 
         // PDF 파일 경로
         registry.addResourceHandler("/pdfs/**")
                 .addResourceLocations("file:///D:/pdfs/");
+        
+        //registry.addResourceHandler("/pdfs/**")
+        		//.addResourceLocations("file:/usr/local/cmt/pdfs/");
     }
 }

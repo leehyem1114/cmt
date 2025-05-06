@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "MFG_SCHEDULES")
 @NoArgsConstructor
 @AllArgsConstructor
-public class MfgSchedule { // 제조 계획
+public class MfgSchedule { // 제조 계획 Entity
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,9 +49,9 @@ public class MfgSchedule { // 제조 계획
 	private LocalDate msCreatedAt;  	// 등록일자
     
     @Column(name = "MS_UPDATED_AT")
-	private LocalDate msUpdatedAt;  // 수정일자
+	private LocalDate msUpdatedAt;  	// 수정일자
     
     @Column(name = "MS_VISIBLE")
-	private String msVisible;  // 삭제 시 숨김 처리
+	private String msVisible;  			// 삭제 시 숨김 처리
     
 }

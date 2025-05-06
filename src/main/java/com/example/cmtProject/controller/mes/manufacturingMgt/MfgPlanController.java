@@ -106,22 +106,22 @@ public class MfgPlanController { // 생산 계획 Controller
 	}
 
 	// 생산 계획 수정
-	@PostMapping("/mfgPlanUpdate")
+	@PostMapping("/update")
 	@ResponseBody
-	public ResponseEntity<String> updateBatch(@RequestBody List<MfgPlanDTO> mpList) {
+	public ResponseEntity<String> updateMpPlan(@RequestBody List<MfgPlanDTO> mpList) {
 		mfgPlanService.updateMpPlan(mpList);
 		
 	    return ResponseEntity.ok("success");
 	}
 	
 	// 생산 계획 삭제 (숨김 처리)
-    @PostMapping("/mfgPlanDelete")
+    @PostMapping("/delete")
     @ResponseBody
     public ResponseEntity<String> deleteMpPlan(@RequestBody Map<String, List<Long>> data) {
         List<Long> mpNos = data.get("mpNos");
 
         // 삭제 로직 실행
-        mfgPlanService.isVisiableToFalse(mpNos);
+        mfgPlanService.isVisibleToFalse(mpNos);
 
         return ResponseEntity.ok("success");
     }
