@@ -65,23 +65,22 @@
 	<update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.FqcDTO">
 		UPDATE FQC
 	    SET
-	    	CHILD_LOT_CODE              = #{childLotCode},
 	        FQC_INSPECTION_STATUS       = #{fqcInspectionStatus},
 	        FQC_INSPECTION_RESULT       = #{fqcInspectionResult},
 	        FQC_CODE                    = #{fqcCode},
+	        WO_CODE                     = #{woCode},
 	        QCM_NAME                    = #{qcmName},
 	        EMP_NAME                    = #{empName},
 	        EMP_ID                      = #{empId},
 	        PDT_NAME                    = #{pdtName},
 	        WO_QTY                 	    = #{woQty},
 	        UNIT_QTY                    = #{unitQty},
-	        FQC_MEASURED_WEIGHT_VALUE   = #{fqcMeasuredWeightValue},
+	        FQC_MEASURED_WEIGHT_VALUE   = #{fqcMeasuredWeightValue, jdbcType=NUMERIC},
 	        QCM_UNIT_WEIGHT             = #{qcmUnitWeight},
-	        FQC_MEASURED_LENGTH_VALUE   = #{fqcMeasuredLengthValue},
+	        FQC_MEASURED_LENGTH_VALUE   = #{fqcMeasuredLengthValue, jdbcType=NUMERIC},
 	        QCM_UNIT_LENGTH             = #{qcmUnitLength},
-	        FQC_START_TIME              = #{fqcStartTime},
-	        FQC_END_TIME                = #{fqcEndTime},
-	        WHS_NAME                    = #{whsName},
+	        FQC_START_TIME              = #{fqcStartTime, jdbcType=TIMESTAMP},
+	        FQC_END_TIME                = #{fqcEndTime, jdbcType=TIMESTAMP},
 	        FQC_REMARKS                 = #{fqcRemarks}
 	    WHERE FQC_NO = #{fqcNo}
 	</update>
