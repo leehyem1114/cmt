@@ -600,6 +600,7 @@
 	   const pdtName = row.pdtName;
 	   const woQty = row.woQty;
 	   const childLotCode = row.childLotCode;
+	   const ipiInspectionResult = row.ipiInspectionResult
 
 	   // 검사 항목(qcmName) 없는 경우 차단
 	   if (!row.qcmName || row.qcmName.trim() === '') {
@@ -611,12 +612,12 @@
 	     return;
 	   }
 	   
-	   handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode); // ✅ 전달
+	   handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult); // ✅ 전달
 
 	 }
 
 	 // [2] 상태 전환 핸들러
-	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode) {
+	 async function handleStatusClick(ipiCode, status, row, rowKey, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult) {
 	   if (status === '검사시작') {
 	     Swal.fire({
 	       title: `'검사중' 상태로 변경하시겠습니까?`,
@@ -642,9 +643,11 @@
 	       
 	    	// ✅ 검사완료 가기 전에 자동검사 먼저
 	       await autoInspect(row, rowKey);
+	    	
+	       const updatedRow = grid.getRow(rowKey);
 
 	       // ✅ 자동검사 성공했으면 상태 변경
-	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode, pdtCode, pdtName, woQty, childLotCode);
+	       updateStatus(ipiCode, '검사완료', '상태가 "검사완료"로 변경되었습니다.', woCode, pdtCode, pdtName, woQty, childLotCode, updatedRow.ipiInspectionResult);
 	     });
 
 	   } else if (status === '검사완료') {
@@ -745,11 +748,11 @@
 	 }
 
 	 // 상태 변경 서버 요청
-	 function updateStatus(ipiCode, newStatus, successMsg, woCode, pdtCode, pdtName, woQty, childLotCode) {
+	 function updateStatus(ipiCode, newStatus, successMsg, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult) {
 	   fetch('/ipi/status-action', {
 	     method: 'POST',
 	     headers: { 'Content-Type': 'application/json' },
-	     body: JSON.stringify({ ipiCode, status: newStatus, woCode, pdtCode, pdtName, woQty, childLotCode })
+	     body: JSON.stringify({ ipiCode, status: newStatus, woCode, pdtCode, pdtName, woQty, childLotCode, ipiInspectionResult })
 	   })
 	     .then(res => res.json())
 	     .then(data => {

@@ -116,6 +116,7 @@ public class IpiController {
         ipiDTO.setPdtName(payload.get("pdtName"));
         ipiDTO.setWoQty(payload.get("woQty"));
         ipiDTO.setChildLotCode(payload.get("childLotCode"));
+        ipiDTO.setIpiInspectionResult(payload.get("ipiInspectionResult"));
 
         // TODO: 상태에 따라 분기 처리
         if ("검사중".equals(status)) {

@@ -40,66 +40,7 @@
 	<h3>출퇴근 조회 관리</h3>
 	   	
 	   	
-		<div id="chart-area"></div>
 		
-		
-		<script type="text/javascript">
-		// ✅ 안전한 나누기 함수
-	    const safeDivide = (num, total) => total === 0 ? 0 : (num / total) * 100;
-
-	    // ✅ 차트 생성 함수
-	    function drawChart(passCount, inProgressCount, failCount, totalCount) {
-	      const el = document.getElementById('chart-area');
-
-	      const passRate = safeDivide(passCount, totalCount);
-	      const inProgressRate = safeDivide(inProgressCount, totalCount);
-	      const failRate = safeDivide(failCount, totalCount);
-
-	      const data = {
-	        categories: ['불량율'],
-	        series: [
-	          { name: '합격', data: passRate },
-	          { name: '검사중', data: inProgressRate },
-	          { name: '불합격', data: failRate }
-	        ]
-	      };
-
-	      const options = {
-	        chart: { 
-	          title: '최근 7일 불량율', 
-	          height: 400 
-	        },
-	        series: {
-	          dataLabels: { 
-	            visible: true, 
-	            formatter: (value) => `${value.toFixed(1)}%`
-	          }
-	        }
-	      };
-
-	      toastui.Chart.pieChart({ el, data, options });
-	    }
-
-	    // ✅ 서버에서 데이터 가져오기
-	    async function fetchInspectionData() {
-	      try {
-	        // 예시: GET 방식으로 데이터 요청
-	        const response = await fetch('/fqc/inspection-summary');
-	        const result = await response.json(); // JSON 파싱
-
-	        // 받아온 데이터 예시
-	        const { PASS_COUNT, IN_PROGRESS_COUNT, FAIL_COUNT } = result;
-	        const totalCount = PASS_COUNT + IN_PROGRESS_COUNT + FAIL_COUNT;
-
-	        drawChart(PASS_COUNT, IN_PROGRESS_COUNT, FAIL_COUNT, totalCount);
-	      } catch (error) {
-	        console.error('데이터 불러오기 실패:', error);
-	      }
-	    }
-
-	    // ✅ 실행
-	    fetchInspectionData();
-		</script>
 		
     	<!-- 전체 한 줄, 버튼 오른쪽 -->
 		<div style="display: flex; align-items: center; gap: 10px; width: 100%;">
