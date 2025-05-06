@@ -78,6 +78,7 @@
         SELECT 
             H.HISTORY_NO,
             H.ISSUE_STOCK_NO,
+            H.PRODUCTION_RECEIPT_STOCK_NO,
             H.PDT_CODE,
             H.CONSUMED_QTY,
             H.LOT_NO,
@@ -112,6 +113,7 @@
         INSERT INTO PRODUCTS_FIFO_HISTORY (
             HISTORY_NO,
             ISSUE_STOCK_NO,
+            PRODUCTION_RECEIPT_STOCK_NO,
             PDT_CODE,
             CONSUMED_QTY,
             LOT_NO,
@@ -123,7 +125,8 @@
             CREATED_DATE
         ) VALUES (
             SEQ_PRODUCTS_FIFO_HISTORY.NEXTVAL,
-            #{issueStockNo},
+            #{issueStockNo, jdbcType=NUMERIC},
+            #{productionReceiptStockNo, jdbcType=NUMERIC},
             #{pdtCode},
             #{consumedQty},
             #{lotNo, jdbcType=VARCHAR},

@@ -45,6 +45,9 @@ public class InventoryUpdateService {
     @Autowired
     private ProductsProductionReceiptMapper productsProductionReceiptMapper;
     
+    @Autowired
+    private ProductsInventoryService productsInventoryService;
+    
     /**
      * 생산완료 처리 - LOT 상태가 CP로 변경될 때 호출
      */
@@ -63,7 +66,16 @@ public class InventoryUpdateService {
         if (parentCode.startsWith("MTL")) {
             deductMaterialFIFO(parentCode, Long.parseLong(bomQty), userId, childLotCode, woCode);
         } else {
-            deductProductFIFO(parentCode, Long.parseLong(bomQty), userId);
+            // ProductsInventoryService로 제품 재고 차감 처리 위임
+            Map<String, Object> params = new HashMap<>(lotInfo);
+            params.put("userId", userId);
+            
+            Map<String, Object> result = productsInventoryService.consumeProductByProduction(params);
+            
+            if (!(Boolean) result.get("success")) {
+                log.error("제품 재고 차감 실패: {}", result.get("message"));
+                throw new RuntimeException("제품 재고 차감 실패: " + result.get("message"));
+            }
         }
     }
     
@@ -149,75 +161,6 @@ public class InventoryUpdateService {
     }
     
     /**
-     * 반제품 FIFO 차감
-     */
-    private void deductProductFIFO(String pdtCode, long qty, String userId) {
-        long remainingToDeduct = qty;
-        long totalDeducted = 0;
-        
-        log.info("반제품 FIFO 차감 시작 - 제품코드: {}, 수량: {}", pdtCode, qty);
-        
-        // 생산입고별 재고 목록 조회 (FIFO 순서)
-        List<Map<String, Object>> productionReceipts = pprsmapper.getStocksForFIFO(pdtCode);
-        
-        if (productionReceipts == null || productionReceipts.isEmpty()) {
-            log.info("제품 {}에 생산입고 이력이 없으므로 일반 재고에서 차감합니다.", pdtCode);
-            
-            // 전체 재고에서 바로 차감
-            Map<String, Object> inventoryParams = new HashMap<>();
-            inventoryParams.put("pdtCode", pdtCode);
-            inventoryParams.put("consumptionQty", String.valueOf(qty));
-            inventoryParams.put("updatedBy", userId);
-            
-            productsInventoryMapper.deductInventory(inventoryParams);
-            
-            // 계획재고도 차감
-            deductAllocatedProductInventory(pdtCode, qty, userId);
-            return;
-        }
-        
-        for (Map<String, Object> receipt : productionReceipts) {
-            if (remainingToDeduct <= 0) break;
-            
-            Long stockNo = Long.valueOf(receipt.get("PRODUCTION_RECEIPT_STOCK_NO").toString());
-            long remainingQty = Long.parseLong((String) receipt.get("REMAINING_QTY"));
-            
-            // 차감할 수량 결정
-            long qtyToDeduct = Math.min(remainingQty, remainingToDeduct);
-            
-            // 생산입고별 재고 차감
-            Map<String, Object> deductParams = new HashMap<>();
-            deductParams.put("productionReceiptStockNo", stockNo);
-            deductParams.put("deductQty", String.valueOf(qtyToDeduct));
-            deductParams.put("updatedBy", userId);
-            
-            pprsmapper.deductStock(deductParams);
-            
-            totalDeducted += qtyToDeduct;
-            remainingToDeduct -= qtyToDeduct;
-            
-            log.debug("생산입고분 {} 차감: {} (총 차감: {})", 
-                stockNo, qtyToDeduct, totalDeducted);
-        }
-        
-        // 전체 재고 차감
-        Map<String, Object> inventoryParams = new HashMap<>();
-        inventoryParams.put("pdtCode", pdtCode);
-        inventoryParams.put("consumptionQty", String.valueOf(qty));
-        inventoryParams.put("updatedBy", userId);
-        
-        productsInventoryMapper.deductInventory(inventoryParams);
-        
-        // 계획재고도 차감
-        deductAllocatedProductInventory(pdtCode, qty, userId);
-        
-        if (remainingToDeduct > 0) {
-            log.error("제품 {} 차감 실패: {}만큼 부족", pdtCode, remainingToDeduct);
-            throw new RuntimeException("제품 " + pdtCode + " 재고가 " + remainingToDeduct + "만큼 부족합니다.");
-        }
-    }
-    
-    /**
      * 원자재 계획재고 차감
      */
     private void deductAllocatedMaterialInventory(String mtlCode, long qty, String userId) {
@@ -227,6 +170,21 @@ public class InventoryUpdateService {
         params.put("updatedBy", userId);
         
         Ium.updateMaterialAllocatedQty(params);
+    }
+    
+    /**
+     * 제품 계획재고 차감 - @deprecated 사용하지 않음
+     * ProductsInventoryService.consumeProductByProduction 메서드로 대체됨
+     */
+    @Deprecated
+    private void deductProductFIFO(String pdtCode, long qty, String userId) {
+        // ProductsInventoryService로 위임
+        Map<String, Object> params = new HashMap<>();
+        params.put("pdtCode", pdtCode);
+        params.put("consumptionQty", String.valueOf(qty));
+        params.put("updatedBy", userId);
+        
+        productsInventoryService.consumeProductFIFO(params);
     }
     
     /**
