@@ -66,23 +66,24 @@
    <update id="saveExcelData" parameterType="com.example.cmtProject.dto.mes.qualityControl.IpiDTO">
       UPDATE IPI
        SET
-          CHILD_LOT_CODE              = #{childLotCode},
+          CHILD_LOT_CODE               = #{childLotCode},
            IPI_INSPECTION_STATUS       = #{ipiInspectionStatus},
            IPI_INSPECTION_RESULT       = #{ipiInspectionResult},
            IPI_CODE                    = #{ipiCode},
+           WO_CODE                     = #{woCode},
            QCM_NAME                    = #{qcmName},
            EMP_NAME                    = #{empName},
            EMP_ID                      = #{empId},
            PDT_NAME                    = #{pdtName},
-           WO_QTY                        = #{woQty},
+           PDT_CODE                    = #{pdtCode},
+           WO_QTY                      = #{woQty},
            UNIT_QTY                    = #{unitQty},
-           IPI_MEASURED_WEIGHT_VALUE   = #{ipiMeasuredWeightValue},
+           IPI_MEASURED_WEIGHT_VALUE   = #{ipiMeasuredWeightValue, jdbcType=NUMERIC},
            QCM_UNIT_WEIGHT             = #{qcmUnitWeight},
-           IPI_MEASURED_LENGTH_VALUE   = #{ipiMeasuredLengthValue},
+           IPI_MEASURED_LENGTH_VALUE   = #{ipiMeasuredLengthValue, jdbcType=NUMERIC},
            QCM_UNIT_LENGTH             = #{qcmUnitLength},
-           IPI_START_TIME              = #{ipiStartTime},
-           IPI_END_TIME                = #{ipiEndTime},
-           WHS_NAME                    = #{whsName},
+           IPI_START_TIME              = #{ipiStartTime, jdbcType=TIMESTAMP},
+           IPI_END_TIME                = #{ipiEndTime, jdbcType=TIMESTAMP},
            IPI_REMARKS                 = #{ipiRemarks}
        WHERE IPI_NO = #{ipiNo}
    </update>
