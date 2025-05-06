@@ -1,6 +1,7 @@
 package com.example.cmtProject.service.mes.inventory;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +144,7 @@ public class MaterialReceiptService {
 	                // 입고 정보 맵 생성
 	                Map<String, Object> receiptMap = new HashMap<>();
 	                
-	                receiptMap.put("receiptCode", "RC" + System.currentTimeMillis() % 10000);
+	                receiptMap.put("receiptCode", generateReceiptCode());
 	                receiptMap.put("poCode", po.get("PO_CODE"));
 	                receiptMap.put("mtlCode", mtlCode);
 	                receiptMap.put("receivedQty", po.get("PO_QTY"));
@@ -707,4 +708,32 @@ public class MaterialReceiptService {
 //            return false;
 //        }
 //    }
+    
+    
+    /**
+     * 입고 코드 생성 함수
+     * 형식: RC-YYYYMMDD-XXX (XXX: 일련번호)
+     * @return 생성된 입고 코드
+     */
+    private String generateReceiptCode() {
+        LocalDate today = LocalDate.now();
+        String dateStr = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        
+        // 오늘 날짜의 마지막 입고 코드 조회
+        String lastCodePrefix = "RC-" + dateStr + "-";
+        String lastCode = mRmapper.getLastReceiptCodeByPrefix(lastCodePrefix);
+        
+        int sequence = 1;
+        if (lastCode != null && !lastCode.isEmpty()) {
+            String seqStr = lastCode.substring(lastCodePrefix.length());
+            try {
+                sequence = Integer.parseInt(seqStr) + 1;
+            } catch (NumberFormatException e) {
+                // 파싱 오류 시 기본값 1 사용
+                log.warn("입고코드 일련번호 파싱 오류: {}", lastCode);
+            }
+        }
+        
+        return String.format("RC-%s-%03d", dateStr, sequence);
+    }
 }

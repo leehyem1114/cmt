@@ -15,6 +15,7 @@ import com.example.cmtProject.mapper.mes.inventory.MaterialReceiptStockMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptStockMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,9 @@ public class InventoryUpdateService {
     
     @Autowired
     private ProductsMasterMapper ProductsMasterMapper;
+
+    @Autowired
+    private ProductsProductionReceiptMapper productsProductionReceiptMapper;
     
     /**
      * 생산완료 처리 - LOT 상태가 CP로 변경될 때 호출
@@ -375,11 +379,28 @@ public class InventoryUpdateService {
         
         productsInventoryMapper.mergeInventory(inventoryParams);
         
-        // 3. FIFO 관리용 생산입고 이력 저장
+        // 3. 생산 입고 정보 생성
+        Map<String, Object> receiptParams = new HashMap<>();
+        receiptParams.put("receiptCode", "PR-" + System.currentTimeMillis());
+        receiptParams.put("productionCode", childLotCode);
+        receiptParams.put("pdtCode", pdtCode);
+        receiptParams.put("receivedQty", woQty);
+        receiptParams.put("receiptDate", LocalDate.now().toString());
+        receiptParams.put("receiptStatus", "입고완료");
+        receiptParams.put("warehouseCode", warehouseCode);
+        receiptParams.put("locationCode", locationCode);
+        receiptParams.put("receiver", userId);
+        receiptParams.put("createdBy", userId);
+        
+        productsProductionReceiptMapper.insertProductionReceipt(receiptParams);
+        Long receiptNo = productsProductionReceiptMapper.getLastReceiptNo();
+        
+        // 4. FIFO 관리용 생산입고 이력 저장
         Map<String, Object> stockParams = new HashMap<>();
+        stockParams.put("receiptNo", receiptNo);  // 생산입고 번호 연결
         stockParams.put("productionCode", childLotCode);  // LOT 번호를 생산코드로 사용
         stockParams.put("pdtCode", pdtCode);
-        stockParams.put("remainingQty", woQty);
+        stockParams.put("remainingQty", woQty); // 남은 수량 설정 (초기엔 입고량과 동일)
         stockParams.put("productionDate", LocalDate.now().toString());
         stockParams.put("lotNo", childLotCode);
         stockParams.put("createdBy", userId);

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptMapper">
+
+    <!-- 생산 입고 정보 저장 -->
+    <insert id="insertProductionReceipt" parameterType="java.util.Map">
+        INSERT INTO PRODUCTS_PRODUCTION_RECEIPT (
+            RECEIPT_NO,
+            RECEIPT_CODE,
+            PRODUCTION_CODE,
+            PDT_CODE,
+            RECEIVED_QTY,
+            RECEIPT_DATE,
+            RECEIPT_STATUS,
+            WAREHOUSE_CODE,
+            LOCATION_CODE,
+            RECEIVER,
+            CREATED_BY,
+            CREATED_DATE
+        ) VALUES (
+            SEQ_PRODUCTS_PRODUCTION_RECEIPT.NEXTVAL,
+            #{receiptCode},
+            #{productionCode},
+            #{pdtCode},
+            #{receivedQty},
+            TO_DATE(#{receiptDate}, 'YYYY-MM-DD'),
+            #{receiptStatus},
+            #{warehouseCode},
+            #{locationCode},
+            #{receiver},
+            #{createdBy},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 마지막 저장된 생산 입고 번호 조회 -->
+    <select id="getLastReceiptNo" resultType="java.lang.Long">
+        SELECT MAX(RECEIPT_NO) 
+        FROM PRODUCTS_PRODUCTION_RECEIPT
+    </select>
+    
+    <!-- 생산 입고 상세 정보 조회 -->
+    <select id="getReceiptDetail" resultType="map" parameterType="long">
+        SELECT
+            RECEIPT_NO,
+            RECEIPT_CODE,
+            PRODUCTION_CODE,
+            PDT_CODE,
+            RECEIVED_QTY,
+            RECEIPT_DATE,
+            RECEIPT_STATUS,
+            WAREHOUSE_CODE,
+            LOCATION_CODE,
+            RECEIVER,
+            CREATED_BY,
+            CREATED_DATE
+        FROM
+            PRODUCTS_PRODUCTION_RECEIPT
+        WHERE
+            RECEIPT_NO = #{receiptNo}
+    </select>
+</mapper>
