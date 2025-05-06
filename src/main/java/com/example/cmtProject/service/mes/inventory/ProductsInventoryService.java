@@ -14,6 +14,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.example.cmtProject.mapper.mes.inventory.ProductsInventoryMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsIssueStockMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsMasterMapper;
+import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptMapper;
 import com.example.cmtProject.mapper.mes.inventory.ProductsProductionReceiptStockMapper;
 import com.example.cmtProject.util.SecurityUtil;
 
@@ -34,6 +35,9 @@ public class ProductsInventoryService {
 	
 	@Autowired
 	private ProductsProductionReceiptStockMapper pprsmapper;
+	
+	@Autowired
+	private ProductsProductionReceiptMapper pprMapper;
 	
 	/**
 	 * 재고 목록 조회
@@ -488,6 +492,101 @@ public class ProductsInventoryService {
 	        log.error("제품 재고 데이터 생성 중 오류 발생: {}", e.getMessage(), e);
 	        resultMap.put("success", false);
 	        resultMap.put("message", "재고 데이터 생성 중 오류 발생: " + e.getMessage());
+	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+	    }
+	    
+	    return resultMap;
+	}
+	/**
+	 * 임시 생산입고 처리 (초기 재고 데이터 생성용)
+	 * FIFO 관리를 위한 생산입고 이력 생성 및 재고 증가 처리
+	 */
+	@Transactional
+	public Map<String, Object> createTempProductionReceipt(Map<String, Object> params) {
+	    Map<String, Object> resultMap = new HashMap<>();
+	    
+	    try {
+	        log.info("임시 생산입고 처리 시작: {}", params);
+	        
+	        // 필수 파라미터 검증
+	        if (!params.containsKey("pdtCode") || !params.containsKey("qty")) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "필수 파라미터가 누락되었습니다. (pdtCode, qty)");
+	            return resultMap;
+	        }
+	        
+	        String pdtCode = (String) params.get("pdtCode");
+	        String qty = (String) params.get("qty");
+	        String lotNo = (String) params.getOrDefault("lotNo", "INIT-" + pdtCode + "-" + System.currentTimeMillis());
+	        
+	        // 제품 정보 조회
+	        Map<String, Object> param = new HashMap<>();
+	        param.put("PDT_CODE", pdtCode);
+	        Map<String, Object> productInfo = productsMasterMapper.selectSingleProducts(param);
+	        
+	        if (productInfo == null) {
+	            resultMap.put("success", false);
+	            resultMap.put("message", "제품 정보를 찾을 수 없습니다: " + pdtCode);
+	            return resultMap;
+	        }
+	        
+	        // 현재 사용자 ID 가져오기
+	        String userId = SecurityUtil.getUserId();
+	        
+	        // 1. 생산입고 정보 생성
+	        String receiptCode = "PR-INIT-" + pdtCode + "-" + System.currentTimeMillis();
+	        
+	        Map<String, Object> receiptParams = new HashMap<>();
+	        receiptParams.put("receiptCode", receiptCode);
+	        receiptParams.put("productionCode", lotNo);
+	        receiptParams.put("pdtCode", pdtCode);
+	        receiptParams.put("receivedQty", qty);
+	        receiptParams.put("receiptDate", java.time.LocalDate.now().toString());
+	        receiptParams.put("receiptStatus", "입고완료");
+	        receiptParams.put("warehouseCode", productInfo.get("DEFAULT_WAREHOUSE_CODE"));
+	        receiptParams.put("locationCode", productInfo.get("DEFAULT_LOCATION_CODE"));
+	        receiptParams.put("receiver", userId);
+	        receiptParams.put("createdBy", userId);
+	        
+	        // ProductsProductionReceiptMapper를 통한 데이터 저장
+	        pprMapper.insertProductionReceipt(receiptParams);
+	        Long receiptNo = pprMapper.getLastReceiptNo();
+	        
+	        // 2. FIFO 관리용 생산입고 이력 저장
+	        Map<String, Object> stockParams = new HashMap<>();
+	        stockParams.put("receiptNo", receiptNo);
+	        stockParams.put("productionCode", lotNo);
+	        stockParams.put("pdtCode", pdtCode);
+	        stockParams.put("remainingQty", qty);
+	        stockParams.put("productionDate", java.time.LocalDate.now().toString());
+	        stockParams.put("lotNo", lotNo);
+	        stockParams.put("createdBy", userId);
+	        
+	        pprsmapper.insertStock(stockParams);
+	        
+	        // 3. 제품 재고 증가
+	        Map<String, Object> inventoryParams = new HashMap<>();
+	        inventoryParams.put("pdtCode", pdtCode);
+	        inventoryParams.put("receivedQty", qty);
+	        inventoryParams.put("warehouseCode", productInfo.get("DEFAULT_WAREHOUSE_CODE"));
+	        inventoryParams.put("locationCode", productInfo.get("DEFAULT_LOCATION_CODE"));
+	        inventoryParams.put("updatedBy", userId);
+	        
+	        pImapper.mergeInventory(inventoryParams);
+	        
+	        resultMap.put("success", true);
+	        resultMap.put("message", "임시 생산입고 처리가 완료되었습니다.");
+	        resultMap.put("receiptNo", receiptNo);
+	        resultMap.put("pdtCode", pdtCode);
+	        resultMap.put("qty", qty);
+	        resultMap.put("lotNo", lotNo);
+	        
+	        log.info("임시 생산입고 처리 완료: 제품코드={}, 수량={}, LOT={}", pdtCode, qty, lotNo);
+	        
+	    } catch (Exception e) {
+	        log.error("임시 생산입고 처리 중 오류 발생: {}", e.getMessage(), e);
+	        resultMap.put("success", false);
+	        resultMap.put("message", "오류가 발생했습니다: " + e.getMessage());
 	        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 	    }
 	    
