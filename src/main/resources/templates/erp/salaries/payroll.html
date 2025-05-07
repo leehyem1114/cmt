@@ -177,10 +177,13 @@
 	// 월별 요약 급여대장 그리드 시작 ============================================		
 	let selectedRowKey = null;
 	
+	const dbData = /*[[${payrollSummaryList}]]*/[];
+	const data = dbData.map((d, rowKey) => ({ ...d, rowKey }));
+	
 	// 월별 요약 급여대장 그리드 생성		
 	const monthlyGrid = new tui.Grid({
 		el: document.getElementById('monthlyGrid'),
-		data: /*[[${payrollSummaryList}]]*/[],
+		data: data,
 		columns: [
 			{
 				header: '지급월',
@@ -199,10 +202,10 @@
 			},
 			{
 				header: '월별 급여대장',
-				name: 'sliDesc',
+				name: 'rowKey',
 				align: "center",
-				formatter: ({rowKey}) => {
-  					return `<span class="view-button" data-rowkey="${rowKey}" data-bs-toggle="modal" data-bs-target="#payrollModal" style="color:blue; cursor:pointer;">조회</span>`;
+				formatter: ({value}) => {
+  					return `<span class="view-button" data-rowkey="${value}" data-bs-toggle="modal" data-bs-target="#payrollModal" style="color:blue; cursor:pointer;">조회</span>`;
 				}
 			},
 			{
@@ -269,7 +272,7 @@
 		const { rowKey, columnName } = ev;
 
 		// '조회' 버튼 셀 클릭 무시 (중복 방지)
-		if (columnName === 'sliDesc') return;
+		if (columnName === 'rowKey') return;
 
 		selectedRowKey = rowKey;
 
@@ -282,13 +285,16 @@
 	
 	// 월별 상세 급여대장 모달창			
 	document.getElementById('payrollModal').addEventListener('shown.bs.modal', () => {
-		if (selectedRowKey !== null) {
-			const rowData = monthlyGrid.getRow(Number(selectedRowKey));
+		
+		if (selectedRowKey == null) return;
+		const rowData = monthlyGrid.getRow(Number(selectedRowKey));
 
+		let data = { payMonth: rowData.payMonth };
 		$.ajax({
 			type: 'POST',
 			url: '/salaries/payroll/month',
-			data: { payMonth: rowData.payMonth },
+			// data: { payMonth: rowData.payMonth },
+			data: data,
 			success: function (data) {
 				const payList = data.PAY_LIST;
 				const payTotal = data.PAY_TOTAL || {};
@@ -315,7 +321,7 @@
 						columns: [
 							{
 								header: '사원번호',
-								name: 'EMP_ID',
+								name: 'empId',
 								hidden: true
 							},
 							{
@@ -536,7 +542,6 @@
 				});
 			}
 		});
-		}
 	});
 	// 월별 상세 급여대장 그리드 끝 =============================================
 	

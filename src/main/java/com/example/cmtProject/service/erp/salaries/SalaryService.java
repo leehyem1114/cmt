@@ -79,8 +79,8 @@ public class SalaryService { // 급여 관리 Service
 	}
 	
 	// 월별 급여 대장 - 급여 현황
-	public List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth) {
-		List<PaymentDTO> result = salMapper.getMonthlyDeptPayrollList(payMonth);
+	public List<PaymentDTO> getMonthlyPayrollList(String payMonth) {
+		List<PaymentDTO> result = salMapper.getMonthlyPayrollList(payMonth);
 		
 		return result;
 	}
