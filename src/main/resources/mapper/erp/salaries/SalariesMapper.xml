@@ -239,7 +239,7 @@
 	</select>
 	
 	<!-- 월별 급여대장 - 급여 현황 -->
-	<select id="getMonthlyDeptPayrollList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
+	<select id="getMonthlyPayrollList" resultType="com.example.cmtProject.dto.erp.salaries.PaymentDTO">
 		SELECT
 	        P.PAY_DATE              
 	        , P.PAY_BASIC             

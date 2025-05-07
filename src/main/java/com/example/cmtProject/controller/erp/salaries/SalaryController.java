@@ -269,9 +269,9 @@ public class SalaryController { // 급여 관리 Controller
 	@ResponseBody
 	public Map<String, Object> getPayrollDetail(@RequestParam("payMonth") String payMonth) {
 		Map<String, Object> result = new HashMap<>();
-		result.put("payList", salaryService.getMonthlyDeptPayrollList(payMonth)); // 급여 현황
+		result.put("payList", salaryService.getMonthlyPayrollList(payMonth)); // 급여 현황
 		result.put("payTotal", salaryService.getMonthlyPayrollTotalList(payMonth)); // 전 직원 급여 합계
-
+		
 	    return result;
 	}
 	
