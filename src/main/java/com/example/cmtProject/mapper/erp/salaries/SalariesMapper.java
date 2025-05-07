@@ -53,7 +53,7 @@ public interface SalariesMapper { // 급여 관리 Mapper
 	List<PaymentDTO> getMonthlyPayrollSummaryList();
 
 	// 월별 급여 대장 - 급여 현황
-	List<PaymentDTO> getMonthlyDeptPayrollList(String payMonth);
+	List<PaymentDTO> getMonthlyPayrollList(String payMonth);
 
 	// 월별 급여 대장 - 전 직원 급여 합계
 	Map<String, Object> getMonthlyPayrollTotalList(String payMonth);
